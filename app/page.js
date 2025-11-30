@@ -3,6 +3,7 @@
 import { useAuth } from '@/components/AuthProvider'
 import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
+import { createClient } from '@/lib/supabase'
 
 function CheckIcon() {
   return <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#22c55e" strokeWidth="3"><polyline points="20 6 9 17 4 12"/></svg>
@@ -12,12 +13,34 @@ export default function LandingPage() {
   const { user, loading } = useAuth()
   const router = useRouter()
   const [checkoutLoading, setCheckoutLoading] = useState(false)
+  const [redirecting, setRedirecting] = useState(false)
 
   useEffect(() => {
-    if (!loading && user) {
-      router.push('/dashboard')
+    async function checkUserAndRedirect() {
+      if (!loading && user && !redirecting) {
+        setRedirecting(true)
+        try {
+          const supabase = createClient()
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('subscription_status')
+            .eq('id', user.id)
+            .single()
+
+          if (profile?.subscription_status === 'active') {
+            router.push('/dashboard')
+          } else {
+            router.push('/pricing')
+          }
+        } catch (error) {
+          console.error('Error checking subscription:', error)
+          setRedirecting(false)
+        }
+      }
     }
-  }, [user, loading, router])
+    
+    checkUserAndRedirect()
+  }, [user, loading, router, redirecting])
 
   const handleSubscribe = async () => {
     setCheckoutLoading(true)
@@ -37,7 +60,7 @@ export default function LandingPage() {
     document.getElementById('how-it-works')?.scrollIntoView({ behavior: 'smooth' })
   }
 
-  if (loading) {
+  if (loading || redirecting) {
     return <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#777' }}>Loading...</div>
   }
 
