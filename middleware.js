@@ -34,50 +34,67 @@ export async function middleware(request) {
     }
   )
 
-  const { data: { user } } = await supabase.auth.getUser()
+  try {
+    const { data: { user } } = await supabase.auth.getUser()
 
-  // Protected routes that require login
-  const protectedPaths = ['/dashboard', '/account']
-  const isProtectedPath = protectedPaths.some(path => 
-    request.nextUrl.pathname.startsWith(path)
-  )
+    // Protected routes that require login
+    const protectedPaths = ['/dashboard', '/account']
+    const isProtectedPath = protectedPaths.some(path => 
+      request.nextUrl.pathname.startsWith(path)
+    )
 
-  // If accessing protected route without auth, redirect to login
-  if (isProtectedPath && !user) {
-    return NextResponse.redirect(new URL('/login', request.url))
-  }
-
-  // If accessing protected route, check subscription status
-  if (isProtectedPath && user) {
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('subscription_status')
-      .eq('id', user.id)
-      .single()
-
-    // Redirect to pricing if not subscribed (dashboard and account require subscription)
-    if (profile?.subscription_status !== 'active') {
-      return NextResponse.redirect(new URL('/pricing', request.url))
+    // If accessing protected route without auth, redirect to login
+    if (isProtectedPath && !user) {
+      return NextResponse.redirect(new URL('/login', request.url))
     }
-  }
 
-  // Redirect logged in users away from login page
-  if (request.nextUrl.pathname === '/login' && user) {
-    // Check subscription and redirect accordingly
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('subscription_status')
-      .eq('id', user.id)
-      .single()
+    // If accessing protected route, check subscription status
+    if (isProtectedPath && user) {
+      const { data: profile, error } = await supabase
+        .from('profiles')
+        .select('subscription_status')
+        .eq('id', user.id)
+        .single()
 
-    if (profile?.subscription_status === 'active') {
-      return NextResponse.redirect(new URL('/dashboard', request.url))
-    } else {
-      return NextResponse.redirect(new URL('/pricing', request.url))
+      // If profile doesn't exist or error, redirect to pricing
+      if (error || !profile) {
+        console.error('Profile error in middleware:', error)
+        return NextResponse.redirect(new URL('/pricing', request.url))
+      }
+
+      // Redirect to pricing if not subscribed
+      if (profile.subscription_status !== 'active') {
+        return NextResponse.redirect(new URL('/pricing', request.url))
+      }
     }
-  }
 
-  return response
+    // Redirect logged in users away from login page
+    if (request.nextUrl.pathname === '/login' && user) {
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('subscription_status')
+        .eq('id', user.id)
+        .single()
+
+      // If no profile, go to pricing to set up
+      if (!profile) {
+        return NextResponse.redirect(new URL('/pricing', request.url))
+      }
+
+      // Redirect based on subscription
+      if (profile.subscription_status === 'active') {
+        return NextResponse.redirect(new URL('/dashboard', request.url))
+      } else {
+        return NextResponse.redirect(new URL('/pricing', request.url))
+      }
+    }
+
+    return response
+  } catch (error) {
+    console.error('Middleware error:', error)
+    // On error, allow request to continue to avoid infinite loops
+    return response
+  }
 }
 
 export const config = {
