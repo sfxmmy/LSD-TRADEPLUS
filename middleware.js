@@ -2,6 +2,8 @@ import { createServerClient } from '@supabase/ssr'
 import { NextResponse } from 'next/server'
 
 export async function middleware(request) {
+  console.log('Middleware hit:', request.nextUrl.pathname)
+  
   let response = NextResponse.next({
     request: {
       headers: request.headers,
@@ -37,47 +39,36 @@ export async function middleware(request) {
   try {
     const { data: { user } } = await supabase.auth.getUser()
 
-    // Protected routes - require subscription
     const protectedPaths = ['/dashboard', '/account']
     const isProtectedPath = protectedPaths.some(path => 
       request.nextUrl.pathname.startsWith(path)
     )
 
-    // Not logged in - redirect to login
     if (isProtectedPath && !user) {
       return NextResponse.redirect(new URL('/login', request.url))
     }
 
-    // Logged in - check subscription
     if (isProtectedPath && user) {
-      const { data: profile } = await supabase
+      const { data: profile, error } = await supabase
         .from('profiles')
-        .select('subscription_status, created_at')
+        .select('subscription_status')
         .eq('id', user.id)
         .single()
 
-      if (!profile) {
+      if (error || !profile) {
+        console.error('Profile error:', error)
         return NextResponse.redirect(new URL('/pricing', request.url))
       }
 
-      // Check if trial is valid (7 days from account creation)
-      const trialEndDate = new Date(profile.created_at)
-      trialEndDate.setDate(trialEndDate.getDate() + 7)
-      const isTrialActive = new Date() < trialEndDate
-
-      // Allow access if: active subscription OR valid trial
-      const hasAccess = profile.subscription_status === 'active' || isTrialActive
-
-      if (!hasAccess) {
+      if (profile.subscription_status !== 'active') {
         return NextResponse.redirect(new URL('/pricing', request.url))
       }
     }
 
-    // Logged in user on login page - redirect based on access
     if (request.nextUrl.pathname === '/login' && user) {
       const { data: profile } = await supabase
         .from('profiles')
-        .select('subscription_status, created_at')
+        .select('subscription_status')
         .eq('id', user.id)
         .single()
 
@@ -85,12 +76,7 @@ export async function middleware(request) {
         return NextResponse.redirect(new URL('/pricing', request.url))
       }
 
-      const trialEndDate = new Date(profile.created_at)
-      trialEndDate.setDate(trialEndDate.getDate() + 7)
-      const isTrialActive = new Date() < trialEndDate
-      const hasAccess = profile.subscription_status === 'active' || isTrialActive
-
-      if (hasAccess) {
+      if (profile.subscription_status === 'active') {
         return NextResponse.redirect(new URL('/dashboard', request.url))
       } else {
         return NextResponse.redirect(new URL('/pricing', request.url))
