@@ -1,10 +1,9 @@
-export async function middleware(request) {
-  console.log('Middleware hit:', request.nextUrl.pathname)
-
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse } from 'next/server'
 
 export async function middleware(request) {
+  console.log('Middleware hit:', request.nextUrl.pathname)
+  
   let response = NextResponse.next({
     request: {
       headers: request.headers,
@@ -40,18 +39,15 @@ export async function middleware(request) {
   try {
     const { data: { user } } = await supabase.auth.getUser()
 
-    // Protected routes that require login
     const protectedPaths = ['/dashboard', '/account']
     const isProtectedPath = protectedPaths.some(path => 
       request.nextUrl.pathname.startsWith(path)
     )
 
-    // If accessing protected route without auth, redirect to login
     if (isProtectedPath && !user) {
       return NextResponse.redirect(new URL('/login', request.url))
     }
 
-    // If accessing protected route, check subscription status
     if (isProtectedPath && user) {
       const { data: profile, error } = await supabase
         .from('profiles')
@@ -59,19 +55,16 @@ export async function middleware(request) {
         .eq('id', user.id)
         .single()
 
-      // If profile doesn't exist or error, redirect to pricing
       if (error || !profile) {
-        console.error('Profile error in middleware:', error)
+        console.error('Profile error:', error)
         return NextResponse.redirect(new URL('/pricing', request.url))
       }
 
-      // Redirect to pricing if not subscribed
       if (profile.subscription_status !== 'active') {
         return NextResponse.redirect(new URL('/pricing', request.url))
       }
     }
 
-    // Redirect logged in users away from login page
     if (request.nextUrl.pathname === '/login' && user) {
       const { data: profile } = await supabase
         .from('profiles')
@@ -79,12 +72,10 @@ export async function middleware(request) {
         .eq('id', user.id)
         .single()
 
-      // If no profile, go to pricing to set up
       if (!profile) {
         return NextResponse.redirect(new URL('/pricing', request.url))
       }
 
-      // Redirect based on subscription
       if (profile.subscription_status === 'active') {
         return NextResponse.redirect(new URL('/dashboard', request.url))
       } else {
@@ -95,7 +86,6 @@ export async function middleware(request) {
     return response
   } catch (error) {
     console.error('Middleware error:', error)
-    // On error, allow request to continue to avoid infinite loops
     return response
   }
 }
