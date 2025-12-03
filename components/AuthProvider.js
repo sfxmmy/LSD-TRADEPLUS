@@ -5,9 +5,6 @@ import { createClient } from '@/lib/supabase'
 
 const AuthContext = createContext({})
 
-// Your LSD Trading Discord Server ID - UPDATE THIS
-const LSD_DISCORD_SERVER_ID = 'YOUR_DISCORD_SERVER_ID'
-
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null)
   const [profile, setProfile] = useState(null)
@@ -15,60 +12,77 @@ export function AuthProvider({ children }) {
   const supabase = createClient()
 
   useEffect(() => {
+    let mounted = true
+
     const getUser = async () => {
-      const { data: { user } } = await supabase.auth.getUser()
-      setUser(user)
-      
-      if (user) {
-        const { data: profile } = await supabase
+      try {
+        const { data: { user }, error } = await supabase.auth.getUser()
+        
+        if (!mounted) return
+        
+        if (error || !user) {
+          setUser(null)
+          setProfile(null)
+          setLoading(false)
+          return
+        }
+
+        setUser(user)
+        
+        // Get profile
+        const { data: profileData } = await supabase
           .from('profiles')
           .select('*')
           .eq('id', user.id)
           .single()
-        setProfile(profile)
+        
+        if (mounted) {
+          setProfile(profileData)
+          setLoading(false)
+        }
+      } catch (err) {
+        console.error('Auth error:', err)
+        if (mounted) {
+          setUser(null)
+          setProfile(null)
+          setLoading(false)
+        }
       }
-      
-      setLoading(false)
     }
 
     getUser()
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      setUser(session?.user ?? null)
+      if (!mounted) return
       
       if (session?.user) {
-        const { data: profile } = await supabase
+        setUser(session.user)
+        const { data: profileData } = await supabase
           .from('profiles')
           .select('*')
           .eq('id', session.user.id)
           .single()
-        setProfile(profile)
+        setProfile(profileData)
       } else {
+        setUser(null)
         setProfile(null)
       }
+      setLoading(false)
     })
 
-    return () => subscription.unsubscribe()
+    // Failsafe - never stay loading more than 3 seconds
+    const timeout = setTimeout(() => {
+      if (mounted && loading) {
+        setLoading(false)
+      }
+    }, 3000)
+
+    return () => {
+      mounted = false
+      subscription.unsubscribe()
+      clearTimeout(timeout)
+    }
   }, [])
-
-  const signInWithDiscord = async () => {
-    await supabase.auth.signInWithOAuth({
-      provider: 'discord',
-      options: {
-        redirectTo: `${window.location.origin}/api/auth/callback?discord=true`,
-        scopes: 'identify guilds'
-      },
-    })
-  }
-
-  const signInWithGoogle = async () => {
-    await supabase.auth.signInWithOAuth({
-      provider: 'google',
-      options: {
-        redirectTo: `${window.location.origin}/api/auth/callback`,
-      },
-    })
-  }
 
   const signOut = async () => {
     await supabase.auth.signOut()
@@ -77,9 +91,10 @@ export function AuthProvider({ children }) {
   }
 
   const isPro = profile?.subscription_status === 'active'
+  const isAdmin = user?.email === 'ssiagos@hotmail.com'
 
   return (
-    <AuthContext.Provider value={{ user, profile, loading, signInWithDiscord, signInWithGoogle, signOut, isPro, supabase }}>
+    <AuthContext.Provider value={{ user, profile, loading, signOut, isPro, isAdmin, supabase }}>
       {children}
     </AuthContext.Provider>
   )

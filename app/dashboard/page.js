@@ -24,7 +24,7 @@ function Chart({data,isPositive,accountId}){
   return(<div style={{position:'relative',width:'100%',height:'100%'}}><svg width="100%" height="100%" viewBox={`0 0 ${width} ${height}`} preserveAspectRatio="xMidYMid meet" style={{display:'block',cursor:'crosshair'}} onMouseMove={handleMouseMove} onMouseLeave={()=>setTooltip(null)}><defs><linearGradient id={`cg${accountId}${isPositive}`} x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stopColor={color} stopOpacity="0.25"/><stop offset="100%" stopColor={color} stopOpacity="0"/></linearGradient></defs>{[0,1,2,3,4].map(i=><line key={i} x1={pL} y1={pT+(i/4)*cH} x2={width-pR} y2={pT+(i/4)*cH} stroke="#1a1a22" strokeWidth="1"/>)}<text x={pL-8} y={pT+5} fill="#aaa" fontSize="11" textAnchor="end">${max}</text><text x={pL-8} y={pT+cH/2+4} fill="#aaa" fontSize="11" textAnchor="end">${Math.round((max+min)/2)}</text><text x={pL-8} y={pT+cH+4} fill="#aaa" fontSize="11" textAnchor="end">${min}</text>{data.map((d,i)=>{if(i%2===0||i===data.length-1){const x=pL+(i/(data.length-1))*cW;return<text key={i} x={x} y={height-8} fill="#aaa" fontSize="10" textAnchor="middle">{d.date}</text>}return null})}<line x1={pL} y1={pT} x2={pL} y2={pT+cH} stroke="#2a2a35" strokeWidth="1"/><line x1={pL} y1={pT+cH} x2={width-pR} y2={pT+cH} stroke="#2a2a35" strokeWidth="1"/><path d={fillD} fill={`url(#cg${accountId}${isPositive})`}/><path d={pathD} fill="none" stroke={color} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>{tooltip&&<><line x1={tooltip.x} y1={pT} x2={tooltip.x} y2={pT+cH} stroke={color} strokeWidth="1" strokeDasharray="4" opacity="0.5"/><circle cx={tooltip.x} cy={tooltip.y} r="5" fill={color} stroke="#0a0a0f" strokeWidth="2"/></>}</svg>{tooltip&&<div style={{position:'absolute',left:`${(tooltip.x/width)*100}%`,top:`${(tooltip.y/height)*100-12}%`,transform:'translate(-50%,-100%)',background:'#1a1a24',border:'1px solid #2a2a35',borderRadius:'8px',padding:'6px 10px',pointerEvents:'none',zIndex:10,whiteSpace:'nowrap'}}><div style={{fontSize:'11px',color:'#bbb',marginBottom:'2px'}}>{tooltip.date}</div><div style={{fontSize:'13px',fontWeight:600,color:tooltip.value>=0?'#22c55e':'#ef4444'}}>${tooltip.value>=0?'+':''}{tooltip.value}</div></div>}</div>)
 }
 
-function AccountCard({account,trades,isPro,onEditName,supabase}){
+function AccountCard({account,trades,hasAccess,onEditName,supabase}){
   const [isEditing,setIsEditing]=useState(false)
   const [editName,setEditName]=useState(account.name)
   const handleSave=async()=>{
@@ -89,7 +89,7 @@ function AccountCard({account,trades,isPro,onEditName,supabase}){
 }
 
 export default function Dashboard() {
-  const { user, profile, loading, signOut, isPro, supabase } = useAuth()
+  const { user, profile, loading, signOut, isPro, isAdmin, supabase } = useAuth()
   const router = useRouter()
   const [accounts, setAccounts] = useState([])
   const [trades, setTrades] = useState({})
@@ -98,11 +98,16 @@ export default function Dashboard() {
   const [balance, setBalance] = useState('')
   const [dataLoaded, setDataLoaded] = useState(false)
 
+  // Check access
+  const hasAccess = isPro || isAdmin
+
   useEffect(() => {
     if (!loading && !user) {
       router.push('/login')
+    } else if (!loading && user && !hasAccess) {
+      router.push('/pricing?signup=true')
     }
-  }, [user, loading, router])
+  }, [user, loading, hasAccess, router])
 
   useEffect(() => {
     if (user && supabase) {
@@ -173,16 +178,14 @@ export default function Dashboard() {
       {/* Header */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-          <a href="/" style={{ fontSize: '22px', fontWeight: 700, letterSpacing: '1px' }}>
-            <span style={{ color: '#22c55e' }}>JOURNAL</span><span style={{ color: '#fff' }}>PRO</span>
+          <a href="/" style={{ fontSize: '22px', fontWeight: 700, letterSpacing: '1px', textDecoration: 'none' }}>
+            <span style={{ color: '#22c55e' }}>LSD</span><span style={{ color: '#fff' }}>TRADE+</span>
           </a>
-          {isPro && <span style={{ background: 'linear-gradient(135deg, #22c55e, #16a34a)', padding: '4px 10px', borderRadius: '6px', fontSize: '11px', fontWeight: 700, color: '#fff' }}>PRO</span>}
+          {hasAccess && <span style={{ background: 'linear-gradient(135deg, #22c55e, #16a34a)', padding: '4px 10px', borderRadius: '6px', fontSize: '11px', fontWeight: 700, color: '#fff' }}>PRO</span>}
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-          {!isPro && <a href="/pricing" style={{ padding: '8px 16px', background: 'linear-gradient(135deg, #22c55e, #16a34a)', borderRadius: '8px', color: '#fff', fontSize: '13px', fontWeight: 600 }}>Upgrade to Pro</a>}
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            {profile?.avatar_url && <img src={profile.avatar_url} alt="" style={{ width: '32px', height: '32px', borderRadius: '50%' }} />}
-            <span style={{ color: '#aaa', fontSize: '14px' }}>{profile?.username || user.email}</span>
+            <span style={{ color: '#aaa', fontSize: '14px' }}>{profile?.username || user?.email}</span>
           </div>
           <button onClick={signOut} style={{ padding: '8px 16px', background: '#1a1a24', border: '1px solid #2a2a35', borderRadius: '8px', color: '#888', fontSize: '13px', cursor: 'pointer' }}>Sign Out</button>
         </div>
@@ -199,12 +202,12 @@ export default function Dashboard() {
         <div style={{ textAlign: 'center', padding: '60px', color: '#777' }}>Loading your accounts...</div>
       ) : accounts.length === 0 ? (
         <div style={{ textAlign: 'center', padding: '80px', background: '#14141a', border: '1px solid #222230', borderRadius: '16px' }}>
-          <h2 style={{ fontSize: '24px', marginBottom: '12px', color: '#fff' }}>Welcome to JournalPro!</h2>
-          <p style={{ color: '#888', marginBottom: '24px' }}>Create your first trading account to get started</p>
-          <button onClick={() => setShowModal(true)} style={{ padding: '14px 28px', background: '#22c55e', border: 'none', borderRadius: '10px', color: '#fff', fontWeight: 600, fontSize: '15px', cursor: 'pointer' }}>+ Create Account</button>
+          <h2 style={{ fontSize: '24px', marginBottom: '12px', color: '#fff' }}>Welcome to LSDTRADE+!</h2>
+          <p style={{ color: '#888', marginBottom: '24px' }}>Create your first trading journal to get started</p>
+          <button onClick={() => setShowModal(true)} style={{ padding: '14px 28px', background: '#22c55e', border: 'none', borderRadius: '10px', color: '#fff', fontWeight: 600, fontSize: '15px', cursor: 'pointer' }}>+ Create Journal</button>
         </div>
       ) : (
-        accounts.map(a => <AccountCard key={a.id} account={a} trades={trades[a.id] || []} isPro={isPro} onEditName={handleEditName} supabase={supabase} />)
+        accounts.map(a => <AccountCard key={a.id} account={a} trades={trades[a.id] || []} hasAccess={hasAccess} onEditName={handleEditName} supabase={supabase} />)
       )}
 
       {/* Add Account Modal */}
