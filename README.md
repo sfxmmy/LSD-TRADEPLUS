@@ -1,33 +1,12 @@
 # LSDTRADE+ Trading Journal
 
-Professional trading journal application.
-
 ## Setup
 
-1. **Install dependencies:**
-```bash
-npm install
-```
+1. Install: `npm install`
+2. Copy `.env.example` to `.env.local` and fill in values
+3. Run SQL in Supabase SQL Editor
+4. Run: `npm run dev`
 
-2. **Set up environment variables:**
-Copy `.env.example` to `.env.local` and fill in your values.
+## Admin
 
-3. **Set up database:**
-Run `supabase-schema.sql` in your Supabase SQL Editor.
-
-4. **Run locally:**
-```bash
-npm run dev
-```
-
-## Admin Access
-
-Email: ssiagos@hotmail.com gets automatic full access.
-
-## Features
-
-- Multiple trading journals
-- Trade logging with PnL tracking
-- Win rate and statistics
-- Equity curves
-- Stripe subscription payments
+Email `ssiagos@hotmail.com` gets automatic full access.

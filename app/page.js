@@ -1,40 +1,13 @@
 'use client'
 
-import { useEffect, useState } from 'react'
-import { useRouter } from 'next/navigation'
-import { getSupabase } from '@/lib/supabase'
+import { useAuth } from '@/components/AuthProvider'
 
 function CheckIcon() {
   return <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#22c55e" strokeWidth="3"><polyline points="20 6 9 17 4 12" /></svg>
 }
 
 export default function HomePage() {
-  const router = useRouter()
-  const [user, setUser] = useState(null)
-  const [hasAccess, setHasAccess] = useState(false)
-
-  useEffect(() => {
-    const checkAuth = async () => {
-      const supabase = getSupabase()
-      const { data: { user } } = await supabase.auth.getUser()
-      
-      if (user) {
-        setUser(user)
-        // Check if admin or has subscription
-        if (user.email === 'ssiagos@hotmail.com') {
-          setHasAccess(true)
-        } else {
-          const { data: profile } = await supabase
-            .from('profiles')
-            .select('subscription_status')
-            .eq('id', user.id)
-            .single()
-          setHasAccess(profile?.subscription_status === 'active')
-        }
-      }
-    }
-    checkAuth()
-  }, [])
+  const { user, hasAccess } = useAuth()
 
   return (
     <div style={{ minHeight: '100vh', background: '#0a0a0f' }}>

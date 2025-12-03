@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { getSupabase } from '@/lib/supabase'
+import { useAuth } from '@/components/AuthProvider'
 
 function CheckIcon() {
   return <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#22c55e" strokeWidth="3"><polyline points="20 6 9 17 4 12" /></svg>
@@ -13,36 +13,14 @@ export default function PricingPage() {
   const searchParams = useSearchParams()
   const needsub = searchParams.get('needsub')
   const autoCheckout = searchParams.get('checkout')
-  const [user, setUser] = useState(null)
-  const [hasAccess, setHasAccess] = useState(false)
+  const { user, hasAccess, supabase } = useAuth()
   const [loading, setLoading] = useState(false)
 
   useEffect(() => {
-    const checkUser = async () => {
-      const supabase = getSupabase()
-      const { data: { user } } = await supabase.auth.getUser()
-      
-      if (user) {
-        setUser(user)
-        if (user.email === 'ssiagos@hotmail.com') {
-          setHasAccess(true)
-        } else {
-          const { data: profile } = await supabase
-            .from('profiles')
-            .select('subscription_status')
-            .eq('id', user.id)
-            .single()
-          setHasAccess(profile?.subscription_status === 'active')
-        }
-
-        // Auto checkout if coming from signup
-        if (autoCheckout === 'true') {
-          handleSubscribe()
-        }
-      }
+    if (autoCheckout === 'true' && user && !hasAccess) {
+      handleSubscribe()
     }
-    checkUser()
-  }, [])
+  }, [autoCheckout, user, hasAccess])
 
   const handleSubscribe = async () => {
     if (!user) {
@@ -57,7 +35,7 @@ export default function PricingPage() {
       if (data.url) {
         window.location.href = data.url
       } else {
-        alert('Error creating checkout session')
+        alert('Error creating checkout')
         setLoading(false)
       }
     } catch (err) {
@@ -68,43 +46,32 @@ export default function PricingPage() {
 
   return (
     <div style={{ minHeight: '100vh', background: '#0a0a0f' }}>
-      {/* Header */}
       <header style={{ padding: '20px 48px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #1a1a22' }}>
         <a href="/" style={{ fontSize: '22px', fontWeight: 700 }}>
           <span style={{ color: '#22c55e' }}>LSD</span><span style={{ color: '#fff' }}>TRADE+</span>
         </a>
         <div style={{ display: 'flex', gap: '12px' }}>
           {user && hasAccess ? (
-            <a href="/dashboard" style={{ padding: '12px 24px', background: '#22c55e', borderRadius: '8px', color: '#fff', fontWeight: 600, fontSize: '14px' }}>
-              Enter Journal
-            </a>
+            <a href="/dashboard" style={{ padding: '12px 24px', background: '#22c55e', borderRadius: '8px', color: '#fff', fontWeight: 600, fontSize: '14px' }}>Enter Journal</a>
           ) : (
             <>
-              <a href="/pricing" style={{ padding: '12px 24px', background: '#22c55e', borderRadius: '8px', color: '#fff', fontWeight: 600, fontSize: '14px' }}>
-                Get Access - £9/mo
-              </a>
-              <a href="/login" style={{ padding: '12px 24px', background: '#1a1a24', border: '1px solid #2a2a35', borderRadius: '8px', color: '#fff', fontWeight: 600, fontSize: '14px' }}>
-                Member Login
-              </a>
+              <a href="/pricing" style={{ padding: '12px 24px', background: '#22c55e', borderRadius: '8px', color: '#fff', fontWeight: 600, fontSize: '14px' }}>Get Access - £9/mo</a>
+              <a href="/login" style={{ padding: '12px 24px', background: '#1a1a24', border: '1px solid #2a2a35', borderRadius: '8px', color: '#fff', fontWeight: 600, fontSize: '14px' }}>Member Login</a>
             </>
           )}
         </div>
       </header>
 
-      {/* Message for users who need subscription */}
       {needsub && user && !hasAccess && (
         <div style={{ background: 'rgba(234,179,8,0.1)', borderBottom: '1px solid rgba(234,179,8,0.3)', padding: '16px', textAlign: 'center' }}>
-          <p style={{ color: '#eab308', fontSize: '14px', margin: 0 }}>
-            ⚠️ You need an active subscription to access the journal. Subscribe below to get started!
-          </p>
+          <p style={{ color: '#eab308', fontSize: '14px', margin: 0 }}>⚠️ Subscribe below to access the journal!</p>
         </div>
       )}
 
-      {/* Pricing */}
       <section style={{ padding: '60px 48px' }}>
         <div style={{ maxWidth: '500px', margin: '0 auto', textAlign: 'center' }}>
           <h1 style={{ fontSize: '40px', fontWeight: 700, marginBottom: '16px' }}>Get Full Access</h1>
-          <p style={{ color: '#888', fontSize: '18px', marginBottom: '48px' }}>Everything you need to track and improve your trading</p>
+          <p style={{ color: '#888', fontSize: '18px', marginBottom: '48px' }}>Everything you need to track your trading</p>
 
           <div style={{ background: 'linear-gradient(135deg, #14141a 0%, #1a2a1a 100%)', border: '2px solid #22c55e', borderRadius: '20px', padding: '40px', textAlign: 'left', position: 'relative' }}>
             <div style={{ position: 'absolute', top: '-14px', right: '24px', background: '#22c55e', color: '#000', fontSize: '12px', fontWeight: 700, padding: '6px 16px', borderRadius: '20px' }}>FULL ACCESS</div>
@@ -113,14 +80,7 @@ export default function PricingPage() {
             <div style={{ color: '#666', marginBottom: '32px' }}>Cancel anytime</div>
 
             <ul style={{ listStyle: 'none', padding: 0, display: 'flex', flexDirection: 'column', gap: '16px', marginBottom: '40px' }}>
-              {[
-                'Unlimited Journals (10k, 25k, 50k etc)',
-                'Unlimited Trades',
-                'Advanced Statistics & Charts',
-                'Custom Fields',
-                'Trade Screenshots',
-                'Data stored securely forever'
-              ].map((f, i) => (
+              {['Unlimited Journals', 'Unlimited Trades', 'Advanced Statistics', 'Custom Fields', 'Trade Screenshots', 'Data stored forever'].map((f, i) => (
                 <li key={i} style={{ display: 'flex', alignItems: 'center', gap: '12px', color: '#bbb', fontSize: '15px' }}><CheckIcon /> {f}</li>
               ))}
             </ul>
@@ -130,16 +90,10 @@ export default function PricingPage() {
                 <div style={{ background: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.3)', borderRadius: '10px', padding: '12px', marginBottom: '16px', textAlign: 'center' }}>
                   <span style={{ color: '#22c55e', fontSize: '14px' }}>✓ You have full access</span>
                 </div>
-                <a href="/dashboard" style={{ display: 'block', width: '100%', padding: '16px', background: '#22c55e', border: 'none', borderRadius: '12px', color: '#fff', fontWeight: 700, fontSize: '16px', textAlign: 'center', boxSizing: 'border-box' }}>
-                  Go to Dashboard
-                </a>
+                <a href="/dashboard" style={{ display: 'block', padding: '16px', background: '#22c55e', borderRadius: '12px', color: '#fff', fontWeight: 700, fontSize: '16px', textAlign: 'center' }}>Go to Dashboard</a>
               </div>
             ) : (
-              <button 
-                onClick={handleSubscribe} 
-                disabled={loading} 
-                style={{ width: '100%', padding: '16px', background: loading ? '#166534' : '#22c55e', border: 'none', borderRadius: '12px', color: '#fff', fontWeight: 700, fontSize: '16px', cursor: loading ? 'wait' : 'pointer' }}
-              >
+              <button onClick={handleSubscribe} disabled={loading} style={{ width: '100%', padding: '16px', background: loading ? '#166534' : '#22c55e', border: 'none', borderRadius: '12px', color: '#fff', fontWeight: 700, fontSize: '16px', cursor: loading ? 'wait' : 'pointer' }}>
                 {loading ? 'Loading...' : 'Subscribe Now - £9/month'}
               </button>
             )}
