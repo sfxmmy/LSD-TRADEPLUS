@@ -1,12 +1,25 @@
 # LSDTRADE+ Trading Journal
 
-## Setup
+## Setup Instructions
 
-1. Install: `npm install`
-2. Copy `.env.example` to `.env.local` and fill in values
-3. Run SQL in Supabase SQL Editor
-4. Run: `npm run dev`
+1. Copy `.env.example` to `.env.local` and fill in your values
+2. Run `npm install`
+3. Run the SQL schema in Supabase SQL Editor
+4. Create admin user in Supabase Authentication
+5. Run `npm run dev` to test locally
+6. Deploy to Vercel
 
-## Admin
+## Admin Access
 
-Email `ssiagos@hotmail.com` gets automatic full access.
+Email: ssiagos@hotmail.com gets automatic full access (no payment required)
+
+## Environment Variables (Vercel)
+
+Make sure these are set in Vercel:
+- NEXT_PUBLIC_SUPABASE_URL
+- NEXT_PUBLIC_SUPABASE_ANON_KEY
+- SUPABASE_SERVICE_ROLE_KEY
+- STRIPE_SECRET_KEY
+- STRIPE_WEBHOOK_SECRET
+- STRIPE_PRICE_ID
+- NEXT_PUBLIC_SITE_URL

@@ -10,18 +10,27 @@ export async function POST() {
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
       {
         cookies: {
-          get(name) { return cookieStore.get(name)?.value },
-          set(name, value, options) { cookieStore.set({ name, value, ...options }) },
-          remove(name, options) { cookieStore.set({ name, value: '', ...options }) },
+          get(name) {
+            return cookieStore.get(name)?.value
+          },
+          set(name, value, options) {
+            cookieStore.set({ name, value, ...options })
+          },
+          remove(name, options) {
+            cookieStore.set({ name, value: '', ...options })
+          },
         },
       }
     )
 
     const { data: { user } } = await supabase.auth.getUser()
-    if (!user) return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
+    if (!user) {
+      return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
+    }
 
     return NextResponse.json({ success: true })
   } catch (error) {
+    console.error('Link subscription error:', error)
     return NextResponse.json({ error: error.message }, { status: 500 })
   }
 }

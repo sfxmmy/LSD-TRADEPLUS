@@ -1,13 +1,11 @@
 'use client'
 
-import { useState } from 'react'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import { useAuth } from '@/components/AuthProvider'
 
 export default function SignupPage() {
   const router = useRouter()
-  const searchParams = useSearchParams()
-  const redirectTo = searchParams.get('redirect')
   const { supabase } = useAuth()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -15,6 +13,17 @@ export default function SignupPage() {
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const [success, setSuccess] = useState(false)
+  const [redirectToCheckout, setRedirectToCheckout] = useState(false)
+
+  useEffect(() => {
+    // Check URL params on client side only
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search)
+      if (params.get('redirect') === 'checkout') {
+        setRedirectToCheckout(true)
+      }
+    }
+  }, [])
 
   const handleSignup = async (e) => {
     e.preventDefault()
@@ -44,12 +53,14 @@ export default function SignupPage() {
       if (error) throw error
 
       if (data.session) {
-        if (redirectTo === 'checkout') {
+        // User is logged in immediately (email confirmation disabled)
+        if (redirectToCheckout) {
           router.push('/pricing?checkout=true')
         } else {
-          router.push('/pricing?needsub=true')
+          router.push('/pricing')
         }
       } else {
+        // Email confirmation required
         setSuccess(true)
       }
     } catch (err) {
@@ -63,11 +74,19 @@ export default function SignupPage() {
       <div style={{ minHeight: '100vh', background: '#0a0a0f' }}>
         <header style={{ padding: '20px 48px', borderBottom: '1px solid #1a1a22' }}>
           <a href="/" style={{ fontSize: '22px', fontWeight: 700 }}>
-            <span style={{ color: '#22c55e' }}>LSD</span><span style={{ color: '#fff' }}>TRADE+</span>
+            <span style={{ color: '#22c55e' }}>LSD</span>
+            <span style={{ color: '#fff' }}>TRADE+</span>
           </a>
         </header>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '80px 20px' }}>
-          <div style={{ background: '#14141a', border: '1px solid #222230', borderRadius: '20px', padding: '40px', width: '400px', textAlign: 'center' }}>
+          <div style={{ 
+            background: '#14141a', 
+            border: '1px solid #222230', 
+            borderRadius: '20px', 
+            padding: '40px', 
+            width: '400px', 
+            textAlign: 'center' 
+          }}>
             <div style={{ fontSize: '48px', marginBottom: '16px' }}>✉️</div>
             <h2 style={{ fontSize: '24px', fontWeight: 700, marginBottom: '12px' }}>Check your email</h2>
             <p style={{ color: '#888', fontSize: '14px', marginBottom: '24px' }}>
@@ -82,43 +101,170 @@ export default function SignupPage() {
 
   return (
     <div style={{ minHeight: '100vh', background: '#0a0a0f' }}>
-      <header style={{ padding: '20px 48px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #1a1a22' }}>
+      <header style={{ 
+        padding: '20px 48px', 
+        display: 'flex', 
+        justifyContent: 'space-between', 
+        alignItems: 'center', 
+        borderBottom: '1px solid #1a1a22' 
+      }}>
         <a href="/" style={{ fontSize: '22px', fontWeight: 700 }}>
-          <span style={{ color: '#22c55e' }}>LSD</span><span style={{ color: '#fff' }}>TRADE+</span>
+          <span style={{ color: '#22c55e' }}>LSD</span>
+          <span style={{ color: '#fff' }}>TRADE+</span>
         </a>
         <div style={{ display: 'flex', gap: '12px' }}>
-          <a href="/pricing" style={{ padding: '12px 24px', background: '#22c55e', borderRadius: '8px', color: '#fff', fontWeight: 600, fontSize: '14px' }}>Get Access - £9/mo</a>
-          <a href="/login" style={{ padding: '12px 24px', background: '#1a1a24', border: '1px solid #2a2a35', borderRadius: '8px', color: '#fff', fontWeight: 600, fontSize: '14px' }}>Member Login</a>
+          <a href="/pricing" style={{ 
+            padding: '12px 24px', 
+            background: '#22c55e', 
+            borderRadius: '8px', 
+            color: '#fff', 
+            fontWeight: 600, 
+            fontSize: '14px' 
+          }}>
+            Get Access - £9/mo
+          </a>
+          <a href="/login" style={{ 
+            padding: '12px 24px', 
+            background: '#1a1a24', 
+            border: '1px solid #2a2a35', 
+            borderRadius: '8px', 
+            color: '#fff', 
+            fontWeight: 600, 
+            fontSize: '14px' 
+          }}>
+            Member Login
+          </a>
         </div>
       </header>
 
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '60px 20px' }}>
-        <div style={{ background: '#14141a', border: '1px solid #222230', borderRadius: '20px', padding: '40px', width: '400px' }}>
+        <div style={{ 
+          background: '#14141a', 
+          border: '1px solid #222230', 
+          borderRadius: '20px', 
+          padding: '40px', 
+          width: '400px' 
+        }}>
           <div style={{ textAlign: 'center', marginBottom: '32px' }}>
             <h1 style={{ fontSize: '24px', fontWeight: 700, marginBottom: '8px' }}>Create Account</h1>
             <p style={{ color: '#888', fontSize: '14px' }}>Start your trading journal today</p>
           </div>
 
           {error && (
-            <div style={{ background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.3)', borderRadius: '10px', padding: '12px', marginBottom: '20px', color: '#ef4444', fontSize: '14px', textAlign: 'center' }}>
+            <div style={{ 
+              background: 'rgba(239,68,68,0.1)', 
+              border: '1px solid rgba(239,68,68,0.3)', 
+              borderRadius: '10px', 
+              padding: '12px', 
+              marginBottom: '20px', 
+              color: '#ef4444', 
+              fontSize: '14px', 
+              textAlign: 'center' 
+            }}>
               {error}
             </div>
           )}
 
           <form onSubmit={handleSignup}>
             <div style={{ marginBottom: '16px' }}>
-              <label style={{ display: 'block', fontSize: '12px', color: '#888', marginBottom: '6px', textTransform: 'uppercase' }}>Email</label>
-              <input type="email" value={email} onChange={e => setEmail(e.target.value)} required placeholder="your@email.com" style={{ width: '100%', padding: '14px', background: '#0a0a0f', border: '1px solid #222230', borderRadius: '10px', color: '#fff', fontSize: '15px', boxSizing: 'border-box' }} />
+              <label style={{ 
+                display: 'block', 
+                fontSize: '12px', 
+                color: '#888', 
+                marginBottom: '6px', 
+                textTransform: 'uppercase' 
+              }}>
+                Email
+              </label>
+              <input 
+                type="email" 
+                value={email} 
+                onChange={e => setEmail(e.target.value)} 
+                required 
+                placeholder="your@email.com" 
+                style={{ 
+                  width: '100%', 
+                  padding: '14px', 
+                  background: '#0a0a0f', 
+                  border: '1px solid #222230', 
+                  borderRadius: '10px', 
+                  color: '#fff', 
+                  fontSize: '15px', 
+                  boxSizing: 'border-box' 
+                }} 
+              />
             </div>
             <div style={{ marginBottom: '16px' }}>
-              <label style={{ display: 'block', fontSize: '12px', color: '#888', marginBottom: '6px', textTransform: 'uppercase' }}>Password</label>
-              <input type="password" value={password} onChange={e => setPassword(e.target.value)} required placeholder="••••••••" style={{ width: '100%', padding: '14px', background: '#0a0a0f', border: '1px solid #222230', borderRadius: '10px', color: '#fff', fontSize: '15px', boxSizing: 'border-box' }} />
+              <label style={{ 
+                display: 'block', 
+                fontSize: '12px', 
+                color: '#888', 
+                marginBottom: '6px', 
+                textTransform: 'uppercase' 
+              }}>
+                Password
+              </label>
+              <input 
+                type="password" 
+                value={password} 
+                onChange={e => setPassword(e.target.value)} 
+                required 
+                placeholder="••••••••" 
+                style={{ 
+                  width: '100%', 
+                  padding: '14px', 
+                  background: '#0a0a0f', 
+                  border: '1px solid #222230', 
+                  borderRadius: '10px', 
+                  color: '#fff', 
+                  fontSize: '15px', 
+                  boxSizing: 'border-box' 
+                }} 
+              />
             </div>
             <div style={{ marginBottom: '24px' }}>
-              <label style={{ display: 'block', fontSize: '12px', color: '#888', marginBottom: '6px', textTransform: 'uppercase' }}>Confirm Password</label>
-              <input type="password" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} required placeholder="••••••••" style={{ width: '100%', padding: '14px', background: '#0a0a0f', border: '1px solid #222230', borderRadius: '10px', color: '#fff', fontSize: '15px', boxSizing: 'border-box' }} />
+              <label style={{ 
+                display: 'block', 
+                fontSize: '12px', 
+                color: '#888', 
+                marginBottom: '6px', 
+                textTransform: 'uppercase' 
+              }}>
+                Confirm Password
+              </label>
+              <input 
+                type="password" 
+                value={confirmPassword} 
+                onChange={e => setConfirmPassword(e.target.value)} 
+                required 
+                placeholder="••••••••" 
+                style={{ 
+                  width: '100%', 
+                  padding: '14px', 
+                  background: '#0a0a0f', 
+                  border: '1px solid #222230', 
+                  borderRadius: '10px', 
+                  color: '#fff', 
+                  fontSize: '15px', 
+                  boxSizing: 'border-box' 
+                }} 
+              />
             </div>
-            <button type="submit" disabled={loading} style={{ width: '100%', padding: '14px', background: loading ? '#166534' : '#22c55e', border: 'none', borderRadius: '10px', color: '#fff', fontWeight: 600, fontSize: '16px', cursor: loading ? 'wait' : 'pointer' }}>
+            <button 
+              type="submit" 
+              disabled={loading} 
+              style={{ 
+                width: '100%', 
+                padding: '14px', 
+                background: loading ? '#166534' : '#22c55e', 
+                border: 'none', 
+                borderRadius: '10px', 
+                color: '#fff', 
+                fontWeight: 600, 
+                fontSize: '16px', 
+                cursor: loading ? 'wait' : 'pointer' 
+              }}
+            >
               {loading ? 'Creating account...' : 'Create Account'}
             </button>
           </form>
