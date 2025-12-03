@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { useEffect, useState } from 'react'
 
 export default function SignupPage() {
-  const { user, profile, loading, supabase } = useAuth()
+  const { user, hasAccess, loading, supabase } = useAuth()
   const router = useRouter()
   const searchParams = useSearchParams()
   const redirectTo = searchParams.get('redirect') || null
@@ -16,23 +16,27 @@ export default function SignupPage() {
   const [authLoading, setAuthLoading] = useState(false)
   const [success, setSuccess] = useState(false)
 
+  // Handle redirect after signup
   useEffect(() => {
-    if (!loading && user) {
-      if (user.email === 'ssiagos@hotmail.com' || profile?.subscription_status === 'active') {
+    if (loading) return
+    
+    if (user) {
+      if (hasAccess) {
         router.push('/dashboard')
       } else if (redirectTo === 'checkout') {
-        handleCheckout()
+        goToCheckout()
       } else {
         router.push('/pricing?signup=true')
       }
     }
-  }, [user, profile, loading])
+  }, [user, hasAccess, loading, redirectTo])
 
-  const handleCheckout = async () => {
+  const goToCheckout = async () => {
     try {
       const res = await fetch('/api/stripe/create-checkout', { method: 'POST' })
       const data = await res.json()
       if (data.url) window.location.href = data.url
+      else router.push('/pricing')
     } catch (err) {
       router.push('/pricing')
     }
@@ -70,14 +74,6 @@ export default function SignupPage() {
     setAuthLoading(false)
   }
 
-  if (loading) {
-    return (
-      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#0a0a0f', color: '#777' }}>
-        Loading...
-      </div>
-    )
-  }
-
   if (success) {
     return (
       <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#0a0a0f' }}>
@@ -112,36 +108,36 @@ export default function SignupPage() {
         <form onSubmit={handleSignup}>
           <div style={{ marginBottom: '16px' }}>
             <label style={{ display: 'block', fontSize: '12px', color: '#888', marginBottom: '6px', textTransform: 'uppercase' }}>Email</label>
-            <input 
-              type="email" 
-              value={email} 
-              onChange={e => setEmail(e.target.value)} 
+            <input
+              type="email"
+              value={email}
+              onChange={e => setEmail(e.target.value)}
               required
-              style={{ width: '100%', padding: '12px 14px', background: '#0a0a0f', border: '1px solid #222230', borderRadius: '10px', color: '#fff', fontSize: '14px', boxSizing: 'border-box' }} 
+              style={{ width: '100%', padding: '12px 14px', background: '#0a0a0f', border: '1px solid #222230', borderRadius: '10px', color: '#fff', fontSize: '14px', boxSizing: 'border-box' }}
             />
           </div>
           <div style={{ marginBottom: '16px' }}>
             <label style={{ display: 'block', fontSize: '12px', color: '#888', marginBottom: '6px', textTransform: 'uppercase' }}>Password</label>
-            <input 
-              type="password" 
-              value={password} 
-              onChange={e => setPassword(e.target.value)} 
+            <input
+              type="password"
+              value={password}
+              onChange={e => setPassword(e.target.value)}
               required
-              style={{ width: '100%', padding: '12px 14px', background: '#0a0a0f', border: '1px solid #222230', borderRadius: '10px', color: '#fff', fontSize: '14px', boxSizing: 'border-box' }} 
+              style={{ width: '100%', padding: '12px 14px', background: '#0a0a0f', border: '1px solid #222230', borderRadius: '10px', color: '#fff', fontSize: '14px', boxSizing: 'border-box' }}
             />
           </div>
           <div style={{ marginBottom: '24px' }}>
             <label style={{ display: 'block', fontSize: '12px', color: '#888', marginBottom: '6px', textTransform: 'uppercase' }}>Confirm Password</label>
-            <input 
-              type="password" 
-              value={confirmPassword} 
-              onChange={e => setConfirmPassword(e.target.value)} 
+            <input
+              type="password"
+              value={confirmPassword}
+              onChange={e => setConfirmPassword(e.target.value)}
               required
-              style={{ width: '100%', padding: '12px 14px', background: '#0a0a0f', border: '1px solid #222230', borderRadius: '10px', color: '#fff', fontSize: '14px', boxSizing: 'border-box' }} 
+              style={{ width: '100%', padding: '12px 14px', background: '#0a0a0f', border: '1px solid #222230', borderRadius: '10px', color: '#fff', fontSize: '14px', boxSizing: 'border-box' }}
             />
           </div>
-          <button 
-            type="submit" 
+          <button
+            type="submit"
             disabled={authLoading}
             style={{ width: '100%', padding: '14px', background: '#22c55e', border: 'none', borderRadius: '10px', color: '#fff', fontWeight: 600, fontSize: '15px', cursor: 'pointer' }}
           >

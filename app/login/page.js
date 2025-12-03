@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { useEffect, useState } from 'react'
 
 export default function LoginPage() {
-  const { user, profile, loading, supabase } = useAuth()
+  const { user, hasAccess, loading, supabase } = useAuth()
   const router = useRouter()
   const searchParams = useSearchParams()
   const redirectTo = searchParams.get('redirect') || null
@@ -14,29 +14,28 @@ export default function LoginPage() {
   const [error, setError] = useState('')
   const [authLoading, setAuthLoading] = useState(false)
 
+  // Handle redirect after login
   useEffect(() => {
-    if (!loading && user) {
-      // Admin always gets access
-      if (user.email === 'ssiagos@hotmail.com') {
-        router.push('/dashboard')
-        return
-      }
-      // Check subscription
-      if (profile?.subscription_status === 'active') {
+    if (loading) return
+    
+    if (user) {
+      if (hasAccess) {
         router.push('/dashboard')
       } else if (redirectTo === 'checkout') {
-        handleCheckout()
+        // User logged in to buy - go to checkout
+        goToCheckout()
       } else {
         router.push('/pricing?signup=true')
       }
     }
-  }, [user, profile, loading])
+  }, [user, hasAccess, loading, redirectTo])
 
-  const handleCheckout = async () => {
+  const goToCheckout = async () => {
     try {
       const res = await fetch('/api/stripe/create-checkout', { method: 'POST' })
       const data = await res.json()
       if (data.url) window.location.href = data.url
+      else router.push('/pricing')
     } catch (err) {
       router.push('/pricing')
     }
@@ -50,18 +49,11 @@ export default function LoginPage() {
     try {
       const { error } = await supabase.auth.signInWithPassword({ email, password })
       if (error) throw error
+      // useEffect will handle redirect
     } catch (err) {
       setError(err.message)
       setAuthLoading(false)
     }
-  }
-
-  if (loading) {
-    return (
-      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#0a0a0f', color: '#777' }}>
-        Loading...
-      </div>
-    )
   }
 
   return (
@@ -83,26 +75,26 @@ export default function LoginPage() {
         <form onSubmit={handleLogin}>
           <div style={{ marginBottom: '16px' }}>
             <label style={{ display: 'block', fontSize: '12px', color: '#888', marginBottom: '6px', textTransform: 'uppercase' }}>Email</label>
-            <input 
-              type="email" 
-              value={email} 
-              onChange={e => setEmail(e.target.value)} 
+            <input
+              type="email"
+              value={email}
+              onChange={e => setEmail(e.target.value)}
               required
-              style={{ width: '100%', padding: '12px 14px', background: '#0a0a0f', border: '1px solid #222230', borderRadius: '10px', color: '#fff', fontSize: '14px', boxSizing: 'border-box' }} 
+              style={{ width: '100%', padding: '12px 14px', background: '#0a0a0f', border: '1px solid #222230', borderRadius: '10px', color: '#fff', fontSize: '14px', boxSizing: 'border-box' }}
             />
           </div>
           <div style={{ marginBottom: '24px' }}>
             <label style={{ display: 'block', fontSize: '12px', color: '#888', marginBottom: '6px', textTransform: 'uppercase' }}>Password</label>
-            <input 
-              type="password" 
-              value={password} 
-              onChange={e => setPassword(e.target.value)} 
+            <input
+              type="password"
+              value={password}
+              onChange={e => setPassword(e.target.value)}
               required
-              style={{ width: '100%', padding: '12px 14px', background: '#0a0a0f', border: '1px solid #222230', borderRadius: '10px', color: '#fff', fontSize: '14px', boxSizing: 'border-box' }} 
+              style={{ width: '100%', padding: '12px 14px', background: '#0a0a0f', border: '1px solid #222230', borderRadius: '10px', color: '#fff', fontSize: '14px', boxSizing: 'border-box' }}
             />
           </div>
-          <button 
-            type="submit" 
+          <button
+            type="submit"
             disabled={authLoading}
             style={{ width: '100%', padding: '14px', background: '#22c55e', border: 'none', borderRadius: '10px', color: '#fff', fontWeight: 600, fontSize: '15px', cursor: 'pointer' }}
           >

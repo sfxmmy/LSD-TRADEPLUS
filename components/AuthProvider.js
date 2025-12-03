@@ -1,6 +1,6 @@
 'use client'
 
-import { createContext, useContext, useEffect, useState } from 'react'
+import { createContext, useContext, useEffect, useState, useMemo } from 'react'
 import { createClient } from '@/lib/supabase'
 
 const AuthContext = createContext({})
@@ -9,39 +9,64 @@ export function AuthProvider({ children }) {
   const [user, setUser] = useState(null)
   const [profile, setProfile] = useState(null)
   const [loading, setLoading] = useState(true)
-  const supabase = createClient()
+  
+  // Create supabase client once
+  const supabase = useMemo(() => createClient(), [])
 
   useEffect(() => {
     let mounted = true
+    let timeoutId = null
 
-    const getUser = async () => {
+    // Failsafe - never stay loading forever
+    timeoutId = setTimeout(() => {
+      if (mounted) {
+        console.log('Auth timeout - forcing loading to false')
+        setLoading(false)
+      }
+    }, 2000)
+
+    const initAuth = async () => {
       try {
-        const { data: { user }, error } = await supabase.auth.getUser()
+        // Get current session
+        const { data: { session }, error: sessionError } = await supabase.auth.getSession()
         
         if (!mounted) return
         
-        if (error || !user) {
+        if (sessionError) {
+          console.error('Session error:', sessionError)
+          setLoading(false)
+          return
+        }
+
+        if (!session?.user) {
           setUser(null)
           setProfile(null)
           setLoading(false)
           return
         }
 
-        setUser(user)
+        setUser(session.user)
         
-        // Get profile
-        const { data: profileData } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', user.id)
-          .single()
+        // Try to get profile, but don't fail if it doesn't exist
+        try {
+          const { data: profileData } = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('id', session.user.id)
+            .single()
+          
+          if (mounted) {
+            setProfile(profileData || null)
+          }
+        } catch (profileError) {
+          console.log('Profile not found, will be created on first action')
+        }
         
         if (mounted) {
-          setProfile(profileData)
           setLoading(false)
         }
       } catch (err) {
-        console.error('Auth error:', err)
+        console.error('Auth init error:', err)
         if (mounted) {
           setUser(null)
           setProfile(null)
@@ -50,39 +75,49 @@ export function AuthProvider({ children }) {
       }
     }
 
-    getUser()
+    initAuth()
 
+    // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      console.log('Auth state changed:', event)
+      
       if (!mounted) return
       
-      if (session?.user) {
-        setUser(session.user)
+      if (event === 'SIGNED_OUT' || !session?.user) {
+        setUser(null)
+        setProfile(null)
+        setLoading(false)
+        return
+      }
+
+      setUser(session.user)
+      
+      // Get profile
+      try {
         const { data: profileData } = await supabase
           .from('profiles')
           .select('*')
           .eq('id', session.user.id)
           .single()
-        setProfile(profileData)
-      } else {
-        setUser(null)
-        setProfile(null)
+        
+        if (mounted) {
+          setProfile(profileData || null)
+        }
+      } catch (err) {
+        console.log('Profile fetch error:', err)
       }
-      setLoading(false)
-    })
-
-    // Failsafe - never stay loading more than 3 seconds
-    const timeout = setTimeout(() => {
-      if (mounted && loading) {
+      
+      if (mounted) {
         setLoading(false)
       }
-    }, 3000)
+    })
 
     return () => {
       mounted = false
+      if (timeoutId) clearTimeout(timeoutId)
       subscription.unsubscribe()
-      clearTimeout(timeout)
     }
-  }, [])
+  }, [supabase])
 
   const signOut = async () => {
     await supabase.auth.signOut()
@@ -90,11 +125,24 @@ export function AuthProvider({ children }) {
     setProfile(null)
   }
 
-  const isPro = profile?.subscription_status === 'active'
+  // Admin email gets full access
   const isAdmin = user?.email === 'ssiagos@hotmail.com'
+  const isPro = profile?.subscription_status === 'active'
+  const hasAccess = isAdmin || isPro
+
+  const value = {
+    user,
+    profile,
+    loading,
+    signOut,
+    isPro,
+    isAdmin,
+    hasAccess,
+    supabase
+  }
 
   return (
-    <AuthContext.Provider value={{ user, profile, loading, signOut, isPro, isAdmin, supabase }}>
+    <AuthContext.Provider value={value}>
       {children}
     </AuthContext.Provider>
   )
