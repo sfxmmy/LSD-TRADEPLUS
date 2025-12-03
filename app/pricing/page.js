@@ -1,47 +1,83 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useAuth } from '@/components/AuthProvider'
 
-function CheckIcon() {
-  return <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#22c55e" strokeWidth="3"><polyline points="20 6 9 17 4 12" /></svg>
-}
-
-export default function PricingPage() {
+function SignupContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
-  const needsub = searchParams.get('needsub')
-  const autoCheckout = searchParams.get('checkout')
-  const { user, hasAccess, supabase } = useAuth()
+  const redirectTo = searchParams.get('redirect')
+  const { supabase } = useAuth()
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
+  const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const [success, setSuccess] = useState(false)
 
-  useEffect(() => {
-    if (autoCheckout === 'true' && user && !hasAccess) {
-      handleSubscribe()
+  const handleSignup = async (e) => {
+    e.preventDefault()
+    setError('')
+
+    if (password !== confirmPassword) {
+      setError('Passwords do not match')
+      return
     }
-  }, [autoCheckout, user, hasAccess])
 
-  const handleSubscribe = async () => {
-    if (!user) {
-      router.push('/signup?redirect=checkout')
+    if (password.length < 6) {
+      setError('Password must be at least 6 characters')
       return
     }
 
     setLoading(true)
+
     try {
-      const res = await fetch('/api/stripe/create-checkout', { method: 'POST' })
-      const data = await res.json()
-      if (data.url) {
-        window.location.href = data.url
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          emailRedirectTo: `${window.location.origin}/dashboard`
+        }
+      })
+      
+      if (error) throw error
+
+      if (data.session) {
+        if (redirectTo === 'checkout') {
+          router.push('/pricing?checkout=true')
+        } else {
+          router.push('/pricing?needsub=true')
+        }
       } else {
-        alert('Error creating checkout')
-        setLoading(false)
+        setSuccess(true)
       }
     } catch (err) {
-      alert('Error: ' + err.message)
+      setError(err.message || 'Signup failed')
       setLoading(false)
     }
+  }
+
+  if (success) {
+    return (
+      <div style={{ minHeight: '100vh', background: '#0a0a0f' }}>
+        <header style={{ padding: '20px 48px', borderBottom: '1px solid #1a1a22' }}>
+          <a href="/" style={{ fontSize: '22px', fontWeight: 700 }}>
+            <span style={{ color: '#22c55e' }}>LSD</span><span style={{ color: '#fff' }}>TRADE+</span>
+          </a>
+        </header>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '80px 20px' }}>
+          <div style={{ background: '#14141a', border: '1px solid #222230', borderRadius: '20px', padding: '40px', width: '400px', textAlign: 'center' }}>
+            <div style={{ fontSize: '48px', marginBottom: '16px' }}>✉️</div>
+            <h2 style={{ fontSize: '24px', fontWeight: 700, marginBottom: '12px' }}>Check your email</h2>
+            <p style={{ color: '#888', fontSize: '14px', marginBottom: '24px' }}>
+              We sent a confirmation link to <strong style={{ color: '#fff' }}>{email}</strong>
+            </p>
+            <a href="/login" style={{ color: '#22c55e', fontSize: '14px' }}>Back to login</a>
+          </div>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -51,61 +87,55 @@ export default function PricingPage() {
           <span style={{ color: '#22c55e' }}>LSD</span><span style={{ color: '#fff' }}>TRADE+</span>
         </a>
         <div style={{ display: 'flex', gap: '12px' }}>
-          {user && hasAccess ? (
-            <a href="/dashboard" style={{ padding: '12px 24px', background: '#22c55e', borderRadius: '8px', color: '#fff', fontWeight: 600, fontSize: '14px' }}>Enter Journal</a>
-          ) : (
-            <>
-              <a href="/pricing" style={{ padding: '12px 24px', background: '#22c55e', borderRadius: '8px', color: '#fff', fontWeight: 600, fontSize: '14px' }}>Get Access - £9/mo</a>
-              <a href="/login" style={{ padding: '12px 24px', background: '#1a1a24', border: '1px solid #2a2a35', borderRadius: '8px', color: '#fff', fontWeight: 600, fontSize: '14px' }}>Member Login</a>
-            </>
-          )}
+          <a href="/pricing" style={{ padding: '12px 24px', background: '#22c55e', borderRadius: '8px', color: '#fff', fontWeight: 600, fontSize: '14px' }}>Get Access - £9/mo</a>
+          <a href="/login" style={{ padding: '12px 24px', background: '#1a1a24', border: '1px solid #2a2a35', borderRadius: '8px', color: '#fff', fontWeight: 600, fontSize: '14px' }}>Member Login</a>
         </div>
       </header>
 
-      {needsub && user && !hasAccess && (
-        <div style={{ background: 'rgba(234,179,8,0.1)', borderBottom: '1px solid rgba(234,179,8,0.3)', padding: '16px', textAlign: 'center' }}>
-          <p style={{ color: '#eab308', fontSize: '14px', margin: 0 }}>⚠️ Subscribe below to access the journal!</p>
-        </div>
-      )}
-
-      <section style={{ padding: '60px 48px' }}>
-        <div style={{ maxWidth: '500px', margin: '0 auto', textAlign: 'center' }}>
-          <h1 style={{ fontSize: '40px', fontWeight: 700, marginBottom: '16px' }}>Get Full Access</h1>
-          <p style={{ color: '#888', fontSize: '18px', marginBottom: '48px' }}>Everything you need to track your trading</p>
-
-          <div style={{ background: 'linear-gradient(135deg, #14141a 0%, #1a2a1a 100%)', border: '2px solid #22c55e', borderRadius: '20px', padding: '40px', textAlign: 'left', position: 'relative' }}>
-            <div style={{ position: 'absolute', top: '-14px', right: '24px', background: '#22c55e', color: '#000', fontSize: '12px', fontWeight: 700, padding: '6px 16px', borderRadius: '20px' }}>FULL ACCESS</div>
-            <div style={{ fontSize: '14px', color: '#22c55e', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '8px' }}>Pro Membership</div>
-            <div style={{ fontSize: '52px', fontWeight: 700, marginBottom: '8px' }}>£9<span style={{ fontSize: '20px', color: '#666' }}>/month</span></div>
-            <div style={{ color: '#666', marginBottom: '32px' }}>Cancel anytime</div>
-
-            <ul style={{ listStyle: 'none', padding: 0, display: 'flex', flexDirection: 'column', gap: '16px', marginBottom: '40px' }}>
-              {['Unlimited Journals', 'Unlimited Trades', 'Advanced Statistics', 'Custom Fields', 'Trade Screenshots', 'Data stored forever'].map((f, i) => (
-                <li key={i} style={{ display: 'flex', alignItems: 'center', gap: '12px', color: '#bbb', fontSize: '15px' }}><CheckIcon /> {f}</li>
-              ))}
-            </ul>
-
-            {hasAccess ? (
-              <div>
-                <div style={{ background: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.3)', borderRadius: '10px', padding: '12px', marginBottom: '16px', textAlign: 'center' }}>
-                  <span style={{ color: '#22c55e', fontSize: '14px' }}>✓ You have full access</span>
-                </div>
-                <a href="/dashboard" style={{ display: 'block', padding: '16px', background: '#22c55e', borderRadius: '12px', color: '#fff', fontWeight: 700, fontSize: '16px', textAlign: 'center' }}>Go to Dashboard</a>
-              </div>
-            ) : (
-              <button onClick={handleSubscribe} disabled={loading} style={{ width: '100%', padding: '16px', background: loading ? '#166534' : '#22c55e', border: 'none', borderRadius: '12px', color: '#fff', fontWeight: 700, fontSize: '16px', cursor: loading ? 'wait' : 'pointer' }}>
-                {loading ? 'Loading...' : 'Subscribe Now - £9/month'}
-              </button>
-            )}
-
-            {!user && (
-              <p style={{ textAlign: 'center', marginTop: '16px', fontSize: '13px', color: '#666' }}>
-                Already have an account? <a href="/login" style={{ color: '#22c55e' }}>Sign in</a>
-              </p>
-            )}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '60px 20px' }}>
+        <div style={{ background: '#14141a', border: '1px solid #222230', borderRadius: '20px', padding: '40px', width: '400px' }}>
+          <div style={{ textAlign: 'center', marginBottom: '32px' }}>
+            <h1 style={{ fontSize: '24px', fontWeight: 700, marginBottom: '8px' }}>Create Account</h1>
+            <p style={{ color: '#888', fontSize: '14px' }}>Start your trading journal today</p>
           </div>
+
+          {error && (
+            <div style={{ background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.3)', borderRadius: '10px', padding: '12px', marginBottom: '20px', color: '#ef4444', fontSize: '14px', textAlign: 'center' }}>
+              {error}
+            </div>
+          )}
+
+          <form onSubmit={handleSignup}>
+            <div style={{ marginBottom: '16px' }}>
+              <label style={{ display: 'block', fontSize: '12px', color: '#888', marginBottom: '6px', textTransform: 'uppercase' }}>Email</label>
+              <input type="email" value={email} onChange={e => setEmail(e.target.value)} required placeholder="your@email.com" style={{ width: '100%', padding: '14px', background: '#0a0a0f', border: '1px solid #222230', borderRadius: '10px', color: '#fff', fontSize: '15px', boxSizing: 'border-box' }} />
+            </div>
+            <div style={{ marginBottom: '16px' }}>
+              <label style={{ display: 'block', fontSize: '12px', color: '#888', marginBottom: '6px', textTransform: 'uppercase' }}>Password</label>
+              <input type="password" value={password} onChange={e => setPassword(e.target.value)} required placeholder="••••••••" style={{ width: '100%', padding: '14px', background: '#0a0a0f', border: '1px solid #222230', borderRadius: '10px', color: '#fff', fontSize: '15px', boxSizing: 'border-box' }} />
+            </div>
+            <div style={{ marginBottom: '24px' }}>
+              <label style={{ display: 'block', fontSize: '12px', color: '#888', marginBottom: '6px', textTransform: 'uppercase' }}>Confirm Password</label>
+              <input type="password" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} required placeholder="••••••••" style={{ width: '100%', padding: '14px', background: '#0a0a0f', border: '1px solid #222230', borderRadius: '10px', color: '#fff', fontSize: '15px', boxSizing: 'border-box' }} />
+            </div>
+            <button type="submit" disabled={loading} style={{ width: '100%', padding: '14px', background: loading ? '#166534' : '#22c55e', border: 'none', borderRadius: '10px', color: '#fff', fontWeight: 600, fontSize: '16px', cursor: loading ? 'wait' : 'pointer' }}>
+              {loading ? 'Creating account...' : 'Create Account'}
+            </button>
+          </form>
+
+          <p style={{ textAlign: 'center', marginTop: '24px', fontSize: '14px', color: '#888' }}>
+            Already have an account? <a href="/login" style={{ color: '#22c55e' }}>Sign in</a>
+          </p>
         </div>
-      </section>
+      </div>
     </div>
+  )
+}
+
+export default function SignupPage() {
+  return (
+    <Suspense fallback={<div style={{ minHeight: '100vh', background: '#0a0a0f', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#666' }}>Loading...</div>}>
+      <SignupContent />
+    </Suspense>
   )
 }
