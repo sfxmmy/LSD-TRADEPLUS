@@ -81,36 +81,35 @@ export default function DashboardPage() {
     const svgRef = useRef(null)
 
     if (!accountTrades || accountTrades.length === 0) {
-      return <div style={{ height: '200px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#333', fontSize: '11px' }}>No trades yet</div>
+      return <div style={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#333', fontSize: '11px' }}>No trades yet</div>
     }
 
     const start = parseFloat(startingBalance) || 10000
     let cumulative = start
-    const points = [{ balance: cumulative, date: 'Start', pnl: 0 }]
+    const points = [{ balance: cumulative, date: null, pnl: 0 }]
     accountTrades.forEach(t => {
       cumulative += parseFloat(t.pnl) || 0
       points.push({ balance: cumulative, date: t.date, pnl: parseFloat(t.pnl) || 0, symbol: t.symbol })
     })
 
-    // Calculate nice Y-axis bounds (round to nearest 500)
     const maxBal = Math.max(...points.map(p => p.balance))
     const minBal = Math.min(...points.map(p => p.balance))
-    const yMax = Math.ceil(maxBal / 500) * 500
-    const yMin = Math.floor(minBal / 500) * 500
-    const yRange = yMax - yMin || 500
+    const yMax = Math.ceil(maxBal / 1000) * 1000
+    const yMin = Math.floor(minBal / 1000) * 1000
+    const yRange = yMax - yMin || 1000
 
-    // Y-axis labels in $500 increments
+    // Y-axis labels - every $1000
     const yLabels = []
-    for (let v = yMin; v <= yMax; v += 500) {
+    for (let v = yMin; v <= yMax; v += 1000) {
       yLabels.push(v)
     }
 
-    const width = 480
-    const height = 180
-    const paddingLeft = 50
-    const paddingRight = 10
-    const paddingTop = 10
-    const paddingBottom = 25
+    const width = 560
+    const height = 220
+    const paddingLeft = 45
+    const paddingRight = 8
+    const paddingTop = 8
+    const paddingBottom = 20
     const chartWidth = width - paddingLeft - paddingRight
     const chartHeight = height - paddingTop - paddingBottom
 
@@ -123,16 +122,17 @@ export default function DashboardPage() {
     const pathD = chartPoints.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`).join(' ')
     const areaD = pathD + ` L ${chartPoints[chartPoints.length-1].x} ${paddingTop + chartHeight} L ${paddingLeft} ${paddingTop + chartHeight} Z`
 
-    // X-axis: evenly spaced dates
-    const xLabelCount = 4
+    // X-axis: evenly spaced dates in d/m format
+    const datesWithTrades = points.filter(p => p.date).map(p => p.date)
+    const xLabelCount = Math.min(5, datesWithTrades.length)
     const xLabels = []
-    for (let i = 0; i < xLabelCount; i++) {
-      const idx = Math.floor(i * (points.length - 1) / (xLabelCount - 1))
-      const p = chartPoints[idx]
-      if (p) {
+    if (datesWithTrades.length > 0) {
+      for (let i = 0; i < xLabelCount; i++) {
+        const idx = Math.floor(i * (datesWithTrades.length - 1) / Math.max(1, xLabelCount - 1))
+        const date = new Date(datesWithTrades[idx])
         xLabels.push({
-          label: p.date === 'Start' ? 'Start' : new Date(p.date).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' }),
-          x: paddingLeft + (i / (xLabelCount - 1)) * chartWidth
+          label: `${date.getDate()}/${date.getMonth() + 1}`,
+          x: paddingLeft + ((idx + 1) / points.length) * chartWidth
         })
       }
     }
@@ -147,42 +147,39 @@ export default function DashboardPage() {
     }
 
     return (
-      <div style={{ position: 'relative', background: '#0a0a0e', borderRadius: '6px', border: '1px solid #1a1a22', padding: '6px' }}>
-        <svg ref={svgRef} width="100%" viewBox={`0 0 ${width} ${height}`} style={{ display: 'block' }} onMouseMove={handleMouseMove} onMouseLeave={() => setTooltip(null)}>
+      <div style={{ position: 'relative', height: '100%' }}>
+        <svg ref={svgRef} width="100%" height="100%" viewBox={`0 0 ${width} ${height}`} preserveAspectRatio="none" style={{ display: 'block' }} onMouseMove={handleMouseMove} onMouseLeave={() => setTooltip(null)}>
           <defs>
             <linearGradient id="areaGrad" x1="0%" y1="0%" x2="0%" y2="100%">
-              <stop offset="0%" stopColor="#22c55e" stopOpacity="0.2" />
+              <stop offset="0%" stopColor="#22c55e" stopOpacity="0.25" />
               <stop offset="100%" stopColor="#22c55e" stopOpacity="0" />
             </linearGradient>
           </defs>
-          {/* Y-axis line */}
+          {/* Y-axis line only */}
           <line x1={paddingLeft} y1={paddingTop} x2={paddingLeft} y2={paddingTop + chartHeight} stroke="#1a1a22" strokeWidth="1" />
-          {/* Grid lines */}
-          {yLabels.map((v, i) => {
-            const y = paddingTop + chartHeight - ((v - yMin) / yRange) * chartHeight
-            return <line key={i} x1={paddingLeft} y1={y} x2={width - paddingRight} y2={y} stroke="#1a1a22" strokeWidth="1" />
-          })}
+          {/* X-axis line */}
+          <line x1={paddingLeft} y1={paddingTop + chartHeight} x2={width - paddingRight} y2={paddingTop + chartHeight} stroke="#1a1a22" strokeWidth="1" />
           <path d={areaD} fill="url(#areaGrad)" />
-          <path d={pathD} fill="none" stroke="#22c55e" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+          <path d={pathD} fill="none" stroke="#22c55e" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
           {/* Y labels */}
           {yLabels.map((v, i) => {
             const y = paddingTop + chartHeight - ((v - yMin) / yRange) * chartHeight
-            return <text key={i} x={paddingLeft - 5} y={y + 3} fill="#444" fontSize="8" textAnchor="end">${(v/1000).toFixed(1)}k</text>
+            return <text key={i} x={paddingLeft - 4} y={y + 3} fill="#444" fontSize="8" textAnchor="end">${(v/1000).toFixed(0)}k</text>
           })}
-          {/* X labels */}
-          {xLabels.map((l, i) => <text key={i} x={l.x} y={height - 6} fill="#444" fontSize="8" textAnchor="middle">{l.label}</text>)}
+          {/* X labels - evenly spaced dates */}
+          {xLabels.map((l, i) => <text key={i} x={l.x} y={height - 4} fill="#444" fontSize="7" textAnchor="middle">{l.label}</text>)}
           {tooltip && (
             <>
-              <line x1={tooltip.x} y1={paddingTop} x2={tooltip.x} y2={paddingTop + chartHeight} stroke="#22c55e" strokeWidth="1" strokeDasharray="2,2" opacity="0.4" />
-              <circle cx={tooltip.x} cy={tooltip.y} r="4" fill="#22c55e" />
-              <circle cx={tooltip.x} cy={tooltip.y} r="2" fill="#0a0a0f" />
+              <line x1={tooltip.x} y1={paddingTop} x2={tooltip.x} y2={paddingTop + chartHeight} stroke="#22c55e" strokeWidth="1" strokeDasharray="3,3" opacity="0.5" />
+              <circle cx={tooltip.x} cy={tooltip.y} r="5" fill="#22c55e" />
+              <circle cx={tooltip.x} cy={tooltip.y} r="2.5" fill="#0a0a0f" />
             </>
           )}
         </svg>
         {tooltip && (
-          <div style={{ position: 'absolute', left: `${(tooltip.x / width) * 100}%`, top: '6px', transform: 'translateX(-50%)', background: '#1a1a22', border: '1px solid #2a2a35', borderRadius: '4px', padding: '5px 8px', fontSize: '9px', whiteSpace: 'nowrap', zIndex: 10 }}>
-            <div style={{ color: '#666' }}>{tooltip.date === 'Start' ? 'Start' : new Date(tooltip.date).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' })}</div>
-            <div style={{ fontWeight: 600, fontSize: '11px' }}>${tooltip.balance.toLocaleString()}</div>
+          <div style={{ position: 'absolute', left: `${(tooltip.x / width) * 100}%`, top: '8px', transform: 'translateX(-50%)', background: '#1a1a22', border: '1px solid #2a2a35', borderRadius: '4px', padding: '6px 10px', fontSize: '9px', whiteSpace: 'nowrap', zIndex: 10 }}>
+            <div style={{ color: '#666' }}>{tooltip.date ? `${new Date(tooltip.date).getDate()}/${new Date(tooltip.date).getMonth()+1}` : 'Start'}</div>
+            <div style={{ fontWeight: 600, fontSize: '12px' }}>${tooltip.balance.toLocaleString()}</div>
             {tooltip.symbol && <div style={{ color: tooltip.pnl >= 0 ? '#22c55e' : '#ef4444' }}>{tooltip.symbol}: {tooltip.pnl >= 0 ? '+' : ''}${tooltip.pnl.toFixed(0)}</div>}
           </div>
         )}
@@ -232,30 +229,38 @@ export default function DashboardPage() {
               const consistency = Object.keys(tradeDays).length > 0 ? Math.round((Object.values(tradeDays).filter(v => v > 0).length / Object.keys(tradeDays).length) * 100) : 0
               const avgWin = wins > 0 ? Math.round(grossProfit / wins) : 0
               const avgLoss = losses > 0 ? Math.round(grossLoss / losses) : 0
-              const recentTrades = [...accTrades].reverse().slice(0, 3)
+              const recentTrades = [...accTrades].reverse()
+
+              // Calculate stats height to match chart
+              const statsHeight = 248
 
               return (
                 <div key={account.id} style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '10px', overflow: 'hidden' }}>
-                  {/* Header */}
+                  {/* Header - same border style for both */}
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '14px 20px', borderBottom: '1px solid #1a1a22' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                      <span style={{ background: '#1a1a22', padding: '10px 18px', borderRadius: '6px', fontWeight: 600, fontSize: '16px' }}>{account.name}</span>
+                      <div style={{ background: '#1a1a22', padding: '10px 18px', borderRadius: '6px', border: '1px solid #2a2a35' }}>
+                        <span style={{ fontWeight: 600, fontSize: '14px' }}>{account.name}</span>
+                      </div>
                       <button onClick={() => { setEditName(account.name); setShowEditModal(account.id) }} style={{ background: 'transparent', border: 'none', cursor: 'pointer', padding: '4px' }}>
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#444" strokeWidth="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" /><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" /></svg>
                       </button>
                     </div>
-                    <div style={{ background: '#1a1a22', padding: '12px 18px', borderRadius: '6px', border: '1px solid #2a2a35', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <div style={{ background: '#1a1a22', padding: '10px 18px', borderRadius: '6px', border: '1px solid #2a2a35', display: 'flex', alignItems: 'center', gap: '10px' }}>
                       <span style={{ fontSize: '11px', color: '#555' }}>Account Balance:</span>
-                      <span style={{ fontSize: '18px', fontWeight: 700 }}>${currentBalance.toLocaleString()}</span>
+                      <span style={{ fontSize: '16px', fontWeight: 700 }}>${currentBalance.toLocaleString()}</span>
                     </div>
                   </div>
 
-                  {/* Chart + Stats */}
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 200px' }}>
-                    <div style={{ padding: '14px 18px', borderRight: '1px solid #1a1a22' }}>
+                  {/* Chart + Stats - NO border between them */}
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 190px', padding: '12px 16px', gap: '16px' }}>
+                    {/* Chart */}
+                    <div style={{ height: statsHeight, background: '#0a0a0e', borderRadius: '6px', padding: '8px' }}>
                       <EquityCurve accountTrades={accTrades} startingBalance={account.starting_balance} />
                     </div>
-                    <div style={{ padding: '10px 14px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+
+                    {/* Stats */}
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '5px', height: statsHeight, overflow: 'hidden' }}>
                       {[
                         { label: 'Total PnL', value: `${totalPnl >= 0 ? '+' : ''}$${totalPnl.toLocaleString()}`, color: totalPnl >= 0 ? '#22c55e' : '#ef4444' },
                         { label: 'Winrate', value: `${winrate}%`, color: '#fff' },
@@ -266,7 +271,7 @@ export default function DashboardPage() {
                         { label: 'Avg Win', value: `+$${avgWin}`, color: '#22c55e' },
                         { label: 'Avg Loss', value: `-$${avgLoss}`, color: '#ef4444' },
                       ].map((stat, i) => (
-                        <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '7px 10px', background: '#0a0a0e', borderRadius: '5px', border: '1px solid #1a1a22' }}>
+                        <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 10px', background: '#0a0a0e', borderRadius: '5px', border: '1px solid #1a1a22', flex: 1 }}>
                           <span style={{ fontSize: '10px', color: '#555' }}>{stat.label}</span>
                           <span style={{ fontSize: '12px', fontWeight: 600, color: stat.color }}>{stat.value}</span>
                         </div>
@@ -274,57 +279,65 @@ export default function DashboardPage() {
                     </div>
                   </div>
 
-                  {/* Recent Trades */}
-                  <div style={{ borderTop: '1px solid #1a1a22' }}>
-                    <div style={{ padding: '8px 18px', borderBottom: '1px solid #1a1a22', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  {/* Recent Trades - NO border on top, just spacing */}
+                  <div style={{ padding: '0 16px 12px' }}>
+                    <div style={{ padding: '8px 0', display: 'flex', alignItems: 'center', gap: '6px' }}>
                       <span style={{ fontSize: '9px', color: '#555', textTransform: 'uppercase', letterSpacing: '1px' }}>Recent Trades</span>
                     </div>
                     {recentTrades.length === 0 ? (
-                      <div style={{ padding: '20px', textAlign: 'center', color: '#333', fontSize: '11px' }}>No trades yet</div>
+                      <div style={{ padding: '20px', textAlign: 'center', color: '#333', fontSize: '11px', background: '#0a0a0e', borderRadius: '6px' }}>No trades yet</div>
                     ) : (
-                      <div style={{ maxHeight: '130px', overflowY: 'auto' }}>
-                        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                          <thead>
-                            <tr style={{ background: '#0a0a0e' }}>
-                              {['Symbol', 'W/L', 'PnL', '%', 'Rating', 'Image', 'Placed', 'Date'].map((h, i) => (
-                                <th key={i} style={{ padding: '6px 12px', textAlign: i === 2 ? 'right' : i === 7 ? 'right' : 'center', color: '#444', fontSize: '8px', fontWeight: 600, textTransform: 'uppercase', width: i === 0 ? '15%' : '10.6%' }}>{h}</th>
-                              ))}
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {recentTrades.map((trade, idx) => {
-                              const extra = getExtraData(trade)
-                              return (
-                                <tr key={trade.id} style={{ borderBottom: idx < recentTrades.length - 1 ? '1px solid #141418' : 'none' }}>
-                                  <td style={{ padding: '8px 12px', fontWeight: 600, fontSize: '11px', textAlign: 'center' }}>{trade.symbol}</td>
-                                  <td style={{ padding: '8px 12px', textAlign: 'center' }}>
-                                    <span style={{ padding: '2px 8px', borderRadius: '3px', fontSize: '9px', fontWeight: 600, background: trade.outcome === 'win' ? 'rgba(34,197,94,0.15)' : trade.outcome === 'loss' ? 'rgba(239,68,68,0.15)' : 'rgba(255,255,255,0.1)', color: trade.outcome === 'win' ? '#22c55e' : trade.outcome === 'loss' ? '#ef4444' : '#888' }}>
-                                      {trade.outcome === 'win' ? 'WIN' : trade.outcome === 'loss' ? 'LOSS' : 'BE'}
-                                    </span>
-                                  </td>
-                                  <td style={{ padding: '8px 12px', textAlign: 'right', fontWeight: 600, fontSize: '11px', color: parseFloat(trade.pnl) >= 0 ? '#22c55e' : '#ef4444' }}>{parseFloat(trade.pnl) >= 0 ? '+' : ''}${parseFloat(trade.pnl || 0).toFixed(0)}</td>
-                                  <td style={{ padding: '8px 12px', textAlign: 'center', fontSize: '10px', color: '#555' }}>{extra.riskPercent || '1'}%</td>
-                                  <td style={{ padding: '8px 12px', textAlign: 'center' }}>
-                                    <div style={{ display: 'flex', justifyContent: 'center', gap: '1px' }}>{[1,2,3,4,5].map(i => <span key={i} style={{ color: i <= parseInt(extra.rating || 0) ? '#22c55e' : '#2a2a35', fontSize: '8px' }}>★</span>)}</div>
-                                  </td>
-                                  <td style={{ padding: '8px 12px', textAlign: 'center' }}>
-                                    <div style={{ width: '18px', height: '18px', background: trade.image_url ? '#1a1a22' : '#141418', borderRadius: '3px', margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                      <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke={trade.image_url ? '#22c55e' : '#333'} strokeWidth="2"><rect x="3" y="3" width="18" height="18" rx="2" /><circle cx="8.5" cy="8.5" r="1.5" /><polyline points="21 15 16 10 5 21" /></svg>
-                                    </div>
-                                  </td>
-                                  <td style={{ padding: '8px 12px', textAlign: 'center', fontSize: '9px', color: '#444' }}>{getDaysAgo(trade.date)}</td>
-                                  <td style={{ padding: '8px 12px', textAlign: 'right', fontSize: '9px', color: '#444' }}>{new Date(trade.date).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' })}</td>
-                                </tr>
-                              )
-                            })}
-                          </tbody>
-                        </table>
+                      <div style={{ background: '#0a0a0e', borderRadius: '6px', overflow: 'hidden' }}>
+                        <div style={{ maxHeight: '180px', overflowY: 'auto' }}>
+                          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                            <thead>
+                              <tr style={{ background: '#0d0d12' }}>
+                                {['Symbol', 'W/L', 'PnL', 'RR', '%', 'Emotion', 'Rating', 'Image', 'Placed', 'Date'].map((h, i) => (
+                                  <th key={i} style={{ padding: '8px', textAlign: 'center', color: '#444', fontSize: '8px', fontWeight: 600, textTransform: 'uppercase', width: '10%' }}>{h}</th>
+                                ))}
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {recentTrades.map((trade, idx) => {
+                                const extra = getExtraData(trade)
+                                return (
+                                  <tr key={trade.id} style={{ borderBottom: '1px solid #141418' }}>
+                                    <td style={{ padding: '10px 8px', fontWeight: 600, fontSize: '11px', textAlign: 'center' }}>{trade.symbol}</td>
+                                    <td style={{ padding: '10px 8px', textAlign: 'center' }}>
+                                      <span style={{ padding: '3px 8px', borderRadius: '3px', fontSize: '9px', fontWeight: 600, background: trade.outcome === 'win' ? 'rgba(34,197,94,0.15)' : trade.outcome === 'loss' ? 'rgba(239,68,68,0.15)' : 'rgba(255,255,255,0.1)', color: trade.outcome === 'win' ? '#22c55e' : trade.outcome === 'loss' ? '#ef4444' : '#888' }}>
+                                        {trade.outcome === 'win' ? 'WIN' : trade.outcome === 'loss' ? 'LOSS' : 'BE'}
+                                      </span>
+                                    </td>
+                                    <td style={{ padding: '10px 8px', textAlign: 'center', fontWeight: 600, fontSize: '11px', color: parseFloat(trade.pnl) >= 0 ? '#22c55e' : '#ef4444' }}>{parseFloat(trade.pnl) >= 0 ? '+' : ''}${parseFloat(trade.pnl || 0).toFixed(0)}</td>
+                                    <td style={{ padding: '10px 8px', textAlign: 'center', fontSize: '10px', color: '#666' }}>{trade.rr || '-'}</td>
+                                    <td style={{ padding: '10px 8px', textAlign: 'center', fontSize: '10px', color: '#555' }}>{extra.riskPercent || '1'}%</td>
+                                    <td style={{ padding: '10px 8px', textAlign: 'center' }}>
+                                      {extra.confidence ? (
+                                        <span style={{ fontSize: '8px', color: extra.confidence === 'High' ? '#22c55e' : extra.confidence === 'Low' ? '#ef4444' : '#666' }}>{extra.confidence}</span>
+                                      ) : <span style={{ fontSize: '8px', color: '#333' }}>-</span>}
+                                    </td>
+                                    <td style={{ padding: '10px 8px', textAlign: 'center' }}>
+                                      <div style={{ display: 'flex', justifyContent: 'center', gap: '1px' }}>{[1,2,3,4,5].map(i => <span key={i} style={{ color: i <= parseInt(extra.rating || 0) ? '#22c55e' : '#2a2a35', fontSize: '8px' }}>★</span>)}</div>
+                                    </td>
+                                    <td style={{ padding: '10px 8px', textAlign: 'center' }}>
+                                      <div style={{ width: '18px', height: '18px', background: trade.image_url ? '#1a1a22' : '#141418', borderRadius: '3px', margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                        <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke={trade.image_url ? '#22c55e' : '#333'} strokeWidth="2"><rect x="3" y="3" width="18" height="18" rx="2" /><circle cx="8.5" cy="8.5" r="1.5" /><polyline points="21 15 16 10 5 21" /></svg>
+                                      </div>
+                                    </td>
+                                    <td style={{ padding: '10px 8px', textAlign: 'center', fontSize: '9px', color: '#444' }}>{getDaysAgo(trade.date)}</td>
+                                    <td style={{ padding: '10px 8px', textAlign: 'center', fontSize: '9px', color: '#444' }}>{new Date(trade.date).getDate()}/{new Date(trade.date).getMonth()+1}</td>
+                                  </tr>
+                                )
+                              })}
+                            </tbody>
+                          </table>
+                        </div>
                       </div>
                     )}
                   </div>
 
                   {/* Buttons */}
-                  <div style={{ padding: '12px 18px', borderTop: '1px solid #1a1a22', display: 'flex', gap: '10px' }}>
+                  <div style={{ padding: '12px 16px', display: 'flex', gap: '10px' }}>
                     <a href={`/account/${account.id}`} style={{ flex: 2, padding: '12px', background: '#22c55e', borderRadius: '6px', color: '#fff', fontWeight: 600, fontSize: '12px', textAlign: 'center', textDecoration: 'none' }}>ENTER JOURNAL</a>
                     <a href={`/account/${account.id}?tab=statistics`} style={{ flex: 1, padding: '12px', background: 'transparent', border: '1px solid #22c55e', borderRadius: '6px', color: '#22c55e', fontWeight: 600, fontSize: '12px', textAlign: 'center', textDecoration: 'none' }}>SEE STATISTICS</a>
                   </div>
