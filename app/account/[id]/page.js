@@ -285,15 +285,15 @@ export default function AccountPage() {
     
     if (dataPoints.length < 2) return (
       <div style={{ padding: '16px', background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px' }}>
-        <div style={{ fontSize: '10px', color: '#555', textTransform: 'uppercase', letterSpacing: '1px', fontWeight: 600, marginBottom: '12px' }}>{title}</div>
-        <div style={{ padding: '30px', textAlign: 'center', color: '#333', fontSize: '11px' }}>Need more trades for chart</div>
+        <div style={{ fontSize: '12px', color: '#666', textTransform: 'uppercase', letterSpacing: '1px', fontWeight: 600, marginBottom: '12px' }}>{title}</div>
+        <div style={{ padding: '30px', textAlign: 'center', color: '#444', fontSize: '14px' }}>Need more trades for chart</div>
       </div>
     )
     
     const maxY = Math.max(...dataPoints.map(p => p.y))
     const minY = Math.min(...dataPoints.map(p => p.y))
     const yRange = maxY - minY || 100
-    const width = 500, height = 180, padL = 50, padR = 10, padT = 10, padB = 30
+    const width = 800, height = 200, padL = 55, padR = 15, padT = 15, padB = 35
     const chartW = width - padL - padR, chartH = height - padT - padB
     
     const points = dataPoints.map((p, i) => ({
@@ -303,41 +303,39 @@ export default function AccountPage() {
     const pathD = points.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`).join(' ')
     const areaD = pathD + ` L ${points[points.length-1].x} ${padT + chartH} L ${padL} ${padT + chartH} Z`
     
-    // Y labels
     const yLabels = []
     const yStep = yRange / 4
     for (let i = 0; i <= 4; i++) {
       yLabels.push(Math.round(minY + yStep * i))
     }
     
-    // X labels - 5 evenly spaced
     const xLabels = []
     const numXLabels = Math.min(5, dataPoints.length)
     for (let i = 0; i < numXLabels; i++) {
       const idx = Math.floor(i * (dataPoints.length - 1) / Math.max(1, numXLabels - 1))
       const d = new Date(dataPoints[idx].date)
-      xLabels.push({ label: `${d.getDate()}/${d.getMonth()+1}`, x: padL + (idx / (dataPoints.length - 1)) * chartW })
+      xLabels.push({ label: `${d.getDate()}/${d.getMonth()+1}/${String(d.getFullYear()).slice(-2)}`, x: padL + (idx / (dataPoints.length - 1)) * chartW })
     }
     
     return (
       <div style={{ padding: '16px', background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px' }}>
-        <div style={{ fontSize: '10px', color: '#555', textTransform: 'uppercase', letterSpacing: '1px', fontWeight: 600, marginBottom: '12px' }}>{title}</div>
-        <svg width="100%" height="180" viewBox={`0 0 ${width} ${height}`} preserveAspectRatio="xMidYMid meet">
+        <div style={{ fontSize: '12px', color: '#666', textTransform: 'uppercase', letterSpacing: '1px', fontWeight: 600, marginBottom: '12px' }}>{title}</div>
+        <svg width="100%" height="200" viewBox={`0 0 ${width} ${height}`} preserveAspectRatio="none">
           <defs>
             <linearGradient id="lineGrad" x1="0%" y1="0%" x2="0%" y2="100%">
               <stop offset="0%" stopColor="#22c55e" stopOpacity="0.3" />
               <stop offset="100%" stopColor="#22c55e" stopOpacity="0" />
             </linearGradient>
           </defs>
+          <line x1={padL} y1={padT} x2={padL} y2={padT + chartH} stroke="#333" strokeWidth="1" />
+          <line x1={padL} y1={padT + chartH} x2={padL + chartW} y2={padT + chartH} stroke="#333" strokeWidth="1" />
           <path d={areaD} fill="url(#lineGrad)" />
-          <path d={pathD} fill="none" stroke="#22c55e" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-          {/* Y labels */}
+          <path d={pathD} fill="none" stroke="#22c55e" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
           {yLabels.map((v, i) => {
             const y = padT + chartH - ((v - minY) / yRange) * chartH
-            return <text key={i} x={padL - 8} y={y + 4} fill="#555" fontSize="11" fontFamily="Arial, sans-serif" textAnchor="end">${v}</text>
+            return <text key={i} x={padL - 10} y={y + 4} fill="#666" fontSize="12" fontFamily="Arial, sans-serif" textAnchor="end">${v}</text>
           })}
-          {/* X labels */}
-          {xLabels.map((l, i) => <text key={i} x={l.x} y={height - 8} fill="#555" fontSize="11" fontFamily="Arial, sans-serif" textAnchor="middle">{l.label}</text>)}
+          {xLabels.map((l, i) => <text key={i} x={l.x} y={height - 10} fill="#666" fontSize="12" fontFamily="Arial, sans-serif" textAnchor="middle">{l.label}</text>)}
         </svg>
       </div>
     )
@@ -372,30 +370,35 @@ export default function AccountPage() {
 
   return (
     <div style={{ minHeight: '100vh', background: '#0a0a0f' }}>
-      {/* Header - matches homepage style */}
-      <header style={{ padding: '20px 48px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #1a1a22' }}>
-        <a href="/" style={{ fontSize: '22px', fontWeight: 700, textDecoration: 'none' }}>
+      {/* Header - Large logo and title */}
+      <header style={{ padding: '16px 40px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #1a1a22' }}>
+        <a href="/" style={{ fontSize: '28px', fontWeight: 700, textDecoration: 'none' }}>
           <span style={{ color: '#22c55e' }}>LSD</span>
           <span style={{ color: '#fff' }}>TRADE+</span>
         </a>
-        <div style={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)', fontSize: '16px', fontWeight: 600, color: '#fff' }}>{account?.name}</div>
-        <a href="/dashboard" style={{ padding: '10px 20px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '6px', color: '#888', fontSize: '12px', textDecoration: 'none' }}>← Dashboard</a>
+        <div style={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)', fontSize: '24px', fontWeight: 600, letterSpacing: '2px', color: '#fff' }}>JOURNAL AREA</div>
+        <a href="/dashboard" style={{ padding: '12px 24px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '6px', color: '#fff', fontSize: '14px', textDecoration: 'none' }}>← Dashboard</a>
       </header>
 
-      <div style={{ maxWidth: '1400px', margin: '0 auto', padding: '18px 28px' }}>
-        {/* Tabs + Buttons Row - All in one line */}
+      <div style={{ maxWidth: '1400px', margin: '0 auto', padding: '20px 40px' }}>
+        {/* Account Name Section */}
+        <div style={{ marginBottom: '16px' }}>
+          <span style={{ fontSize: '28px', fontWeight: 700, color: '#fff' }}>{account?.name}</span>
+        </div>
+
+        {/* Tabs + Buttons Row */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-          <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+          <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
             {['trades', 'statistics', 'notes'].map(tab => (
-              <button key={tab} onClick={() => setActiveTab(tab)} style={{ padding: '10px 32px', background: activeTab === tab ? '#22c55e' : 'transparent', border: activeTab === tab ? 'none' : '1px solid #1a1a22', borderRadius: '6px', color: activeTab === tab ? '#fff' : '#666', fontWeight: 600, fontSize: '12px', cursor: 'pointer', textTransform: 'capitalize' }}>{tab}</button>
+              <button key={tab} onClick={() => setActiveTab(tab)} style={{ padding: '12px 32px', background: activeTab === tab ? '#22c55e' : 'transparent', border: activeTab === tab ? 'none' : '1px solid #1a1a22', borderRadius: '6px', color: activeTab === tab ? '#fff' : '#888', fontWeight: 600, fontSize: '14px', cursor: 'pointer', textTransform: 'capitalize' }}>{tab}</button>
             ))}
-            <span style={{ fontSize: '11px', color: '#555', marginLeft: '12px' }}>{trades.length} Trades</span>
+            <span style={{ fontSize: '13px', color: '#666', marginLeft: '16px' }}>{trades.length} Trades</span>
           </div>
-          <div style={{ display: 'flex', gap: '10px' }}>
+          <div style={{ display: 'flex', gap: '12px' }}>
             {activeTab === 'trades' && (
-              <button onClick={() => setShowEditInputs(true)} style={{ padding: '10px 16px', background: 'transparent', border: '1px solid #1a1a22', borderRadius: '5px', color: '#666', fontSize: '11px', cursor: 'pointer' }}>Edit Columns</button>
+              <button onClick={() => setShowEditInputs(true)} style={{ padding: '12px 20px', background: 'transparent', border: '1px solid #1a1a22', borderRadius: '6px', color: '#888', fontSize: '14px', cursor: 'pointer' }}>Edit Columns</button>
             )}
-            <button onClick={() => setShowAddTrade(true)} style={{ padding: '10px 18px', background: '#22c55e', border: 'none', borderRadius: '5px', color: '#fff', fontWeight: 600, fontSize: '11px', cursor: 'pointer' }}>+ LOG NEW TRADE</button>
+            <button onClick={() => setShowAddTrade(true)} style={{ padding: '12px 24px', background: '#22c55e', border: 'none', borderRadius: '6px', color: '#fff', fontWeight: 600, fontSize: '14px', cursor: 'pointer' }}>+ LOG NEW TRADE</button>
           </div>
         </div>
 
