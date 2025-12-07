@@ -81,7 +81,7 @@ export default function DashboardPage() {
     const svgRef = useRef(null)
 
     if (!accountTrades || accountTrades.length === 0) {
-      return <div style={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#333', fontSize: '14px' }}>No trades yet</div>
+      return <div style={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#444', fontSize: '14px' }}>No trades yet</div>
     }
 
     const start = parseFloat(startingBalance) || 10000
@@ -103,26 +103,7 @@ export default function DashboardPage() {
       yLabels.push(v)
     }
 
-    // Wider aspect ratio - fills container
-    const width = 900
-    const height = 220
-    const paddingLeft = 50
-    const paddingRight = 15
-    const paddingTop = 15
-    const paddingBottom = 30
-    const chartWidth = width - paddingLeft - paddingRight
-    const chartHeight = height - paddingTop - paddingBottom
-
-    const chartPoints = points.map((p, i) => ({
-      x: paddingLeft + (i / (points.length - 1)) * chartWidth,
-      y: paddingTop + chartHeight - ((p.balance - yMin) / yRange) * chartHeight,
-      ...p
-    }))
-
-    const pathD = chartPoints.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`).join(' ')
-    const areaD = pathD + ` L ${chartPoints[chartPoints.length-1].x} ${paddingTop + chartHeight} L ${paddingLeft} ${paddingTop + chartHeight} Z`
-
-    // X-axis: 5 evenly spaced dates with year
+    // X-axis dates with year
     const datesWithTrades = points.filter(p => p.date).map((p, idx) => ({ date: p.date, pointIdx: idx + 1 }))
     const xLabels = []
     if (datesWithTrades.length > 0) {
@@ -131,51 +112,80 @@ export default function DashboardPage() {
         const dataIdx = Math.floor(i * (datesWithTrades.length - 1) / Math.max(1, numLabels - 1))
         const item = datesWithTrades[dataIdx]
         const date = new Date(item.date)
-        const xPos = paddingLeft + (item.pointIdx / (points.length - 1)) * chartWidth
-        xLabels.push({ label: `${date.getDate()}/${date.getMonth() + 1}/${String(date.getFullYear()).slice(-2)}`, x: xPos })
+        const pct = points.length > 1 ? (item.pointIdx / (points.length - 1)) * 100 : 50
+        xLabels.push({ label: `${date.getDate()}/${date.getMonth() + 1}/${String(date.getFullYear()).slice(-2)}`, pct })
       }
     }
+
+    // SVG uses 0-100 coordinate system
+    const svgW = 100, svgH = 100
+    const chartPoints = points.map((p, i) => {
+      const x = points.length > 1 ? (i / (points.length - 1)) * svgW : svgW / 2
+      const y = svgH - ((p.balance - yMin) / yRange) * svgH
+      return { x, y, ...p }
+    })
+
+    const pathD = chartPoints.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`).join(' ')
+    const areaD = pathD + ` L ${chartPoints[chartPoints.length - 1].x} ${svgH} L ${chartPoints[0].x} ${svgH} Z`
 
     function handleMouseMove(e) {
       if (!svgRef.current) return
       const rect = svgRef.current.getBoundingClientRect()
-      const mouseX = (e.clientX - rect.left) / rect.width * width
-      let closest = chartPoints[0], minDist = Math.abs(mouseX - chartPoints[0].x)
-      chartPoints.forEach(p => { const d = Math.abs(mouseX - p.x); if (d < minDist) { minDist = d; closest = p } })
-      setTooltip(minDist < 30 ? closest : null)
+      const mouseXPct = ((e.clientX - rect.left) / rect.width) * svgW
+      let closest = chartPoints[0], minDist = Math.abs(mouseXPct - chartPoints[0].x)
+      chartPoints.forEach(p => { const d = Math.abs(mouseXPct - p.x); if (d < minDist) { minDist = d; closest = p } })
+      setTooltip(minDist < 8 ? closest : null)
     }
 
     return (
-      <div style={{ position: 'relative', width: '100%', height: '100%' }}>
-        <svg ref={svgRef} width="100%" height="100%" viewBox={`0 0 ${width} ${height}`} preserveAspectRatio="none" style={{ display: 'block' }} onMouseMove={handleMouseMove} onMouseLeave={() => setTooltip(null)}>
-          <defs>
-            <linearGradient id="areaGrad" x1="0%" y1="0%" x2="0%" y2="100%">
-              <stop offset="0%" stopColor="#22c55e" stopOpacity="0.3" />
-              <stop offset="100%" stopColor="#22c55e" stopOpacity="0" />
-            </linearGradient>
-          </defs>
-          {/* Y-axis line */}
-          <line x1={paddingLeft} y1={paddingTop} x2={paddingLeft} y2={paddingTop + chartHeight} stroke="#333" strokeWidth="1" />
-          {/* X-axis line */}
-          <line x1={paddingLeft} y1={paddingTop + chartHeight} x2={paddingLeft + chartWidth} y2={paddingTop + chartHeight} stroke="#333" strokeWidth="1" />
-          <path d={areaD} fill="url(#areaGrad)" />
-          <path d={pathD} fill="none" stroke="#22c55e" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
-          {/* Y labels */}
-          {yLabels.map((v, i) => {
-            const y = paddingTop + chartHeight - ((v - yMin) / yRange) * chartHeight
-            return <text key={i} x={paddingLeft - 10} y={y + 4} fill="#666" fontSize="12" fontFamily="Arial, sans-serif" textAnchor="end">${(v/1000).toFixed(0)}k</text>
-          })}
-          {/* X labels */}
-          {xLabels.map((l, i) => <text key={i} x={l.x} y={height - 8} fill="#666" fontSize="12" fontFamily="Arial, sans-serif" textAnchor="middle">{l.label}</text>)}
-          {tooltip && <circle cx={tooltip.x} cy={tooltip.y} r="6" fill="#22c55e" />}
-        </svg>
-        {tooltip && (
-          <div style={{ position: 'absolute', left: `${(tooltip.x / width) * 100}%`, top: '10px', transform: 'translateX(-50%)', background: '#1a1a22', border: '1px solid #2a2a35', borderRadius: '6px', padding: '10px 14px', fontSize: '12px', whiteSpace: 'nowrap', zIndex: 10 }}>
-            <div style={{ color: '#888' }}>{tooltip.date ? new Date(tooltip.date).toLocaleDateString() : 'Start'}</div>
-            <div style={{ fontWeight: 600, fontSize: '16px' }}>${tooltip.balance.toLocaleString()}</div>
-            {tooltip.symbol && <div style={{ color: tooltip.pnl >= 0 ? '#22c55e' : '#ef4444' }}>{tooltip.symbol}: {tooltip.pnl >= 0 ? '+' : ''}${tooltip.pnl.toFixed(0)}</div>}
+      <div style={{ position: 'relative', width: '100%', height: '100%', display: 'flex' }}>
+        {/* Y-axis labels - left aligned with container edge */}
+        <div style={{ width: '40px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', paddingBottom: '22px', flexShrink: 0 }}>
+          {[...yLabels].reverse().map((v, i) => (
+            <span key={i} style={{ fontSize: '11px', color: '#666', lineHeight: 1 }}>${(v/1000).toFixed(0)}k</span>
+          ))}
+        </div>
+        
+        {/* Chart + X labels */}
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0 }}>
+          {/* SVG Chart */}
+          <div style={{ flex: 1, position: 'relative' }}>
+            <svg ref={svgRef} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%' }} viewBox={`0 0 ${svgW} ${svgH}`} preserveAspectRatio="none" onMouseMove={handleMouseMove} onMouseLeave={() => setTooltip(null)}>
+              <defs>
+                <linearGradient id="areaGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                  <stop offset="0%" stopColor="#22c55e" stopOpacity="0.3" />
+                  <stop offset="100%" stopColor="#22c55e" stopOpacity="0" />
+                </linearGradient>
+              </defs>
+              {/* Y-axis line */}
+              <line x1="0" y1="0" x2="0" y2={svgH} stroke="#333" strokeWidth="1" vectorEffect="non-scaling-stroke" />
+              {/* X-axis line */}
+              <line x1="0" y1={svgH} x2={svgW} y2={svgH} stroke="#333" strokeWidth="1" vectorEffect="non-scaling-stroke" />
+              {/* Area fill */}
+              <path d={areaD} fill="url(#areaGrad)" />
+              {/* Line */}
+              <path d={pathD} fill="none" stroke="#22c55e" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />
+            </svg>
+            {/* Tooltip - rendered outside SVG to avoid scaling issues */}
+            {tooltip && (
+              <div style={{ position: 'absolute', left: `${(tooltip.x / svgW) * 100}%`, top: '8px', transform: 'translateX(-50%)', background: '#1a1a22', border: '1px solid #2a2a35', borderRadius: '6px', padding: '8px 12px', fontSize: '11px', whiteSpace: 'nowrap', zIndex: 10, pointerEvents: 'none' }}>
+                <div style={{ color: '#888' }}>{tooltip.date ? new Date(tooltip.date).toLocaleDateString() : 'Start'}</div>
+                <div style={{ fontWeight: 600, fontSize: '14px' }}>${tooltip.balance.toLocaleString()}</div>
+                {tooltip.symbol && <div style={{ color: tooltip.pnl >= 0 ? '#22c55e' : '#ef4444' }}>{tooltip.symbol}: {tooltip.pnl >= 0 ? '+' : ''}${tooltip.pnl.toFixed(0)}</div>}
+              </div>
+            )}
+            {/* Tooltip dot - rendered as absolute div to avoid SVG scaling */}
+            {tooltip && (
+              <div style={{ position: 'absolute', left: `${(tooltip.x / svgW) * 100}%`, top: `${(tooltip.y / svgH) * 100}%`, transform: 'translate(-50%, -50%)', width: '10px', height: '10px', borderRadius: '50%', background: '#22c55e', pointerEvents: 'none' }} />
+            )}
           </div>
-        )}
+          {/* X-axis labels */}
+          <div style={{ height: '22px', position: 'relative' }}>
+            {xLabels.map((l, i) => (
+              <span key={i} style={{ position: 'absolute', left: `${l.pct}%`, transform: 'translateX(-50%)', fontSize: '11px', color: '#666', whiteSpace: 'nowrap' }}>{l.label}</span>
+            ))}
+          </div>
+        </div>
       </div>
     )
   }
@@ -188,7 +198,7 @@ export default function DashboardPage() {
   function getDaysAgo(dateStr) { const d = Math.floor((new Date() - new Date(dateStr)) / 86400000); return d === 0 ? 'Today' : d === 1 ? '1d ago' : `${d}d ago` }
 
   if (loading) {
-    return <div style={{ minHeight: '100vh', background: '#0a0a0f', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><div style={{ textAlign: 'center' }}><div style={{ fontSize: '32px', marginBottom: '16px' }}><span style={{ color: '#22c55e' }}>LSD</span><span style={{ color: '#fff' }}>TRADE+</span></div><div style={{ color: '#666' }}>Loading...</div></div></div>
+    return <div style={{ minHeight: '100vh', background: '#0a0a0f', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><div style={{ textAlign: 'center' }}><div style={{ fontSize: '32px', marginBottom: '16px', fontWeight: 700 }}><span style={{ color: '#22c55e' }}>LSD</span><span style={{ color: '#fff' }}>TRADE+</span></div><div style={{ color: '#666' }}>Loading...</div></div></div>
   }
 
   return (
@@ -199,7 +209,7 @@ export default function DashboardPage() {
           <span style={{ color: '#22c55e' }}>LSD</span>
           <span style={{ color: '#fff' }}>TRADE+</span>
         </a>
-        <div style={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)', fontSize: '24px', fontWeight: 600, letterSpacing: '2px', color: '#fff' }}>JOURNAL DASHBOARD</div>
+        <div style={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)', fontSize: '32px', fontWeight: 700, letterSpacing: '2px', color: '#fff' }}>JOURNAL DASHBOARD</div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
           <button onClick={() => setShowModal(true)} style={{ padding: '12px 24px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '6px', color: '#fff', fontSize: '14px', cursor: 'pointer' }}>+ Add Account</button>
           <button onClick={handleSignOut} style={{ padding: '12px 20px', background: 'transparent', border: 'none', color: '#888', fontSize: '14px', cursor: 'pointer' }}>Sign Out</button>
@@ -233,19 +243,19 @@ export default function DashboardPage() {
 
               return (
                 <div key={account.id} style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '10px', overflow: 'hidden' }}>
-                  {/* Account Name - Large, no border */}
-                  <div style={{ padding: '16px 24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                      <span style={{ fontSize: '28px', fontWeight: 700, color: '#fff' }}>{account.name}</span>
+                  {/* Account Name - Very Large */}
+                  <div style={{ padding: '20px 24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+                      <span style={{ fontSize: '36px', fontWeight: 700, color: '#fff' }}>{account.name}</span>
                       <button onClick={() => { setEditName(account.name); setShowEditModal(account.id) }} style={{ background: 'transparent', border: 'none', cursor: 'pointer', padding: '4px' }}>
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#555" strokeWidth="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" /><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" /></svg>
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#555" strokeWidth="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" /><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" /></svg>
                       </button>
                     </div>
                   </div>
 
                   {/* Chart + Stats Row */}
                   <div style={{ display: 'flex', padding: '0 24px 16px', gap: '16px' }}>
-                    {/* Chart - fills available width */}
+                    {/* Chart - fills available width, no internal padding for Y labels */}
                     <div style={{ flex: 1, height: '200px' }}>
                       <EquityCurve accountTrades={accTrades} startingBalance={account.starting_balance} />
                     </div>
