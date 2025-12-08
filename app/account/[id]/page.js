@@ -376,7 +376,7 @@ export default function AccountPage() {
           <span style={{ color: '#22c55e' }}>LSD</span>
           <span style={{ color: '#fff' }}>TRADE+</span>
         </a>
-        <div style={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)', fontSize: '24px', fontWeight: 600, letterSpacing: '2px', color: '#fff' }}>JOURNAL AREA</div>
+        <div style={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)', fontSize: '45px', fontWeight: 600, letterSpacing: '2px', color: '#fff' }}>JOURNAL AREA</div>
         <a href="/dashboard" style={{ padding: '12px 24px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '6px', color: '#fff', fontSize: '14px', textDecoration: 'none' }}>← Dashboard</a>
       </header>
 
