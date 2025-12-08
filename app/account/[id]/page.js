@@ -333,15 +333,50 @@ export default function AccountPage() {
           <path d={pathD} fill="none" stroke="#22c55e" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
           {yLabels.map((v, i) => {
             const y = padT + chartH - ((v - minY) / yRange) * chartH
-            return <text key={i} x={padL - 10} y={y + 4} fill="#666" fontSize="12" fontFamily="Arial, sans-serif" textAnchor="end">${v}</text>
+            return <text key={i} x={padL - 10} y={y + 4} fill="#888" fontSize="12" fontFamily="Arial, sans-serif" textAnchor="end">${v}</text>
           })}
-          {xLabels.map((l, i) => <text key={i} x={l.x} y={height - 10} fill="#666" fontSize="12" fontFamily="Arial, sans-serif" textAnchor="middle">{l.label}</text>)}
+          {xLabels.map((l, i) => <text key={i} x={l.x} y={height - 10} fill="#888" fontSize="12" fontFamily="Arial, sans-serif" textAnchor="middle">{l.label}</text>)}
         </svg>
       </div>
     )
   }
 
-  if (loading) return <div style={{ minHeight: '100vh', background: '#0a0a0f', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><div style={{ textAlign: 'center' }}><div style={{ fontSize: '24px', marginBottom: '16px' }}><span style={{ color: '#22c55e' }}>LSD</span>TRADE+</div><div style={{ color: '#666' }}>Loading...</div></div></div>
+  function MiniEquityCurve() {
+    const sortedTrades = [...trades].sort((a, b) => new Date(a.date) - new Date(b.date))
+    let cumPnl = 0
+    const dataPoints = sortedTrades.map(t => {
+      cumPnl += parseFloat(t.pnl) || 0
+      return cumPnl
+    })
+    if (dataPoints.length < 2) return <div style={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#666', fontSize: '12px' }}>Need more trades</div>
+    
+    const maxY = Math.max(...dataPoints)
+    const minY = Math.min(...dataPoints)
+    const yRange = maxY - minY || 100
+    
+    const svgW = 100, svgH = 100
+    const points = dataPoints.map((y, i) => ({
+      x: (i / (dataPoints.length - 1)) * svgW,
+      y: svgH - ((y - minY) / yRange) * svgH
+    }))
+    const pathD = points.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`).join(' ')
+    const areaD = pathD + ` L ${svgW} ${svgH} L 0 ${svgH} Z`
+    
+    return (
+      <svg width="100%" height="100%" viewBox={`0 0 ${svgW} ${svgH}`} preserveAspectRatio="none">
+        <defs>
+          <linearGradient id="miniGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" stopColor="#22c55e" stopOpacity="0.3" />
+            <stop offset="100%" stopColor="#22c55e" stopOpacity="0" />
+          </linearGradient>
+        </defs>
+        <path d={areaD} fill="url(#miniGrad)" />
+        <path d={pathD} fill="none" stroke="#22c55e" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />
+      </svg>
+    )
+  }
+
+  if (loading) return <div style={{ minHeight: '100vh', background: '#0a0a0f', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><div style={{ textAlign: 'center' }}><div style={{ fontSize: '24px', marginBottom: '16px' }}><span style={{ color: '#22c55e' }}>LSD</span>TRADE+</div><div style={{ color: '#888' }}>Loading...</div></div></div>
 
   // Stats calculations
   const wins = trades.filter(t => t.outcome === 'win').length
@@ -370,50 +405,53 @@ export default function AccountPage() {
 
   return (
     <div style={{ minHeight: '100vh', background: '#0a0a0f' }}>
-      {/* Header - Large logo and title */}
+      {/* Header */}
       <header style={{ padding: '16px 40px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #1a1a22' }}>
         <a href="/" style={{ fontSize: '28px', fontWeight: 700, textDecoration: 'none' }}>
           <span style={{ color: '#22c55e' }}>LSD</span>
           <span style={{ color: '#fff' }}>TRADE+</span>
         </a>
-        <div style={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)', fontSize: '45px', fontWeight: 600, letterSpacing: '2px', color: '#fff' }}>JOURNAL AREA</div>
-        <a href="/dashboard" style={{ padding: '12px 24px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '6px', color: '#fff', fontSize: '14px', textDecoration: 'none' }}>← Dashboard</a>
+        <div style={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)', fontSize: '28px', fontWeight: 700, letterSpacing: '-0.5px', color: '#fff' }}>JOURNAL AREA</div>
+        <a href="/dashboard" style={{ padding: '14px 28px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '6px', color: '#fff', fontSize: '14px', textDecoration: 'none' }}>← Dashboard</a>
       </header>
 
       <div style={{ maxWidth: '1400px', margin: '0 auto', padding: '20px 40px' }}>
-        {/* Account Name Section */}
-        <div style={{ marginBottom: '16px' }}>
-          <span style={{ fontSize: '28px', fontWeight: 700, color: '#fff' }}>{account?.name}</span>
-        </div>
-
-        {/* Tabs + Buttons Row */}
+        {/* Account Name + Tabs + Buttons - all in one row */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-          <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-            {['trades', 'statistics', 'notes'].map(tab => (
-              <button key={tab} onClick={() => setActiveTab(tab)} style={{ padding: '12px 32px', background: activeTab === tab ? '#22c55e' : 'transparent', border: activeTab === tab ? 'none' : '1px solid #1a1a22', borderRadius: '6px', color: activeTab === tab ? '#fff' : '#888', fontWeight: 600, fontSize: '14px', cursor: 'pointer', textTransform: 'capitalize' }}>{tab}</button>
+          {/* Left side: Name and tabs */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '24px' }}>
+            <span style={{ fontSize: '28px', fontWeight: 700, color: '#fff' }}>{account?.name}</span>
+            <div style={{ height: '24px', width: '1px', background: '#1a1a22' }} />
+            {['trades', 'statistics', 'notes'].map((tab, idx) => (
+              <div key={tab} style={{ display: 'flex', alignItems: 'center', gap: '24px' }}>
+                <button onClick={() => setActiveTab(tab)} style={{ padding: '10px 28px', background: activeTab === tab ? '#22c55e' : 'transparent', border: activeTab === tab ? 'none' : '1px solid #1a1a22', borderRadius: '6px', color: activeTab === tab ? '#fff' : '#aaa', fontWeight: 600, fontSize: '14px', cursor: 'pointer', textTransform: 'capitalize' }}>{tab}</button>
+                {idx < 2 && <div style={{ height: '24px', width: '1px', background: '#1a1a22' }} />}
+              </div>
             ))}
-            <span style={{ fontSize: '13px', color: '#666', marginLeft: '16px' }}>{trades.length} Trades</span>
+            <span style={{ fontSize: '13px', color: '#888', marginLeft: '8px' }}>{trades.length} Trades</span>
           </div>
+          {/* Right side: Buttons pushed to edge */}
           <div style={{ display: 'flex', gap: '12px' }}>
             {activeTab === 'trades' && (
-              <button onClick={() => setShowEditInputs(true)} style={{ padding: '12px 20px', background: 'transparent', border: '1px solid #1a1a22', borderRadius: '6px', color: '#888', fontSize: '14px', cursor: 'pointer' }}>Edit Columns</button>
+              <button onClick={() => setShowEditInputs(true)} style={{ padding: '14px 24px', background: 'transparent', border: '1px solid #1a1a22', borderRadius: '6px', color: '#aaa', fontSize: '14px', cursor: 'pointer' }}>Edit Columns</button>
             )}
-            <button onClick={() => setShowAddTrade(true)} style={{ padding: '12px 24px', background: '#22c55e', border: 'none', borderRadius: '6px', color: '#fff', fontWeight: 600, fontSize: '14px', cursor: 'pointer' }}>+ LOG NEW TRADE</button>
+            <button onClick={() => setShowAddTrade(true)} style={{ padding: '14px 28px', background: '#22c55e', border: 'none', borderRadius: '6px', color: '#fff', fontWeight: 600, fontSize: '14px', cursor: 'pointer' }}>+ LOG NEW TRADE</button>
           </div>
         </div>
 
         {/* TRADES TAB */}
         {activeTab === 'trades' && (
+          <>
           <div style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', overflow: 'hidden' }}>
             {trades.length === 0 ? (
-              <div style={{ padding: '50px', textAlign: 'center', color: '#333', fontSize: '12px' }}>No trades yet. Click "LOG NEW TRADE" to add your first trade.</div>
+              <div style={{ padding: '50px', textAlign: 'center', color: '#666', fontSize: '14px' }}>No trades yet. Click "LOG NEW TRADE" to add your first trade.</div>
             ) : (
               <div style={{ overflowX: 'auto' }}>
                 <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                   <thead style={{ position: 'sticky', top: 0, background: '#0a0a0e', zIndex: 5 }}>
                     <tr>
                       {['Symbol', 'W/L', 'PnL', '%', 'RR', 'Trend', 'Confidence', 'Rating', 'Image', 'Notes', 'Placed', 'Date', ''].map((h, i) => (
-                        <th key={i} style={{ padding: '12px 14px', textAlign: 'center', color: '#555', fontSize: '10px', fontWeight: 600, textTransform: 'uppercase', borderBottom: '1px solid #1a1a22' }}>{h}</th>
+                        <th key={i} style={{ padding: '12px 14px', textAlign: 'center', color: '#888', fontSize: '10px', fontWeight: 600, textTransform: 'uppercase', borderBottom: '1px solid #1a1a22' }}>{h}</th>
                       ))}
                     </tr>
                   </thead>
@@ -468,6 +506,17 @@ export default function AccountPage() {
               </div>
             )}
           </div>
+          
+          {/* Small PnL Graph below trades */}
+          {trades.length > 1 && (
+            <div style={{ marginTop: '16px', background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '16px' }}>
+              <div style={{ fontSize: '11px', color: '#888', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '12px' }}>Equity Curve</div>
+              <div style={{ height: '120px' }}>
+                <MiniEquityCurve />
+              </div>
+            </div>
+          )}
+        </>
         )}
 
         {/* STATISTICS TAB */}

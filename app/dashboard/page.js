@@ -142,12 +142,12 @@ export default function DashboardPage() {
         {/* Y-axis labels - left aligned with container edge */}
         <div style={{ width: '40px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', paddingBottom: '22px', flexShrink: 0 }}>
           {[...yLabels].reverse().map((v, i) => (
-            <span key={i} style={{ fontSize: '11px', color: '#666', lineHeight: 1 }}>${(v/1000).toFixed(0)}k</span>
+            <span key={i} style={{ fontSize: '11px', color: '#888', lineHeight: 1 }}>${(v/1000).toFixed(0)}k</span>
           ))}
         </div>
         
         {/* Chart + X labels */}
-        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0 }}>
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, overflow: 'hidden' }}>
           {/* SVG Chart */}
           <div style={{ flex: 1, position: 'relative' }}>
             <svg ref={svgRef} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%' }} viewBox={`0 0 ${svgW} ${svgH}`} preserveAspectRatio="none" onMouseMove={handleMouseMove} onMouseLeave={() => setTooltip(null)}>
@@ -166,7 +166,7 @@ export default function DashboardPage() {
               {/* Line */}
               <path d={pathD} fill="none" stroke="#22c55e" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />
             </svg>
-            {/* Tooltip - rendered outside SVG to avoid scaling issues */}
+            {/* Tooltip */}
             {tooltip && (
               <div style={{ position: 'absolute', left: `${(tooltip.x / svgW) * 100}%`, top: '8px', transform: 'translateX(-50%)', background: '#1a1a22', border: '1px solid #2a2a35', borderRadius: '6px', padding: '8px 12px', fontSize: '11px', whiteSpace: 'nowrap', zIndex: 10, pointerEvents: 'none' }}>
                 <div style={{ color: '#888' }}>{tooltip.date ? new Date(tooltip.date).toLocaleDateString() : 'Start'}</div>
@@ -174,16 +174,24 @@ export default function DashboardPage() {
                 {tooltip.symbol && <div style={{ color: tooltip.pnl >= 0 ? '#22c55e' : '#ef4444' }}>{tooltip.symbol}: {tooltip.pnl >= 0 ? '+' : ''}${tooltip.pnl.toFixed(0)}</div>}
               </div>
             )}
-            {/* Tooltip dot - rendered as absolute div to avoid SVG scaling */}
+            {/* Tooltip dot */}
             {tooltip && (
               <div style={{ position: 'absolute', left: `${(tooltip.x / svgW) * 100}%`, top: `${(tooltip.y / svgH) * 100}%`, transform: 'translate(-50%, -50%)', width: '10px', height: '10px', borderRadius: '50%', background: '#22c55e', pointerEvents: 'none' }} />
             )}
           </div>
-          {/* X-axis labels */}
-          <div style={{ height: '22px', position: 'relative' }}>
-            {xLabels.map((l, i) => (
-              <span key={i} style={{ position: 'absolute', left: `${l.pct}%`, transform: 'translateX(-50%)', fontSize: '11px', color: '#666', whiteSpace: 'nowrap' }}>{l.label}</span>
-            ))}
+          {/* X-axis labels - constrained to not overflow */}
+          <div style={{ height: '22px', position: 'relative', overflow: 'hidden' }}>
+            {xLabels.map((l, i) => {
+              // Constrain labels: first label align left, last align right, middle center
+              const isFirst = i === 0
+              const isLast = i === xLabels.length - 1
+              const style = isFirst 
+                ? { position: 'absolute', left: '0', fontSize: '11px', color: '#888' }
+                : isLast 
+                  ? { position: 'absolute', right: '0', fontSize: '11px', color: '#888' }
+                  : { position: 'absolute', left: `${l.pct}%`, transform: 'translateX(-50%)', fontSize: '11px', color: '#888' }
+              return <span key={i} style={style}>{l.label}</span>
+            })}
           </div>
         </div>
       </div>
@@ -198,20 +206,20 @@ export default function DashboardPage() {
   function getDaysAgo(dateStr) { const d = Math.floor((new Date() - new Date(dateStr)) / 86400000); return d === 0 ? 'Today' : d === 1 ? '1d ago' : `${d}d ago` }
 
   if (loading) {
-    return <div style={{ minHeight: '100vh', background: '#0a0a0f', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><div style={{ textAlign: 'center' }}><div style={{ fontSize: '32px', marginBottom: '16px', fontWeight: 700 }}><span style={{ color: '#22c55e' }}>LSD</span><span style={{ color: '#fff' }}>TRADE+</span></div><div style={{ color: '#666' }}>Loading...</div></div></div>
+    return <div style={{ minHeight: '100vh', background: '#0a0a0f', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><div style={{ textAlign: 'center' }}><div style={{ fontSize: '32px', marginBottom: '16px', fontWeight: 700 }}><span style={{ color: '#22c55e' }}>LSD</span><span style={{ color: '#fff' }}>TRADE+</span></div><div style={{ color: '#888' }}>Loading...</div></div></div>
   }
 
   return (
     <div style={{ minHeight: '100vh', background: '#0a0a0f' }}>
-      {/* Header - Large logo and title */}
+      {/* Header */}
       <header style={{ padding: '16px 40px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #1a1a22' }}>
         <a href="/" style={{ fontSize: '28px', fontWeight: 700, textDecoration: 'none' }}>
           <span style={{ color: '#22c55e' }}>LSD</span>
           <span style={{ color: '#fff' }}>TRADE+</span>
         </a>
-        <div style={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)', fontSize: '32px', fontWeight: 700, letterSpacing: '2px', color: '#fff' }}>JOURNAL DASHBOARD</div>
+        <div style={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)', fontSize: '28px', fontWeight: 700, letterSpacing: '-0.5px', color: '#fff' }}>JOURNAL DASHBOARD</div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <button onClick={() => setShowModal(true)} style={{ padding: '12px 24px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '6px', color: '#fff', fontSize: '14px', cursor: 'pointer' }}>+ Add Account</button>
+          <button onClick={() => setShowModal(true)} style={{ padding: '12px 24px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '6px', color: '#fff', fontSize: '14px', cursor: 'pointer' }}>+ Add Journal Account</button>
           <button onClick={handleSignOut} style={{ padding: '12px 20px', background: 'transparent', border: 'none', color: '#888', fontSize: '14px', cursor: 'pointer' }}>Sign Out</button>
         </div>
       </header>
@@ -220,7 +228,7 @@ export default function DashboardPage() {
         {accounts.length === 0 ? (
           <div style={{ textAlign: 'center', padding: '80px 40px', background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '10px' }}>
             <h2 style={{ fontSize: '24px', marginBottom: '12px' }}>Welcome to LSDTRADE+</h2>
-            <p style={{ color: '#666', marginBottom: '28px', fontSize: '16px' }}>Create your first trading journal to get started</p>
+            <p style={{ color: '#888', marginBottom: '28px', fontSize: '16px' }}>Create your first trading journal to get started</p>
             <button onClick={() => setShowModal(true)} style={{ padding: '14px 28px', background: '#22c55e', border: 'none', borderRadius: '6px', color: '#fff', fontWeight: 600, fontSize: '16px', cursor: 'pointer' }}>+ Create Your First Journal</button>
           </div>
         ) : (
@@ -243,28 +251,27 @@ export default function DashboardPage() {
 
               return (
                 <div key={account.id} style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '10px', overflow: 'hidden' }}>
-                  {/* Account Name - Very Large */}
+                  {/* Account Name */}
                   <div style={{ padding: '20px 24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-                      <span style={{ fontSize: '36px', fontWeight: 700, color: '#fff' }}>{account.name}</span>
+                      <span style={{ fontSize: '28px', fontWeight: 700, color: '#fff' }}>{account.name}</span>
                       <button onClick={() => { setEditName(account.name); setShowEditModal(account.id) }} style={{ background: 'transparent', border: 'none', cursor: 'pointer', padding: '4px' }}>
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#555" strokeWidth="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" /><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" /></svg>
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#666" strokeWidth="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" /><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" /></svg>
                       </button>
                     </div>
                   </div>
 
                   {/* Chart + Stats Row */}
                   <div style={{ display: 'flex', padding: '0 24px 16px', gap: '16px' }}>
-                    {/* Chart - fills available width, no internal padding for Y labels */}
-                    <div style={{ flex: 1, height: '200px' }}>
+                    {/* Chart - taller height, overflow hidden to clip x-labels */}
+                    <div style={{ flex: 1, height: '280px', overflow: 'hidden' }}>
                       <EquityCurve accountTrades={accTrades} startingBalance={account.starting_balance} />
                     </div>
 
-                    {/* Stats + Account Balance - aligned */}
+                    {/* Stats */}
                     <div style={{ width: '200px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                      {/* Account Balance - same style as stats */}
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 14px', background: '#0a0a0e', borderRadius: '6px', border: '1px solid #1a1a22' }}>
-                        <span style={{ fontSize: '12px', color: '#666' }}>Account Balance</span>
+                        <span style={{ fontSize: '12px', color: '#888' }}>Account Balance</span>
                         <span style={{ fontSize: '16px', fontWeight: 700, color: '#fff' }}>${currentBalance.toLocaleString()}</span>
                       </div>
                       {[
@@ -276,7 +283,7 @@ export default function DashboardPage() {
                         { label: 'Consistency', value: `${consistency}%`, color: '#fff' },
                       ].map((stat, i) => (
                         <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 14px', background: '#0a0a0e', borderRadius: '6px', border: '1px solid #1a1a22' }}>
-                          <span style={{ fontSize: '12px', color: '#666' }}>{stat.label}</span>
+                          <span style={{ fontSize: '12px', color: '#888' }}>{stat.label}</span>
                           <span style={{ fontSize: '16px', fontWeight: 600, color: stat.color }}>{stat.value}</span>
                         </div>
                       ))}
@@ -285,16 +292,16 @@ export default function DashboardPage() {
 
                   {/* Recent Trades */}
                   <div style={{ padding: '0 24px 16px' }}>
-                    <div style={{ fontSize: '12px', color: '#666', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '8px', paddingBottom: '8px', borderBottom: '1px solid #1a1a22' }}>Recent Trades</div>
+                    <div style={{ fontSize: '12px', color: '#888', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '8px', paddingBottom: '8px', borderBottom: '1px solid #1a1a22' }}>Recent Trades</div>
                     {recentTrades.length === 0 ? (
-                      <div style={{ padding: '20px', textAlign: 'center', color: '#444', fontSize: '14px' }}>No trades yet</div>
+                      <div style={{ padding: '20px', textAlign: 'center', color: '#666', fontSize: '14px' }}>No trades yet</div>
                     ) : (
                       <div style={{ maxHeight: '200px', overflowY: 'auto' }}>
                         <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                           <thead style={{ position: 'sticky', top: 0, background: '#0d0d12' }}>
                             <tr>
                               {['Symbol', 'W/L', 'PnL', 'RR', '%', 'Emotion', 'Rating', 'Image', 'Placed', 'Date'].map((h, i) => (
-                                <th key={i} style={{ padding: '10px', textAlign: 'center', color: '#666', fontSize: '11px', fontWeight: 600, textTransform: 'uppercase' }}>{h}</th>
+                                <th key={i} style={{ padding: '10px', textAlign: 'center', color: '#888', fontSize: '11px', fontWeight: 600, textTransform: 'uppercase' }}>{h}</th>
                               ))}
                             </tr>
                           </thead>
