@@ -55,9 +55,14 @@ export default function AccountPage() {
   const [customNoteTitle, setCustomNoteTitle] = useState('')
   const [editingStats, setEditingStats] = useState(false)
   // Stats page dropdown filters
-  const [graphType, setGraphType] = useState('pnl') // pnl, winrate, trades
+  const [graphType, setGraphType] = useState('pnl') // pnl, balance
   const [graphGroupBy, setGraphGroupBy] = useState('symbol') // symbol, session, confidence, timeframe
-  const [compareMode, setCompareMode] = useState('none') // none, time, pair
+  const [compareMode, setCompareMode] = useState('time') // time, trades
+  const [barGraphMetric, setBarGraphMetric] = useState('winrate') // winrate, pnl, count
+  const [analysisGroupBy, setAnalysisGroupBy] = useState('confidence') // confidence, session, timeframe, direction
+  const [analysisMetric, setAnalysisMetric] = useState('winrate') // winrate, pnl, rr
+  const [hoveredPoint, setHoveredPoint] = useState(null)
+  const [hoveredBar, setHoveredBar] = useState(null)
 
   useEffect(() => { loadData() }, [])
   useEffect(() => {
@@ -499,516 +504,681 @@ export default function AccountPage() {
   return (
     <div style={{ minHeight: '100vh', background: '#0a0a0f' }}>
       {/* Header */}
-      <header style={{ padding: '16px 40px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #1a1a22' }}>
-        <a href="/" style={{ fontSize: '28px', fontWeight: 700, textDecoration: 'none' }}>
+      <header style={{ padding: '12px 40px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #1a1a22' }}>
+        <a href="/" style={{ fontSize: '22px', fontWeight: 700, textDecoration: 'none' }}>
           <span style={{ color: '#22c55e' }}>LSD</span>
           <span style={{ color: '#fff' }}>TRADE+</span>
         </a>
-        <div style={{ fontSize: '24px', fontWeight: 700, letterSpacing: '-0.5px', color: '#fff' }}>JOURNAL AREA</div>
-        <a href="/dashboard" style={{ padding: '12px 24px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '6px', color: '#fff', fontSize: '13px', textDecoration: 'none' }}>← Dashboard</a>
+        <div style={{ fontSize: '18px', fontWeight: 700, letterSpacing: '-0.5px', color: '#fff' }}>JOURNAL AREA</div>
+        <a href="/dashboard" style={{ padding: '8px 16px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '6px', color: '#fff', fontSize: '12px', textDecoration: 'none' }}>← Dashboard</a>
       </header>
 
-      <div style={{ maxWidth: '1500px', margin: '0 auto', padding: '24px 40px' }}>
-        {/* Account Name Row */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-            <span style={{ fontSize: '24px', fontWeight: 700, color: '#fff' }}>{account?.name}</span>
-            <span style={{ fontSize: '13px', color: '#666', padding: '6px 12px', background: '#1a1a22', borderRadius: '4px' }}>{trades.length} Trades</span>
-          </div>
-          <div style={{ display: 'flex', gap: '12px' }}>
-            {activeTab === 'trades' && (
-              <button onClick={() => setShowEditInputs(true)} style={{ padding: '12px 20px', background: 'transparent', border: '1px solid #1a1a22', borderRadius: '6px', color: '#888', fontSize: '13px', cursor: 'pointer' }}>Edit Columns</button>
-            )}
-            <button onClick={() => setShowAddTrade(true)} style={{ padding: '12px 24px', background: '#22c55e', border: 'none', borderRadius: '6px', color: '#fff', fontWeight: 600, fontSize: '13px', cursor: 'pointer' }}>+ LOG NEW TRADE</button>
-          </div>
-        </div>
-
-        {/* Main Layout: Sidebar + Content */}
-        <div style={{ display: 'flex', gap: '0' }}>
-          {/* LEFT SIDEBAR - Outside bordered area */}
-          <div style={{ width: '140px', paddingRight: '20px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+      {/* Main Layout - Full width with sidebar */}
+      <div style={{ display: 'flex', maxWidth: '1600px', margin: '0 auto' }}>
+        
+        {/* LEFT SIDEBAR - Large buttons */}
+        <div style={{ width: '200px', padding: '12px 16px 0', borderRight: '1px solid #1a1a22', minHeight: 'calc(100vh - 50px)' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
             {['trades', 'statistics', 'notes'].map(tab => (
               <button 
                 key={tab} 
                 onClick={() => setActiveTab(tab)} 
                 style={{ 
-                  padding: '16px 20px', 
-                  background: activeTab === tab ? '#22c55e' : '#0d0d12', 
+                  padding: '20px 24px', 
+                  background: activeTab === tab ? '#22c55e' : 'transparent', 
                   border: activeTab === tab ? 'none' : '1px solid #1a1a22', 
-                  borderRadius: '6px', 
+                  borderRadius: '8px', 
                   color: activeTab === tab ? '#fff' : '#888', 
-                  fontSize: '13px', 
-                  fontWeight: 600, 
+                  fontSize: '16px', 
+                  fontWeight: 700, 
                   textTransform: 'uppercase', 
                   cursor: 'pointer', 
                   textAlign: 'left',
-                  letterSpacing: '0.5px'
+                  letterSpacing: '1px'
                 }}
               >
                 {tab}
               </button>
             ))}
           </div>
+        </div>
 
-          {/* MAIN CONTENT AREA */}
-          <div style={{ flex: 1 }}>
+        {/* MAIN CONTENT */}
+        <div style={{ flex: 1, padding: '12px 20px' }}>
+          
+          {/* Top Row: Name far left, buttons far right */}
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <span style={{ fontSize: '22px', fontWeight: 700, color: '#fff' }}>{account?.name}</span>
+              <span style={{ fontSize: '11px', color: '#555', padding: '4px 10px', background: '#141418', borderRadius: '4px' }}>{trades.length} Trades</span>
+            </div>
+            <div style={{ display: 'flex', gap: '10px' }}>
+              {activeTab === 'trades' && (
+                <button onClick={() => setShowEditInputs(true)} style={{ padding: '12px 18px', background: 'transparent', border: '1px solid #1a1a22', borderRadius: '6px', color: '#888', fontSize: '13px', cursor: 'pointer' }}>Edit Columns</button>
+              )}
+              <button onClick={() => setShowAddTrade(true)} style={{ padding: '12px 22px', background: '#22c55e', border: 'none', borderRadius: '6px', color: '#fff', fontWeight: 600, fontSize: '13px', cursor: 'pointer' }}>+ LOG NEW TRADE</button>
+            </div>
+          </div>
 
-            {/* TRADES TAB */}
-            {activeTab === 'trades' && (
-              <>
-                <div style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', overflow: 'hidden' }}>
-                  {trades.length === 0 ? (
-                    <div style={{ padding: '50px', textAlign: 'center', color: '#666', fontSize: '14px' }}>No trades yet. Click "LOG NEW TRADE" to add your first trade.</div>
-                  ) : (
-                    <div style={{ overflowX: 'auto' }}>
-                      <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                        <thead style={{ position: 'sticky', top: 0, background: '#0a0a0e', zIndex: 5 }}>
-                          <tr>
-                            {['Symbol', 'W/L', 'PnL', '%', 'RR', 'Trend', 'Confidence', 'Rating', 'Image', 'Notes', 'Placed', 'Date', ''].map((h, i) => (
-                              <th key={i} style={{ padding: '12px 14px', textAlign: 'center', color: '#888', fontSize: '10px', fontWeight: 600, textTransform: 'uppercase', borderBottom: '1px solid #1a1a22' }}>{h}</th>
-                            ))}
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {trades.map((trade) => {
-                            const extra = getExtraData(trade)
-                            const pnlValue = parseFloat(trade.pnl) || 0
-                            return (
-                              <tr key={trade.id} style={{ borderBottom: '1px solid #141418' }}>
-                                <td style={{ padding: '14px', fontWeight: 600, fontSize: '13px', textAlign: 'center' }}>{trade.symbol}</td>
-                                <td style={{ padding: '14px', textAlign: 'center' }}>
-                                  <span style={{ padding: '4px 12px', borderRadius: '4px', fontSize: '11px', fontWeight: 600, background: trade.outcome === 'win' ? 'rgba(34,197,94,0.15)' : trade.outcome === 'loss' ? 'rgba(239,68,68,0.15)' : 'rgba(255,255,255,0.1)', color: trade.outcome === 'win' ? '#22c55e' : trade.outcome === 'loss' ? '#ef4444' : '#888' }}>
-                                    {trade.outcome === 'win' ? 'WIN' : trade.outcome === 'loss' ? 'LOSS' : 'BE'}
-                                  </span>
-                                </td>
-                                <td style={{ padding: '14px', textAlign: 'center', fontWeight: 600, fontSize: '13px', color: pnlValue >= 0 ? '#22c55e' : '#ef4444' }}>
-                                  {pnlValue >= 0 ? '+' : ''}${pnlValue.toFixed(0)}
-                                </td>
-                                <td style={{ padding: '14px', textAlign: 'center', fontSize: '13px', color: '#666' }}>{extra.riskPercent || '1'}%</td>
-                                <td style={{ padding: '14px', textAlign: 'center', fontSize: '13px', color: '#888' }}>{trade.rr || '-'}</td>
-                                <td style={{ padding: '14px', textAlign: 'center', fontSize: '13px', color: trade.direction === 'long' ? '#22c55e' : '#ef4444' }}>{trade.direction?.toUpperCase() || '-'}</td>
-                                <td style={{ padding: '14px', textAlign: 'center' }}>
-                                  {extra.confidence && <span style={{ padding: '4px 12px', borderRadius: '4px', fontSize: '11px', background: extra.confidence === 'High' ? 'rgba(34,197,94,0.1)' : extra.confidence === 'Low' ? 'rgba(239,68,68,0.1)' : 'rgba(255,255,255,0.05)', color: extra.confidence === 'High' ? '#22c55e' : extra.confidence === 'Low' ? '#ef4444' : '#888' }}>{extra.confidence}</span>}
-                                </td>
-                                <td style={{ padding: '14px', textAlign: 'center' }}>
-                                  <div style={{ display: 'flex', justifyContent: 'center', gap: '3px' }}>
-                                    {[1,2,3,4,5].map(i => <span key={i} style={{ color: i <= parseInt(extra.rating || 0) ? '#22c55e' : '#2a2a35', fontSize: '16px' }}>★</span>)}
-                                  </div>
-                                </td>
-                                <td style={{ padding: '14px', textAlign: 'center' }}>
-                                  {trade.image_url ? (
-                                    <button onClick={() => setShowExpandedImage(trade.image_url)} style={{ width: '28px', height: '28px', background: '#1a1a22', borderRadius: '4px', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto' }}>
-                                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#22c55e" strokeWidth="2"><rect x="3" y="3" width="18" height="18" rx="2" /><circle cx="8.5" cy="8.5" r="1.5" /><polyline points="21 15 16 10 5 21" /></svg>
+          {/* TRADES TAB */}
+          {activeTab === 'trades' && (
+            <>
+              <div style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', overflow: 'hidden' }}>
+                {trades.length === 0 ? (
+                  <div style={{ padding: '50px', textAlign: 'center', color: '#555', fontSize: '13px' }}>No trades yet. Click "+ LOG NEW TRADE" to add your first trade.</div>
+                ) : (
+                  <div style={{ overflowX: 'auto' }}>
+                    <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                      <thead style={{ position: 'sticky', top: 0, background: '#0a0a0e', zIndex: 5 }}>
+                        <tr>
+                          {['Symbol', 'W/L', 'PnL', '%', 'RR', 'Trend', 'Confidence', 'Rating', 'Image', 'Notes', 'Placed', 'Date', ''].map((h, i) => (
+                            <th key={i} style={{ padding: '10px 12px', textAlign: 'center', color: '#555', fontSize: '10px', fontWeight: 600, textTransform: 'uppercase', borderBottom: '1px solid #1a1a22', letterSpacing: '0.5px' }}>{h}</th>
+                          ))}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {trades.map((trade) => {
+                          const extra = getExtraData(trade)
+                          const pnlValue = parseFloat(trade.pnl) || 0
+                          return (
+                            <tr key={trade.id} style={{ borderBottom: '1px solid #141418' }}>
+                              <td style={{ padding: '12px', fontWeight: 600, fontSize: '13px', textAlign: 'center' }}>{trade.symbol}</td>
+                              <td style={{ padding: '12px', textAlign: 'center' }}>
+                                <span style={{ padding: '3px 10px', borderRadius: '4px', fontSize: '10px', fontWeight: 600, background: trade.outcome === 'win' ? 'rgba(34,197,94,0.15)' : trade.outcome === 'loss' ? 'rgba(239,68,68,0.15)' : 'rgba(255,255,255,0.1)', color: trade.outcome === 'win' ? '#22c55e' : trade.outcome === 'loss' ? '#ef4444' : '#666' }}>
+                                  {trade.outcome === 'win' ? 'WIN' : trade.outcome === 'loss' ? 'LOSS' : 'BE'}
+                                </span>
+                              </td>
+                              <td style={{ padding: '12px', textAlign: 'center', fontWeight: 600, fontSize: '13px', color: pnlValue >= 0 ? '#22c55e' : '#ef4444' }}>
+                                {pnlValue >= 0 ? '+' : ''}${pnlValue.toFixed(0)}
+                              </td>
+                              <td style={{ padding: '12px', textAlign: 'center', fontSize: '12px', color: '#555' }}>{extra.riskPercent || '1'}%</td>
+                              <td style={{ padding: '12px', textAlign: 'center', fontSize: '12px', color: '#666' }}>{trade.rr || '-'}</td>
+                              <td style={{ padding: '12px', textAlign: 'center', fontSize: '12px', color: trade.direction === 'long' ? '#22c55e' : '#ef4444' }}>{trade.direction?.toUpperCase() || '-'}</td>
+                              <td style={{ padding: '12px', textAlign: 'center' }}>
+                                {extra.confidence && <span style={{ padding: '3px 10px', borderRadius: '4px', fontSize: '10px', background: extra.confidence === 'High' ? 'rgba(34,197,94,0.1)' : extra.confidence === 'Low' ? 'rgba(239,68,68,0.1)' : 'rgba(255,255,255,0.05)', color: extra.confidence === 'High' ? '#22c55e' : extra.confidence === 'Low' ? '#ef4444' : '#666' }}>{extra.confidence}</span>}
+                              </td>
+                              <td style={{ padding: '12px', textAlign: 'center' }}>
+                                <div style={{ display: 'flex', justifyContent: 'center', gap: '2px' }}>
+                                  {[1,2,3,4,5].map(i => <span key={i} style={{ color: i <= parseInt(extra.rating || 0) ? '#22c55e' : '#2a2a35', fontSize: '14px' }}>★</span>)}
+                                </div>
+                              </td>
+                              <td style={{ padding: '12px', textAlign: 'center' }}>
+                                {trade.image_url ? (
+                                  <button onClick={() => setShowExpandedImage(trade.image_url)} style={{ width: '26px', height: '26px', background: '#1a1a22', borderRadius: '4px', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto' }}>
+                                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#22c55e" strokeWidth="2"><rect x="3" y="3" width="18" height="18" rx="2" /><circle cx="8.5" cy="8.5" r="1.5" /><polyline points="21 15 16 10 5 21" /></svg>
+                                  </button>
+                                ) : <div style={{ width: '26px', height: '26px', background: '#141418', borderRadius: '4px', margin: '0 auto' }} />}
+                              </td>
+                              <td style={{ padding: '12px', maxWidth: '150px' }}>
+                                {trade.notes ? (
+                                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                    <span style={{ fontSize: '11px', color: '#555', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1 }}>{trade.notes}</span>
+                                    <button onClick={() => setShowExpandedNote(trade.notes)} style={{ background: 'transparent', border: 'none', cursor: 'pointer', padding: '2px' }}>
+                                      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#444" strokeWidth="2"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7" /></svg>
                                     </button>
-                                  ) : <div style={{ width: '28px', height: '28px', background: '#141418', borderRadius: '4px', margin: '0 auto' }} />}
-                                </td>
-                                <td style={{ padding: '14px', maxWidth: '180px' }}>
-                                  {trade.notes ? (
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                      <span style={{ fontSize: '12px', color: '#666', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1 }}>{trade.notes}</span>
-                                      <button onClick={() => setShowExpandedNote(trade.notes)} style={{ background: 'transparent', border: 'none', cursor: 'pointer', padding: '2px' }}>
-                                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#555" strokeWidth="2"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7" /></svg>
-                                      </button>
-                                    </div>
-                                  ) : <span style={{ fontSize: '12px', color: '#333' }}>-</span>}
-                                </td>
-                                <td style={{ padding: '14px', textAlign: 'center', fontSize: '12px', color: '#666' }}>{getDaysAgo(trade.date)}</td>
-                                <td style={{ padding: '14px', textAlign: 'center', fontSize: '12px', color: '#666' }}>{new Date(trade.date).getDate()}/{new Date(trade.date).getMonth()+1}</td>
-                                <td style={{ padding: '14px', textAlign: 'center' }}><button onClick={() => deleteTrade(trade.id)} style={{ background: 'transparent', border: 'none', color: '#444', cursor: 'pointer', fontSize: '16px' }}>×</button></td>
-                              </tr>
-                            )
-                          })}
-                        </tbody>
-                      </table>
-                    </div>
-                  )}
-                </div>
-                
-                {/* Small PnL Graph below trades */}
-                {trades.length > 1 && (
-                  <div style={{ marginTop: '16px', background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '16px' }}>
-                    <div style={{ fontSize: '11px', color: '#888', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '12px' }}>Equity Curve</div>
-                    <div style={{ height: '120px' }}>
-                      <MiniEquityCurve />
-                    </div>
+                                  </div>
+                                ) : <span style={{ fontSize: '11px', color: '#333' }}>-</span>}
+                              </td>
+                              <td style={{ padding: '12px', textAlign: 'center', fontSize: '11px', color: '#555' }}>{getDaysAgo(trade.date)}</td>
+                              <td style={{ padding: '12px', textAlign: 'center', fontSize: '11px', color: '#555' }}>{new Date(trade.date).getDate()}/{new Date(trade.date).getMonth()+1}</td>
+                              <td style={{ padding: '12px', textAlign: 'center' }}><button onClick={() => deleteTrade(trade.id)} style={{ background: 'transparent', border: 'none', color: '#333', cursor: 'pointer', fontSize: '14px' }}>×</button></td>
+                            </tr>
+                          )
+                        })}
+                      </tbody>
+                    </table>
                   </div>
                 )}
-              </>
-            )}
-
-        {/* STATISTICS TAB */}
-        {activeTab === 'statistics' && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-            
-            {/* TOP SECTION: Stats Column | Graphs | Controls */}
-            <div style={{ display: 'grid', gridTemplateColumns: '180px 1fr 200px', gap: '16px' }}>
-              
-              {/* LEFT: Overall Stats - Vertical Stack */}
-              <div style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', overflow: 'hidden' }}>
-                {[
-                  { l: 'TOTAL PNL', v: `${totalPnl >= 0 ? '+' : ''}$${totalPnl.toLocaleString()}`, c: totalPnl >= 0 ? '#22c55e' : '#ef4444' },
-                  { l: 'WINRATE', v: `${winrate}%`, c: winrate >= 50 ? '#22c55e' : '#ef4444' },
-                  { l: 'PROFIT FACTOR', v: profitFactor, c: '#fff' },
-                  { l: 'AVG WIN/LOSS', v: `$${avgWin}/$${avgLoss}`, c: '#fff' },
-                  { l: 'CURRENT STREAK', v: `${streaks.cs >= 0 ? '+' : ''}${streaks.cs}`, c: streaks.cs >= 0 ? '#22c55e' : '#ef4444' },
-                  { l: 'BEST PAIR', v: (() => { const counts = {}; trades.forEach(t => { if (!counts[t.symbol]) counts[t.symbol] = 0; counts[t.symbol] += parseFloat(t.pnl) || 0 }); return Object.entries(counts).sort((a, b) => b[1] - a[1])[0]?.[0] || '-' })(), c: '#22c55e' },
-                ].map((s, i) => (
-                  <div key={i} style={{ padding: '16px', borderBottom: i < 5 ? '1px solid #1a1a22' : 'none' }}>
-                    <div style={{ fontSize: '9px', color: '#666', letterSpacing: '0.5px', marginBottom: '6px', textTransform: 'uppercase' }}>{s.l}</div>
-                    <div style={{ fontSize: '18px', fontWeight: 700, color: s.c }}>{s.v}</div>
-                  </div>
-                ))}
               </div>
-
-              {/* MIDDLE: Two Graphs Stacked */}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                {/* Line Chart - PnL Over Time */}
-                <div style={{ flex: 1, background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '16px' }}>
-                  <div style={{ height: '200px' }}>
-                    <StatsEquityCurve />
+              
+              {/* Small PnL Graph below trades */}
+              {trades.length > 1 && (
+                <div style={{ marginTop: '12px', background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '12px 16px' }}>
+                  <div style={{ fontSize: '10px', color: '#555', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '10px' }}>Equity Curve</div>
+                  <div style={{ height: '100px' }}>
+                    <MiniEquityCurve />
                   </div>
                 </div>
+              )}
+            </>
+          )}
+
+          {/* STATISTICS TAB */}
+          {activeTab === 'statistics' && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              
+              {/* ROW 1: Stats Column + Line Graph with Controls */}
+              <div style={{ display: 'grid', gridTemplateColumns: '220px 1fr', gap: '12px' }}>
                 
-                {/* Vertical Bar Chart */}
-                <div style={{ flex: 1, background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '16px' }}>
-                  <div style={{ height: '200px' }}>
+                {/* LEFT: Stats - Label: Value on same line */}
+                <div style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '14px' }}>
+                  {[
+                    { l: 'Total PnL', v: `${totalPnl >= 0 ? '+' : ''}$${totalPnl.toLocaleString()}`, c: totalPnl >= 0 ? '#22c55e' : '#ef4444' },
+                    { l: 'Winrate', v: `${winrate}%`, c: winrate >= 50 ? '#22c55e' : '#ef4444' },
+                    { l: 'Profit Factor', v: profitFactor, c: parseFloat(profitFactor) >= 1.5 ? '#22c55e' : '#fff' },
+                    { l: 'Avg Win', v: `$${avgWin}`, c: '#22c55e' },
+                    { l: 'Avg Loss', v: `$${avgLoss}`, c: '#ef4444' },
+                    { l: 'Streak', v: `${streaks.cs >= 0 ? '+' : ''}${streaks.cs}`, c: streaks.cs >= 0 ? '#22c55e' : '#ef4444' },
+                    { l: 'Best Streak', v: `+${streaks.best || 0}`, c: '#22c55e' },
+                    { l: 'Worst Streak', v: `-${streaks.worst || 0}`, c: '#ef4444' },
+                    { l: 'Total Wins', v: trades.filter(t => t.outcome === 'win').length, c: '#22c55e' },
+                    { l: 'Total Losses', v: trades.filter(t => t.outcome === 'loss').length, c: '#ef4444' },
+                    { l: 'Best Trade', v: `$${Math.max(...trades.map(t => parseFloat(t.pnl) || 0), 0).toFixed(0)}`, c: '#22c55e' },
+                    { l: 'Worst Trade', v: `$${Math.min(...trades.map(t => parseFloat(t.pnl) || 0), 0).toFixed(0)}`, c: '#ef4444' },
+                  ].map((s, i) => (
+                    <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 0', borderBottom: i < 11 ? '1px solid #1a1a22' : 'none' }}>
+                      <span style={{ fontSize: '11px', color: '#666' }}>{s.l}</span>
+                      <span style={{ fontSize: '13px', fontWeight: 700, color: s.c }}>{s.v}</span>
+                    </div>
+                  ))}
+                </div>
+
+                {/* RIGHT: Line Graph + Controls in ONE box */}
+                <div style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '16px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+                    <span style={{ fontSize: '11px', color: '#666', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Equity Curve</span>
+                    <div style={{ display: 'flex', gap: '8px' }}>
+                      <select value={graphType} onChange={e => setGraphType(e.target.value)} style={{ padding: '6px 10px', background: '#0a0a0e', border: '1px solid #1a1a22', borderRadius: '4px', color: '#fff', fontSize: '11px' }}>
+                        <option value="pnl">Cumulative PnL</option>
+                        <option value="balance">Balance</option>
+                      </select>
+                      <select value={compareMode} onChange={e => setCompareMode(e.target.value)} style={{ padding: '6px 10px', background: '#0a0a0e', border: '1px solid #1a1a22', borderRadius: '4px', color: '#fff', fontSize: '11px' }}>
+                        <option value="time">vs Time</option>
+                        <option value="trades">vs Trade #</option>
+                      </select>
+                    </div>
+                  </div>
+                  
+                  {/* Line Chart with Hover */}
+                  <div style={{ height: '220px', position: 'relative' }}>
                     {(() => {
-                      // Calculate data for vertical bar chart
-                      const groupedData = {}
-                      trades.forEach(t => {
-                        const key = t[graphGroupBy] || 'Unknown'
-                        if (!groupedData[key]) groupedData[key] = { wins: 0, losses: 0, total: 0 }
-                        groupedData[key].total++
-                        if (t.outcome === 'win') groupedData[key].wins++
-                        else if (t.outcome === 'loss') groupedData[key].losses++
-                      })
+                      if (trades.length < 2) return <div style={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#555' }}>Need at least 2 trades</div>
                       
-                      const entries = Object.entries(groupedData)
-                        .filter(([k]) => k !== 'Unknown')
-                        .map(([name, data]) => ({
-                          name,
-                          value: data.wins + data.losses > 0 ? Math.round((data.wins / (data.wins + data.losses)) * 100) : 0,
-                          count: data.total
-                        }))
-                        .sort((a, b) => b.value - a.value)
-                        .slice(0, 8)
+                      const sorted = [...trades].sort((a, b) => new Date(a.date) - new Date(b.date))
+                      let dataPoints = []
+                      let cumulative = account?.starting_balance || 10000
                       
-                      if (entries.length === 0) return <div style={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#666' }}>No data</div>
+                      if (graphType === 'pnl') {
+                        let runningPnl = 0
+                        dataPoints = sorted.map((t, i) => {
+                          runningPnl += parseFloat(t.pnl) || 0
+                          return { x: i, y: runningPnl, date: t.date, pnl: parseFloat(t.pnl) || 0, symbol: t.symbol }
+                        })
+                      } else {
+                        dataPoints = sorted.map((t, i) => {
+                          cumulative += parseFloat(t.pnl) || 0
+                          return { x: i, y: cumulative, date: t.date, pnl: parseFloat(t.pnl) || 0, symbol: t.symbol }
+                        })
+                      }
                       
-                      const maxVal = 100 // winrate is always 0-100
+                      const minY = Math.min(...dataPoints.map(d => d.y))
+                      const maxY = Math.max(...dataPoints.map(d => d.y))
+                      const range = maxY - minY || 1
+                      const width = 100, height = 100, padding = 5
+                      
+                      const getX = (i) => padding + (i / (dataPoints.length - 1)) * (width - padding * 2)
+                      const getY = (y) => height - padding - ((y - minY) / range) * (height - padding * 2)
+                      
+                      const points = dataPoints.map((d, i) => `${getX(i)},${getY(d.y)}`).join(' ')
+                      const areaPoints = `${padding},${height - padding} ${points} ${width - padding},${height - padding}`
                       
                       return (
-                        <div style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-                          {/* Y-axis labels and chart area */}
-                          <div style={{ flex: 1, display: 'flex' }}>
-                            {/* Y-axis */}
-                            <div style={{ width: '35px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', paddingBottom: '4px' }}>
-                              <span style={{ fontSize: '9px', color: '#666' }}>100%</span>
-                              <span style={{ fontSize: '9px', color: '#666' }}>50%</span>
-                              <span style={{ fontSize: '9px', color: '#666' }}>0%</span>
-                            </div>
-                            {/* Bars */}
-                            <div style={{ flex: 1, display: 'flex', alignItems: 'flex-end', justifyContent: 'space-around', gap: '8px', borderLeft: '1px solid #333', borderBottom: '1px solid #333', paddingLeft: '8px' }}>
-                              {entries.map((item, i) => (
-                                <div key={i} style={{ flex: 1, maxWidth: '60px', display: 'flex', flexDirection: 'column', alignItems: 'center', height: '100%', justifyContent: 'flex-end' }}>
-                                  <div style={{ fontSize: '10px', color: item.value >= 50 ? '#22c55e' : '#ef4444', marginBottom: '4px', fontWeight: 600 }}>{item.value}%</div>
-                                  <div style={{ 
-                                    width: '100%', 
-                                    height: `${item.value}%`, 
-                                    background: `linear-gradient(to top, ${item.value >= 50 ? '#22c55e' : '#ef4444'}, ${item.value >= 50 ? '#22c55e88' : '#ef444488'})`,
-                                    borderRadius: '4px 4px 0 0',
-                                    minHeight: '4px'
-                                  }} />
-                                </div>
-                              ))}
-                            </div>
+                        <div style={{ height: '100%', display: 'flex' }}>
+                          <div style={{ width: '50px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', paddingRight: '8px', fontSize: '9px', color: '#555' }}>
+                            <span>${(maxY / 1000).toFixed(1)}k</span>
+                            <span>${((maxY + minY) / 2000).toFixed(1)}k</span>
+                            <span>${(minY / 1000).toFixed(1)}k</span>
                           </div>
-                          {/* X-axis labels */}
-                          <div style={{ display: 'flex', paddingLeft: '35px' }}>
-                            <div style={{ flex: 1, display: 'flex', justifyContent: 'space-around', paddingTop: '8px' }}>
-                              {entries.map((item, i) => (
-                                <div key={i} style={{ flex: 1, maxWidth: '60px', textAlign: 'center' }}>
-                                  <span style={{ fontSize: '9px', color: '#888' }}>{item.name}</span>
-                                </div>
+                          <div style={{ flex: 1, position: 'relative' }} onMouseLeave={() => setHoveredPoint(null)}>
+                            <svg viewBox={`0 0 ${width} ${height}`} style={{ width: '100%', height: '100%' }} preserveAspectRatio="none">
+                              <defs>
+                                <linearGradient id="areaGrad" x1="0" y1="0" x2="0" y2="1">
+                                  <stop offset="0%" stopColor="#22c55e" stopOpacity="0.4" />
+                                  <stop offset="100%" stopColor="#22c55e" stopOpacity="0.05" />
+                                </linearGradient>
+                              </defs>
+                              <polygon points={areaPoints} fill="url(#areaGrad)" />
+                              <polyline points={points} fill="none" stroke="#22c55e" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                              {dataPoints.map((d, i) => (
+                                <circle 
+                                  key={i} 
+                                  cx={getX(i)} 
+                                  cy={getY(d.y)} 
+                                  r={hoveredPoint === i ? 3 : 1.5} 
+                                  fill={hoveredPoint === i ? '#fff' : '#22c55e'}
+                                  stroke="#22c55e"
+                                  strokeWidth="1"
+                                  style={{ cursor: 'pointer', transition: 'r 0.1s' }}
+                                  onMouseEnter={() => setHoveredPoint(i)}
+                                />
                               ))}
-                            </div>
+                            </svg>
+                            {/* Hover Tooltip */}
+                            {hoveredPoint !== null && dataPoints[hoveredPoint] && (
+                              <div style={{ position: 'absolute', top: '10px', right: '10px', background: '#1a1a22', border: '1px solid #333', borderRadius: '6px', padding: '10px', fontSize: '11px', zIndex: 10 }}>
+                                <div style={{ color: '#888', marginBottom: '4px' }}>{new Date(dataPoints[hoveredPoint].date).toLocaleDateString()}</div>
+                                <div style={{ color: '#fff', fontWeight: 600 }}>{dataPoints[hoveredPoint].symbol}</div>
+                                <div style={{ color: dataPoints[hoveredPoint].pnl >= 0 ? '#22c55e' : '#ef4444', fontWeight: 700 }}>
+                                  {dataPoints[hoveredPoint].pnl >= 0 ? '+' : ''}${dataPoints[hoveredPoint].pnl.toFixed(0)}
+                                </div>
+                                <div style={{ color: '#666', marginTop: '4px' }}>
+                                  Total: ${dataPoints[hoveredPoint].y.toFixed(0)}
+                                </div>
+                              </div>
+                            )}
                           </div>
                         </div>
+                      )
+                    })()}
+                  </div>
+                  
+                  {/* X-axis labels */}
+                  <div style={{ display: 'flex', justifyContent: 'space-between', paddingLeft: '50px', paddingTop: '8px', fontSize: '9px', color: '#555' }}>
+                    {(() => {
+                      const sorted = [...trades].sort((a, b) => new Date(a.date) - new Date(b.date))
+                      if (sorted.length < 2) return null
+                      return compareMode === 'time' ? (
+                        <>
+                          <span>{new Date(sorted[0]?.date).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' })}</span>
+                          <span>{new Date(sorted[Math.floor(sorted.length/2)]?.date).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' })}</span>
+                          <span>{new Date(sorted[sorted.length-1]?.date).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' })}</span>
+                        </>
+                      ) : (
+                        <>
+                          <span>Trade #1</span>
+                          <span>#{Math.floor(sorted.length/2)}</span>
+                          <span>#{sorted.length}</span>
+                        </>
                       )
                     })()}
                   </div>
                 </div>
               </div>
 
-              {/* RIGHT: Graph Controls */}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                {/* Top Graph Controls */}
-                <div style={{ flex: 1, background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '16px', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-                  <div style={{ fontSize: '11px', color: '#666', marginBottom: '8px' }}>Graph to show</div>
-                  <select value={graphType} onChange={e => setGraphType(e.target.value)} style={{ padding: '10px 12px', background: '#0a0a0e', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '12px', width: '100%', marginBottom: '16px' }}>
-                    <option value="pnl">PnL</option>
-                    <option value="balance">Balance</option>
-                  </select>
-                  <div style={{ fontSize: '11px', color: '#666', marginBottom: '8px' }}>compared to</div>
-                  <select value={compareMode} onChange={e => setCompareMode(e.target.value)} style={{ padding: '10px 12px', background: '#0a0a0e', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '12px', width: '100%' }}>
-                    <option value="time">Time</option>
-                    <option value="trades">Trade #</option>
-                  </select>
+              {/* ROW 2: Bar Graph + Controls in ONE box */}
+              <div style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '16px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+                  <span style={{ fontSize: '11px', color: '#666', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Performance Breakdown</span>
+                  <div style={{ display: 'flex', gap: '8px' }}>
+                    <select value={barGraphMetric} onChange={e => setBarGraphMetric(e.target.value)} style={{ padding: '6px 10px', background: '#0a0a0e', border: '1px solid #1a1a22', borderRadius: '4px', color: '#fff', fontSize: '11px' }}>
+                      <option value="winrate">Winrate</option>
+                      <option value="pnl">Total PnL</option>
+                      <option value="count">Trade Count</option>
+                    </select>
+                    <select value={graphGroupBy} onChange={e => setGraphGroupBy(e.target.value)} style={{ padding: '6px 10px', background: '#0a0a0e', border: '1px solid #1a1a22', borderRadius: '4px', color: '#fff', fontSize: '11px' }}>
+                      <option value="symbol">by Pair</option>
+                      <option value="session">by Session</option>
+                      <option value="confidence">by Confidence</option>
+                      <option value="timeframe">by Timeframe</option>
+                      <option value="direction">by Direction</option>
+                    </select>
+                  </div>
                 </div>
                 
-                {/* Bottom Graph Controls */}
-                <div style={{ flex: 1, background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '16px', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-                  <div style={{ fontSize: '11px', color: '#666', marginBottom: '8px' }}>Graph to show</div>
-                  <select style={{ padding: '10px 12px', background: '#0a0a0e', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '12px', width: '100%', marginBottom: '16px' }}>
-                    <option value="winrate">Winrate</option>
-                    <option value="pnl">PnL</option>
-                    <option value="count">Trade Count</option>
-                  </select>
-                  <div style={{ fontSize: '11px', color: '#666', marginBottom: '8px' }}>compared to</div>
-                  <select value={graphGroupBy} onChange={e => setGraphGroupBy(e.target.value)} style={{ padding: '10px 12px', background: '#0a0a0e', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '12px', width: '100%' }}>
-                    <option value="symbol">Pairs</option>
-                    <option value="session">Session</option>
-                    <option value="confidence">Confidence</option>
-                    <option value="timeframe">Timeframe</option>
-                    <option value="direction">Direction</option>
-                  </select>
-                </div>
-              </div>
-            </div>
-
-            {/* MIDDLE ROW: Long/Short Bar + Total Trades */}
-            <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '16px' }}>
-              {/* Long/Short Bar */}
-              <div style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '16px', display: 'flex', alignItems: 'center', gap: '16px' }}>
-                {(() => {
-                  const longCount = trades.filter(t => t.direction?.toLowerCase() === 'long').length
-                  const shortCount = trades.filter(t => t.direction?.toLowerCase() === 'short').length
-                  const total = longCount + shortCount || 1
-                  const longPct = Math.round((longCount / total) * 100)
-                  const shortPct = 100 - longPct
-                  return (
-                    <>
-                      <span style={{ fontSize: '13px', color: '#22c55e', fontWeight: 700, minWidth: '80px' }}>LONG {longPct}%</span>
-                      <div style={{ flex: 1, height: '14px', borderRadius: '7px', overflow: 'hidden', display: 'flex' }}>
-                        <div style={{ width: `${longPct}%`, background: 'linear-gradient(90deg, #22c55e, #16a34a)', height: '100%' }} />
-                        <div style={{ width: `${shortPct}%`, background: 'linear-gradient(90deg, #dc2626, #ef4444)', height: '100%' }} />
-                      </div>
-                      <span style={{ fontSize: '13px', color: '#ef4444', fontWeight: 700, minWidth: '80px', textAlign: 'right' }}>{shortPct}% SHORT</span>
-                    </>
-                  )
-                })()}
-              </div>
-              
-              {/* Total Trades */}
-              <div style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <span style={{ fontSize: '12px', color: '#888', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Total Amount of Trades</span>
-                <span style={{ fontSize: '28px', fontWeight: 700, color: '#fff' }}>{trades.length}</span>
-              </div>
-            </div>
-
-            {/* BOTTOM ROW: Stats/Best Pair + Trade Analysis */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-              
-              {/* Left: Stats + Best Pair */}
-              <div style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '20px', display: 'flex' }}>
-                {/* Stats List */}
-                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '14px' }}>
-                  {[
-                    { l: 'AVG. TREND', v: (() => { const dirs = trades.map(t => t.direction?.toLowerCase()); const long = dirs.filter(d => d === 'long').length; const short = dirs.filter(d => d === 'short').length; return long > short ? 'Long' : short > long ? 'Short' : 'Mixed' })() },
-                    { l: 'AVG. RATING', v: trades.length > 0 ? (trades.reduce((s, t) => s + (parseInt(t.rating) || 0), 0) / trades.length).toFixed(1) + '★' : '-' },
-                    { l: 'AVG. PNL', v: trades.length > 0 ? `$${Math.round(totalPnl / trades.length)}` : '$0' },
-                    { l: 'MOST TRADED PAIR', v: (() => { const counts = {}; trades.forEach(t => { counts[t.symbol] = (counts[t.symbol] || 0) + 1 }); return Object.entries(counts).sort((a, b) => b[1] - a[1])[0]?.[0] || '-' })() },
-                    { l: 'MOST USED RR', v: (() => { const counts = {}; trades.forEach(t => { const rr = Math.round(parseFloat(t.rr) || 0); counts[rr] = (counts[rr] || 0) + 1 }); const top = Object.entries(counts).sort((a, b) => b[1] - a[1])[0]; return top ? top[0] + 'R' : '-' })() },
-                    { l: 'BEST RR', v: (() => { const rrStats = {}; trades.forEach(t => { const rr = Math.round(parseFloat(t.rr) || 0); if (!rrStats[rr]) rrStats[rr] = { w: 0, l: 0 }; if (t.outcome === 'win') rrStats[rr].w++; else if (t.outcome === 'loss') rrStats[rr].l++ }); let best = null, bestWr = 0; Object.entries(rrStats).forEach(([rr, s]) => { const wr = s.w + s.l > 0 ? s.w / (s.w + s.l) : 0; if (wr > bestWr) { bestWr = wr; best = rr } }); return best ? `${best}R (${Math.round(bestWr * 100)}%)` : '-' })() },
-                  ].map((item, i) => (
-                    <div key={i} style={{ display: 'flex', justifyContent: 'space-between' }}>
-                      <span style={{ fontSize: '11px', color: '#666', textTransform: 'uppercase', letterSpacing: '0.3px' }}>{item.l}</span>
-                      <span style={{ fontSize: '13px', fontWeight: 600, color: '#fff' }}>{item.v}</span>
-                    </div>
-                  ))}
-                </div>
-                
-                {/* Vertical Divider */}
-                <div style={{ width: '1px', background: '#1a1a22', margin: '0 24px' }} />
-                
-                {/* Best Pair Ring */}
-                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+                {/* Bar Chart with Hover */}
+                <div style={{ height: '200px' }}>
                   {(() => {
-                    const pairStats = {}
+                    const groupedData = {}
                     trades.forEach(t => {
-                      if (!pairStats[t.symbol]) pairStats[t.symbol] = { wins: 0, losses: 0, pnl: 0 }
-                      if (t.outcome === 'win') pairStats[t.symbol].wins++
-                      else if (t.outcome === 'loss') pairStats[t.symbol].losses++
-                      pairStats[t.symbol].pnl += parseFloat(t.pnl) || 0
+                      const key = graphGroupBy === 'confidence' ? (getExtraData(t).confidence || 'Unknown') : (t[graphGroupBy] || 'Unknown')
+                      if (!groupedData[key]) groupedData[key] = { wins: 0, losses: 0, total: 0, pnl: 0 }
+                      groupedData[key].total++
+                      groupedData[key].pnl += parseFloat(t.pnl) || 0
+                      if (t.outcome === 'win') groupedData[key].wins++
+                      else if (t.outcome === 'loss') groupedData[key].losses++
                     })
-                    const sorted = Object.entries(pairStats).sort((a, b) => b[1].pnl - a[1].pnl)
-                    const best = sorted[0]
-                    if (!best) return <div style={{ color: '#666', fontSize: '12px' }}>No trades</div>
-                    const wr = best[1].wins + best[1].losses > 0 ? Math.round((best[1].wins / (best[1].wins + best[1].losses)) * 100) : 0
-                    const size = 130, stroke = 10
-                    const radius = (size - stroke) / 2
-                    const circumference = 2 * Math.PI * radius
-                    const winOffset = circumference * (1 - wr / 100)
+                    
+                    const entries = Object.entries(groupedData)
+                      .filter(([k]) => k && k !== 'Unknown' && k !== 'undefined')
+                      .map(([name, data]) => {
+                        const wr = data.wins + data.losses > 0 ? Math.round((data.wins / (data.wins + data.losses)) * 100) : 0
+                        let value, displayValue
+                        if (barGraphMetric === 'winrate') { value = wr; displayValue = wr + '%' }
+                        else if (barGraphMetric === 'pnl') { value = data.pnl; displayValue = (data.pnl >= 0 ? '+' : '') + '$' + Math.round(data.pnl) }
+                        else { value = data.total; displayValue = data.total.toString() }
+                        return { name, value, displayValue, winrate: wr, pnl: data.pnl, count: data.total, wins: data.wins, losses: data.losses }
+                      })
+                      .sort((a, b) => b.value - a.value)
+                      .slice(0, 10)
+                    
+                    if (entries.length === 0) return <div style={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#555' }}>No data</div>
+                    
+                    const maxVal = barGraphMetric === 'winrate' ? 100 : Math.max(...entries.map(e => Math.abs(e.value)), 1)
+                    
                     return (
-                      <>
-                        <div style={{ fontSize: '10px', color: '#666', marginBottom: '12px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Best Pair</div>
-                        <div style={{ position: 'relative', width: size, height: size }}>
-                          <svg width={size} height={size} style={{ transform: 'rotate(-90deg)' }}>
-                            <circle cx={size/2} cy={size/2} r={radius} fill="none" stroke="#1a1a22" strokeWidth={stroke} />
-                            <circle cx={size/2} cy={size/2} r={radius} fill="none" stroke="#22c55e" strokeWidth={stroke} strokeDasharray={circumference} strokeDashoffset={winOffset} strokeLinecap="round" />
-                          </svg>
-                          <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-                            <div style={{ fontSize: '16px', fontWeight: 700, color: '#fff' }}>{best[0]}</div>
-                            <div style={{ fontSize: '24px', fontWeight: 700, color: '#22c55e' }}>{wr}%</div>
+                      <div style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+                        <div style={{ flex: 1, display: 'flex' }}>
+                          <div style={{ width: '45px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', fontSize: '9px', color: '#555' }}>
+                            <span>{barGraphMetric === 'winrate' ? '100%' : barGraphMetric === 'pnl' ? '$' + Math.round(maxVal) : maxVal}</span>
+                            <span>{barGraphMetric === 'winrate' ? '50%' : barGraphMetric === 'pnl' ? '$' + Math.round(maxVal/2) : Math.round(maxVal/2)}</span>
+                            <span>0</span>
+                          </div>
+                          <div style={{ flex: 1, display: 'flex', alignItems: 'flex-end', justifyContent: 'space-around', gap: '4px', borderLeft: '1px solid #333', borderBottom: '1px solid #333', paddingLeft: '8px', position: 'relative' }}>
+                            {entries.map((item, i) => {
+                              const heightPct = Math.max((Math.abs(item.value) / maxVal) * 100, 3)
+                              const isGreen = barGraphMetric === 'winrate' ? item.value >= 50 : item.value >= 0
+                              return (
+                                <div 
+                                  key={i} 
+                                  style={{ flex: 1, maxWidth: '60px', display: 'flex', flexDirection: 'column', alignItems: 'center', height: '100%', justifyContent: 'flex-end', position: 'relative' }}
+                                  onMouseEnter={() => setHoveredBar(i)}
+                                  onMouseLeave={() => setHoveredBar(null)}
+                                >
+                                  <div style={{ fontSize: '9px', color: isGreen ? '#22c55e' : '#ef4444', marginBottom: '3px', fontWeight: 600 }}>{item.displayValue}</div>
+                                  <div style={{ 
+                                    width: '100%', 
+                                    height: `${heightPct}%`, 
+                                    background: isGreen ? 'linear-gradient(to top, #22c55e, #22c55eaa)' : 'linear-gradient(to top, #ef4444, #ef4444aa)',
+                                    borderRadius: '3px 3px 0 0',
+                                    cursor: 'pointer',
+                                    transition: 'opacity 0.15s',
+                                    opacity: hoveredBar === null || hoveredBar === i ? 1 : 0.5
+                                  }} />
+                                  {/* Hover tooltip */}
+                                  {hoveredBar === i && (
+                                    <div style={{ position: 'absolute', bottom: '100%', left: '50%', transform: 'translateX(-50%)', background: '#1a1a22', border: '1px solid #333', borderRadius: '6px', padding: '8px', fontSize: '10px', whiteSpace: 'nowrap', zIndex: 20, marginBottom: '8px' }}>
+                                      <div style={{ fontWeight: 700, color: '#fff', marginBottom: '4px' }}>{item.name}</div>
+                                      <div style={{ color: '#888' }}>Wins: <span style={{ color: '#22c55e' }}>{item.wins}</span> / Losses: <span style={{ color: '#ef4444' }}>{item.losses}</span></div>
+                                      <div style={{ color: '#888' }}>WR: <span style={{ color: item.winrate >= 50 ? '#22c55e' : '#ef4444' }}>{item.winrate}%</span></div>
+                                      <div style={{ color: '#888' }}>PnL: <span style={{ color: item.pnl >= 0 ? '#22c55e' : '#ef4444' }}>{item.pnl >= 0 ? '+' : ''}${Math.round(item.pnl)}</span></div>
+                                    </div>
+                                  )}
+                                </div>
+                              )
+                            })}
                           </div>
                         </div>
-                        <div style={{ display: 'flex', gap: '20px', marginTop: '12px', fontSize: '11px', color: '#888' }}>
-                          <span><span style={{ color: '#22c55e' }}>●</span> Wins</span>
-                          <span><span style={{ color: '#1a1a22' }}>●</span> Losses</span>
+                        <div style={{ display: 'flex', paddingLeft: '45px', paddingTop: '6px' }}>
+                          {entries.map((item, i) => (
+                            <div key={i} style={{ flex: 1, maxWidth: '60px', textAlign: 'center', fontSize: '9px', color: '#666', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.name}</div>
+                          ))}
                         </div>
-                      </>
+                      </div>
                     )
                   })()}
                 </div>
               </div>
 
-              {/* Right: Trade Analysis */}
-              <div style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '20px', display: 'flex' }}>
-                {/* Dropdowns */}
-                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-                  <div style={{ fontSize: '10px', color: '#666', marginBottom: '16px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Trade Analysis</div>
-                  <select style={{ padding: '12px 14px', background: '#0a0a0e', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '13px', width: '100%', marginBottom: '12px' }}>
-                    <option>Confidence</option>
-                    <option>Session</option>
-                    <option>Timeframe</option>
-                    <option>Direction</option>
-                  </select>
-                  <div style={{ fontSize: '11px', color: '#666', textAlign: 'center', margin: '8px 0' }}>vs</div>
-                  <select style={{ padding: '12px 14px', background: '#0a0a0e', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '13px', width: '100%' }}>
-                    <option>Winrate</option>
-                    <option>PnL</option>
-                    <option>Avg RR</option>
-                  </select>
-                </div>
-                
-                {/* Vertical Divider */}
-                <div style={{ width: '1px', background: '#1a1a22', margin: '0 24px' }} />
-                
-                {/* Results */}
-                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: '16px' }}>
+              {/* ROW 3: Long/Short Bar + Total Trades + More Stats */}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '12px' }}>
+                {/* Long/Short Bar */}
+                <div style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '14px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  <span style={{ fontSize: '10px', color: '#555', textTransform: 'uppercase' }}>Direction Split</span>
                   {(() => {
-                    const conf = { high: { w: 0, l: 0 }, medium: { w: 0, l: 0 }, low: { w: 0, l: 0 } }
-                    trades.forEach(t => {
-                      const c = t.confidence?.toLowerCase()
-                      if (c === 'high') { if (t.outcome === 'win') conf.high.w++; else if (t.outcome === 'loss') conf.high.l++ }
-                      else if (c === 'medium') { if (t.outcome === 'win') conf.medium.w++; else if (t.outcome === 'loss') conf.medium.l++ }
-                      else if (c === 'low') { if (t.outcome === 'win') conf.low.w++; else if (t.outcome === 'loss') conf.low.l++ }
-                    })
-                    return [
-                      { l: 'HIGH', wr: conf.high.w + conf.high.l > 0 ? Math.round((conf.high.w / (conf.high.w + conf.high.l)) * 100) : 0 },
-                      { l: 'MEDIUM', wr: conf.medium.w + conf.medium.l > 0 ? Math.round((conf.medium.w / (conf.medium.w + conf.medium.l)) * 100) : 0 },
-                      { l: 'LOW', wr: conf.low.w + conf.low.l > 0 ? Math.round((conf.low.w / (conf.low.w + conf.low.l)) * 100) : 0 },
-                    ].map((item, i) => (
-                      <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <span style={{ fontSize: '13px', color: '#888' }}>{item.l}:</span>
-                        <span style={{ fontSize: '16px', fontWeight: 700, color: item.wr >= 50 ? '#22c55e' : item.wr > 0 ? '#ef4444' : '#666' }}>{item.wr}% wr</span>
+                    const longCount = trades.filter(t => t.direction?.toLowerCase() === 'long').length
+                    const shortCount = trades.filter(t => t.direction?.toLowerCase() === 'short').length
+                    const total = longCount + shortCount || 1
+                    const longPct = Math.round((longCount / total) * 100)
+                    return (
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                        <span style={{ fontSize: '12px', color: '#22c55e', fontWeight: 700, minWidth: '55px' }}>{longPct}% L</span>
+                        <div style={{ flex: 1, height: '10px', borderRadius: '5px', overflow: 'hidden', display: 'flex' }}>
+                          <div style={{ width: `${longPct}%`, background: '#22c55e' }} />
+                          <div style={{ width: `${100-longPct}%`, background: '#ef4444' }} />
+                        </div>
+                        <span style={{ fontSize: '12px', color: '#ef4444', fontWeight: 700, minWidth: '55px', textAlign: 'right' }}>{100-longPct}% S</span>
                       </div>
-                    ))
+                    )
                   })()}
                 </div>
-              </div>
-            </div>
-
-          </div>
-        )}
-
-        {/* NOTES TAB */}
-        {activeTab === 'notes' && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-            {/* Title: Account Name + Journal */}
-            <div style={{ fontSize: '24px', fontWeight: 700, color: '#fff' }}>
-              {account?.name} <span style={{ color: '#888' }}>Journal</span>
-            </div>
-
-            {/* Description */}
-            <div style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '16px' }}>
-              <p style={{ fontSize: '13px', color: '#888', margin: 0, lineHeight: 1.6 }}>
-                Here you can journal all your trades with customizing inputs including a wide range of factors filtered to statistics and/or to becoming positive.
-              </p>
-            </div>
-
-            {/* Main Journal Area - Large text area for writing */}
-            <div style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '20px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-                <div style={{ fontSize: '11px', color: '#888', textTransform: 'uppercase', letterSpacing: '1px', fontWeight: 600 }}>Write Your Thoughts</div>
-                <input type="date" value={noteDate} onChange={e => setNoteDate(e.target.value)} style={{ padding: '8px 12px', background: '#0a0a0e', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '12px' }} />
-              </div>
-              <textarea 
-                value={noteText} 
-                onChange={e => setNoteText(e.target.value)} 
-                placeholder="Write about your trading day, what went well, what you learned, your emotions, market observations..."
-                style={{ 
-                  width: '100%', 
-                  minHeight: '250px', 
-                  padding: '16px', 
-                  background: '#0a0a0e', 
-                  border: '1px solid #1a1a22', 
-                  borderRadius: '8px', 
-                  color: '#fff', 
-                  fontSize: '14px', 
-                  lineHeight: '1.8',
-                  resize: 'vertical', 
-                  boxSizing: 'border-box',
-                  fontFamily: 'inherit'
-                }} 
-              />
-              <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '12px' }}>
-                <button 
-                  onClick={saveNote} 
-                  disabled={!noteText.trim()} 
-                  style={{ 
-                    padding: '12px 32px', 
-                    background: noteText.trim() ? '#22c55e' : '#1a1a22', 
-                    border: 'none', 
-                    borderRadius: '6px', 
-                    color: noteText.trim() ? '#fff' : '#666', 
-                    fontWeight: 600, 
-                    fontSize: '14px', 
-                    cursor: noteText.trim() ? 'pointer' : 'not-allowed'
-                  }}
-                >
-                  Save Note
-                </button>
-              </div>
-            </div>
-
-            {/* Daily Notes Section */}
-            <div style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '20px' }}>
-              <div style={{ fontSize: '11px', color: '#888', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '16px', fontWeight: 600 }}>Daily Notes</div>
-              
-              {Object.keys(notes.daily || {}).length === 0 ? (
-                <div style={{ padding: '30px', textAlign: 'center', color: '#666', fontSize: '13px' }}>
-                  No daily notes yet. Start writing above to create your first entry.
+                
+                {/* Total Trades */}
+                <div style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span style={{ fontSize: '11px', color: '#555', textTransform: 'uppercase' }}>Total Trades</span>
+                  <span style={{ fontSize: '28px', fontWeight: 700, color: '#fff' }}>{trades.length}</span>
                 </div>
-              ) : (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', maxHeight: '400px', overflowY: 'auto' }}>
-                  {Object.entries(notes.daily).sort((a, b) => new Date(b[0]) - new Date(a[0])).map(([date, text]) => (
-                    <div key={date} style={{ padding: '16px', background: '#0a0a0e', borderRadius: '8px', border: '1px solid #1a1a22' }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-                        <span style={{ fontSize: '13px', color: '#22c55e', fontWeight: 600 }}>
-                          {new Date(date).toLocaleDateString('en-GB', { weekday: 'long', day: '2-digit', month: 'long', year: 'numeric' })}
-                        </span>
-                        <button onClick={() => deleteNote('daily', date)} style={{ background: 'transparent', border: 'none', color: '#666', cursor: 'pointer', fontSize: '18px', padding: '4px 8px' }}>×</button>
+
+                {/* Avg RR */}
+                <div style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span style={{ fontSize: '11px', color: '#555', textTransform: 'uppercase' }}>Avg RR</span>
+                  <span style={{ fontSize: '28px', fontWeight: 700, color: '#22c55e' }}>
+                    {(trades.reduce((s, t) => s + (parseFloat(t.rr) || 0), 0) / (trades.length || 1)).toFixed(2)}R
+                  </span>
+                </div>
+              </div>
+
+              {/* ROW 4: Best Pair Donut + Trade Analysis */}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                
+                {/* Best Pair with Donut + Extra Stats */}
+                <div style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '16px', display: 'flex' }}>
+                  <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                    {[
+                      { l: 'Avg Trend', v: (() => { const l = trades.filter(t => t.direction?.toLowerCase() === 'long').length; const s = trades.filter(t => t.direction?.toLowerCase() === 'short').length; return l > s ? 'Long' : s > l ? 'Short' : 'Mixed' })() },
+                      { l: 'Avg Rating', v: (trades.reduce((s, t) => s + (parseInt(getExtraData(t).rating) || 0), 0) / (trades.length || 1)).toFixed(1) + '★' },
+                      { l: 'Avg PnL/Trade', v: `$${Math.round(totalPnl / (trades.length || 1))}` },
+                      { l: 'Most Traded', v: (() => { const c = {}; trades.forEach(t => c[t.symbol] = (c[t.symbol] || 0) + 1); return Object.entries(c).sort((a, b) => b[1] - a[1])[0]?.[0] || '-' })() },
+                      { l: 'Best Session', v: (() => { const s = {}; trades.forEach(t => { const sess = t.session || 'Unknown'; if (!s[sess]) s[sess] = { w: 0, t: 0 }; s[sess].t++; if (t.outcome === 'win') s[sess].w++ }); const best = Object.entries(s).filter(([k]) => k !== 'Unknown').sort((a, b) => (b[1].w/b[1].t) - (a[1].w/a[1].t))[0]; return best ? best[0] : '-' })() },
+                      { l: 'Best Timeframe', v: (() => { const s = {}; trades.forEach(t => { const tf = t.timeframe || 'Unknown'; if (!s[tf]) s[tf] = { w: 0, t: 0 }; s[tf].t++; if (t.outcome === 'win') s[tf].w++ }); const best = Object.entries(s).filter(([k]) => k !== 'Unknown').sort((a, b) => (b[1].w/b[1].t) - (a[1].w/a[1].t))[0]; return best ? best[0] : '-' })() },
+                    ].map((item, i) => (
+                      <div key={i} style={{ display: 'flex', justifyContent: 'space-between' }}>
+                        <span style={{ fontSize: '11px', color: '#555' }}>{item.l}</span>
+                        <span style={{ fontSize: '12px', fontWeight: 600, color: '#fff' }}>{item.v}</span>
                       </div>
-                      <div style={{ fontSize: '13px', color: '#aaa', lineHeight: '1.7', whiteSpace: 'pre-wrap' }}>{text}</div>
-                    </div>
-                  ))}
+                    ))}
+                  </div>
+                  <div style={{ width: '1px', background: '#1a1a22', margin: '0 16px' }} />
+                  <div style={{ width: '130px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+                    {(() => {
+                      const ps = {}
+                      trades.forEach(t => { if (!ps[t.symbol]) ps[t.symbol] = { w: 0, l: 0, pnl: 0 }; if (t.outcome === 'win') ps[t.symbol].w++; else if (t.outcome === 'loss') ps[t.symbol].l++; ps[t.symbol].pnl += parseFloat(t.pnl) || 0 })
+                      const best = Object.entries(ps).sort((a, b) => b[1].pnl - a[1].pnl)[0]
+                      if (!best) return <div style={{ color: '#555', fontSize: '11px' }}>No data</div>
+                      const wr = best[1].w + best[1].l > 0 ? Math.round((best[1].w / (best[1].w + best[1].l)) * 100) : 0
+                      const size = 90, stroke = 7, r = (size - stroke) / 2, c = 2 * Math.PI * r
+                      return (
+                        <>
+                          <div style={{ fontSize: '9px', color: '#555', marginBottom: '6px', textTransform: 'uppercase' }}>Best Pair</div>
+                          <div style={{ position: 'relative', width: size, height: size }}>
+                            <svg width={size} height={size} style={{ transform: 'rotate(-90deg)' }}>
+                              <circle cx={size/2} cy={size/2} r={r} fill="none" stroke="#1a1a22" strokeWidth={stroke} />
+                              <circle cx={size/2} cy={size/2} r={r} fill="none" stroke="#22c55e" strokeWidth={stroke} strokeDasharray={c} strokeDashoffset={c * (1 - wr/100)} strokeLinecap="round" />
+                            </svg>
+                            <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+                              <div style={{ fontSize: '12px', fontWeight: 700, color: '#fff' }}>{best[0]}</div>
+                              <div style={{ fontSize: '16px', fontWeight: 700, color: '#22c55e' }}>{wr}%</div>
+                            </div>
+                          </div>
+                          <div style={{ display: 'flex', gap: '12px', marginTop: '6px', fontSize: '9px', color: '#666' }}>
+                            <span><span style={{ color: '#22c55e' }}>●</span> {best[1].w}W</span>
+                            <span><span style={{ color: '#333' }}>●</span> {best[1].l}L</span>
+                          </div>
+                        </>
+                      )
+                    })()}
+                  </div>
                 </div>
-              )}
-            </div>
-          </div>
-        )}
 
+                {/* Trade Analysis - Fully Functional */}
+                <div style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '16px', display: 'flex' }}>
+                  <div style={{ width: '140px', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+                    <div style={{ fontSize: '9px', color: '#555', marginBottom: '10px', textTransform: 'uppercase' }}>Trade Analysis</div>
+                    <select value={analysisGroupBy} onChange={e => setAnalysisGroupBy(e.target.value)} style={{ padding: '8px', background: '#0a0a0e', border: '1px solid #1a1a22', borderRadius: '4px', color: '#fff', fontSize: '11px', marginBottom: '8px' }}>
+                      <option value="confidence">Confidence</option>
+                      <option value="session">Session</option>
+                      <option value="timeframe">Timeframe</option>
+                      <option value="direction">Direction</option>
+                    </select>
+                    <div style={{ fontSize: '10px', color: '#444', textAlign: 'center', margin: '4px 0' }}>vs</div>
+                    <select value={analysisMetric} onChange={e => setAnalysisMetric(e.target.value)} style={{ padding: '8px', background: '#0a0a0e', border: '1px solid #1a1a22', borderRadius: '4px', color: '#fff', fontSize: '11px' }}>
+                      <option value="winrate">Winrate</option>
+                      <option value="pnl">Total PnL</option>
+                      <option value="avgpnl">Avg PnL</option>
+                    </select>
+                  </div>
+                  <div style={{ width: '1px', background: '#1a1a22', margin: '0 16px' }} />
+                  <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: '8px' }}>
+                    {(() => {
+                      const groups = {}
+                      trades.forEach(t => {
+                        let key
+                        if (analysisGroupBy === 'confidence') key = getExtraData(t).confidence || 'Unknown'
+                        else if (analysisGroupBy === 'session') key = t.session || 'Unknown'
+                        else if (analysisGroupBy === 'timeframe') key = t.timeframe || 'Unknown'
+                        else key = t.direction || 'Unknown'
+                        if (!groups[key]) groups[key] = { w: 0, l: 0, pnl: 0 }
+                        if (t.outcome === 'win') groups[key].w++
+                        else if (t.outcome === 'loss') groups[key].l++
+                        groups[key].pnl += parseFloat(t.pnl) || 0
+                      })
+                      
+                      return Object.entries(groups)
+                        .filter(([k]) => k && k !== 'Unknown')
+                        .map(([name, data]) => {
+                          const total = data.w + data.l
+                          let value, displayValue, isGood
+                          if (analysisMetric === 'winrate') {
+                            value = total > 0 ? Math.round((data.w / total) * 100) : 0
+                            displayValue = value + '% wr'
+                            isGood = value >= 50
+                          } else if (analysisMetric === 'pnl') {
+                            value = data.pnl
+                            displayValue = (value >= 0 ? '+' : '') + '$' + Math.round(value)
+                            isGood = value >= 0
+                          } else {
+                            value = total > 0 ? data.pnl / total : 0
+                            displayValue = (value >= 0 ? '+' : '') + '$' + Math.round(value) + '/trade'
+                            isGood = value >= 0
+                          }
+                          return { name, displayValue, isGood }
+                        })
+                        .slice(0, 5)
+                        .map((item, i) => (
+                          <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <span style={{ fontSize: '11px', color: '#666' }}>{item.name}</span>
+                            <span style={{ fontSize: '13px', fontWeight: 700, color: item.isGood ? '#22c55e' : '#ef4444' }}>{item.displayValue}</span>
+                          </div>
+                        ))
+                    })()}
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+          {/* NOTES TAB - With Daily/Weekly/Custom sections */}
+          {activeTab === 'notes' && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              
+              {/* Sub-tabs for Daily / Weekly / Custom */}
+              <div style={{ display: 'flex', gap: '8px', marginBottom: '4px' }}>
+                {['daily', 'weekly', 'custom'].map(sub => (
+                  <button 
+                    key={sub}
+                    onClick={() => setNotesSubTab(sub)}
+                    style={{ 
+                      padding: '10px 20px', 
+                      background: notesSubTab === sub ? '#22c55e' : 'transparent', 
+                      border: notesSubTab === sub ? 'none' : '1px solid #1a1a22', 
+                      borderRadius: '6px', 
+                      color: notesSubTab === sub ? '#fff' : '#666', 
+                      fontSize: '12px', 
+                      fontWeight: 600, 
+                      cursor: 'pointer',
+                      textTransform: 'capitalize'
+                    }}
+                  >
+                    {sub}
+                  </button>
+                ))}
+              </div>
+
+              {/* Write New Note */}
+              <div style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '16px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+                  <div style={{ fontSize: '10px', color: '#555', textTransform: 'uppercase', letterSpacing: '0.5px', fontWeight: 600 }}>
+                    Write {notesSubTab === 'custom' ? 'Custom Note' : notesSubTab + ' Note'}
+                  </div>
+                  <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                    {notesSubTab === 'custom' && (
+                      <input 
+                        type="text" 
+                        placeholder="Note title..." 
+                        value={customNoteTitle}
+                        onChange={e => setCustomNoteTitle(e.target.value)}
+                        style={{ padding: '6px 10px', background: '#0a0a0e', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '11px', width: '150px' }} 
+                      />
+                    )}
+                    <input type="date" value={noteDate} onChange={e => setNoteDate(e.target.value)} style={{ padding: '6px 10px', background: '#0a0a0e', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '11px' }} />
+                  </div>
+                </div>
+                <textarea 
+                  value={noteText} 
+                  onChange={e => setNoteText(e.target.value)} 
+                  placeholder={notesSubTab === 'daily' ? "Write about your trading day..." : notesSubTab === 'weekly' ? "Summarize your trading week..." : "Write your custom note..."}
+                  style={{ width: '100%', minHeight: '150px', padding: '12px', background: '#0a0a0e', border: '1px solid #1a1a22', borderRadius: '8px', color: '#fff', fontSize: '13px', lineHeight: '1.7', resize: 'vertical', boxSizing: 'border-box', fontFamily: 'inherit' }} 
+                />
+                <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '10px' }}>
+                  <button 
+                    onClick={() => {
+                      if (!noteText.trim()) return
+                      const newNotes = { ...notes }
+                      if (notesSubTab === 'custom') {
+                        if (!newNotes.custom) newNotes.custom = []
+                        newNotes.custom.push({ title: customNoteTitle || 'Untitled', text: noteText, date: noteDate })
+                      } else {
+                        if (!newNotes[notesSubTab]) newNotes[notesSubTab] = {}
+                        newNotes[notesSubTab][noteDate] = noteText
+                      }
+                      setNotes(newNotes)
+                      saveNote()
+                      setNoteText('')
+                      setCustomNoteTitle('')
+                    }} 
+                    disabled={!noteText.trim()} 
+                    style={{ padding: '10px 24px', background: noteText.trim() ? '#22c55e' : '#1a1a22', border: 'none', borderRadius: '6px', color: noteText.trim() ? '#fff' : '#555', fontWeight: 600, fontSize: '12px', cursor: noteText.trim() ? 'pointer' : 'not-allowed' }}
+                  >
+                    Save {notesSubTab.charAt(0).toUpperCase() + notesSubTab.slice(1)} Note
+                  </button>
+                </div>
+              </div>
+
+              {/* Notes List */}
+              <div style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '16px' }}>
+                <div style={{ fontSize: '10px', color: '#555', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '12px', fontWeight: 600 }}>
+                  {notesSubTab.charAt(0).toUpperCase() + notesSubTab.slice(1)} Notes
+                </div>
+                
+                {notesSubTab === 'custom' ? (
+                  (notes.custom || []).length === 0 ? (
+                    <div style={{ padding: '24px', textAlign: 'center', color: '#444', fontSize: '12px' }}>No custom notes yet.</div>
+                  ) : (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', maxHeight: '350px', overflowY: 'auto' }}>
+                      {(notes.custom || []).map((note, idx) => (
+                        <div key={idx} style={{ padding: '12px', background: '#0a0a0e', borderRadius: '8px', border: '1px solid #1a1a22' }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                            <span style={{ fontSize: '12px', color: '#22c55e', fontWeight: 600 }}>{note.title}</span>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                              <span style={{ fontSize: '10px', color: '#555' }}>{new Date(note.date).toLocaleDateString()}</span>
+                              <button onClick={() => deleteNote('custom', idx)} style={{ background: 'transparent', border: 'none', color: '#555', cursor: 'pointer', fontSize: '16px' }}>×</button>
+                            </div>
+                          </div>
+                          <div style={{ fontSize: '12px', color: '#888', lineHeight: '1.6', whiteSpace: 'pre-wrap' }}>{note.text}</div>
+                        </div>
+                      ))}
+                    </div>
+                  )
+                ) : (
+                  Object.keys(notes[notesSubTab] || {}).length === 0 ? (
+                    <div style={{ padding: '24px', textAlign: 'center', color: '#444', fontSize: '12px' }}>No {notesSubTab} notes yet.</div>
+                  ) : (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', maxHeight: '350px', overflowY: 'auto' }}>
+                      {Object.entries(notes[notesSubTab] || {}).sort((a, b) => new Date(b[0]) - new Date(a[0])).map(([date, text]) => (
+                        <div key={date} style={{ padding: '12px', background: '#0a0a0e', borderRadius: '8px', border: '1px solid #1a1a22' }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                            <span style={{ fontSize: '12px', color: '#22c55e', fontWeight: 600 }}>
+                              {new Date(date).toLocaleDateString('en-GB', { weekday: 'short', day: '2-digit', month: 'short', year: 'numeric' })}
+                            </span>
+                            <button onClick={() => deleteNote(notesSubTab, date)} style={{ background: 'transparent', border: 'none', color: '#555', cursor: 'pointer', fontSize: '16px' }}>×</button>
+                          </div>
+                          <div style={{ fontSize: '12px', color: '#888', lineHeight: '1.6', whiteSpace: 'pre-wrap' }}>{text}</div>
+                        </div>
+                      ))}
+                    </div>
+                  )
+                )}
+              </div>
+            </div>
+          )}
           </div>
         </div>
 
