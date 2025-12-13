@@ -16,8 +16,6 @@ export default function DashboardPage() {
   const [balance, setBalance] = useState('')
   const [editName, setEditName] = useState('')
   const [creating, setCreating] = useState(false)
-  const [mousePos, setMousePos] = useState({ x: 0, y: 0 })
-  const [globalTooltip, setGlobalTooltip] = useState(null)
 
   useEffect(() => { loadData() }, [])
 
@@ -79,26 +77,30 @@ export default function DashboardPage() {
   }
 
   function EquityCurve({ accountTrades, startingBalance }) {
+    const [hoverPoint, setHoverPoint] = useState(null)
+    const svgRef = useRef(null)
+
     if (!accountTrades || accountTrades.length === 0) {
       return <div style={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#444', fontSize: '14px' }}>No trades yet</div>
     }
 
     const start = parseFloat(startingBalance) || 10000
     let cumulative = start
-    const points = [{ balance: cumulative, date: null, pnl: 0 }]
-    accountTrades.forEach(t => {
+    const points = [{ balance: cumulative, date: null, pnl: 0, idx: 0 }]
+    accountTrades.forEach((t, i) => {
       cumulative += parseFloat(t.pnl) || 0
-      points.push({ balance: cumulative, date: t.date, pnl: parseFloat(t.pnl) || 0, symbol: t.symbol })
+      points.push({ balance: cumulative, date: t.date, pnl: parseFloat(t.pnl) || 0, symbol: t.symbol, idx: i + 1 })
     })
 
     const maxBal = Math.max(...points.map(p => p.balance))
     const minBal = Math.min(...points.map(p => p.balance))
-    const yMax = Math.ceil(maxBal / 1000) * 1000
-    const yMin = Math.floor(minBal / 1000) * 1000
-    const yRange = yMax - yMin || 1000
+    const yStep = Math.ceil((maxBal - minBal) / 4 / 1000) * 1000 || 1000
+    const yMax = Math.ceil(maxBal / yStep) * yStep
+    const yMin = Math.floor(minBal / yStep) * yStep
+    const yRange = yMax - yMin || yStep
 
     const yLabels = []
-    for (let v = yMin; v <= yMax; v += 1000) {
+    for (let v = yMax; v >= yMin; v -= yStep) {
       yLabels.push(v)
     }
 
@@ -126,45 +128,58 @@ export default function DashboardPage() {
     const areaD = pathD + ` L ${chartPoints[chartPoints.length - 1].x} ${svgH} L ${chartPoints[0].x} ${svgH} Z`
 
     function handleMouseMove(e) {
-      const rect = e.currentTarget.getBoundingClientRect()
+      if (!svgRef.current) return
+      const rect = svgRef.current.getBoundingClientRect()
       const mouseXPct = ((e.clientX - rect.left) / rect.width) * svgW
       let closest = chartPoints[0], minDist = Math.abs(mouseXPct - chartPoints[0].x)
       chartPoints.forEach(p => { const d = Math.abs(mouseXPct - p.x); if (d < minDist) { minDist = d; closest = p } })
-      if (minDist < 8) {
-        setGlobalTooltip({
-          date: closest.date ? new Date(closest.date).toLocaleDateString() : 'Start',
-          balance: closest.balance,
-          pnl: closest.pnl,
-          symbol: closest.symbol
+      if (minDist < 10) {
+        setHoverPoint({
+          ...closest,
+          xPct: (closest.x / svgW) * 100,
+          yPct: (closest.y / svgH) * 100
         })
       } else {
-        setGlobalTooltip(null)
+        setHoverPoint(null)
       }
     }
 
     return (
       <div style={{ position: 'relative', width: '100%', height: '100%', display: 'flex' }}>
-        <div style={{ width: '40px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', paddingBottom: '22px', flexShrink: 0 }}>
-          {[...yLabels].reverse().map((v, i) => (
-            <span key={i} style={{ fontSize: '11px', color: '#888', lineHeight: 1 }}>${(v/1000).toFixed(0)}k</span>
+        <div style={{ width: '45px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', paddingBottom: '22px', flexShrink: 0 }}>
+          {yLabels.map((v, i) => (
+            <span key={i} style={{ fontSize: '11px', color: '#888', lineHeight: 1, textAlign: 'right' }}>${(v/1000).toFixed(0)}k</span>
           ))}
         </div>
         
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, overflow: 'hidden' }}>
-          <div style={{ flex: 1, position: 'relative' }}>
-            <svg style={{ position: 'absolute', inset: 0, width: '100%', height: '100%' }} viewBox={`0 0 ${svgW} ${svgH}`} preserveAspectRatio="none" onMouseMove={handleMouseMove} onMouseLeave={() => setGlobalTooltip(null)}>
+          <div style={{ flex: 1, position: 'relative', borderLeft: '1px solid #333', borderBottom: '1px solid #333' }}>
+            <svg ref={svgRef} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%' }} viewBox={`0 0 ${svgW} ${svgH}`} preserveAspectRatio="none" onMouseMove={handleMouseMove} onMouseLeave={() => setHoverPoint(null)}>
               <defs>
                 <linearGradient id="areaGrad" x1="0%" y1="0%" x2="0%" y2="100%">
                   <stop offset="0%" stopColor="#22c55e" stopOpacity="0.3" />
                   <stop offset="100%" stopColor="#22c55e" stopOpacity="0" />
                 </linearGradient>
               </defs>
-              <line x1="0" y1="0" x2="0" y2={svgH} stroke="#333" strokeWidth="1" vectorEffect="non-scaling-stroke" />
-              <line x1="0" y1={svgH} x2={svgW} y2={svgH} stroke="#333" strokeWidth="1" vectorEffect="non-scaling-stroke" />
               <path d={areaD} fill="url(#areaGrad)" />
               <path d={pathD} fill="none" stroke="#22c55e" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />
             </svg>
+            
+            {/* Green dot on the line */}
+            {hoverPoint && (
+              <div style={{ position: 'absolute', left: `${hoverPoint.xPct}%`, top: `${hoverPoint.yPct}%`, transform: 'translate(-50%, -50%)', width: '12px', height: '12px', borderRadius: '50%', background: '#22c55e', border: '2px solid #fff', pointerEvents: 'none', zIndex: 10 }} />
+            )}
+            
+            {/* Tooltip next to the dot */}
+            {hoverPoint && (
+              <div style={{ position: 'absolute', left: `${hoverPoint.xPct}%`, top: `${hoverPoint.yPct}%`, transform: `translate(${hoverPoint.xPct > 75 ? 'calc(-100% - 15px)' : '15px'}, -50%)`, background: '#1a1a22', border: '1px solid #2a2a35', borderRadius: '6px', padding: '8px 12px', fontSize: '11px', whiteSpace: 'nowrap', zIndex: 10, pointerEvents: 'none' }}>
+                <div style={{ color: '#888' }}>{hoverPoint.date ? new Date(hoverPoint.date).toLocaleDateString() : 'Start'}</div>
+                <div style={{ fontWeight: 600, fontSize: '14px', color: '#fff' }}>${hoverPoint.balance.toLocaleString()}</div>
+                {hoverPoint.symbol && <div style={{ color: hoverPoint.pnl >= 0 ? '#22c55e' : '#ef4444' }}>{hoverPoint.symbol}: {hoverPoint.pnl >= 0 ? '+' : ''}${hoverPoint.pnl.toFixed(0)}</div>}
+              </div>
+            )}
           </div>
+          
           <div style={{ height: '22px', position: 'relative', overflow: 'hidden' }}>
             {xLabels.map((l, i) => {
               const isFirst = i === 0
@@ -194,16 +209,7 @@ export default function DashboardPage() {
   }
 
   return (
-    <div style={{ minHeight: '100vh', background: '#0a0a0f' }} onMouseMove={e => setMousePos({ x: e.clientX, y: e.clientY })}>
-      {/* Global Tooltip - follows mouse */}
-      {globalTooltip && (
-        <div style={{ position: 'fixed', left: mousePos.x + 15, top: mousePos.y + 15, background: '#1a1a22', border: '1px solid #2a2a35', borderRadius: '8px', padding: '10px 14px', fontSize: '12px', zIndex: 1000, pointerEvents: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.5)' }}>
-          <div style={{ color: '#888', marginBottom: '4px' }}>{globalTooltip.date}</div>
-          <div style={{ fontWeight: 700, fontSize: '16px', color: '#fff' }}>${globalTooltip.balance?.toLocaleString()}</div>
-          {globalTooltip.symbol && <div style={{ color: globalTooltip.pnl >= 0 ? '#22c55e' : '#ef4444', marginTop: '4px' }}>{globalTooltip.symbol}: {globalTooltip.pnl >= 0 ? '+' : ''}${globalTooltip.pnl?.toFixed(0)}</div>}
-        </div>
-      )}
-
+    <div style={{ minHeight: '100vh', background: '#0a0a0f' }}>
       {/* Header */}
       <header style={{ padding: '16px 40px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #1a1a22' }}>
         <a href="/" style={{ fontSize: '28px', fontWeight: 700, textDecoration: 'none' }}>
