@@ -16,6 +16,8 @@ export default function DashboardPage() {
   const [balance, setBalance] = useState('')
   const [editName, setEditName] = useState('')
   const [creating, setCreating] = useState(false)
+  const [mousePos, setMousePos] = useState({ x: 0, y: 0 })
+  const [globalTooltip, setGlobalTooltip] = useState(null)
 
   useEffect(() => { loadData() }, [])
 
@@ -77,9 +79,6 @@ export default function DashboardPage() {
   }
 
   function EquityCurve({ accountTrades, startingBalance }) {
-    const [tooltip, setTooltip] = useState(null)
-    const svgRef = useRef(null)
-
     if (!accountTrades || accountTrades.length === 0) {
       return <div style={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#444', fontSize: '14px' }}>No trades yet</div>
     }
@@ -103,7 +102,6 @@ export default function DashboardPage() {
       yLabels.push(v)
     }
 
-    // X-axis dates with year
     const datesWithTrades = points.filter(p => p.date).map((p, idx) => ({ date: p.date, pointIdx: idx + 1 }))
     const xLabels = []
     if (datesWithTrades.length > 0) {
@@ -117,7 +115,6 @@ export default function DashboardPage() {
       }
     }
 
-    // SVG uses 0-100 coordinate system
     const svgW = 100, svgH = 100
     const chartPoints = points.map((p, i) => {
       const x = points.length > 1 ? (i / (points.length - 1)) * svgW : svgW / 2
@@ -129,60 +126,47 @@ export default function DashboardPage() {
     const areaD = pathD + ` L ${chartPoints[chartPoints.length - 1].x} ${svgH} L ${chartPoints[0].x} ${svgH} Z`
 
     function handleMouseMove(e) {
-      if (!svgRef.current) return
-      const rect = svgRef.current.getBoundingClientRect()
+      const rect = e.currentTarget.getBoundingClientRect()
       const mouseXPct = ((e.clientX - rect.left) / rect.width) * svgW
       let closest = chartPoints[0], minDist = Math.abs(mouseXPct - chartPoints[0].x)
       chartPoints.forEach(p => { const d = Math.abs(mouseXPct - p.x); if (d < minDist) { minDist = d; closest = p } })
-      setTooltip(minDist < 8 ? closest : null)
+      if (minDist < 8) {
+        setGlobalTooltip({
+          date: closest.date ? new Date(closest.date).toLocaleDateString() : 'Start',
+          balance: closest.balance,
+          pnl: closest.pnl,
+          symbol: closest.symbol
+        })
+      } else {
+        setGlobalTooltip(null)
+      }
     }
 
     return (
       <div style={{ position: 'relative', width: '100%', height: '100%', display: 'flex' }}>
-        {/* Y-axis labels - left aligned with container edge */}
         <div style={{ width: '40px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', paddingBottom: '22px', flexShrink: 0 }}>
           {[...yLabels].reverse().map((v, i) => (
             <span key={i} style={{ fontSize: '11px', color: '#888', lineHeight: 1 }}>${(v/1000).toFixed(0)}k</span>
           ))}
         </div>
         
-        {/* Chart + X labels */}
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, overflow: 'hidden' }}>
-          {/* SVG Chart */}
           <div style={{ flex: 1, position: 'relative' }}>
-            <svg ref={svgRef} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%' }} viewBox={`0 0 ${svgW} ${svgH}`} preserveAspectRatio="none" onMouseMove={handleMouseMove} onMouseLeave={() => setTooltip(null)}>
+            <svg style={{ position: 'absolute', inset: 0, width: '100%', height: '100%' }} viewBox={`0 0 ${svgW} ${svgH}`} preserveAspectRatio="none" onMouseMove={handleMouseMove} onMouseLeave={() => setGlobalTooltip(null)}>
               <defs>
                 <linearGradient id="areaGrad" x1="0%" y1="0%" x2="0%" y2="100%">
                   <stop offset="0%" stopColor="#22c55e" stopOpacity="0.3" />
                   <stop offset="100%" stopColor="#22c55e" stopOpacity="0" />
                 </linearGradient>
               </defs>
-              {/* Y-axis line */}
               <line x1="0" y1="0" x2="0" y2={svgH} stroke="#333" strokeWidth="1" vectorEffect="non-scaling-stroke" />
-              {/* X-axis line */}
               <line x1="0" y1={svgH} x2={svgW} y2={svgH} stroke="#333" strokeWidth="1" vectorEffect="non-scaling-stroke" />
-              {/* Area fill */}
               <path d={areaD} fill="url(#areaGrad)" />
-              {/* Line */}
               <path d={pathD} fill="none" stroke="#22c55e" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />
             </svg>
-            {/* Tooltip */}
-            {tooltip && (
-              <div style={{ position: 'absolute', left: `${(tooltip.x / svgW) * 100}%`, top: '8px', transform: 'translateX(-50%)', background: '#1a1a22', border: '1px solid #2a2a35', borderRadius: '6px', padding: '8px 12px', fontSize: '11px', whiteSpace: 'nowrap', zIndex: 10, pointerEvents: 'none' }}>
-                <div style={{ color: '#888' }}>{tooltip.date ? new Date(tooltip.date).toLocaleDateString() : 'Start'}</div>
-                <div style={{ fontWeight: 600, fontSize: '14px' }}>${tooltip.balance.toLocaleString()}</div>
-                {tooltip.symbol && <div style={{ color: tooltip.pnl >= 0 ? '#22c55e' : '#ef4444' }}>{tooltip.symbol}: {tooltip.pnl >= 0 ? '+' : ''}${tooltip.pnl.toFixed(0)}</div>}
-              </div>
-            )}
-            {/* Tooltip dot */}
-            {tooltip && (
-              <div style={{ position: 'absolute', left: `${(tooltip.x / svgW) * 100}%`, top: `${(tooltip.y / svgH) * 100}%`, transform: 'translate(-50%, -50%)', width: '10px', height: '10px', borderRadius: '50%', background: '#22c55e', pointerEvents: 'none' }} />
-            )}
           </div>
-          {/* X-axis labels - constrained to not overflow */}
           <div style={{ height: '22px', position: 'relative', overflow: 'hidden' }}>
             {xLabels.map((l, i) => {
-              // Constrain labels: first label align left, last align right, middle center
               const isFirst = i === 0
               const isLast = i === xLabels.length - 1
               const style = isFirst 
@@ -210,7 +194,16 @@ export default function DashboardPage() {
   }
 
   return (
-    <div style={{ minHeight: '100vh', background: '#0a0a0f' }}>
+    <div style={{ minHeight: '100vh', background: '#0a0a0f' }} onMouseMove={e => setMousePos({ x: e.clientX, y: e.clientY })}>
+      {/* Global Tooltip - follows mouse */}
+      {globalTooltip && (
+        <div style={{ position: 'fixed', left: mousePos.x + 15, top: mousePos.y + 15, background: '#1a1a22', border: '1px solid #2a2a35', borderRadius: '8px', padding: '10px 14px', fontSize: '12px', zIndex: 1000, pointerEvents: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.5)' }}>
+          <div style={{ color: '#888', marginBottom: '4px' }}>{globalTooltip.date}</div>
+          <div style={{ fontWeight: 700, fontSize: '16px', color: '#fff' }}>${globalTooltip.balance?.toLocaleString()}</div>
+          {globalTooltip.symbol && <div style={{ color: globalTooltip.pnl >= 0 ? '#22c55e' : '#ef4444', marginTop: '4px' }}>{globalTooltip.symbol}: {globalTooltip.pnl >= 0 ? '+' : ''}${globalTooltip.pnl?.toFixed(0)}</div>}
+        </div>
+      )}
+
       {/* Header */}
       <header style={{ padding: '16px 40px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #1a1a22' }}>
         <a href="/" style={{ fontSize: '28px', fontWeight: 700, textDecoration: 'none' }}>
@@ -263,7 +256,7 @@ export default function DashboardPage() {
 
                   {/* Chart + Stats Row */}
                   <div style={{ display: 'flex', padding: '0 24px 16px', gap: '16px' }}>
-                    {/* Chart - height matches stats panel */}
+                    {/* Chart */}
                     <div style={{ flex: 1, height: '340px', overflow: 'hidden' }}>
                       <EquityCurve accountTrades={accTrades} startingBalance={account.starting_balance} />
                     </div>
@@ -325,11 +318,11 @@ export default function DashboardPage() {
                                     ) : <span style={{ fontSize: '14px', color: '#444' }}>-</span>}
                                   </td>
                                   <td style={{ padding: '12px', textAlign: 'center' }}>
-                                    <div style={{ display: 'flex', justifyContent: 'center', gap: '2px' }}>{[1,2,3,4,5].map(i => <span key={i} style={{ color: i <= parseInt(extra.rating || 0) ? '#22c55e' : '#2a2a35', fontSize: '14px' }}>*</span>)}</div>
+                                    <div style={{ display: 'flex', justifyContent: 'center', gap: '2px' }}>{[1,2,3,4,5].map(i => <span key={i} style={{ color: i <= parseInt(extra.rating || 0) ? '#22c55e' : '#2a2a35', fontSize: '14px' }}>★</span>)}</div>
                                   </td>
                                   <td style={{ padding: '12px', textAlign: 'center' }}>
-                                    <div style={{ width: '24px', height: '24px', background: trade.image_url ? '#1a1a22' : '#141418', borderRadius: '4px', margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke={trade.image_url ? '#22c55e' : '#333'} strokeWidth="2"><rect x="3" y="3" width="18" height="18" rx="2" /><circle cx="8.5" cy="8.5" r="1.5" /><polyline points="21 15 16 10 5 21" /></svg>
+                                    <div style={{ width: '24px', height: '24px', background: extra.image ? '#1a1a22' : '#141418', borderRadius: '4px', margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke={extra.image ? '#22c55e' : '#333'} strokeWidth="2"><rect x="3" y="3" width="18" height="18" rx="2" /><circle cx="8.5" cy="8.5" r="1.5" /><polyline points="21 15 16 10 5 21" /></svg>
                                     </div>
                                   </td>
                                   <td style={{ padding: '12px', textAlign: 'center', fontSize: '14px', color: '#888' }}>{getDaysAgo(trade.date)}</td>
