@@ -172,7 +172,7 @@ export default function DashboardPage() {
             
             {/* Tooltip next to the dot */}
             {hoverPoint && (
-              <div style={{ position: 'absolute', left: `${hoverPoint.xPct}%`, top: `${hoverPoint.yPct}%`, transform: `translate(${hoverPoint.xPct > 75 ? 'calc(-100% - 15px)' : '15px'}, -50%)`, background: '#1a1a22', border: '1px solid #2a2a35', borderRadius: '6px', padding: '8px 12px', fontSize: '11px', whiteSpace: 'nowrap', zIndex: 10, pointerEvents: 'none' }}>
+              <div style={{ position: 'absolute', left: `${hoverPoint.xPct}%`, top: `${hoverPoint.yPct}%`, transform: `translate(${hoverPoint.xPct > 80 ? 'calc(-100% - 15px)' : '15px'}, ${hoverPoint.yPct < 20 ? '0%' : hoverPoint.yPct > 80 ? '-100%' : '-50%'})`, background: '#1a1a22', border: '1px solid #2a2a35', borderRadius: '6px', padding: '8px 12px', fontSize: '11px', whiteSpace: 'nowrap', zIndex: 10, pointerEvents: 'none' }}>
                 <div style={{ color: '#888' }}>{hoverPoint.date ? new Date(hoverPoint.date).toLocaleDateString() : 'Start'}</div>
                 <div style={{ fontWeight: 600, fontSize: '14px', color: '#fff' }}>${hoverPoint.balance.toLocaleString()}</div>
                 {hoverPoint.symbol && <div style={{ color: hoverPoint.pnl >= 0 ? '#22c55e' : '#ef4444' }}>{hoverPoint.symbol}: {hoverPoint.pnl >= 0 ? '+' : ''}${hoverPoint.pnl.toFixed(0)}</div>}
@@ -271,7 +271,7 @@ export default function DashboardPage() {
                     <div style={{ width: '200px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 14px', background: '#0a0a0e', borderRadius: '6px', border: '1px solid #1a1a22' }}>
                         <span style={{ fontSize: '12px', color: '#888' }}>Account Balance</span>
-                        <span style={{ fontSize: '16px', fontWeight: 700, color: '#fff' }}>${currentBalance.toLocaleString()}</span>
+                        <span style={{ fontSize: '16px', fontWeight: 700, color: currentBalance >= (parseFloat(account.starting_balance) || 0) ? '#22c55e' : '#ef4444' }}>${currentBalance.toLocaleString()}</span>
                       </div>
                       {[
                         { label: 'Total PnL', value: `${totalPnl >= 0 ? '+' : ''}$${totalPnl.toLocaleString()}`, color: totalPnl >= 0 ? '#22c55e' : '#ef4444' },
@@ -279,7 +279,7 @@ export default function DashboardPage() {
                         { label: 'Avg RR', value: `${avgRR}R`, color: '#fff' },
                         { label: 'Profit Factor', value: profitFactor, color: '#fff' },
                         { label: 'Number of Trades', value: accTrades.length, color: '#fff' },
-                        { label: 'Consistency', value: `${consistency}%`, color: '#fff' },
+                        { label: 'Consistency Score', value: `${consistency}%`, color: '#fff' },
                       ].map((stat, i) => (
                         <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 14px', background: '#0a0a0e', borderRadius: '6px', border: '1px solid #1a1a22' }}>
                           <span style={{ fontSize: '12px', color: '#888' }}>{stat.label}</span>
@@ -291,7 +291,7 @@ export default function DashboardPage() {
 
                   {/* Recent Trades */}
                   <div style={{ padding: '0 24px 16px' }}>
-                    <div style={{ fontSize: '12px', color: '#888', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '8px', paddingBottom: '8px', borderBottom: '1px solid #1a1a22' }}>Recent Trades</div>
+                    <div style={{ fontSize: '12px', color: '#888', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '8px', paddingBottom: '8px', borderBottom: '1px solid #1a1a22', marginLeft: '45px' }}>Recent Trades</div>
                     {recentTrades.length === 0 ? (
                       <div style={{ padding: '20px', textAlign: 'center', color: '#666', fontSize: '14px' }}>No trades yet</div>
                     ) : (
