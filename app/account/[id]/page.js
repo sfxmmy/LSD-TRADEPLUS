@@ -291,7 +291,7 @@ export default function AccountPage() {
       </div>
 
       {/* FIXED SIDEBAR */}
-      <div style={{ position: 'fixed', top: '57px', left: 0, bottom: 0, width: '180px', padding: '16px 12px', borderRight: '1px solid #1a1a22', background: '#0a0a0f', zIndex: 45, display: 'flex', flexDirection: 'column' }}>
+      <div style={{ position: 'fixed', top: '57px', left: 0, bottom: 0, width: '180px', padding: '16px 12px', borderRight: '1px solid #1a1a22', background: '#0a0a0f', zIndex: 45, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
         <div>
           {['trades', 'statistics', 'notes'].map((tab) => (
             <button 
@@ -412,7 +412,7 @@ export default function AccountPage() {
               {/* Graphs */}
               <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '12px' }}>
                 {/* Equity Curve */}
-                <div style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '16px', height: '200px' }}>
+                <div style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '16px', flex: 1, minHeight: '220px' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '12px' }}>
                     <span style={{ fontSize: '13px', color: '#888', textTransform: 'uppercase' }}>Equity Curve</span>
                     <div style={{ display: 'flex', gap: '20px', fontSize: '13px' }}>
@@ -420,37 +420,49 @@ export default function AccountPage() {
                       <span style={{ color: '#888' }}>Current: <span style={{ color: '#22c55e' }}>${currentBalance.toLocaleString()}</span></span>
                     </div>
                   </div>
-                  <div style={{ height: 'calc(100% - 30px)', position: 'relative' }}>
+                  <div style={{ height: 'calc(100% - 30px)', position: 'relative', display: 'flex' }}>
                     {(() => {
-                      if (trades.length < 2) return <div style={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#666' }}>Need 2+ trades</div>
+                      if (trades.length < 2) return <div style={{ height: '100%', width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#666' }}>Need 2+ trades</div>
                       const sorted = [...trades].sort((a, b) => new Date(a.date) - new Date(b.date))
                       let cum = startingBalance
                       const pts = [{ y: cum, date: 'Start', pnl: 0 }]
                       sorted.forEach(t => { cum += parseFloat(t.pnl) || 0; pts.push({ y: cum, date: t.date, pnl: parseFloat(t.pnl), symbol: t.symbol }) })
                       const minY = Math.min(...pts.map(p => p.y)), maxY = Math.max(...pts.map(p => p.y)), range = maxY - minY || 1
+                      const yAxisLabels = [maxY, minY + range * 0.66, minY + range * 0.33, minY]
                       
                       return (
-                        <svg style={{ width: '100%', height: '100%' }} viewBox="0 0 100 100" preserveAspectRatio="none"
-                          onMouseMove={e => {
-                            const rect = e.currentTarget.getBoundingClientRect()
-                            const xPct = (e.clientX - rect.left) / rect.width
-                            const idx = Math.round(xPct * (pts.length - 1))
-                            const pt = pts[Math.max(0, Math.min(pts.length - 1, idx))]
-                            setTooltip({ date: pt.date === 'Start' ? 'Start' : new Date(pt.date).toLocaleDateString(), value: pt.y, extra: pt.symbol ? { text: `${pt.symbol}: ${pt.pnl >= 0 ? '+' : ''}$${pt.pnl}`, color: pt.pnl >= 0 ? '#22c55e' : '#ef4444' } : null })
-                          }}
-                          onMouseLeave={() => setTooltip(null)}
-                        >
-                          <defs><linearGradient id="eqG" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#22c55e" stopOpacity="0.3" /><stop offset="100%" stopColor="#22c55e" stopOpacity="0" /></linearGradient></defs>
-                          <polygon points={pts.map((p, i) => `${(i / (pts.length - 1)) * 100},${100 - ((p.y - minY) / range) * 100}`).join(' ') + ' 100,100 0,100'} fill="url(#eqG)" />
-                          <polyline points={pts.map((p, i) => `${(i / (pts.length - 1)) * 100},${100 - ((p.y - minY) / range) * 100}`).join(' ')} fill="none" stroke="#22c55e" strokeWidth="2" vectorEffect="non-scaling-stroke" />
-                        </svg>
+                        <>
+                          {/* Y-Axis */}
+                          <div style={{ width: '55px', height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', paddingRight: '8px', boxSizing: 'border-box' }}>
+                            {yAxisLabels.map((val, i) => (
+                              <span key={i} style={{ fontSize: '10px', color: '#666', textAlign: 'right' }}>${Math.round(val).toLocaleString()}</span>
+                            ))}
+                          </div>
+                          {/* Chart */}
+                          <div style={{ flex: 1, position: 'relative', borderLeft: '1px solid #2a2a35', borderBottom: '1px solid #2a2a35' }}>
+                            <svg style={{ width: '100%', height: '100%' }} viewBox="0 0 100 100" preserveAspectRatio="none"
+                              onMouseMove={e => {
+                                const rect = e.currentTarget.getBoundingClientRect()
+                                const xPct = (e.clientX - rect.left) / rect.width
+                                const idx = Math.round(xPct * (pts.length - 1))
+                                const pt = pts[Math.max(0, Math.min(pts.length - 1, idx))]
+                                setTooltip({ date: pt.date === 'Start' ? 'Start' : new Date(pt.date).toLocaleDateString(), value: pt.y, extra: pt.symbol ? { text: `${pt.symbol}: ${pt.pnl >= 0 ? '+' : ''}$${pt.pnl}`, color: pt.pnl >= 0 ? '#22c55e' : '#ef4444' } : null })
+                              }}
+                              onMouseLeave={() => setTooltip(null)}
+                            >
+                              <defs><linearGradient id="eqG" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#22c55e" stopOpacity="0.3" /><stop offset="100%" stopColor="#22c55e" stopOpacity="0" /></linearGradient></defs>
+                              <polygon points={pts.map((p, i) => `${(i / (pts.length - 1)) * 100},${100 - ((p.y - minY) / range) * 100}`).join(' ') + ' 100,100 0,100'} fill="url(#eqG)" />
+                              <polyline points={pts.map((p, i) => `${(i / (pts.length - 1)) * 100},${100 - ((p.y - minY) / range) * 100}`).join(' ')} fill="none" stroke="#22c55e" strokeWidth="2" vectorEffect="non-scaling-stroke" />
+                            </svg>
+                          </div>
+                        </>
                       )
                     })()}
                   </div>
                 </div>
 
                 {/* Bar Chart */}
-                <div style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '16px', height: '200px', display: 'flex', gap: '16px' }}>
+                <div style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '16px', flex: 1, minHeight: '220px', display: 'flex', gap: '16px' }}>
                   <div style={{ flex: 1 }}>
                     {(() => {
                       const groupedData = {}
@@ -483,26 +495,36 @@ export default function AccountPage() {
                       
                       if (entries.length === 0) return <div style={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#666' }}>No data</div>
                       const maxVal = barGraphMetric === 'winrate' ? 100 : Math.max(...entries.map(e => Math.abs(e.val)), 1)
+                      const yAxisLabels = barGraphMetric === 'winrate' ? ['100%', '75%', '50%', '25%', '0%'] : [maxVal, maxVal * 0.75, maxVal * 0.5, maxVal * 0.25, 0].map(v => barGraphMetric === 'count' ? Math.round(v) : (v >= 0 ? '+' : '') + '$' + Math.round(v))
                       
                       return (
-                        <div style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-                          <div style={{ flex: 1, display: 'flex', alignItems: 'flex-end', gap: '8px', paddingBottom: '4px' }}>
-                            {entries.map((item, i) => {
-                              const hPct = Math.max((Math.abs(item.val) / maxVal) * 100, 5)
-                              const isGreen = barGraphMetric === 'winrate' ? item.val >= 50 : item.val >= 0
-                              return (
-                                <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', height: '100%', justifyContent: 'flex-end' }}
-                                  onMouseEnter={() => setTooltip({ date: item.name, value: item.val, extra: { text: item.disp, color: isGreen ? '#22c55e' : '#ef4444' } })}
-                                  onMouseLeave={() => setTooltip(null)}
-                                >
-                                  <div style={{ fontSize: '11px', color: isGreen ? '#22c55e' : '#ef4444', marginBottom: '3px', fontWeight: 600 }}>{item.disp}</div>
-                                  <div style={{ width: '100%', height: `${hPct}%`, background: isGreen ? '#22c55e' : '#ef4444', borderRadius: '3px 3px 0 0' }} />
-                                </div>
-                              )
-                            })}
+                        <div style={{ height: '100%', display: 'flex' }}>
+                          {/* Y-Axis */}
+                          <div style={{ width: '50px', height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', paddingRight: '8px', paddingBottom: '22px', boxSizing: 'border-box' }}>
+                            {yAxisLabels.map((val, i) => (
+                              <span key={i} style={{ fontSize: '9px', color: '#666', textAlign: 'right' }}>{val}</span>
+                            ))}
                           </div>
-                          <div style={{ display: 'flex', gap: '8px', paddingTop: '6px' }}>
-                            {entries.map((item, i) => <div key={i} style={{ flex: 1, textAlign: 'center', fontSize: '10px', color: '#888', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.name}</div>)}
+                          {/* Chart Area */}
+                          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', borderLeft: '1px solid #2a2a35' }}>
+                            <div style={{ flex: 1, display: 'flex', alignItems: 'flex-end', gap: '8px', paddingBottom: '4px', borderBottom: '1px solid #2a2a35' }}>
+                              {entries.map((item, i) => {
+                                const hPct = Math.max((Math.abs(item.val) / maxVal) * 100, 5)
+                                const isGreen = barGraphMetric === 'winrate' ? item.val >= 50 : item.val >= 0
+                                return (
+                                  <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', height: '100%', justifyContent: 'flex-end' }}
+                                    onMouseEnter={() => setTooltip({ date: item.name, value: item.val, extra: { text: item.disp, color: isGreen ? '#22c55e' : '#ef4444' } })}
+                                    onMouseLeave={() => setTooltip(null)}
+                                  >
+                                    <div style={{ fontSize: '11px', color: isGreen ? '#22c55e' : '#ef4444', marginBottom: '3px', fontWeight: 600 }}>{item.disp}</div>
+                                    <div style={{ width: '100%', height: `${hPct}%`, background: isGreen ? '#22c55e' : '#ef4444', borderRadius: '3px 3px 0 0' }} />
+                                  </div>
+                                )
+                              })}
+                            </div>
+                            <div style={{ display: 'flex', gap: '8px', paddingTop: '6px' }}>
+                              {entries.map((item, i) => <div key={i} style={{ flex: 1, textAlign: 'center', fontSize: '10px', color: '#888', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.name}</div>)}
+                            </div>
                           </div>
                         </div>
                       )
@@ -540,38 +562,71 @@ export default function AccountPage() {
             <div style={{ display: 'flex', gap: '16px', marginBottom: '16px' }}>
               <div style={{ flex: 2, background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '16px' }}>
                 <div style={{ fontSize: '13px', color: '#888', textTransform: 'uppercase', marginBottom: '12px' }}>Net Daily PnL</div>
-                <div style={{ height: '120px' }}>
-                  {dailyPnL.length === 0 ? <div style={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#666' }}>No data</div> : (
-                    <div style={{ height: '100%', display: 'flex', alignItems: 'flex-end', gap: '4px' }}>
-                      {dailyPnL.map((d, i) => {
-                        const maxAbs = Math.max(...dailyPnL.map(x => Math.abs(x.pnl)), 1)
-                        const hPct = (Math.abs(d.pnl) / maxAbs) * 100
-                        return (
-                          <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', height: '100%', justifyContent: d.pnl >= 0 ? 'flex-end' : 'flex-start' }}
-                            onMouseEnter={() => setTooltip({ date: new Date(d.date).toLocaleDateString(), value: d.pnl, extra: { text: (d.pnl >= 0 ? '+' : '') + '$' + d.pnl.toFixed(0), color: d.pnl >= 0 ? '#22c55e' : '#ef4444' } })}
-                            onMouseLeave={() => setTooltip(null)}
-                          >
-                            <div style={{ width: '100%', maxWidth: '30px', height: `${Math.max(hPct, 5)}%`, background: d.pnl >= 0 ? '#22c55e' : '#ef4444', borderRadius: '2px' }} />
+                <div style={{ height: '160px', display: 'flex' }}>
+                  {trades.length === 0 ? <div style={{ height: '100%', width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#666' }}>No data</div> : (() => {
+                    const sortedTrades = [...trades].sort((a, b) => new Date(a.date) - new Date(b.date))
+                    const maxAbs = Math.max(...sortedTrades.map(t => Math.abs(parseFloat(t.pnl) || 0)), 1)
+                    const yAxisLabels = ['+$' + Math.round(maxAbs), '+$' + Math.round(maxAbs/2), '$0', '-$' + Math.round(maxAbs/2), '-$' + Math.round(maxAbs)]
+                    
+                    return (
+                      <>
+                        {/* Y-Axis */}
+                        <div style={{ width: '50px', height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', paddingRight: '8px', boxSizing: 'border-box' }}>
+                          {yAxisLabels.map((val, i) => (
+                            <span key={i} style={{ fontSize: '9px', color: '#666', textAlign: 'right' }}>{val}</span>
+                          ))}
+                        </div>
+                        {/* Chart */}
+                        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', position: 'relative', borderLeft: '1px solid #2a2a35' }}>
+                          {/* Zero line */}
+                          <div style={{ position: 'absolute', top: '50%', left: 0, right: 0, height: '1px', background: '#2a2a35' }} />
+                          <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: '2px', padding: '0 4px' }}>
+                            {sortedTrades.map((t, i) => {
+                              const pnl = parseFloat(t.pnl) || 0
+                              const hPct = (Math.abs(pnl) / maxAbs) * 50
+                              return (
+                                <div key={i} style={{ flex: 1, minWidth: '4px', maxWidth: '24px', display: 'flex', flexDirection: 'column', alignItems: 'center', height: '100%', justifyContent: 'center' }}
+                                  onMouseEnter={() => setTooltip({ date: new Date(t.date).toLocaleDateString(), value: pnl, extra: { text: `${t.symbol}: ${pnl >= 0 ? '+' : ''}$${pnl.toFixed(0)}`, color: pnl >= 0 ? '#22c55e' : '#ef4444' } })}
+                                  onMouseLeave={() => setTooltip(null)}
+                                >
+                                  {pnl >= 0 ? (
+                                    <>
+                                      <div style={{ height: '50%', display: 'flex', alignItems: 'flex-end', width: '100%' }}>
+                                        <div style={{ width: '100%', height: `${Math.max(hPct, 3)}%`, background: '#22c55e', borderRadius: '2px 2px 0 0' }} />
+                                      </div>
+                                      <div style={{ height: '50%' }} />
+                                    </>
+                                  ) : (
+                                    <>
+                                      <div style={{ height: '50%' }} />
+                                      <div style={{ height: '50%', display: 'flex', alignItems: 'flex-start', width: '100%' }}>
+                                        <div style={{ width: '100%', height: `${Math.max(hPct, 3)}%`, background: '#ef4444', borderRadius: '0 0 2px 2px' }} />
+                                      </div>
+                                    </>
+                                  )}
+                                </div>
+                              )
+                            })}
                           </div>
-                        )
-                      })}
-                    </div>
-                  )}
+                        </div>
+                      </>
+                    )
+                  })()}
                 </div>
               </div>
               <div style={{ flex: 1, background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '16px', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
                 <div style={{ fontSize: '13px', color: '#888', textTransform: 'uppercase', marginBottom: '12px' }}>Direction Split</div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                  <span style={{ fontSize: '14px', color: '#22c55e', fontWeight: 700 }}>{longPct}% L</span>
+                  <span style={{ fontSize: '14px', color: '#22c55e', fontWeight: 700 }}>{longPct}% Long</span>
                   <div style={{ flex: 1, height: '12px', borderRadius: '6px', overflow: 'hidden', display: 'flex' }}>
                     <div style={{ width: `${longPct}%`, background: '#22c55e' }} />
                     <div style={{ width: `${100 - longPct}%`, background: '#ef4444' }} />
                   </div>
-                  <span style={{ fontSize: '14px', color: '#ef4444', fontWeight: 700 }}>{100 - longPct}% S</span>
+                  <span style={{ fontSize: '14px', color: '#ef4444', fontWeight: 700 }}>{100 - longPct}% Short</span>
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '16px' }}>
-                  <div><span style={{ fontSize: '12px', color: '#888' }}>Avg Rating</span><div style={{ display: 'flex', gap: '2px', marginTop: '4px' }}>{[1,2,3,4,5].map(i => <span key={i} style={{ color: i <= Math.round(parseFloat(avgRating)) ? '#22c55e' : '#2a2a35', fontSize: '16px' }}>★</span>)}</div></div>
-                  <div style={{ textAlign: 'right' }}><span style={{ fontSize: '12px', color: '#888' }}>Rating</span><div style={{ fontSize: '20px', fontWeight: 700, color: '#fff' }}>{avgRating}</div></div>
+                  <div><span style={{ fontSize: '12px', color: '#888' }}>Avg Rating</span><div style={{ display: 'flex', gap: '4px', marginTop: '4px' }}>{[1,2,3,4,5].map(i => <span key={i} style={{ color: i <= Math.round(parseFloat(avgRating)) ? '#22c55e' : '#2a2a35', fontSize: '28px' }}>★</span>)}</div></div>
+                  <div style={{ textAlign: 'right' }}><span style={{ fontSize: '12px', color: '#888' }}>Rating</span><div style={{ fontSize: '28px', fontWeight: 700, color: '#fff' }}>{avgRating}</div></div>
                 </div>
               </div>
             </div>
