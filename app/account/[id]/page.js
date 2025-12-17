@@ -51,6 +51,7 @@ export default function AccountPage() {
   const [pairAnalysisType, setPairAnalysisType] = useState('best')
   const [tooltip, setTooltip] = useState(null)
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 })
+  const [hoverPoint, setHoverPoint] = useState(null)
   const [hasNewInputs, setHasNewInputs] = useState(false)
 
   useEffect(() => { loadData() }, [])
@@ -227,6 +228,7 @@ export default function AccountPage() {
   const mostTradedPair = (() => { const c = {}; trades.forEach(t => c[t.symbol] = (c[t.symbol] || 0) + 1); return Object.entries(c).sort((a, b) => b[1] - a[1])[0]?.[0] || '-' })()
   const mostUsedRR = (() => { const c = {}; trades.forEach(t => { const rr = Math.round(parseFloat(t.rr) || 0); if (rr > 0) c[rr] = (c[rr] || 0) + 1 }); const best = Object.entries(c).sort((a, b) => b[1] - a[1])[0]; return best ? best[0] + 'R' : '-' })()
   const mostProfitableRR = (() => { const c = {}; trades.forEach(t => { const rr = Math.round(parseFloat(t.rr) || 0); if (rr > 0) c[rr] = (c[rr] || 0) + (parseFloat(t.pnl) || 0) }); const best = Object.entries(c).sort((a, b) => b[1] - a[1])[0]; return best ? best[0] + 'R' : '-' })()
+  const bestRR = (() => { const best = trades.filter(t => t.outcome === 'win').sort((a, b) => (parseFloat(b.rr) || 0) - (parseFloat(a.rr) || 0))[0]; return best ? `${best.rr}R` : '-' })()
   const avgTrend = trades.filter(t => t.direction === 'long').length >= trades.filter(t => t.direction === 'short').length ? 'Long' : 'Short'
   const longCount = trades.filter(t => t.direction === 'long').length
   const shortCount = trades.filter(t => t.direction === 'short').length
@@ -241,23 +243,6 @@ export default function AccountPage() {
   const expectancy = trades.length > 0 ? ((winrate / 100) * avgWin - ((100 - winrate) / 100) * avgLoss).toFixed(0) : 0
   const lossExpectancy = trades.length > 0 ? (((100 - winrate) / 100) * avgLoss).toFixed(0) : 0
   const returnOnRisk = avgLoss > 0 ? (avgWin / avgLoss).toFixed(2) : '-'
-  
-  // Consistency score (profitable days / total days)
-  const consistencyScore = (() => {
-    const byDay = {}
-    trades.forEach(t => { byDay[t.date] = (byDay[t.date] || 0) + (parseFloat(t.pnl) || 0) })
-    const profitableDays = Object.values(byDay).filter(p => p > 0).length
-    const totalDays = Object.keys(byDay).length
-    return totalDays > 0 ? Math.round((profitableDays / totalDays) * 100) + '%' : '0%'
-  })()
-  
-  // Monthly growth
-  const monthlyGrowth = (() => {
-    if (tradingDays === 0) return '0%'
-    const dailyReturn = totalPnl / tradingDays
-    const monthlyReturn = dailyReturn * 20 // ~20 trading days per month
-    return ((monthlyReturn / startingBalance) * 100).toFixed(1) + '%'
-  })()
 
   // Daily PnL data for net daily chart
   const dailyPnL = (() => {
@@ -273,16 +258,11 @@ export default function AccountPage() {
     notes: 'Keep daily, weekly, and custom notes about your trading journey.'
   }
 
-  // Tooltip component that follows mouse with gradual position shift
+  // Tooltip component that follows mouse
   const Tooltip = ({ data }) => {
     if (!data) return null
-    // Calculate offset based on position - gradually shift from right to left
-    const viewportWidth = typeof window !== 'undefined' ? window.innerWidth : 1920
-    const xRatio = mousePos.x / viewportWidth
-    const xOffset = 15 - (xRatio * 180) // Gradually shifts from +15 to -165
-    const yOffset = mousePos.y < 150 ? 15 : -80 // Flip vertically if near top
     return (
-      <div style={{ position: 'fixed', left: mousePos.x + xOffset, top: mousePos.y + yOffset, background: '#1a1a22', border: '1px solid #2a2a35', borderRadius: '8px', padding: '10px 14px', fontSize: '12px', zIndex: 1000, pointerEvents: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.5)' }}>
+      <div style={{ position: 'fixed', left: mousePos.x + 15, top: mousePos.y + 15, background: '#1a1a22', border: '1px solid #2a2a35', borderRadius: '8px', padding: '10px 14px', fontSize: '12px', zIndex: 1000, pointerEvents: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.5)' }}>
         <div style={{ color: '#888', marginBottom: '4px' }}>{data.date}</div>
         <div style={{ fontWeight: 700, fontSize: '16px', color: '#fff' }}>${data.value?.toLocaleString()}</div>
         {data.extra && <div style={{ color: data.extra.color || '#22c55e', marginTop: '4px' }}>{data.extra.text}</div>}
@@ -303,7 +283,7 @@ export default function AccountPage() {
       </header>
 
       {/* FIXED SUBHEADER */}
-      <div style={{ position: 'fixed', top: '57px', left: '180px', right: 0, zIndex: 40, padding: '14px 24px', background: '#0a0a0f', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <div style={{ position: 'fixed', top: '57px', left: '180px', right: 0, zIndex: 40, padding: '14px 24px', background: '#0a0a0f', borderBottom: '1px solid #1a1a22', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <span style={{ fontSize: '26px', fontWeight: 700, color: '#fff' }}>{account?.name}</span>
         <div style={{ display: 'flex', gap: '12px' }}>
           {activeTab === 'trades' && (
@@ -314,7 +294,7 @@ export default function AccountPage() {
       </div>
 
       {/* FIXED SIDEBAR */}
-      <div style={{ position: 'fixed', top: '57px', left: 0, bottom: 0, width: '180px', padding: '16px 12px', borderRight: '1px solid #1a1a22', background: '#0a0a0f', zIndex: 45, display: 'flex', flexDirection: 'column', paddingTop: '70px' }}>
+      <div style={{ position: 'fixed', top: '57px', left: 0, bottom: 0, width: '180px', padding: '16px 12px', background: '#0a0a0f', zIndex: 45, display: 'flex', flexDirection: 'column', paddingTop: '70px' }}>
         <div>
           {['trades', 'statistics', 'notes'].map((tab) => (
             <button 
@@ -325,13 +305,17 @@ export default function AccountPage() {
                 background: activeTab === tab ? '#22c55e' : 'transparent', 
                 border: activeTab === tab ? 'none' : '1px solid #2a2a35',
                 borderRadius: '8px', color: activeTab === tab ? '#fff' : '#888', 
-                fontSize: '14px', fontWeight: 600, textTransform: 'uppercase', cursor: 'pointer', textAlign: 'center',
-                position: 'relative'
+                fontSize: '14px', fontWeight: 600, textTransform: 'uppercase', cursor: 'pointer', textAlign: 'center'
               }}
             >
               {tab}
             </button>
           ))}
+            </button>
+          ))}
+        </div>
+        <div style={{ marginTop: 'auto', padding: '14px', background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px' }}>
+          <div style={{ fontSize: '11px', color: '#666', lineHeight: '1.5' }}>{tabDescriptions[activeTab]}</div>
         </div>
       </div>
 
@@ -340,13 +324,13 @@ export default function AccountPage() {
 
         {/* TRADES TAB */}
         {activeTab === 'trades' && (
-          <div style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', overflow: 'hidden', display: 'flex', flexDirection: 'column', maxHeight: 'calc(100vh - 180px)' }}>
+          <div style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', display: 'flex', flexDirection: 'column', height: 'calc(100vh - 160px)' }}>
             {trades.length === 0 ? (
               <div style={{ padding: '60px', textAlign: 'center', color: '#888', fontSize: '15px' }}>No trades yet. Click "+ LOG NEW TRADE" to add your first trade.</div>
             ) : (
-              <div style={{ overflowX: 'auto', overflowY: 'auto', flex: 1 }}>
-                <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                  <thead>
+              <div style={{ flex: 1, overflowX: 'auto', overflowY: 'auto' }}>
+                <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: '900px' }}>
+                  <thead style={{ position: 'sticky', top: 0, zIndex: 1 }}>
                     <tr style={{ background: '#0a0a0e' }}>
                       {['Symbol', 'W/L', 'PnL', '%', 'RR', ...customInputs.map(i => i.label), 'Date', ''].map((h, i) => (
                         <th key={i} style={{ padding: '14px 12px', textAlign: 'center', color: '#888', fontSize: '13px', fontWeight: 600, textTransform: 'uppercase', borderBottom: '1px solid #1a1a22' }}>{h}</th>
@@ -428,8 +412,8 @@ export default function AccountPage() {
 
               {/* Graphs */}
               <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                {/* Equity Curve */}
-                <div style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '16px', flex: 1 }}>
+                {/* Equity Curve - Dashboard style with green dot tooltip */}
+                <div style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '16px', height: '200px' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '12px' }}>
                     <span style={{ fontSize: '13px', color: '#888', textTransform: 'uppercase' }}>Equity Curve</span>
                     <div style={{ display: 'flex', gap: '20px', fontSize: '13px' }}>
@@ -442,40 +426,64 @@ export default function AccountPage() {
                       if (trades.length < 2) return <div style={{ height: '100%', width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#666' }}>Need 2+ trades</div>
                       const sorted = [...trades].sort((a, b) => new Date(a.date) - new Date(b.date))
                       let cum = startingBalance
-                      const pts = [{ y: cum, date: 'Start', pnl: 0 }]
-                      sorted.forEach(t => { cum += parseFloat(t.pnl) || 0; pts.push({ y: cum, date: t.date, pnl: parseFloat(t.pnl), symbol: t.symbol }) })
-                      const minY = Math.min(...pts.map(p => p.y)), maxY = Math.max(...pts.map(p => p.y)), range = maxY - minY || 1
-                      const yAxisLabels = [maxY, minY + range * 0.66, minY + range * 0.33, minY]
+                      const points = [{ balance: cum, date: null, pnl: 0 }]
+                      sorted.forEach(t => { cum += parseFloat(t.pnl) || 0; points.push({ balance: cum, date: t.date, pnl: parseFloat(t.pnl) || 0, symbol: t.symbol }) })
+                      
+                      const maxBal = Math.max(...points.map(p => p.balance))
+                      const minBal = Math.min(...points.map(p => p.balance))
+                      const yStep = Math.ceil((maxBal - minBal) / 4 / 1000) * 1000 || 1000
+                      const yMax = Math.ceil(maxBal / yStep) * yStep
+                      const yMin = Math.floor(minBal / yStep) * yStep
+                      const yRange = yMax - yMin || yStep
+                      
+                      const yLabels = []
+                      for (let v = yMax; v >= yMin; v -= yStep) yLabels.push(v)
+                      
+                      const svgW = 100, svgH = 100
+                      const chartPoints = points.map((p, i) => ({
+                        x: points.length > 1 ? (i / (points.length - 1)) * svgW : svgW / 2,
+                        y: svgH - ((p.balance - yMin) / yRange) * svgH,
+                        ...p
+                      }))
+                      
+                      const pathD = chartPoints.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`).join(' ')
+                      const areaD = pathD + ` L ${chartPoints[chartPoints.length - 1].x} ${svgH} L ${chartPoints[0].x} ${svgH} Z`
                       
                       return (
                         <>
-                          {/* Y-Axis */}
-                          <div style={{ width: '55px', height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', paddingRight: '8px', boxSizing: 'border-box' }}>
-                            {yAxisLabels.map((val, i) => (
-                              <span key={i} style={{ fontSize: '10px', color: '#666', textAlign: 'right' }}>${Math.round(val).toLocaleString()}</span>
-                            ))}
+                          <div style={{ width: '45px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', paddingBottom: '0px', flexShrink: 0 }}>
+                            {yLabels.map((v, i) => <span key={i} style={{ fontSize: '10px', color: '#888', lineHeight: 1, textAlign: 'right' }}>${(v/1000).toFixed(0)}k</span>)}
                           </div>
-                          {/* Chart */}
-                          <div style={{ flex: 1, position: 'relative', borderLeft: '1px solid #2a2a35', borderBottom: '1px solid #2a2a35' }}>
-                            <svg style={{ width: '100%', height: '100%' }} viewBox="0 0 100 100" preserveAspectRatio="none"
+                          <div style={{ flex: 1, position: 'relative', borderLeft: '1px solid #333' }}>
+                            <svg style={{ position: 'absolute', inset: 0, width: '100%', height: '100%' }} viewBox={`0 0 ${svgW} ${svgH}`} preserveAspectRatio="none"
                               onMouseMove={e => {
                                 const rect = e.currentTarget.getBoundingClientRect()
-                                const xPct = (e.clientX - rect.left) / rect.width
-                                const yPct = (e.clientY - rect.top) / rect.height
-                                const idx = Math.round(xPct * (pts.length - 1))
-                                const pt = pts[Math.max(0, Math.min(pts.length - 1, idx))]
-                                const ptYPct = 100 - ((pt.y - minY) / range) * 100
-                                setTooltip({ date: pt.date === 'Start' ? 'Start' : new Date(pt.date).toLocaleDateString(), value: pt.y, xPct: xPct * 100, yPct: ptYPct, extra: pt.symbol ? { text: `${pt.symbol}: ${pt.pnl >= 0 ? '+' : ''}$${pt.pnl}`, color: pt.pnl >= 0 ? '#22c55e' : '#ef4444' } : null })
+                                const mouseXPct = ((e.clientX - rect.left) / rect.width) * svgW
+                                let closest = chartPoints[0], minDist = Math.abs(mouseXPct - chartPoints[0].x)
+                                chartPoints.forEach(p => { const d = Math.abs(mouseXPct - p.x); if (d < minDist) { minDist = d; closest = p } })
+                                if (minDist < 10) {
+                                  setHoverPoint({ ...closest, xPct: (closest.x / svgW) * 100, yPct: (closest.y / svgH) * 100 })
+                                } else {
+                                  setHoverPoint(null)
+                                }
                               }}
-                              onMouseLeave={() => setTooltip(null)}
+                              onMouseLeave={() => setHoverPoint(null)}
                             >
-                              <defs><linearGradient id="eqG" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#22c55e" stopOpacity="0.3" /><stop offset="100%" stopColor="#22c55e" stopOpacity="0" /></linearGradient></defs>
-                              <polygon points={pts.map((p, i) => `${(i / (pts.length - 1)) * 100},${100 - ((p.y - minY) / range) * 100}`).join(' ') + ' 100,100 0,100'} fill="url(#eqG)" />
-                              <polyline points={pts.map((p, i) => `${(i / (pts.length - 1)) * 100},${100 - ((p.y - minY) / range) * 100}`).join(' ')} fill="none" stroke="#22c55e" strokeWidth="2" vectorEffect="non-scaling-stroke" />
+                              <defs><linearGradient id="eqG" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stopColor="#22c55e" stopOpacity="0.3" /><stop offset="100%" stopColor="#22c55e" stopOpacity="0" /></linearGradient></defs>
+                              <path d={areaD} fill="url(#eqG)" />
+                              <path d={pathD} fill="none" stroke="#22c55e" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />
                             </svg>
-                            {/* Green hover dot */}
-                            {tooltip && tooltip.xPct !== undefined && (
-                              <div style={{ position: 'absolute', left: `${tooltip.xPct}%`, top: `${tooltip.yPct}%`, transform: 'translate(-50%, -50%)', width: '12px', height: '12px', borderRadius: '50%', background: '#22c55e', border: '2px solid #fff', pointerEvents: 'none', zIndex: 10 }} />
+                            {/* Green dot on line */}
+                            {hoverPoint && (
+                              <div style={{ position: 'absolute', left: `${hoverPoint.xPct}%`, top: `${hoverPoint.yPct}%`, transform: 'translate(-50%, -50%)', width: '12px', height: '12px', borderRadius: '50%', background: '#22c55e', border: '2px solid #fff', pointerEvents: 'none', zIndex: 10 }} />
+                            )}
+                            {/* Tooltip next to dot */}
+                            {hoverPoint && (
+                              <div style={{ position: 'absolute', left: `${hoverPoint.xPct}%`, top: `${hoverPoint.yPct}%`, transform: `translate(${hoverPoint.xPct > 80 ? 'calc(-100% - 15px)' : '15px'}, ${hoverPoint.yPct < 20 ? '0%' : hoverPoint.yPct > 80 ? '-100%' : '-50%'})`, background: '#1a1a22', border: '1px solid #2a2a35', borderRadius: '6px', padding: '8px 12px', fontSize: '11px', whiteSpace: 'nowrap', zIndex: 10, pointerEvents: 'none' }}>
+                                <div style={{ color: '#888' }}>{hoverPoint.date ? new Date(hoverPoint.date).toLocaleDateString() : 'Start'}</div>
+                                <div style={{ fontWeight: 600, fontSize: '14px', color: '#fff' }}>${hoverPoint.balance?.toLocaleString()}</div>
+                                {hoverPoint.symbol && <div style={{ color: hoverPoint.pnl >= 0 ? '#22c55e' : '#ef4444' }}>{hoverPoint.symbol}: {hoverPoint.pnl >= 0 ? '+' : ''}${hoverPoint.pnl?.toFixed(0)}</div>}
+                              </div>
                             )}
                           </div>
                         </>
@@ -485,7 +493,7 @@ export default function AccountPage() {
                 </div>
 
                 {/* Bar Chart */}
-                <div style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '16px', flex: 1, display: 'flex', gap: '16px', overflow: 'hidden' }}>
+                <div style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '16px', height: '200px', display: 'flex', gap: '16px' }}>
                   <div style={{ flex: 1 }}>
                     {(() => {
                       const groupedData = {}
@@ -518,43 +526,26 @@ export default function AccountPage() {
                       
                       if (entries.length === 0) return <div style={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#666' }}>No data</div>
                       const maxVal = barGraphMetric === 'winrate' ? 100 : Math.max(...entries.map(e => Math.abs(e.val)), 1)
-                      const yAxisLabels = barGraphMetric === 'winrate' ? ['100%', '75%', '50%', '25%', '0%'] : [maxVal, maxVal * 0.75, maxVal * 0.5, maxVal * 0.25, 0].map(v => barGraphMetric === 'count' ? Math.round(v) : (v >= 0 ? '+' : '') + '$' + Math.round(v))
                       
                       return (
-                        <div style={{ height: '100%', display: 'flex' }}>
-                          {/* Y-Axis */}
-                          <div style={{ width: '50px', height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', paddingRight: '8px', paddingBottom: '22px', boxSizing: 'border-box' }}>
-                            {yAxisLabels.map((val, i) => (
-                              <span key={i} style={{ fontSize: '9px', color: '#666', textAlign: 'right' }}>{val}</span>
-                            ))}
+                        <div style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+                          <div style={{ flex: 1, display: 'flex', alignItems: 'flex-end', gap: '8px', paddingBottom: '4px' }}>
+                            {entries.map((item, i) => {
+                              const hPct = Math.max((Math.abs(item.val) / maxVal) * 100, 5)
+                              const isGreen = barGraphMetric === 'winrate' ? item.val >= 50 : item.val >= 0
+                              return (
+                                <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', height: '100%', justifyContent: 'flex-end' }}
+                                  onMouseEnter={() => setTooltip({ date: item.name, value: item.val, extra: { text: item.disp, color: isGreen ? '#22c55e' : '#ef4444' } })}
+                                  onMouseLeave={() => setTooltip(null)}
+                                >
+                                  <div style={{ fontSize: '11px', color: isGreen ? '#22c55e' : '#ef4444', marginBottom: '3px', fontWeight: 600 }}>{item.disp}</div>
+                                  <div style={{ width: '100%', height: `${hPct}%`, background: isGreen ? '#22c55e' : '#ef4444', borderRadius: '3px 3px 0 0' }} />
+                                </div>
+                              )
+                            })}
                           </div>
-                          {/* Chart Area */}
-                          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', borderLeft: '1px solid #2a2a35', overflow: 'hidden' }}>
-                            <div style={{ flex: 1, display: 'flex', alignItems: 'flex-end', gap: '8px', paddingLeft: '8px', paddingRight: '4px', paddingBottom: '4px', borderBottom: '1px solid #2a2a35', overflow: 'hidden' }}>
-                              {entries.map((item, i) => {
-                                const hPct = Math.max((Math.abs(item.val) / maxVal) * 100, 5)
-                                const isGreen = barGraphMetric === 'winrate' ? item.val >= 50 : item.val >= 0
-                                return (
-                                  <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', height: '100%', justifyContent: 'flex-end', position: 'relative' }}
-                                    onMouseEnter={e => {
-                                      const rect = e.currentTarget.getBoundingClientRect()
-                                      setTooltip({ date: item.name, value: item.val, barHover: true, extra: { text: item.disp, color: isGreen ? '#22c55e' : '#ef4444' } })
-                                    }}
-                                    onMouseLeave={() => setTooltip(null)}
-                                  >
-                                    <div style={{ fontSize: '11px', color: isGreen ? '#22c55e' : '#ef4444', marginBottom: '3px', fontWeight: 600 }}>{item.disp}</div>
-                                    <div style={{ width: '100%', height: `${hPct}%`, background: isGreen ? '#22c55e' : '#ef4444', borderRadius: '3px 3px 0 0', position: 'relative' }}>
-                                      {tooltip && tooltip.date === item.name && (
-                                        <div style={{ position: 'absolute', top: '0', left: '50%', transform: 'translate(-50%, -50%)', width: '10px', height: '10px', borderRadius: '50%', background: isGreen ? '#22c55e' : '#ef4444', border: '2px solid #fff', zIndex: 10 }} />
-                                      )}
-                                    </div>
-                                  </div>
-                                )
-                              })}
-                            </div>
-                            <div style={{ display: 'flex', gap: '8px', paddingTop: '6px', paddingLeft: '8px', paddingRight: '4px' }}>
-                              {entries.map((item, i) => <div key={i} style={{ flex: 1, textAlign: 'center', fontSize: '10px', color: '#888', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.name}</div>)}
-                            </div>
+                          <div style={{ display: 'flex', gap: '8px', paddingTop: '6px' }}>
+                            {entries.map((item, i) => <div key={i} style={{ flex: 1, textAlign: 'center', fontSize: '10px', color: '#888', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.name}</div>)}
                           </div>
                         </div>
                       )
@@ -588,181 +579,84 @@ export default function AccountPage() {
               </div>
             </div>
 
-            {/* ROW 2: Direction/Bullish bars + Daily PnL + Avg Rating + Day of Week */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '16px' }}>
-              {/* Top thin bars: Direction Split + Bullish/Bearish */}
-              <div style={{ display: 'flex', gap: '16px' }}>
-                {/* Direction Split Bar */}
-                <div style={{ flex: 1, background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '12px 16px' }}>
+            {/* ROW 2: Net Daily PnL + Direction/Rating/RR */}
+            <div style={{ display: 'flex', gap: '16px', marginBottom: '16px' }}>
+              <div style={{ flex: 2, background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '16px' }}>
+                <div style={{ fontSize: '13px', color: '#888', textTransform: 'uppercase', marginBottom: '10px' }}>Net Daily PnL</div>
+                <div style={{ height: '100px' }}>
+                  {dailyPnL.length === 0 ? <div style={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#666' }}>No data</div> : (
+                    <div style={{ height: '100%', display: 'flex', alignItems: 'flex-end', gap: '4px' }}>
+                      {dailyPnL.map((d, i) => {
+                        const maxAbs = Math.max(...dailyPnL.map(x => Math.abs(x.pnl)), 1)
+                        const hPct = (Math.abs(d.pnl) / maxAbs) * 100
+                        return (
+                          <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', height: '100%', justifyContent: d.pnl >= 0 ? 'flex-end' : 'flex-start' }}
+                            onMouseEnter={() => setTooltip({ date: new Date(d.date).toLocaleDateString(), value: d.pnl, extra: { text: (d.pnl >= 0 ? '+' : '') + '$' + d.pnl.toFixed(0), color: d.pnl >= 0 ? '#22c55e' : '#ef4444' } })}
+                            onMouseLeave={() => setTooltip(null)}
+                          >
+                            <div style={{ width: '100%', maxWidth: '30px', height: `${Math.max(hPct, 5)}%`, background: d.pnl >= 0 ? '#22c55e' : '#ef4444', borderRadius: '2px' }} />
+                          </div>
+                        )
+                      })}
+                    </div>
+                  )}
+                </div>
+              </div>
+              <div style={{ flex: 1, background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '16px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                {/* Direction Split */}
+                <div>
+                  <div style={{ fontSize: '12px', color: '#888', textTransform: 'uppercase', marginBottom: '6px' }}>Direction Split</div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                    <span style={{ fontSize: '11px', color: '#888', textTransform: 'uppercase', whiteSpace: 'nowrap' }}>Direction</span>
-                    <span style={{ fontSize: '12px', color: '#22c55e', fontWeight: 600 }}>{longPct}% Long</span>
+                    <span style={{ fontSize: '13px', color: '#22c55e', fontWeight: 700 }}>{longPct}% L</span>
                     <div style={{ flex: 1, height: '10px', borderRadius: '5px', overflow: 'hidden', display: 'flex' }}>
                       <div style={{ width: `${longPct}%`, background: '#22c55e' }} />
                       <div style={{ width: `${100 - longPct}%`, background: '#ef4444' }} />
                     </div>
-                    <span style={{ fontSize: '12px', color: '#ef4444', fontWeight: 600 }}>{100 - longPct}% Short</span>
+                    <span style={{ fontSize: '13px', color: '#ef4444', fontWeight: 700 }}>{100 - longPct}% S</span>
                   </div>
                 </div>
-                {/* Bullish/Bearish Bar */}
-                <div style={{ flex: 1, background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '12px 16px' }}>
-                  {(() => {
-                    const bullishPct = (wins + losses) > 0 ? Math.round((wins / (wins + losses)) * 100) : 50
-                    return (
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                        <span style={{ fontSize: '11px', color: '#888', textTransform: 'uppercase', whiteSpace: 'nowrap' }}>Sentiment</span>
-                        <span style={{ fontSize: '12px', color: '#22c55e', fontWeight: 600 }}>{bullishPct}% Bullish</span>
-                        <div style={{ flex: 1, height: '10px', borderRadius: '5px', overflow: 'hidden', display: 'flex' }}>
-                          <div style={{ width: `${bullishPct}%`, background: '#22c55e' }} />
-                          <div style={{ width: `${100 - bullishPct}%`, background: '#ef4444' }} />
-                        </div>
-                        <span style={{ fontSize: '12px', color: '#ef4444', fontWeight: 600 }}>{100 - bullishPct}% Bearish</span>
-                      </div>
-                    )
-                  })()}
-                </div>
-              </div>
-
-              {/* Main row: Daily PnL + Two widgets */}
-              <div style={{ display: 'flex', gap: '16px' }}>
-                {/* Daily PnL Chart - same size as bar chart */}
-                <div style={{ flex: 2, background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '16px' }}>
-                  <div style={{ fontSize: '13px', color: '#888', textTransform: 'uppercase', marginBottom: '12px' }}>Daily PnL</div>
-                  <div style={{ height: '140px', display: 'flex' }}>
-                    {trades.length === 0 ? <div style={{ height: '100%', width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#666' }}>No data</div> : (() => {
-                      const sortedTrades = [...trades].sort((a, b) => new Date(a.date) - new Date(b.date))
-                      const maxAbs = Math.max(...sortedTrades.map(t => Math.abs(parseFloat(t.pnl) || 0)), 1)
-                      const roundedMax = Math.ceil(maxAbs / 100) * 100
-                      const yAxisLabels = []
-                      for (let v = roundedMax; v >= 0; v -= 100) yAxisLabels.push('$' + v)
-                      const gridLines = yAxisLabels.length
-                      
-                      // Get dates for x-axis (first, middle, last)
-                      const dates = sortedTrades.map(t => new Date(t.date))
-                      const xLabels = []
-                      if (dates.length > 0) {
-                        xLabels.push({ idx: 0, label: `${dates[0].getDate()}/${dates[0].getMonth()+1}` })
-                        if (dates.length > 2) {
-                          const mid = Math.floor(dates.length / 2)
-                          xLabels.push({ idx: mid, label: `${dates[mid].getDate()}/${dates[mid].getMonth()+1}` })
-                        }
-                        if (dates.length > 1) {
-                          xLabels.push({ idx: dates.length - 1, label: `${dates[dates.length-1].getDate()}/${dates[dates.length-1].getMonth()+1}` })
-                        }
-                      }
-                      
-                      return (
-                        <>
-                          {/* Y-Axis */}
-                          <div style={{ width: '45px', height: 'calc(100% - 20px)', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', paddingRight: '8px', boxSizing: 'border-box' }}>
-                            {yAxisLabels.map((val, i) => (
-                              <span key={i} style={{ fontSize: '9px', color: '#666', textAlign: 'right' }}>{val}</span>
-                            ))}
-                          </div>
-                          {/* Chart - all bars grow upward with grid lines */}
-                          <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
-                            <div style={{ flex: 1, position: 'relative', borderLeft: '1px solid #2a2a35', borderBottom: '1px solid #2a2a35' }}>
-                              {/* Horizontal grid lines - very thin */}
-                              {yAxisLabels.map((_, i) => (
-                                <div key={i} style={{ position: 'absolute', left: 0, right: 0, top: `${(i / (yAxisLabels.length - 1)) * 100}%`, height: '1px', background: '#1a1a22', opacity: 0.5 }} />
-                              ))}
-                              {/* Bars */}
-                              <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'flex-end', gap: '2px', padding: '0 4px' }}>
-                                {sortedTrades.map((t, i) => {
-                                  const pnl = parseFloat(t.pnl) || 0
-                                  const hPct = (Math.abs(pnl) / roundedMax) * 100
-                                  return (
-                                    <div key={i} style={{ flex: 1, minWidth: '4px', maxWidth: '20px', height: '100%', display: 'flex', alignItems: 'flex-end' }}
-                                      onMouseEnter={() => setTooltip({ date: new Date(t.date).toLocaleDateString(), value: Math.abs(pnl), extra: { text: `${t.symbol}: ${pnl >= 0 ? '+' : ''}$${pnl.toFixed(0)}`, color: pnl >= 0 ? '#22c55e' : '#ef4444' } })}
-                                      onMouseLeave={() => setTooltip(null)}
-                                    >
-                                      <div style={{ width: '100%', height: `${Math.max(hPct, 2)}%`, background: pnl >= 0 ? '#22c55e' : '#ef4444', borderRadius: '2px 2px 0 0' }} />
-                                    </div>
-                                  )
-                                })}
-                              </div>
-                            </div>
-                            {/* X-axis dates */}
-                            <div style={{ height: '20px', position: 'relative', marginLeft: '4px' }}>
-                              {xLabels.map((l, i) => (
-                                <span key={i} style={{ position: 'absolute', left: `${(l.idx / Math.max(sortedTrades.length - 1, 1)) * 100}%`, transform: i === xLabels.length - 1 ? 'translateX(-100%)' : i === 0 ? 'none' : 'translateX(-50%)', fontSize: '9px', color: '#666', whiteSpace: 'nowrap' }}>{l.label}</span>
-                              ))}
-                            </div>
-                          </div>
-                        </>
-                      )
-                    })()}
+                {/* Average Rating - horizontal */}
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '6px 0', borderTop: '1px solid #1a1a22', borderBottom: '1px solid #1a1a22' }}>
+                  <span style={{ fontSize: '13px', color: '#888' }}>Avg Rating</span>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <div style={{ display: 'flex', gap: '2px' }}>{[1,2,3,4,5].map(i => <span key={i} style={{ color: i <= Math.round(parseFloat(avgRating)) ? '#22c55e' : '#2a2a35', fontSize: '16px' }}>★</span>)}</div>
+                    <span style={{ fontSize: '18px', fontWeight: 700, color: '#fff' }}>{avgRating}</span>
                   </div>
                 </div>
-
-                {/* Right widgets column */}
-                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                  {/* Average Rating Widget - compact */}
-                  <div style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '10px 14px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '12px' }}>
-                    <div style={{ fontSize: '11px', color: '#888', textTransform: 'uppercase' }}>Avg Rating</div>
-                    <div style={{ display: 'flex', gap: '3px' }}>{[1,2,3,4,5].map(i => <span key={i} style={{ color: i <= Math.round(parseFloat(avgRating)) ? '#22c55e' : '#2a2a35', fontSize: '22px' }}>★</span>)}</div>
-                    <span style={{ fontSize: '22px', fontWeight: 700, color: '#fff' }}>{avgRating}</span>
+                {/* Most Used RR and Most Profitable RR */}
+                <div style={{ display: 'flex', gap: '10px' }}>
+                  <div style={{ flex: 1, background: '#0a0a0e', borderRadius: '6px', padding: '8px', textAlign: 'center' }}>
+                    <div style={{ fontSize: '10px', color: '#888', marginBottom: '3px' }}>Most Used RR</div>
+                    <div style={{ fontSize: '16px', fontWeight: 700, color: '#fff' }}>{mostUsedRR}</div>
                   </div>
-
-                  {/* Day of Week PnL Bar - prices centered below each day */}
-                  <div style={{ flex: 1, background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '14px' }}>
-                    <div style={{ fontSize: '11px', color: '#888', textTransform: 'uppercase', marginBottom: '8px' }}>PnL by Day</div>
-                    {(() => {
-                      const dayNames = ['M', 'T', 'W', 'T', 'F']
-                      const dayPnL = [0, 0, 0, 0, 0]
-                      trades.forEach(t => {
-                        const day = new Date(t.date).getDay()
-                        if (day >= 1 && day <= 5) dayPnL[day - 1] += parseFloat(t.pnl) || 0
-                      })
-                      
-                      return (
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                          {/* Bar - equal width segments */}
-                          <div style={{ display: 'flex', height: '40px', borderRadius: '4px', overflow: 'hidden' }}>
-                            {dayPnL.map((pnl, i) => (
-                              <div key={i} style={{ flex: 1, background: pnl >= 0 ? '#22c55e' : '#ef4444', borderRight: i < 4 ? '2px solid #0a0a0f' : 'none', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                <span style={{ fontSize: '13px', fontWeight: 700, color: '#fff' }}>{dayNames[i]}</span>
-                              </div>
-                            ))}
-                          </div>
-                          {/* Prices - centered below each segment */}
-                          <div style={{ display: 'flex' }}>
-                            {dayPnL.map((pnl, i) => (
-                              <div key={i} style={{ flex: 1, textAlign: 'center' }}>
-                                <span style={{ fontSize: '10px', color: pnl >= 0 ? '#22c55e' : '#ef4444', fontWeight: 600 }}>
-                                  {pnl >= 0 ? '+' : ''}{Math.round(pnl)}
-                                </span>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      )
-                    })()}
+                  <div style={{ flex: 1, background: '#0a0a0e', borderRadius: '6px', padding: '8px', textAlign: 'center' }}>
+                    <div style={{ fontSize: '10px', color: '#888', marginBottom: '3px' }}>Most Profitable RR</div>
+                    <div style={{ fontSize: '16px', fontWeight: 700, color: '#22c55e' }}>{mostProfitableRR}</div>
                   </div>
                 </div>
               </div>
             </div>
 
-            {/* ROW 3: Stats + Pair Circle + Performance + Streaks + Trade Analysis + Avg Win/Loss */}
-            <div style={{ display: 'flex', gap: '16px', marginBottom: '8px' }}>
-              {/* Stats + Pair Circle with dropdown */}
-              <div style={{ flex: 1, background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '14px', display: 'flex' }}>
+            {/* ROW 3: Stats + Donut + Trade Analysis */}
+            <div style={{ display: 'flex', gap: '16px', marginBottom: '16px' }}>
+              {/* Stats + Donut - narrower */}
+              <div style={{ width: '320px', background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '14px', display: 'flex' }}>
                 <div style={{ flex: 1 }}>
                   {[
                     { l: 'Avg. Trend', v: avgTrend },
                     { l: 'Avg. Rating', v: avgRating + '★' },
-                    { l: 'Avg Trade PnL', v: (avgPnl >= 0 ? '+' : '') + '$' + avgPnl },
+                    { l: 'Avg. Trade PnL', v: (avgPnl >= 0 ? '+' : '') + '$' + avgPnl },
                     { l: 'Most Traded', v: mostTradedPair },
                   ].map((item, i) => (
-                    <div key={i} style={{ display: 'flex', justifyContent: 'space-between', padding: '7px 0', borderBottom: i < 3 ? '1px solid #1a1a22' : 'none' }}>
+                    <div key={i} style={{ display: 'flex', justifyContent: 'space-between', padding: '5px 0', borderBottom: i < 3 ? '1px solid #1a1a22' : 'none' }}>
                       <span style={{ fontSize: '13px', color: '#888' }}>{item.l}</span>
                       <span style={{ fontSize: '13px', fontWeight: 600, color: '#fff' }}>{item.v}</span>
                     </div>
                   ))}
                 </div>
-                <div style={{ width: '1px', background: '#1a1a22', margin: '0 14px' }} />
-                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minWidth: '100px' }}>
-                  <select value={pairAnalysisType} onChange={e => setPairAnalysisType(e.target.value)} style={{ fontSize: '10px', color: '#888', marginBottom: '6px', textTransform: 'uppercase', background: 'transparent', border: '1px solid #1a1a22', borderRadius: '4px', padding: '4px 8px', cursor: 'pointer' }}>
+                <div style={{ width: '1px', background: '#1a1a22', margin: '0 12px' }} />
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minWidth: '110px' }}>
+                  <select value={pairAnalysisType} onChange={e => setPairAnalysisType(e.target.value)} style={{ fontSize: '10px', color: '#888', marginBottom: '6px', background: 'transparent', border: '1px solid #1a1a22', borderRadius: '4px', padding: '3px 6px', cursor: 'pointer' }}>
                     <option value="best">Best Pair</option>
                     <option value="worst">Worst Pair</option>
                     <option value="most">Most Used</option>
@@ -776,7 +670,7 @@ export default function AccountPage() {
                     else selected = Object.entries(ps).sort((a, b) => b[1].count - a[1].count)[0]
                     if (!selected) return <div style={{ color: '#666' }}>No data</div>
                     const wr = selected[1].w + selected[1].l > 0 ? Math.round((selected[1].w / (selected[1].w + selected[1].l)) * 100) : 0
-                    const size = 75, stroke = 8, r = (size - stroke) / 2, c = 2 * Math.PI * r
+                    const size = 80, stroke = 8, r = (size - stroke) / 2, c = 2 * Math.PI * r
                     return (
                       <>
                         <div style={{ position: 'relative', width: size, height: size }}>
@@ -785,11 +679,11 @@ export default function AccountPage() {
                             <circle cx={size/2} cy={size/2} r={r} fill="none" stroke="#22c55e" strokeWidth={stroke} strokeDasharray={c} strokeDashoffset={c * (1 - wr/100)} strokeLinecap="butt" />
                           </svg>
                           <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-                            <div style={{ fontSize: '11px', fontWeight: 700, color: '#fff' }}>{selected[0]}</div>
+                            <div style={{ fontSize: '12px', fontWeight: 700, color: '#fff' }}>{selected[0]}</div>
                             <div style={{ fontSize: '14px', fontWeight: 700, color: '#22c55e' }}>{wr}%</div>
                           </div>
                         </div>
-                        <div style={{ display: 'flex', gap: '8px', marginTop: '4px', fontSize: '9px' }}>
+                        <div style={{ display: 'flex', gap: '8px', marginTop: '4px', fontSize: '10px' }}>
                           <span><span style={{ color: '#22c55e' }}>●</span> W</span>
                           <span><span style={{ color: '#ef4444' }}>●</span> L</span>
                         </div>
@@ -799,47 +693,11 @@ export default function AccountPage() {
                 </div>
               </div>
 
-              {/* Performance - 4 items */}
-              <div style={{ width: '200px', background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '12px' }}>
-                <div style={{ fontSize: '11px', color: '#888', textTransform: 'uppercase', marginBottom: '8px' }}>Performance</div>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px' }}>
-                  {[
-                    { l: 'Best Day', v: bestDay ? `+$${Math.round(bestDay.pnl)}` : '-', c: '#22c55e' },
-                    { l: 'Worst Day', v: worstDay ? `$${Math.round(worstDay.pnl)}` : '-', c: '#ef4444' },
-                    { l: 'Biggest Win', v: `+$${biggestWin}`, c: '#22c55e' },
-                    { l: 'Biggest Loss', v: `$${biggestLoss}`, c: '#ef4444' },
-                  ].map((item, i) => (
-                    <div key={i} style={{ padding: '6px', background: '#0a0a0e', borderRadius: '4px' }}>
-                      <div style={{ fontSize: '9px', color: '#666', marginBottom: '2px' }}>{item.l}</div>
-                      <div style={{ fontSize: '13px', fontWeight: 700, color: item.c }}>{item.v}</div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Streaks - 4 items with Consistency Score */}
-              <div style={{ width: '200px', background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '12px' }}>
-                <div style={{ fontSize: '11px', color: '#888', textTransform: 'uppercase', marginBottom: '8px' }}>Streaks & Consistency</div>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px' }}>
-                  {[
-                    { l: 'Max Wins', v: streaks.mw, c: '#22c55e' },
-                    { l: 'Max Losses', v: streaks.ml, c: '#ef4444' },
-                    { l: 'Days', v: tradingDays, c: '#fff' },
-                    { l: 'Consistency', v: consistencyScore, c: '#22c55e' },
-                  ].map((item, i) => (
-                    <div key={i} style={{ padding: '6px', background: '#0a0a0e', borderRadius: '4px' }}>
-                      <div style={{ fontSize: '9px', color: '#666', marginBottom: '2px' }}>{item.l}</div>
-                      <div style={{ fontSize: '13px', fontWeight: 700, color: item.c }}>{item.v}</div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Trade Analysis - green outline */}
-              <div style={{ width: '220px', background: '#0d0d12', border: '2px solid #22c55e', borderRadius: '8px', padding: '12px' }}>
-                <div style={{ fontSize: '11px', color: '#888', textTransform: 'uppercase', marginBottom: '8px' }}>Trade Analysis</div>
-                <div style={{ display: 'flex', gap: '6px', marginBottom: '8px' }}>
-                  <select value={analysisGroupBy} onChange={e => setAnalysisGroupBy(e.target.value)} style={{ flex: 1, padding: '5px', background: '#0a0a0e', border: '1px solid #1a1a22', borderRadius: '4px', color: '#fff', fontSize: '10px' }}>
+              {/* Trade Analysis - wider with green border */}
+              <div style={{ flex: 1, background: '#0d0d12', border: '2px solid #22c55e', borderRadius: '8px', padding: '16px' }}>
+                <div style={{ fontSize: '13px', color: '#888', textTransform: 'uppercase', marginBottom: '12px' }}>Trade Analysis</div>
+                <div style={{ display: 'flex', gap: '10px', marginBottom: '14px' }}>
+                  <select value={analysisGroupBy} onChange={e => setAnalysisGroupBy(e.target.value)} style={{ flex: 1, padding: '10px', background: '#0a0a0e', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '13px' }}>
                     <option value="direction">Direction</option>
                     <option value="confidence">Confidence</option>
                     <option value="session">Session</option>
@@ -848,14 +706,14 @@ export default function AccountPage() {
                       <option key={inp.id} value={inp.id}>{inp.label}</option>
                     ))}
                   </select>
-                  <select value={analysisMetric} onChange={e => setAnalysisMetric(e.target.value)} style={{ flex: 1, padding: '5px', background: '#0a0a0e', border: '1px solid #1a1a22', borderRadius: '4px', color: '#fff', fontSize: '10px' }}>
+                  <select value={analysisMetric} onChange={e => setAnalysisMetric(e.target.value)} style={{ flex: 1, padding: '10px', background: '#0a0a0e', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '13px' }}>
                     <option value="avgpnl">Avg PnL</option>
                     <option value="winrate">Winrate</option>
                     <option value="pnl">Total PnL</option>
                     <option value="count">Count</option>
                   </select>
                 </div>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                   {(() => {
                     const groups = {}
                     trades.forEach(t => {
@@ -869,16 +727,16 @@ export default function AccountPage() {
                       if (t.outcome === 'win') groups[key].w++
                       else if (t.outcome === 'loss') groups[key].l++
                     })
-                    return Object.entries(groups).slice(0, 3).map(([name, data]) => {
+                    return Object.entries(groups).slice(0, 4).map(([name, data]) => {
                       let val, disp
                       if (analysisMetric === 'avgpnl') { val = data.count > 0 ? data.pnl / data.count : 0; disp = (val >= 0 ? '+' : '') + '$' + Math.round(val) + '/trade' }
                       else if (analysisMetric === 'winrate') { val = (data.w + data.l) > 0 ? (data.w / (data.w + data.l)) * 100 : 0; disp = Math.round(val) + '%' }
                       else if (analysisMetric === 'pnl') { val = data.pnl; disp = (val >= 0 ? '+' : '') + '$' + Math.round(val) }
                       else { val = data.count; disp = data.count + ' trades' }
                       return (
-                        <div key={name} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                          <span style={{ fontSize: '12px', color: '#fff' }}>{name}:</span>
-                          <span style={{ fontSize: '13px', fontWeight: 700, color: val >= 0 ? '#22c55e' : '#ef4444' }}>{disp}</span>
+                        <div key={name} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 12px', background: '#0a0a0e', borderRadius: '6px' }}>
+                          <span style={{ fontSize: '15px', color: '#fff', fontWeight: 500 }}>{name}:</span>
+                          <span style={{ fontSize: '17px', fontWeight: 700, color: val >= 0 ? '#22c55e' : '#ef4444' }}>{disp}</span>
                         </div>
                       )
                     })
@@ -886,64 +744,85 @@ export default function AccountPage() {
                 </div>
               </div>
 
-              {/* Average Win/Loss widgets - smaller */}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', width: '100px' }}>
-                <div style={{ flex: 1, background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '10px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-                  <div style={{ fontSize: '9px', color: '#888', textTransform: 'uppercase', marginBottom: '2px' }}>Avg Win</div>
-                  <div style={{ fontSize: '18px', fontWeight: 700, color: '#22c55e' }}>+${avgWin}</div>
+              {/* Expectancy widgets */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', width: '140px' }}>
+                <div style={{ flex: 1, background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '16px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+                  <div style={{ fontSize: '11px', color: '#888', textTransform: 'uppercase', marginBottom: '6px' }}>Avg Loss Exp.</div>
+                  <div style={{ fontSize: '24px', fontWeight: 700, color: '#ef4444' }}>-${lossExpectancy}</div>
+                  <div style={{ fontSize: '10px', color: '#666' }}>per trade</div>
                 </div>
-                <div style={{ flex: 1, background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '10px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-                  <div style={{ fontSize: '9px', color: '#888', textTransform: 'uppercase', marginBottom: '2px' }}>Avg Loss</div>
-                  <div style={{ fontSize: '18px', fontWeight: 700, color: '#ef4444' }}>-${avgLoss}</div>
+                <div style={{ flex: 1, background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '16px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+                  <div style={{ fontSize: '11px', color: '#888', textTransform: 'uppercase', marginBottom: '6px' }}>Expectancy</div>
+                  <div style={{ fontSize: '28px', fontWeight: 700, color: parseFloat(expectancy) >= 0 ? '#22c55e' : '#ef4444' }}>${expectancy}</div>
+                  <div style={{ fontSize: '10px', color: '#666' }}>per trade</div>
                 </div>
               </div>
             </div>
 
-            {/* Thin RR section */}
+            {/* ROW 4: Performance + Streaks */}
             <div style={{ display: 'flex', gap: '16px', marginBottom: '16px' }}>
-              <div style={{ flex: 1, background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '10px 16px', display: 'flex', justifyContent: 'space-around', alignItems: 'center' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                  <span style={{ fontSize: '12px', color: '#888' }}>Most Used RR:</span>
-                  <span style={{ fontSize: '14px', fontWeight: 700, color: '#fff' }}>{mostUsedRR}</span>
+              <div style={{ flex: 1, background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '16px' }}>
+                <div style={{ fontSize: '13px', color: '#888', textTransform: 'uppercase', marginBottom: '12px' }}>Performance</div>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '10px' }}>
+                  {[
+                    { l: 'Best Day', v: bestDay ? `+$${Math.round(bestDay.pnl)}` : '-', c: '#22c55e' },
+                    { l: 'Worst Day', v: worstDay ? `$${Math.round(worstDay.pnl)}` : '-', c: '#ef4444' },
+                    { l: 'Biggest Win', v: `+$${biggestWin}`, c: '#22c55e' },
+                    { l: 'Biggest Loss', v: `$${biggestLoss}`, c: '#ef4444' },
+                  ].map((item, i) => (
+                    <div key={i} style={{ padding: '12px', background: '#0a0a0e', borderRadius: '6px', border: '1px solid #1a1a22', textAlign: 'center' }}>
+                      <div style={{ fontSize: '13px', color: '#888', marginBottom: '6px' }}>{item.l}</div>
+                      <div style={{ fontSize: '20px', fontWeight: 700, color: item.c }}>{item.v}</div>
+                    </div>
+                  ))}
                 </div>
-                <div style={{ width: '1px', height: '20px', background: '#1a1a22' }} />
-                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                  <span style={{ fontSize: '12px', color: '#888' }}>Most Profitable RR:</span>
-                  <span style={{ fontSize: '14px', fontWeight: 700, color: '#22c55e' }}>{mostProfitableRR}</span>
+              </div>
+              <div style={{ flex: 1, background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '16px' }}>
+                <div style={{ fontSize: '13px', color: '#888', textTransform: 'uppercase', marginBottom: '12px' }}>Streaks & Consistency</div>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '10px' }}>
+                  {[
+                    { l: 'Max Wins', v: streaks.mw, c: '#22c55e' },
+                    { l: 'Max Losses', v: streaks.ml, c: '#ef4444' },
+                    { l: 'Days', v: tradingDays, c: '#fff' },
+                    { l: 'Trades/Day', v: avgTradesPerDay, c: '#fff' },
+                  ].map((item, i) => (
+                    <div key={i} style={{ padding: '12px', background: '#0a0a0e', borderRadius: '6px', border: '1px solid #1a1a22', textAlign: 'center' }}>
+                      <div style={{ fontSize: '13px', color: '#888', marginBottom: '6px' }}>{item.l}</div>
+                      <div style={{ fontSize: '20px', fontWeight: 700, color: item.c }}>{item.v}</div>
+                    </div>
+                  ))}
                 </div>
               </div>
             </div>
 
-            {/* ROW 4: Risk + Progress - 4 items each */}
+            {/* ROW 5: Risk + Progress */}
             <div style={{ display: 'flex', gap: '16px' }}>
               <div style={{ flex: 1, background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '16px' }}>
                 <div style={{ fontSize: '13px', color: '#888', textTransform: 'uppercase', marginBottom: '12px' }}>Risk Management</div>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '10px' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px' }}>
                   {[
                     { l: 'Avg RR', v: avgRR + 'R', c: '#fff' },
                     { l: 'Risk/Reward', v: returnOnRisk + 'x', c: '#22c55e' },
                     { l: 'Profit Factor', v: profitFactor, c: '#fff' },
-                    { l: 'Trades/Day', v: avgTradesPerDay, c: '#fff' },
                   ].map((item, i) => (
                     <div key={i} style={{ padding: '12px', background: '#0a0a0e', borderRadius: '6px', border: '1px solid #1a1a22', textAlign: 'center' }}>
-                      <div style={{ fontSize: '12px', color: '#666', marginBottom: '4px' }}>{item.l}</div>
-                      <div style={{ fontSize: '18px', fontWeight: 700, color: item.c }}>{item.v}</div>
+                      <div style={{ fontSize: '13px', color: '#888', marginBottom: '6px' }}>{item.l}</div>
+                      <div style={{ fontSize: '20px', fontWeight: 700, color: item.c }}>{item.v}</div>
                     </div>
                   ))}
                 </div>
               </div>
               <div style={{ flex: 1, background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '16px' }}>
                 <div style={{ fontSize: '13px', color: '#888', textTransform: 'uppercase', marginBottom: '12px' }}>Account Progress</div>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '10px' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px' }}>
                   {[
                     { l: 'Starting', v: '$' + startingBalance.toLocaleString(), c: '#888' },
                     { l: 'Current', v: '$' + currentBalance.toLocaleString(), c: '#22c55e' },
                     { l: 'Growth', v: ((currentBalance / startingBalance - 1) * 100).toFixed(1) + '%', c: currentBalance >= startingBalance ? '#22c55e' : '#ef4444' },
-                    { l: 'Monthly', v: monthlyGrowth, c: parseFloat(monthlyGrowth) >= 0 ? '#22c55e' : '#ef4444' },
                   ].map((item, i) => (
                     <div key={i} style={{ padding: '12px', background: '#0a0a0e', borderRadius: '6px', border: '1px solid #1a1a22', textAlign: 'center' }}>
-                      <div style={{ fontSize: '12px', color: '#666', marginBottom: '4px' }}>{item.l}</div>
-                      <div style={{ fontSize: '18px', fontWeight: 700, color: item.c }}>{item.v}</div>
+                      <div style={{ fontSize: '13px', color: '#888', marginBottom: '6px' }}>{item.l}</div>
+                      <div style={{ fontSize: '20px', fontWeight: 700, color: item.c }}>{item.v}</div>
                     </div>
                   ))}
                 </div>
@@ -1047,19 +926,14 @@ export default function AccountPage() {
                       ) : input.type === 'rating' ? (
                         <div style={{ display: 'flex', gap: '8px' }}>{[1,2,3,4,5].map(i => <button key={i} type="button" onClick={() => setTradeForm({...tradeForm, [input.id]: String(i)})} style={{ background: 'transparent', border: 'none', cursor: 'pointer', fontSize: '24px', color: i <= parseInt(tradeForm[input.id] || 0) ? '#22c55e' : '#333' }}>★</button>)}</div>
                       ) : input.type === 'file' ? (
-                        <div>
-                          <input type="file" accept="image/*" onChange={e => {
-                            const file = e.target.files[0]
-                            if (file) {
-                              const reader = new FileReader()
-                              reader.onloadend = () => setTradeForm({...tradeForm, [input.id]: reader.result})
-                              reader.readAsDataURL(file)
-                            }
-                          }} style={{ display: 'none' }} id={`file-${input.id}`} />
-                          <label htmlFor={`file-${input.id}`} style={{ display: 'block', width: '100%', padding: '10px', background: '#0a0a0e', border: '1px solid #1a1a22', borderRadius: '6px', color: tradeForm[input.id] ? '#22c55e' : '#888', fontSize: '14px', boxSizing: 'border-box', cursor: 'pointer', textAlign: 'center' }}>
-                            {tradeForm[input.id] ? '✓ Image selected' : 'Choose image...'}
-                          </label>
-                        </div>
+                        <input type="file" accept="image/*" onChange={e => {
+                          const file = e.target.files[0]
+                          if (file) {
+                            const reader = new FileReader()
+                            reader.onloadend = () => setTradeForm({...tradeForm, [input.id]: reader.result})
+                            reader.readAsDataURL(file)
+                          }
+                        }} style={{ width: '100%', padding: '10px', background: '#0a0a0e', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '14px', boxSizing: 'border-box' }} />
                       ) : (
                         <input type={input.type} value={tradeForm[input.id] || ''} onChange={e => setTradeForm({...tradeForm, [input.id]: e.target.value})} style={{ width: '100%', padding: '10px', background: '#0a0a0e', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '14px', boxSizing: 'border-box' }} />
                       )}
@@ -1084,7 +958,7 @@ export default function AccountPage() {
             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '20px' }}>
               {inputs.map((input, i) => (
                 <div key={input.id} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '12px', background: input.fixed ? '#141418' : '#0a0a0e', borderRadius: '6px', opacity: input.fixed ? 0.7 : 1 }}>
-                  <input type="checkbox" checked={input.enabled} onChange={e => !input.fixed && updateInput(i, 'enabled', e.target.checked)} disabled={input.fixed} style={{ width: '18px', height: '18px', accentColor: '#22c55e' }} />
+                  <input type="checkbox" checked={input.enabled} onChange={e => !input.fixed && updateInput(i, 'enabled', e.target.checked)} disabled={input.fixed} style={{ width: '18px', height: '18px' }} />
                   <input type="text" value={input.label} onChange={e => updateInput(i, 'label', e.target.value)} disabled={input.fixed} style={{ flex: 1, padding: '8px 12px', background: '#141418', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '13px' }} />
                   <select value={input.type} onChange={e => updateInput(i, 'type', e.target.value)} disabled={input.fixed} style={{ padding: '8px', background: '#141418', border: '1px solid #1a1a22', borderRadius: '6px', color: '#888', fontSize: '12px' }}>
                     {['text', 'number', 'date', 'select', 'textarea', 'rating', 'file'].map(t => <option key={t} value={t}>{t}</option>)}
