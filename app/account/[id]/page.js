@@ -46,6 +46,7 @@ export default function AccountPage() {
   const [customNoteTitle, setCustomNoteTitle] = useState('')
   const [barGraphMetric, setBarGraphMetric] = useState('winrate')
   const [graphGroupBy, setGraphGroupBy] = useState('symbol')
+  const [equityCurveGroupBy, setEquityCurveGroupBy] = useState('total')
   const [analysisGroupBy, setAnalysisGroupBy] = useState('direction')
   const [analysisMetric, setAnalysisMetric] = useState('avgpnl')
   const [pairAnalysisType, setPairAnalysisType] = useState('best')
@@ -433,7 +434,7 @@ export default function AccountPage() {
 
               {/* Graphs - two equal height boxes */}
               <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                {/* Equity Curve */}
+                {/* Equity Curve with groupBy dropdown */}
                 <div style={{ flex: 1, background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '16px', display: 'flex', flexDirection: 'column' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
                     <span style={{ fontSize: '13px', color: '#888', textTransform: 'uppercase' }}>Equity Curve</span>
@@ -446,60 +447,102 @@ export default function AccountPage() {
                     {(() => {
                       if (trades.length < 2) return <div style={{ height: '100%', width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#666' }}>Need 2+ trades</div>
                       const sorted = [...trades].sort((a, b) => new Date(a.date) - new Date(b.date))
-                      let cum = startingBalance
-                      const points = [{ balance: cum, date: null, pnl: 0 }]
-                      sorted.forEach(t => { cum += parseFloat(t.pnl) || 0; points.push({ balance: cum, date: t.date, pnl: parseFloat(t.pnl) || 0, symbol: t.symbol }) })
                       
-                      const maxBal = Math.max(...points.map(p => p.balance))
-                      const minBal = Math.min(...points.map(p => p.balance))
-                      const yStep = Math.ceil((maxBal - minBal) / 4 / 1000) * 1000 || 1000
+                      // Line colors for different groups
+                      const lineColors = ['#22c55e', '#3b82f6', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#14b8a6', '#f97316', '#06b6d4']
+                      
+                      let lines = []
+                      if (equityCurveGroupBy === 'total') {
+                        // Single line - total equity
+                        let cum = startingBalance
+                        const points = [{ balance: cum, date: null, pnl: 0 }]
+                        sorted.forEach(t => { cum += parseFloat(t.pnl) || 0; points.push({ balance: cum, date: t.date, pnl: parseFloat(t.pnl) || 0, symbol: t.symbol }) })
+                        lines = [{ name: 'Total', points, color: '#22c55e' }]
+                      } else {
+                        // Multiple lines - grouped by factor
+                        const groups = {}
+                        sorted.forEach(t => {
+                          let key
+                          if (equityCurveGroupBy === 'symbol') key = t.symbol
+                          else if (equityCurveGroupBy === 'direction') key = t.direction
+                          else key = getExtraData(t)[equityCurveGroupBy] || 'Unknown'
+                          if (!groups[key]) groups[key] = []
+                          groups[key].push(t)
+                        })
+                        
+                        // Build cumulative PnL for each group
+                        const groupNames = Object.keys(groups).slice(0, 9)
+                        groupNames.forEach((name, idx) => {
+                          let cum = 0
+                          const pts = [{ balance: 0, date: sorted[0]?.date, pnl: 0 }]
+                          groups[name].forEach(t => {
+                            cum += parseFloat(t.pnl) || 0
+                            pts.push({ balance: cum, date: t.date, pnl: parseFloat(t.pnl) || 0, symbol: t.symbol })
+                          })
+                          lines.push({ name, points: pts, color: lineColors[idx % lineColors.length] })
+                        })
+                      }
+                      
+                      // Calculate Y range across all lines
+                      const allBalances = lines.flatMap(l => l.points.map(p => p.balance))
+                      const maxBal = Math.max(...allBalances)
+                      const minBal = Math.min(...allBalances)
+                      const range = maxBal - minBal || 1000
+                      const yStep = equityCurveGroupBy === 'total' ? Math.ceil(range / 4 / 1000) * 1000 || 1000 : Math.ceil(range / 4 / 100) * 100 || 100
                       const yMax = Math.ceil(maxBal / yStep) * yStep
-                      const yMin = Math.floor(minBal / yStep) * yStep
+                      const yMin = equityCurveGroupBy === 'total' ? Math.floor(minBal / yStep) * yStep : Math.min(0, Math.floor(minBal / yStep) * yStep)
                       const yRange = yMax - yMin || yStep
                       
                       const yLabels = []
                       for (let v = yMax; v >= yMin; v -= yStep) yLabels.push(v)
                       
                       const svgW = 100, svgH = 100
-                      const chartPoints = points.map((p, i) => ({
-                        x: points.length > 1 ? (i / (points.length - 1)) * svgW : svgW / 2,
-                        y: svgH - ((p.balance - yMin) / yRange) * svgH,
-                        ...p
-                      }))
                       
-                      const pathD = chartPoints.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`).join(' ')
-                      const areaD = pathD + ` L ${chartPoints[chartPoints.length - 1].x} ${svgH} L ${chartPoints[0].x} ${svgH} Z`
+                      // Convert points to SVG coords for each line
+                      const lineData = lines.map(line => {
+                        const chartPoints = line.points.map((p, i) => ({
+                          x: line.points.length > 1 ? (i / (line.points.length - 1)) * svgW : svgW / 2,
+                          y: svgH - ((p.balance - yMin) / yRange) * svgH,
+                          ...p
+                        }))
+                        const pathD = chartPoints.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`).join(' ')
+                        return { ...line, chartPoints, pathD }
+                      })
+                      
+                      const mainLine = lineData[0]
+                      const areaD = equityCurveGroupBy === 'total' ? mainLine.pathD + ` L ${mainLine.chartPoints[mainLine.chartPoints.length - 1].x} ${svgH} L ${mainLine.chartPoints[0].x} ${svgH} Z` : null
                       
                       return (
                         <>
-                          <div style={{ width: '40px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', paddingBottom: '16px', flexShrink: 0 }}>
-                            {yLabels.map((v, i) => <span key={i} style={{ fontSize: '10px', color: '#888', lineHeight: 1, textAlign: 'right' }}>${(v/1000).toFixed(0)}k</span>)}
+                          <div style={{ width: '40px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', paddingBottom: '18px', flexShrink: 0 }}>
+                            {yLabels.map((v, i) => <span key={i} style={{ fontSize: '10px', color: '#888', lineHeight: 1, textAlign: 'right' }}>{equityCurveGroupBy === 'total' ? `$${(v/1000).toFixed(0)}k` : `$${v}`}</span>)}
                           </div>
                           <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
-                            <div style={{ flex: 1, position: 'relative', borderLeft: '1px solid #333', borderBottom: '1px solid #333' }}>
+                            <div style={{ flex: 1, position: 'relative', borderLeft: '1px solid #333' }}>
                               <svg style={{ position: 'absolute', inset: 0, width: '100%', height: '100%' }} viewBox={`0 0 ${svgW} ${svgH}`} preserveAspectRatio="none"
                                 onMouseMove={e => {
                                   const rect = e.currentTarget.getBoundingClientRect()
                                   const mouseXPct = ((e.clientX - rect.left) / rect.width) * svgW
-                                  let closest = chartPoints[0], minDist = Math.abs(mouseXPct - chartPoints[0].x)
-                                  chartPoints.forEach(p => { const d = Math.abs(mouseXPct - p.x); if (d < minDist) { minDist = d; closest = p } })
+                                  // Find closest point on main line
+                                  const pts = mainLine.chartPoints
+                                  let closest = pts[0], minDist = Math.abs(mouseXPct - pts[0].x)
+                                  pts.forEach(p => { const d = Math.abs(mouseXPct - p.x); if (d < minDist) { minDist = d; closest = p } })
                                   if (minDist < 10) {
-                                    setHoverPoint({ ...closest, xPct: (closest.x / svgW) * 100, yPct: (closest.y / svgH) * 100 })
+                                    setHoverPoint({ ...closest, xPct: (closest.x / svgW) * 100, yPct: (closest.y / svgH) * 100, lineName: mainLine.name })
                                   } else {
                                     setHoverPoint(null)
                                   }
                                 }}
                                 onMouseLeave={() => setHoverPoint(null)}
                               >
-                                <defs><linearGradient id="eqG" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stopColor="#22c55e" stopOpacity="0.3" /><stop offset="100%" stopColor="#22c55e" stopOpacity="0" /></linearGradient></defs>
-                                <path d={areaD} fill="url(#eqG)" />
-                                <path d={pathD} fill="none" stroke="#22c55e" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />
+                                {areaD && <><defs><linearGradient id="eqG" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stopColor="#22c55e" stopOpacity="0.3" /><stop offset="100%" stopColor="#22c55e" stopOpacity="0" /></linearGradient></defs><path d={areaD} fill="url(#eqG)" /></>}
+                                {lineData.map((line, idx) => (
+                                  <path key={idx} d={line.pathD} fill="none" stroke={line.color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />
+                                ))}
                               </svg>
-                              {/* Green dot on line */}
                               {hoverPoint && (
-                                <div style={{ position: 'absolute', left: `${hoverPoint.xPct}%`, top: `${hoverPoint.yPct}%`, transform: 'translate(-50%, -50%)', width: '12px', height: '12px', borderRadius: '50%', background: '#22c55e', border: '2px solid #fff', pointerEvents: 'none', zIndex: 10 }} />
+                                <div style={{ position: 'absolute', left: `${hoverPoint.xPct}%`, top: `${hoverPoint.yPct}%`, transform: 'translate(-50%, -50%)', width: '10px', height: '10px', borderRadius: '50%', background: '#22c55e', border: '2px solid #fff', pointerEvents: 'none', zIndex: 10 }} />
                               )}
-                              {/* Tooltip next to dot */}
                               {hoverPoint && (
                                 <div style={{ position: 'absolute', left: `${hoverPoint.xPct}%`, top: `${hoverPoint.yPct}%`, transform: `translate(${hoverPoint.xPct > 80 ? 'calc(-100% - 15px)' : '15px'}, ${hoverPoint.yPct < 20 ? '0%' : hoverPoint.yPct > 80 ? '-100%' : '-50%'})`, background: '#1a1a22', border: '1px solid #2a2a35', borderRadius: '6px', padding: '8px 12px', fontSize: '11px', whiteSpace: 'nowrap', zIndex: 10, pointerEvents: 'none' }}>
                                   <div style={{ color: '#888' }}>{hoverPoint.date ? new Date(hoverPoint.date).toLocaleDateString() : 'Start'}</div>
@@ -508,8 +551,35 @@ export default function AccountPage() {
                                 </div>
                               )}
                             </div>
-                            {/* X-axis placeholder */}
-                            <div style={{ height: '16px' }} />
+                            <div style={{ borderTop: '1px solid #333', height: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                              <span style={{ fontSize: '9px', color: '#666' }}>Time</span>
+                            </div>
+                          </div>
+                          {/* Dropdown */}
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', justifyContent: 'center', marginLeft: '12px' }}>
+                            <div style={{ padding: '8px', background: '#0a0a0e', border: '1px solid #1a1a22', borderRadius: '6px' }}>
+                              <div style={{ fontSize: '9px', color: '#666', marginBottom: '3px' }}>Show</div>
+                              <select value={equityCurveGroupBy} onChange={e => setEquityCurveGroupBy(e.target.value)} style={{ width: '90px', padding: '5px', background: '#141418', border: '1px solid #1a1a22', borderRadius: '4px', color: '#fff', fontSize: '11px' }}>
+                                <option value="total">Total PnL</option>
+                                <option value="symbol">By Pair</option>
+                                <option value="direction">By Direction</option>
+                                <option value="confidence">By Confidence</option>
+                                <option value="session">By Session</option>
+                                {getCustomSelectInputs().filter(i => i.id.toLowerCase().includes('rr') || i.label.toLowerCase().includes('rr')).map(inp => (
+                                  <option key={inp.id} value={inp.id}>By {inp.label}</option>
+                                ))}
+                              </select>
+                            </div>
+                            {equityCurveGroupBy !== 'total' && lineData.length > 0 && (
+                              <div style={{ padding: '6px', background: '#0a0a0e', border: '1px solid #1a1a22', borderRadius: '6px', maxHeight: '80px', overflowY: 'auto' }}>
+                                {lineData.map((line, idx) => (
+                                  <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '9px', color: '#888', marginBottom: '2px' }}>
+                                    <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: line.color }} />
+                                    <span>{line.name}</span>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
                           </div>
                         </>
                       )
@@ -578,8 +648,8 @@ export default function AccountPage() {
                                     <div style={{ width: '100%', maxWidth: '50px', height: `${hPct}%`, background: isGreen ? '#22c55e' : '#ef4444', borderRadius: '3px 3px 0 0', position: 'relative' }}>
                                       {isHovered && (
                                         <>
-                                          <div style={{ position: 'absolute', top: '6px', left: '50%', transform: 'translateX(-50%)', width: '10px', height: '10px', borderRadius: '50%', background: '#22c55e', border: '2px solid #fff', zIndex: 5 }} />
-                                          <div style={{ position: 'absolute', top: '2px', left: 'calc(50% + 12px)', background: '#1a1a22', border: '1px solid #2a2a35', borderRadius: '6px', padding: '6px 10px', fontSize: '11px', whiteSpace: 'nowrap', zIndex: 10, pointerEvents: 'none' }}>
+                                          <div style={{ position: 'absolute', bottom: '4px', left: '50%', transform: 'translateX(-50%)', width: '10px', height: '10px', borderRadius: '50%', background: '#22c55e', border: '2px solid #fff', zIndex: 5 }} />
+                                          <div style={{ position: 'absolute', bottom: '0px', left: 'calc(50% + 12px)', background: '#1a1a22', border: '1px solid #2a2a35', borderRadius: '6px', padding: '6px 10px', fontSize: '11px', whiteSpace: 'nowrap', zIndex: 10, pointerEvents: 'none' }}>
                                             <div style={{ color: '#888' }}>{item.name}</div>
                                             <div style={{ fontWeight: 600, color: isGreen ? '#22c55e' : '#ef4444' }}>{item.disp}</div>
                                           </div>
@@ -656,7 +726,7 @@ export default function AccountPage() {
 
             {/* ROW 3: Net Daily PnL + Right Column (Average Rating + PnL by Day + Streaks) */}
             <div style={{ display: 'flex', gap: '16px', marginBottom: '16px' }}>
-              {/* Net Daily PnL - narrower, with hover green dot inside bars */}
+              {/* Net Daily PnL - bars fill full width */}
               <div style={{ flex: 1, background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '16px' }}>
                 <div style={{ fontSize: '13px', color: '#888', textTransform: 'uppercase', marginBottom: '12px' }}>Net Daily PnL</div>
                 <div style={{ height: '200px', display: 'flex' }}>
@@ -678,22 +748,22 @@ export default function AccountPage() {
                             <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', pointerEvents: 'none' }}>
                               {yLabels.map((_, i) => <div key={i} style={{ borderTop: '1px solid #1a1a22' }} />)}
                             </div>
-                            {/* Bars - hover shows green dot inside */}
-                            <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'flex-end', gap: '1px', padding: '0 4px' }}>
+                            {/* Bars - fill full width, no maxWidth */}
+                            <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'flex-end', gap: '2px', padding: '0 2px' }}>
                               {dailyPnL.map((d, i) => {
                                 const hPct = (Math.abs(d.pnl) / yMax) * 100
                                 const isPositive = d.pnl >= 0
                                 const isHovered = dailyPnlHover === i
                                 return (
-                                  <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', height: '100%', justifyContent: 'flex-end', position: 'relative', minWidth: '4px', maxWidth: '16px' }}
+                                  <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', height: '100%', justifyContent: 'flex-end', position: 'relative' }}
                                     onMouseEnter={() => setDailyPnlHover(i)}
                                     onMouseLeave={() => setDailyPnlHover(null)}
                                   >
-                                    <div style={{ width: '100%', height: `${Math.max(hPct, 3)}%`, background: isPositive ? '#22c55e' : '#ef4444', borderRadius: '1px 1px 0 0', position: 'relative' }}>
+                                    <div style={{ width: '100%', height: `${Math.max(hPct, 3)}%`, background: isPositive ? '#22c55e' : '#ef4444', borderRadius: '2px 2px 0 0', position: 'relative' }}>
                                       {isHovered && (
                                         <>
-                                          <div style={{ position: 'absolute', top: '4px', left: '50%', transform: 'translateX(-50%)', width: '8px', height: '8px', borderRadius: '50%', background: '#22c55e', border: '2px solid #fff', zIndex: 5 }} />
-                                          <div style={{ position: 'absolute', top: '0px', left: 'calc(50% + 10px)', background: '#1a1a22', border: '1px solid #2a2a35', borderRadius: '6px', padding: '6px 10px', fontSize: '11px', whiteSpace: 'nowrap', zIndex: 10, pointerEvents: 'none' }}>
+                                          <div style={{ position: 'absolute', bottom: '4px', left: '50%', transform: 'translateX(-50%)', width: '8px', height: '8px', borderRadius: '50%', background: '#22c55e', border: '2px solid #fff', zIndex: 5 }} />
+                                          <div style={{ position: 'absolute', bottom: '0px', left: 'calc(50% + 10px)', background: '#1a1a22', border: '1px solid #2a2a35', borderRadius: '6px', padding: '6px 10px', fontSize: '11px', whiteSpace: 'nowrap', zIndex: 10, pointerEvents: 'none' }}>
                                             <div style={{ color: '#888' }}>{new Date(d.date).toLocaleDateString()}</div>
                                             <div style={{ fontWeight: 600, color: isPositive ? '#22c55e' : '#ef4444' }}>{isPositive ? '+' : '-'}${Math.abs(d.pnl).toFixed(0)}</div>
                                           </div>
@@ -720,13 +790,15 @@ export default function AccountPage() {
               <div style={{ width: '420px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
                 {/* Top row: Average Rating + PnL by Day */}
                 <div style={{ display: 'flex', gap: '8px', flex: 1 }}>
-                  {/* Average Rating */}
-                  <div style={{ flex: 1, background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '14px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+                  {/* Average Rating - title on left side */}
+                  <div style={{ flex: 1, background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '14px', display: 'flex', flexDirection: 'column' }}>
                     <div style={{ fontSize: '11px', color: '#888', textTransform: 'uppercase', marginBottom: '8px' }}>Average Rating</div>
-                    <div style={{ display: 'flex', gap: '3px', marginBottom: '6px' }}>
-                      {[1,2,3,4,5].map(i => <span key={i} style={{ color: i <= Math.round(parseFloat(avgRating)) ? '#22c55e' : '#2a2a35', fontSize: '22px' }}>★</span>)}
+                    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+                      <div style={{ display: 'flex', gap: '4px', marginBottom: '4px' }}>
+                        {[1,2,3,4,5].map(i => <span key={i} style={{ color: i <= Math.round(parseFloat(avgRating)) ? '#22c55e' : '#2a2a35', fontSize: '28px' }}>★</span>)}
+                      </div>
+                      <div style={{ fontSize: '28px', fontWeight: 700, color: '#fff' }}>{avgRating}</div>
                     </div>
-                    <div style={{ fontSize: '32px', fontWeight: 700, color: '#fff' }}>{avgRating}</div>
                   </div>
 
                   {/* PnL by Day */}
