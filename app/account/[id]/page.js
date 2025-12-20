@@ -397,68 +397,78 @@ export default function AccountPage() {
       )}
 
       {/* MAIN CONTENT */}
-      <div style={{ marginLeft: isMobile ? 0 : '180px', marginTop: isMobile ? '100px' : '124px', padding: isMobile ? '12px' : '16px 24px' }}>
+      <div style={{ marginLeft: isMobile ? 0 : '180px', marginTop: isMobile ? '100px' : '124px', padding: isMobile ? '12px' : '0' }}>
 
         {/* TRADES TAB */}
         {activeTab === 'trades' && (
-          <div style={{ overflowX: 'auto', overflowY: 'visible' }}>
+          <div style={{ height: 'calc(100vh - 124px)', display: 'flex', flexDirection: 'column' }}>
             {trades.length === 0 ? (
               <div style={{ padding: isMobile ? '40px 20px' : '60px', textAlign: 'center', color: '#888', fontSize: '15px' }}>No trades yet. Click "+ LOG NEW TRADE" to add your first trade.</div>
             ) : (
-              <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: isMobile ? '600px' : '900px' }}>
-                <thead>
-                  <tr style={{ background: '#0a0a0f' }}>
-                    {['Symbol', 'W/L', 'PnL', '%', 'RR', ...customInputs.map(i => i.label), 'Date', ''].map((h, i) => (
-                      <th key={i} style={{ padding: isMobile ? '10px 8px' : '14px 12px', textAlign: 'center', color: '#888', fontSize: isMobile ? '11px' : '12px', fontWeight: 600, textTransform: 'uppercase', borderBottom: '1px solid #1a1a22' }}>{h}</th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {trades.map((trade) => {
-                    const extra = getExtraData(trade)
-                    const pnlValue = parseFloat(trade.pnl) || 0
-                    const noteContent = trade.notes || extra.notes || ''
-                    return (
-                      <tr key={trade.id} style={{ borderBottom: '1px solid #141418' }}>
-                        <td style={{ padding: isMobile ? '10px 8px' : '14px 12px', fontWeight: 600, fontSize: isMobile ? '14px' : '16px', textAlign: 'center', color: '#fff' }}>{trade.symbol}</td>
-                        <td style={{ padding: '14px 12px', textAlign: 'center' }}>
-                          <span style={{ padding: '5px 12px', borderRadius: '6px', fontSize: '13px', fontWeight: 600, background: trade.outcome === 'win' ? 'rgba(34,197,94,0.15)' : trade.outcome === 'loss' ? 'rgba(239,68,68,0.15)' : 'rgba(255,255,255,0.1)', color: trade.outcome === 'win' ? '#22c55e' : trade.outcome === 'loss' ? '#ef4444' : '#888' }}>
-                            {trade.outcome === 'win' ? 'WIN' : trade.outcome === 'loss' ? 'LOSS' : 'BE'}
-                          </span>
-                        </td>
-                        <td style={{ padding: '14px 12px', textAlign: 'center', fontWeight: 600, fontSize: '16px', color: pnlValue >= 0 ? '#22c55e' : '#ef4444' }}>{pnlValue >= 0 ? '+' : ''}${pnlValue.toFixed(0)}</td>
-                        <td style={{ padding: '14px 12px', textAlign: 'center', fontSize: '14px', color: '#fff' }}>{extra.riskPercent || '1'}%</td>
-                        <td style={{ padding: '14px 12px', textAlign: 'center', fontSize: '14px', color: '#fff' }}>{trade.rr || '-'}</td>
-                        {customInputs.map(inp => (
-                          <td key={inp.id} style={{ padding: '14px 12px', textAlign: 'center', fontSize: '14px', color: '#fff', verticalAlign: 'middle' }}>
-                            {inp.type === 'rating' ? (
-                              <div style={{ display: 'flex', justifyContent: 'center', gap: '2px' }}>
-                                {[1,2,3,4,5].map(i => <span key={i} style={{ color: i <= parseInt(extra[inp.id] || 0) ? '#22c55e' : '#2a2a35', fontSize: '14px' }}>★</span>)}
-                              </div>
-                            ) : inp.id === 'image' && extra[inp.id] ? (
-                              <button onClick={() => setShowExpandedImage(extra[inp.id])} style={{ width: '36px', height: '36px', background: '#1a1a22', borderRadius: '6px', border: '1px solid #2a2a35', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto', overflow: 'hidden' }}>
-                                <img src={extra[inp.id]} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} onError={e => { e.target.style.display = 'none' }} />
-                              </button>
-                            ) : inp.id === 'notes' ? (
-                              noteContent ? (
-                                <div onClick={() => setShowExpandedNote(noteContent)} style={{ cursor: 'pointer', color: '#888', fontSize: '12px', maxWidth: '160px', margin: '0 auto', lineHeight: '1.4', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', textAlign: 'left' }}>{noteContent}</div>
-                              ) : <span style={{ color: '#444' }}>-</span>
-                            ) : (
-                              <span style={{ color: inp.id === 'confidence' && extra[inp.id] === 'High' ? '#22c55e' : inp.id === 'confidence' && extra[inp.id] === 'Low' ? '#ef4444' : inp.id === 'direction' ? (trade.direction === 'long' ? '#22c55e' : '#ef4444') : '#fff' }}>
-                                {inp.id === 'direction' ? trade.direction?.toUpperCase() : extra[inp.id] || '-'}
-                              </span>
-                            )}
-                          </td>
+              <>
+                {/* Fixed Header */}
+                <div style={{ overflowX: 'auto', flexShrink: 0, borderBottom: '1px solid #1a1a22' }}>
+                  <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: isMobile ? '600px' : '900px' }}>
+                    <thead>
+                      <tr style={{ background: '#0a0a0f' }}>
+                        {['Symbol', 'W/L', 'PnL', '%', 'RR', ...customInputs.map(i => i.label), 'Date', ''].map((h, i) => (
+                          <th key={i} style={{ padding: isMobile ? '10px 8px' : '14px 12px', textAlign: 'center', color: '#888', fontSize: isMobile ? '11px' : '12px', fontWeight: 600, textTransform: 'uppercase' }}>{h}</th>
                         ))}
-                        <td style={{ padding: '14px 12px', textAlign: 'center', fontSize: '14px', color: '#fff' }}>{new Date(trade.date).toLocaleDateString()}</td>
-                        <td style={{ padding: '14px 12px', textAlign: 'center' }}>
-                          <button onClick={() => setDeleteConfirmId(trade.id)} style={{ background: 'transparent', border: 'none', color: '#666', cursor: 'pointer', fontSize: '18px' }}>×</button>
-                        </td>
                       </tr>
-                    )
-                  })}
-                </tbody>
-              </table>
+                    </thead>
+                  </table>
+                </div>
+                {/* Scrollable Body */}
+                <div style={{ flex: 1, overflowY: 'auto', overflowX: 'scroll' }}>
+                  <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: isMobile ? '600px' : '900px' }}>
+                    <tbody>
+                      {trades.map((trade) => {
+                        const extra = getExtraData(trade)
+                        const pnlValue = parseFloat(trade.pnl) || 0
+                        const noteContent = trade.notes || extra.notes || ''
+                        return (
+                          <tr key={trade.id} style={{ borderBottom: '1px solid #141418' }}>
+                            <td style={{ padding: isMobile ? '10px 8px' : '14px 12px', fontWeight: 600, fontSize: isMobile ? '14px' : '16px', textAlign: 'center', color: '#fff' }}>{trade.symbol}</td>
+                            <td style={{ padding: '14px 12px', textAlign: 'center' }}>
+                              <span style={{ padding: '5px 12px', borderRadius: '6px', fontSize: '13px', fontWeight: 600, background: trade.outcome === 'win' ? 'rgba(34,197,94,0.15)' : trade.outcome === 'loss' ? 'rgba(239,68,68,0.15)' : 'rgba(255,255,255,0.1)', color: trade.outcome === 'win' ? '#22c55e' : trade.outcome === 'loss' ? '#ef4444' : '#888' }}>
+                                {trade.outcome === 'win' ? 'WIN' : trade.outcome === 'loss' ? 'LOSS' : 'BE'}
+                              </span>
+                            </td>
+                            <td style={{ padding: '14px 12px', textAlign: 'center', fontWeight: 600, fontSize: '16px', color: pnlValue >= 0 ? '#22c55e' : '#ef4444' }}>{pnlValue >= 0 ? '+' : ''}${pnlValue.toFixed(0)}</td>
+                            <td style={{ padding: '14px 12px', textAlign: 'center', fontSize: '14px', color: '#fff' }}>{extra.riskPercent || '1'}%</td>
+                            <td style={{ padding: '14px 12px', textAlign: 'center', fontSize: '14px', color: '#fff' }}>{trade.rr || '-'}</td>
+                            {customInputs.map(inp => (
+                              <td key={inp.id} style={{ padding: '14px 12px', textAlign: 'center', fontSize: '14px', color: '#fff', verticalAlign: 'middle' }}>
+                                {inp.type === 'rating' ? (
+                                  <div style={{ display: 'flex', justifyContent: 'center', gap: '2px' }}>
+                                    {[1,2,3,4,5].map(i => <span key={i} style={{ color: i <= parseInt(extra[inp.id] || 0) ? '#22c55e' : '#2a2a35', fontSize: '14px' }}>★</span>)}
+                                  </div>
+                                ) : inp.id === 'image' && extra[inp.id] ? (
+                                  <button onClick={() => setShowExpandedImage(extra[inp.id])} style={{ width: '36px', height: '36px', background: '#1a1a22', borderRadius: '6px', border: '1px solid #2a2a35', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto', overflow: 'hidden' }}>
+                                    <img src={extra[inp.id]} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} onError={e => { e.target.style.display = 'none' }} />
+                                  </button>
+                                ) : inp.id === 'notes' ? (
+                                  noteContent ? (
+                                    <div onClick={() => setShowExpandedNote(noteContent)} style={{ cursor: 'pointer', color: '#888', fontSize: '12px', maxWidth: '160px', margin: '0 auto', lineHeight: '1.4', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', textAlign: 'left' }}>{noteContent}</div>
+                                  ) : <span style={{ color: '#444' }}>-</span>
+                                ) : (
+                                  <span style={{ color: inp.id === 'confidence' && extra[inp.id] === 'High' ? '#22c55e' : inp.id === 'confidence' && extra[inp.id] === 'Low' ? '#ef4444' : inp.id === 'direction' ? (trade.direction === 'long' ? '#22c55e' : '#ef4444') : '#fff' }}>
+                                    {inp.id === 'direction' ? trade.direction?.toUpperCase() : extra[inp.id] || '-'}
+                                  </span>
+                                )}
+                              </td>
+                            ))}
+                            <td style={{ padding: '14px 12px', textAlign: 'center', fontSize: '14px', color: '#fff' }}>{new Date(trade.date).toLocaleDateString()}</td>
+                            <td style={{ padding: '14px 12px', textAlign: 'center' }}>
+                              <button onClick={() => setDeleteConfirmId(trade.id)} style={{ background: 'transparent', border: 'none', color: '#666', cursor: 'pointer', fontSize: '18px' }}>×</button>
+                            </td>
+                          </tr>
+                        )
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              </>
             )}
           </div>
         )}
@@ -492,7 +502,7 @@ export default function AccountPage() {
 
         {/* STATISTICS TAB */}
         {activeTab === 'statistics' && (
-          <>
+          <div style={{ padding: isMobile ? '0' : '16px 24px' }}>
             {/* ROW 1: Stats + Graphs - both graphs same height, aligned with Total Trades bottom */}
             <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', gap: '16px', marginBottom: '16px' }}>
               {/* Stats Column */}
@@ -517,10 +527,10 @@ export default function AccountPage() {
                 </div>
               </div>
 
-              {/* Graphs - two equal height boxes */}
-              <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              {/* Graphs - side by side */}
+              <div style={{ flex: 1, display: 'flex', flexDirection: isMobile ? 'column' : 'row', gap: '12px' }}>
                 {/* Equity Curve with groupBy dropdown */}
-                <div style={{ flex: 1, background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '16px', display: 'flex', flexDirection: 'column', position: 'relative' }}>
+                <div style={{ flex: 1, background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '16px', display: 'flex', flexDirection: 'column', position: 'relative', minHeight: isMobile ? '280px' : '340px' }}>
                   {(() => {
                     // Calculate visible lines first so we can compute dynamic Start/Current
                     const sorted = trades.length >= 2 ? [...trades].sort((a, b) => new Date(a.date) - new Date(b.date)) : []
@@ -735,7 +745,7 @@ export default function AccountPage() {
                 </div>
 
                 {/* Bar Chart - with title and Y-axis */}
-                <div style={{ flex: 1, background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '16px', display: 'flex', flexDirection: 'column' }}>
+                <div style={{ flex: 1, background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '16px', display: 'flex', flexDirection: 'column', minHeight: isMobile ? '280px' : '340px' }}>
                   {(() => {
                     const groupedData = {}
                     const customSelects = getCustomSelectInputs()
@@ -1248,12 +1258,12 @@ export default function AccountPage() {
                 </div>
               </div>
             </div>
-          </>
+          </div>
         )}
 
         {/* NOTES TAB */}
         {activeTab === 'notes' && (
-          <>
+          <div style={{ padding: isMobile ? '0' : '16px 24px' }}>
             <div style={{ display: 'flex', gap: '10px', marginBottom: '16px' }}>
               {['daily', 'weekly', 'custom'].map(sub => (
                 <button key={sub} onClick={() => setNotesSubTab(sub)} style={{ padding: '12px 24px', background: notesSubTab === sub ? '#22c55e' : 'transparent', border: notesSubTab === sub ? 'none' : '1px solid #2a2a35', borderRadius: '8px', color: notesSubTab === sub ? '#fff' : '#888', fontSize: '14px', fontWeight: 600, cursor: 'pointer', textTransform: 'capitalize' }}>{sub}</button>
@@ -1303,7 +1313,7 @@ export default function AccountPage() {
                 )}
               </div>
             </div>
-          </>
+          </div>
         )}
       </div>
 
