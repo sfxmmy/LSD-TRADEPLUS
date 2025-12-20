@@ -102,10 +102,14 @@ export default function DashboardPage() {
 
     const maxBal = Math.max(...points.map(p => p.balance))
     const minBal = Math.min(...points.map(p => p.balance))
+    const hasNegative = minBal < 0
     const yStep = Math.ceil((maxBal - minBal) / 4 / 1000) * 1000 || 1000
     const yMax = Math.ceil(maxBal / yStep) * yStep
     const yMin = Math.floor(minBal / yStep) * yStep
     const yRange = yMax - yMin || yStep
+    
+    // Calculate zero line position (percentage from top)
+    const zeroY = hasNegative ? ((yMax - 0) / yRange) * 100 : null
 
     const yLabels = []
     for (let v = yMax; v >= yMin; v -= yStep) {
@@ -133,7 +137,9 @@ export default function DashboardPage() {
     })
 
     const pathD = chartPoints.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`).join(' ')
-    const areaD = pathD + ` L ${chartPoints[chartPoints.length - 1].x} ${svgH} L ${chartPoints[0].x} ${svgH} Z`
+    // Area should fill to zero line if negative values exist, otherwise to bottom
+    const areaBottom = hasNegative ? svgH - ((0 - yMin) / yRange) * svgH : svgH
+    const areaD = pathD + ` L ${chartPoints[chartPoints.length - 1].x} ${areaBottom} L ${chartPoints[0].x} ${areaBottom} Z`
 
     function handleMouseMove(e) {
       if (!svgRef.current) return
@@ -161,7 +167,11 @@ export default function DashboardPage() {
         </div>
         
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, overflow: 'hidden' }}>
-          <div style={{ flex: 1, position: 'relative', borderLeft: '1px solid #333', borderBottom: '1px solid #333' }}>
+          <div style={{ flex: 1, position: 'relative', borderLeft: '1px solid #333', borderBottom: hasNegative ? 'none' : '1px solid #333' }}>
+            {/* Zero line if negative values exist */}
+            {zeroY !== null && (
+              <div style={{ position: 'absolute', left: 0, right: 0, top: `${zeroY}%`, borderTop: '1px solid #444', zIndex: 1 }} />
+            )}
             <svg ref={svgRef} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%' }} viewBox={`0 0 ${svgW} ${svgH}`} preserveAspectRatio="none" onMouseMove={handleMouseMove} onMouseLeave={() => setHoverPoint(null)}>
               <defs>
                 <linearGradient id="areaGrad" x1="0%" y1="0%" x2="0%" y2="100%">
@@ -224,7 +234,7 @@ export default function DashboardPage() {
           <span style={{ color: '#22c55e' }}>LSD</span>
           <span style={{ color: '#fff' }}>TRADE+</span>
         </a>
-        {!isMobile && <div style={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)', fontSize: '28px', fontWeight: 700, letterSpacing: '-0.5px', color: '#fff' }}>JOURNAL DASHBOARD</div>}
+        {!isMobile && <div style={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)', fontSize: '32px', fontWeight: 700, letterSpacing: '-0.5px', color: '#fff' }}>JOURNAL DASHBOARD</div>}
         <div style={{ display: 'flex', alignItems: 'center', gap: isMobile ? '8px' : '12px' }}>
           <button onClick={() => setShowModal(true)} style={{ padding: isMobile ? '8px 12px' : '12px 24px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '6px', color: '#fff', fontSize: isMobile ? '12px' : '14px', cursor: 'pointer' }}>{isMobile ? '+ Add' : '+ Add Journal Account'}</button>
           <button onClick={handleSignOut} style={{ padding: isMobile ? '8px 12px' : '12px 20px', background: 'transparent', border: 'none', color: '#888', fontSize: isMobile ? '12px' : '14px', cursor: 'pointer' }}>Sign Out</button>

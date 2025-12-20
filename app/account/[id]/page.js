@@ -296,11 +296,42 @@ export default function AccountPage() {
     notes: 'Keep daily, weekly, and custom notes about your trading journey.'
   }
 
-  // Tooltip component that follows mouse
+  // Tooltip component that follows mouse with smooth edge handling
   const Tooltip = ({ data }) => {
     if (!data) return null
+    const windowWidth = typeof window !== 'undefined' ? window.innerWidth : 1200
+    const windowHeight = typeof window !== 'undefined' ? window.innerHeight : 800
+    const tooltipWidth = 140
+    const tooltipHeight = 80
+    
+    // Calculate position with smooth edge transitions
+    let left = mousePos.x + 15
+    let top = mousePos.y + 15
+    
+    // Smooth horizontal transition near edges
+    if (mousePos.x > windowWidth - 180) {
+      left = mousePos.x - tooltipWidth - 15
+    }
+    // Smooth vertical transition near edges
+    if (mousePos.y > windowHeight - 120) {
+      top = mousePos.y - tooltipHeight - 15
+    }
+    
     return (
-      <div style={{ position: 'fixed', left: mousePos.x + 15, top: mousePos.y + 15, background: '#1a1a22', border: '1px solid #2a2a35', borderRadius: '8px', padding: '10px 14px', fontSize: '12px', zIndex: 1000, pointerEvents: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.5)' }}>
+      <div style={{ 
+        position: 'fixed', 
+        left, 
+        top, 
+        background: '#1a1a22', 
+        border: '1px solid #2a2a35', 
+        borderRadius: '8px', 
+        padding: '10px 14px', 
+        fontSize: '12px', 
+        zIndex: 1000, 
+        pointerEvents: 'none', 
+        boxShadow: '0 4px 12px rgba(0,0,0,0.5)',
+        transition: 'left 0.1s ease, top 0.1s ease'
+      }}>
         <div style={{ color: '#888', marginBottom: '4px' }}>{data.date}</div>
         <div style={{ fontWeight: 700, fontSize: '16px', color: '#fff' }}>${data.value?.toLocaleString()}</div>
         {data.extra && <div style={{ color: data.extra.color || '#22c55e', marginTop: '4px' }}>{data.extra.text}</div>}
@@ -310,6 +341,14 @@ export default function AccountPage() {
 
   return (
     <div style={{ minHeight: '100vh', background: '#0a0a0f' }} onMouseMove={e => setMousePos({ x: e.clientX, y: e.clientY })}>
+      {/* Global scrollbar styles */}
+      <style>{`
+        .trades-scroll::-webkit-scrollbar { width: 12px; height: 12px; }
+        .trades-scroll::-webkit-scrollbar-track { background: #0a0a0f; }
+        .trades-scroll::-webkit-scrollbar-thumb { background: #2a2a35; border-radius: 6px; border: 3px solid #0a0a0f; }
+        .trades-scroll::-webkit-scrollbar-thumb:hover { background: #3a3a45; }
+        .trades-scroll::-webkit-scrollbar-corner { background: #0a0a0f; }
+      `}</style>
       {/* Global Tooltip */}
       <Tooltip data={tooltip} />
 
@@ -401,74 +440,72 @@ export default function AccountPage() {
 
         {/* TRADES TAB */}
         {activeTab === 'trades' && (
-          <div style={{ height: 'calc(100vh - 124px)', display: 'flex', flexDirection: 'column' }}>
+          <div style={{ position: 'relative', height: 'calc(100vh - 124px)' }}>
             {trades.length === 0 ? (
               <div style={{ padding: isMobile ? '40px 20px' : '60px', textAlign: 'center', color: '#888', fontSize: '15px' }}>No trades yet. Click "+ LOG NEW TRADE" to add your first trade.</div>
             ) : (
-              <>
-                {/* Fixed Header */}
-                <div style={{ overflowX: 'auto', flexShrink: 0, borderBottom: '1px solid #1a1a22' }}>
-                  <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: isMobile ? '600px' : '900px' }}>
-                    <thead>
-                      <tr style={{ background: '#0a0a0f' }}>
-                        {['Symbol', 'W/L', 'PnL', '%', 'RR', ...customInputs.map(i => i.label), 'Date', ''].map((h, i) => (
-                          <th key={i} style={{ padding: isMobile ? '10px 8px' : '14px 12px', textAlign: 'center', color: '#888', fontSize: isMobile ? '11px' : '12px', fontWeight: 600, textTransform: 'uppercase' }}>{h}</th>
-                        ))}
-                      </tr>
-                    </thead>
-                  </table>
-                </div>
-                {/* Scrollable Body */}
-                <div style={{ flex: 1, overflowY: 'auto', overflowX: 'scroll' }}>
-                  <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: isMobile ? '600px' : '900px' }}>
-                    <tbody>
-                      {trades.map((trade) => {
-                        const extra = getExtraData(trade)
-                        const pnlValue = parseFloat(trade.pnl) || 0
-                        const noteContent = trade.notes || extra.notes || ''
-                        return (
-                          <tr key={trade.id} style={{ borderBottom: '1px solid #141418' }}>
-                            <td style={{ padding: isMobile ? '10px 8px' : '14px 12px', fontWeight: 600, fontSize: isMobile ? '14px' : '16px', textAlign: 'center', color: '#fff' }}>{trade.symbol}</td>
-                            <td style={{ padding: '14px 12px', textAlign: 'center' }}>
-                              <span style={{ padding: '5px 12px', borderRadius: '6px', fontSize: '13px', fontWeight: 600, background: trade.outcome === 'win' ? 'rgba(34,197,94,0.15)' : trade.outcome === 'loss' ? 'rgba(239,68,68,0.15)' : 'rgba(255,255,255,0.1)', color: trade.outcome === 'win' ? '#22c55e' : trade.outcome === 'loss' ? '#ef4444' : '#888' }}>
-                                {trade.outcome === 'win' ? 'WIN' : trade.outcome === 'loss' ? 'LOSS' : 'BE'}
-                              </span>
+              <div className="trades-scroll" style={{ 
+                position: 'absolute', 
+                inset: 0, 
+                overflow: 'scroll',
+                scrollbarWidth: 'thin',
+                scrollbarColor: '#2a2a35 #0a0a0f'
+              }}>
+                <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: '1200px' }}>
+                  <thead style={{ position: 'sticky', top: 0, zIndex: 10, background: '#0a0a0f' }}>
+                    <tr>
+                      {['Symbol', 'W/L', 'PnL', '%', 'RR', ...customInputs.map(i => i.label), 'Date', ''].map((h, i) => (
+                        <th key={i} style={{ padding: isMobile ? '10px 8px' : '14px 12px', textAlign: 'center', color: '#888', fontSize: isMobile ? '11px' : '12px', fontWeight: 600, textTransform: 'uppercase', borderBottom: '1px solid #1a1a22', background: '#0a0a0f' }}>{h}</th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {trades.map((trade) => {
+                      const extra = getExtraData(trade)
+                      const pnlValue = parseFloat(trade.pnl) || 0
+                      const noteContent = trade.notes || extra.notes || ''
+                      return (
+                        <tr key={trade.id} style={{ borderBottom: '1px solid #141418' }}>
+                          <td style={{ padding: isMobile ? '10px 8px' : '14px 12px', fontWeight: 600, fontSize: isMobile ? '14px' : '16px', textAlign: 'center', color: '#fff' }}>{trade.symbol}</td>
+                          <td style={{ padding: '14px 12px', textAlign: 'center' }}>
+                            <span style={{ padding: '5px 12px', borderRadius: '6px', fontSize: '13px', fontWeight: 600, background: trade.outcome === 'win' ? 'rgba(34,197,94,0.15)' : trade.outcome === 'loss' ? 'rgba(239,68,68,0.15)' : 'rgba(255,255,255,0.1)', color: trade.outcome === 'win' ? '#22c55e' : trade.outcome === 'loss' ? '#ef4444' : '#888' }}>
+                              {trade.outcome === 'win' ? 'WIN' : trade.outcome === 'loss' ? 'LOSS' : 'BE'}
+                            </span>
+                          </td>
+                          <td style={{ padding: '14px 12px', textAlign: 'center', fontWeight: 600, fontSize: '16px', color: pnlValue >= 0 ? '#22c55e' : '#ef4444' }}>{pnlValue >= 0 ? '+' : ''}${pnlValue.toFixed(0)}</td>
+                          <td style={{ padding: '14px 12px', textAlign: 'center', fontSize: '14px', color: '#fff' }}>{extra.riskPercent || '1'}%</td>
+                          <td style={{ padding: '14px 12px', textAlign: 'center', fontSize: '14px', color: '#fff' }}>{trade.rr || '-'}</td>
+                          {customInputs.map(inp => (
+                            <td key={inp.id} style={{ padding: '14px 12px', textAlign: 'center', fontSize: '14px', color: '#fff', verticalAlign: 'middle' }}>
+                              {inp.type === 'rating' ? (
+                                <div style={{ display: 'flex', justifyContent: 'center', gap: '2px' }}>
+                                  {[1,2,3,4,5].map(i => <span key={i} style={{ color: i <= parseInt(extra[inp.id] || 0) ? '#22c55e' : '#2a2a35', fontSize: '14px' }}>★</span>)}
+                                </div>
+                              ) : inp.id === 'image' && extra[inp.id] ? (
+                                <button onClick={() => setShowExpandedImage(extra[inp.id])} style={{ width: '36px', height: '36px', background: '#1a1a22', borderRadius: '6px', border: '1px solid #2a2a35', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto', overflow: 'hidden' }}>
+                                  <img src={extra[inp.id]} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} onError={e => { e.target.style.display = 'none' }} />
+                                </button>
+                              ) : inp.id === 'notes' ? (
+                                noteContent ? (
+                                  <div onClick={() => setShowExpandedNote(noteContent)} style={{ cursor: 'pointer', color: '#888', fontSize: '12px', maxWidth: '160px', margin: '0 auto', lineHeight: '1.4', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', textAlign: 'left' }}>{noteContent}</div>
+                                ) : <span style={{ color: '#444' }}>-</span>
+                              ) : (
+                                <span style={{ color: inp.id === 'confidence' && extra[inp.id] === 'High' ? '#22c55e' : inp.id === 'confidence' && extra[inp.id] === 'Low' ? '#ef4444' : inp.id === 'direction' ? (trade.direction === 'long' ? '#22c55e' : '#ef4444') : '#fff' }}>
+                                  {inp.id === 'direction' ? trade.direction?.toUpperCase() : extra[inp.id] || '-'}
+                                </span>
+                              )}
                             </td>
-                            <td style={{ padding: '14px 12px', textAlign: 'center', fontWeight: 600, fontSize: '16px', color: pnlValue >= 0 ? '#22c55e' : '#ef4444' }}>{pnlValue >= 0 ? '+' : ''}${pnlValue.toFixed(0)}</td>
-                            <td style={{ padding: '14px 12px', textAlign: 'center', fontSize: '14px', color: '#fff' }}>{extra.riskPercent || '1'}%</td>
-                            <td style={{ padding: '14px 12px', textAlign: 'center', fontSize: '14px', color: '#fff' }}>{trade.rr || '-'}</td>
-                            {customInputs.map(inp => (
-                              <td key={inp.id} style={{ padding: '14px 12px', textAlign: 'center', fontSize: '14px', color: '#fff', verticalAlign: 'middle' }}>
-                                {inp.type === 'rating' ? (
-                                  <div style={{ display: 'flex', justifyContent: 'center', gap: '2px' }}>
-                                    {[1,2,3,4,5].map(i => <span key={i} style={{ color: i <= parseInt(extra[inp.id] || 0) ? '#22c55e' : '#2a2a35', fontSize: '14px' }}>★</span>)}
-                                  </div>
-                                ) : inp.id === 'image' && extra[inp.id] ? (
-                                  <button onClick={() => setShowExpandedImage(extra[inp.id])} style={{ width: '36px', height: '36px', background: '#1a1a22', borderRadius: '6px', border: '1px solid #2a2a35', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto', overflow: 'hidden' }}>
-                                    <img src={extra[inp.id]} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} onError={e => { e.target.style.display = 'none' }} />
-                                  </button>
-                                ) : inp.id === 'notes' ? (
-                                  noteContent ? (
-                                    <div onClick={() => setShowExpandedNote(noteContent)} style={{ cursor: 'pointer', color: '#888', fontSize: '12px', maxWidth: '160px', margin: '0 auto', lineHeight: '1.4', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', textAlign: 'left' }}>{noteContent}</div>
-                                  ) : <span style={{ color: '#444' }}>-</span>
-                                ) : (
-                                  <span style={{ color: inp.id === 'confidence' && extra[inp.id] === 'High' ? '#22c55e' : inp.id === 'confidence' && extra[inp.id] === 'Low' ? '#ef4444' : inp.id === 'direction' ? (trade.direction === 'long' ? '#22c55e' : '#ef4444') : '#fff' }}>
-                                    {inp.id === 'direction' ? trade.direction?.toUpperCase() : extra[inp.id] || '-'}
-                                  </span>
-                                )}
-                              </td>
-                            ))}
-                            <td style={{ padding: '14px 12px', textAlign: 'center', fontSize: '14px', color: '#fff' }}>{new Date(trade.date).toLocaleDateString()}</td>
-                            <td style={{ padding: '14px 12px', textAlign: 'center' }}>
-                              <button onClick={() => setDeleteConfirmId(trade.id)} style={{ background: 'transparent', border: 'none', color: '#666', cursor: 'pointer', fontSize: '18px' }}>×</button>
-                            </td>
-                          </tr>
-                        )
-                      })}
-                    </tbody>
-                  </table>
-                </div>
-              </>
+                          ))}
+                          <td style={{ padding: '14px 12px', textAlign: 'center', fontSize: '14px', color: '#fff' }}>{new Date(trade.date).toLocaleDateString()}</td>
+                          <td style={{ padding: '14px 12px', textAlign: 'center' }}>
+                            <button onClick={() => setDeleteConfirmId(trade.id)} style={{ background: 'transparent', border: 'none', color: '#666', cursor: 'pointer', fontSize: '18px' }}>×</button>
+                          </td>
+                        </tr>
+                      )
+                    })}
+                  </tbody>
+                </table>
+              </div>
             )}
           </div>
         )}
@@ -583,15 +620,38 @@ export default function AccountPage() {
                     
                     return (
                       <>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-                            <span style={{ fontSize: '13px', color: '#888', textTransform: 'uppercase' }}>Equity Curve</span>
-                            <span style={{ fontSize: '12px', color: '#888' }}>Start: <span style={{ color: '#fff' }}>${displayStart.toLocaleString()}</span></span>
-                            <span style={{ fontSize: '12px', color: '#888' }}>Current: <span style={{ color: displayCurrent >= displayStart ? '#22c55e' : '#ef4444' }}>${Math.round(displayCurrent).toLocaleString()}</span></span>
+                        {/* Header row with title, stats, controls and enlarge button */}
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px', flexWrap: 'wrap', gap: '8px' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                            <span style={{ fontSize: '12px', color: '#888', textTransform: 'uppercase' }}>Equity Curve</span>
+                            <span style={{ fontSize: '11px', color: '#666' }}>Start: <span style={{ color: '#fff' }}>${displayStart.toLocaleString()}</span></span>
+                            <span style={{ fontSize: '11px', color: '#666' }}>Current: <span style={{ color: displayCurrent >= displayStart ? '#22c55e' : '#ef4444' }}>${Math.round(displayCurrent).toLocaleString()}</span></span>
                           </div>
-                          <button onClick={() => setEnlargedChart(enlargedChart === 'equity' ? null : 'equity')} style={{ background: '#1a1a22', border: '1px solid #2a2a35', borderRadius: '4px', padding: '4px 8px', color: '#888', fontSize: '10px', cursor: 'pointer' }}>⛶</button>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <select value={equityCurveGroupBy} onChange={e => { setEquityCurveGroupBy(e.target.value); setSelectedCurveLines({}) }} style={{ padding: '4px 8px', background: '#141418', border: '1px solid #1a1a22', borderRadius: '4px', color: '#fff', fontSize: '11px' }}>
+                              <option value="total">Total PnL</option>
+                              <option value="symbol">By Pair</option>
+                              <option value="direction">By Direction</option>
+                              <option value="confidence">By Confidence</option>
+                              <option value="session">By Session</option>
+                            </select>
+                            <button onClick={() => setEnlargedChart(enlargedChart === 'equity' ? null : 'equity')} style={{ background: '#1a1a22', border: '1px solid #2a2a35', borderRadius: '4px', padding: '4px 8px', color: '#888', fontSize: '10px', cursor: 'pointer' }}>⛶</button>
+                          </div>
                         </div>
-                        <div style={{ flex: 1, position: 'relative', display: 'flex', minHeight: enlargedChart === 'equity' ? '300px' : '120px' }}>
+                        {/* Checkboxes row if grouped */}
+                        {equityCurveGroupBy !== 'total' && lines.length > 0 && (
+                          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginBottom: '8px' }}>
+                            {lines.map((line, idx) => (
+                              <label key={idx} style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '10px', color: '#888', cursor: 'pointer' }}>
+                                <input type="checkbox" checked={selectedCurveLines[line.name] !== false} onChange={e => setSelectedCurveLines(prev => ({ ...prev, [line.name]: e.target.checked }))} style={{ width: '12px', height: '12px', accentColor: line.color }} />
+                                <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: line.color }} />
+                                <span>{line.name}</span>
+                              </label>
+                            ))}
+                          </div>
+                        )}
+                        {/* Graph area - full width now */}
+                        <div style={{ flex: 1, position: 'relative', display: 'flex', minHeight: '200px' }}>
                           {sorted.length < 2 ? (
                             <div style={{ height: '100%', width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#666' }}>Need 2+ trades</div>
                           ) : (() => {
@@ -708,33 +768,6 @@ export default function AccountPage() {
                                     ))}
                                   </div>
                                 </div>
-                                {/* Dropdown and checkboxes */}
-                                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', justifyContent: 'flex-start', marginLeft: '12px' }}>
-                                  <div style={{ padding: '8px', background: '#0a0a0e', border: '1px solid #1a1a22', borderRadius: '6px' }}>
-                                    <div style={{ fontSize: '9px', color: '#666', marginBottom: '3px' }}>Show</div>
-                                    <select value={equityCurveGroupBy} onChange={e => { setEquityCurveGroupBy(e.target.value); setSelectedCurveLines({}) }} style={{ width: '90px', padding: '5px', background: '#141418', border: '1px solid #1a1a22', borderRadius: '4px', color: '#fff', fontSize: '11px' }}>
-                                      <option value="total">Total PnL</option>
-                                      <option value="symbol">By Pair</option>
-                                      <option value="direction">By Direction</option>
-                                      <option value="confidence">By Confidence</option>
-                                      <option value="session">By Session</option>
-                                      {getCustomSelectInputs().filter(i => i.id.toLowerCase().includes('rr') || i.label.toLowerCase().includes('rr')).map(inp => (
-                                        <option key={inp.id} value={inp.id}>By {inp.label}</option>
-                                      ))}
-                                    </select>
-                                  </div>
-                                  {equityCurveGroupBy !== 'total' && lines.length > 0 && (
-                                    <div style={{ padding: '6px', background: '#0a0a0e', border: '1px solid #1a1a22', borderRadius: '6px', maxHeight: '100px', overflowY: 'auto' }}>
-                                      {lines.map((line, idx) => (
-                                        <label key={idx} style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '9px', color: '#888', marginBottom: '3px', cursor: 'pointer' }}>
-                                          <input type="checkbox" checked={selectedCurveLines[line.name] !== false} onChange={e => setSelectedCurveLines(prev => ({ ...prev, [line.name]: e.target.checked }))} style={{ width: '12px', height: '12px', accentColor: line.color }} />
-                                          <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: line.color }} />
-                                          <span>{line.name}</span>
-                                        </label>
-                                      ))}
-                                    </div>
-                                  )}
-                                </div>
                               </>
                             )
                           })()}
@@ -800,11 +833,28 @@ export default function AccountPage() {
                     
                     return (
                       <>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                          <span style={{ fontSize: '13px', color: '#888', textTransform: 'uppercase' }}>Performance by {graphGroupBy === 'symbol' ? 'Pair' : graphGroupBy}</span>
-                          <button onClick={() => setEnlargedChart(enlargedChart === 'bar' ? null : 'bar')} style={{ background: '#1a1a22', border: '1px solid #2a2a35', borderRadius: '4px', padding: '4px 8px', color: '#888', fontSize: '10px', cursor: 'pointer' }}>⛶</button>
+                        {/* Header row with title, controls and enlarge */}
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px', flexWrap: 'wrap', gap: '8px' }}>
+                          <span style={{ fontSize: '12px', color: '#888', textTransform: 'uppercase' }}>Performance by {graphGroupBy === 'symbol' ? 'Pair' : graphGroupBy}</span>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <select value={barGraphMetric} onChange={e => setBarGraphMetric(e.target.value)} style={{ padding: '4px 8px', background: '#141418', border: '1px solid #1a1a22', borderRadius: '4px', color: '#fff', fontSize: '11px' }}>
+                              <option value="winrate">Winrate</option>
+                              <option value="pnl">PnL</option>
+                              <option value="avgpnl">Avg PnL</option>
+                              <option value="count">Count</option>
+                            </select>
+                            <select value={graphGroupBy} onChange={e => setGraphGroupBy(e.target.value)} style={{ padding: '4px 8px', background: '#141418', border: '1px solid #1a1a22', borderRadius: '4px', color: '#fff', fontSize: '11px' }}>
+                              <option value="symbol">Pairs</option>
+                              <option value="direction">Direction</option>
+                              <option value="session">Session</option>
+                              <option value="confidence">Confidence</option>
+                              <option value="timeframe">Timeframe</option>
+                            </select>
+                            <button onClick={() => setEnlargedChart(enlargedChart === 'bar' ? null : 'bar')} style={{ background: '#1a1a22', border: '1px solid #2a2a35', borderRadius: '4px', padding: '4px 8px', color: '#888', fontSize: '10px', cursor: 'pointer' }}>⛶</button>
+                          </div>
                         </div>
-                        <div style={{ flex: 1, display: 'flex', minHeight: enlargedChart === 'bar' ? '250px' : '100px' }}>
+                        {/* Graph - full width */}
+                        <div style={{ flex: 1, display: 'flex', minHeight: '200px' }}>
                           <div style={{ width: '50px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', flexShrink: 0 }}>
                             {yLabels.map((v, i) => <span key={i} style={{ fontSize: '9px', color: '#888', lineHeight: 1, textAlign: 'right' }}>{v}</span>)}
                           </div>
@@ -848,30 +898,6 @@ export default function AccountPage() {
                                   <div key={i} style={{ flex: 1, textAlign: 'center', fontSize: '9px', color: '#888', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.name}</div>
                                 ))}
                               </div>
-                            </div>
-                          </div>
-                          <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', justifyContent: 'center', marginLeft: '12px' }}>
-                            <div style={{ padding: '8px', background: '#0a0a0e', border: '1px solid #1a1a22', borderRadius: '6px' }}>
-                              <div style={{ fontSize: '9px', color: '#666', marginBottom: '3px' }}>Show</div>
-                              <select value={barGraphMetric} onChange={e => setBarGraphMetric(e.target.value)} style={{ width: '90px', padding: '5px', background: '#141418', border: '1px solid #1a1a22', borderRadius: '4px', color: '#fff', fontSize: '11px' }}>
-                                <option value="winrate">Winrate</option>
-                                <option value="pnl">PnL</option>
-                                <option value="avgpnl">Avg PnL</option>
-                                <option value="count">Count</option>
-                              </select>
-                            </div>
-                            <div style={{ padding: '8px', background: '#0a0a0e', border: '1px solid #1a1a22', borderRadius: '6px' }}>
-                              <div style={{ fontSize: '9px', color: '#666', marginBottom: '3px' }}>Group by</div>
-                              <select value={graphGroupBy} onChange={e => setGraphGroupBy(e.target.value)} style={{ width: '90px', padding: '5px', background: '#141418', border: '1px solid #1a1a22', borderRadius: '4px', color: '#fff', fontSize: '11px' }}>
-                                <option value="symbol">Pairs</option>
-                                <option value="direction">Direction</option>
-                                <option value="session">Session</option>
-                                <option value="confidence">Confidence</option>
-                                <option value="timeframe">Timeframe</option>
-                                {getCustomSelectInputs().filter(i => !['direction', 'session', 'confidence', 'timeframe'].includes(i.id)).map(inp => (
-                                  <option key={inp.id} value={inp.id}>{inp.label}</option>
-                                ))}
-                              </select>
                             </div>
                           </div>
                         </div>
