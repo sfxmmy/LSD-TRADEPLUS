@@ -103,7 +103,7 @@ export default function DashboardPage() {
     const maxBal = Math.max(...points.map(p => p.balance))
     const minBal = Math.min(...points.map(p => p.balance))
     const hasNegative = minBal < 0
-    const belowStart = cumulative < start // Current balance below starting balance
+    const belowStart = minBal < start // Balance ever went below starting balance
     const yStep = Math.ceil((maxBal - minBal) / 6 / 1000) * 1000 || 1000
     const yMax = Math.ceil(maxBal / yStep) * yStep
     const yMin = Math.floor(minBal / yStep) * yStep

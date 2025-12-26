@@ -679,7 +679,7 @@ export default function AccountPage() {
                     return (
                       <>
                         {/* Header row with title, stats, controls and enlarge button */}
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px', flexWrap: 'wrap', gap: '8px', paddingLeft: '38px' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px', flexWrap: 'wrap', gap: '8px' }}>
                           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                             <span style={{ fontSize: '12px', color: '#888', textTransform: 'uppercase' }}>Equity Curve</span>
                             <span style={{ fontSize: '11px', color: '#666' }}>Start: <span style={{ color: '#fff' }}>${displayStart.toLocaleString()}</span></span>
@@ -693,60 +693,36 @@ export default function AccountPage() {
                               <option value="confidence">By Confidence</option>
                               <option value="session">By Session</option>
                             </select>
+                            {/* Lines dropdown in header when grouped */}
+                            {equityCurveGroupBy !== 'total' && lines.length > 0 && (
+                              <div style={{ position: 'relative' }}>
+                                <button
+                                  onClick={() => setShowLinesDropdown(!showLinesDropdown)}
+                                  style={{ display: 'flex', alignItems: 'center', gap: '4px', padding: '4px 8px', background: '#141418', border: '1px solid #1a1a22', borderRadius: '4px', color: '#fff', fontSize: '11px', cursor: 'pointer' }}
+                                >
+                                  <span>Lines ({lines.filter(l => selectedCurveLines[l.name] !== false).length}/{lines.length})</span>
+                                  <span style={{ fontSize: '8px', transform: showLinesDropdown ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }}>▼</span>
+                                </button>
+                                {showLinesDropdown && (
+                                  <div style={{ position: 'absolute', top: '100%', right: 0, zIndex: 100, background: '#141418', border: '1px solid #2a2a35', borderRadius: '4px', padding: '8px', marginTop: '4px', minWidth: '160px', maxHeight: '200px', overflowY: 'auto' }}>
+                                    {lines.map((line, idx) => (
+                                      <label key={idx} style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11px', color: '#888', cursor: 'pointer', padding: '4px 6px', borderRadius: '4px', background: selectedCurveLines[line.name] !== false ? 'rgba(34, 197, 94, 0.1)' : 'transparent' }}>
+                                        <input type="checkbox" checked={selectedCurveLines[line.name] !== false} onChange={e => setSelectedCurveLines(prev => ({ ...prev, [line.name]: e.target.checked }))} style={{ width: '12px', height: '12px', accentColor: line.color }} />
+                                        <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: line.color }} />
+                                        <span style={{ color: selectedCurveLines[line.name] !== false ? '#fff' : '#888' }}>{line.name}</span>
+                                      </label>
+                                    ))}
+                                    <div style={{ borderTop: '1px solid #2a2a35', marginTop: '6px', paddingTop: '6px', display: 'flex', gap: '6px' }}>
+                                      <button onClick={() => setSelectedCurveLines(lines.reduce((acc, l) => ({ ...acc, [l.name]: true }), {}))} style={{ flex: 1, padding: '3px 6px', background: '#22c55e', border: 'none', borderRadius: '4px', color: '#fff', fontSize: '10px', cursor: 'pointer' }}>All</button>
+                                      <button onClick={() => setSelectedCurveLines(lines.reduce((acc, l) => ({ ...acc, [l.name]: false }), {}))} style={{ flex: 1, padding: '3px 6px', background: '#1a1a22', border: '1px solid #2a2a35', borderRadius: '4px', color: '#888', fontSize: '10px', cursor: 'pointer' }}>None</button>
+                                    </div>
+                                  </div>
+                                )}
+                              </div>
+                            )}
                             <button onClick={() => setEnlargedChart(enlargedChart === 'equity' ? null : 'equity')} style={{ background: '#1a1a22', border: '1px solid #2a2a35', borderRadius: '4px', padding: '4px 8px', color: '#888', fontSize: '10px', cursor: 'pointer' }}>⛶</button>
                           </div>
                         </div>
-                        {/* Dropdown for line selection if grouped */}
-                        {equityCurveGroupBy !== 'total' && lines.length > 0 && (
-                          <div style={{ position: 'relative', marginBottom: '8px' }}>
-                            <button
-                              onClick={() => setShowLinesDropdown(!showLinesDropdown)}
-                              style={{
-                                display: 'flex', alignItems: 'center', gap: '6px',
-                                padding: '6px 12px', background: '#1a1a22', border: '1px solid #2a2a35',
-                                borderRadius: '4px', color: '#888', fontSize: '11px', cursor: 'pointer'
-                              }}
-                            >
-                              <span>Show/Hide Lines ({lines.filter(l => selectedCurveLines[l.name] !== false).length}/{lines.length})</span>
-                              <span style={{ transform: showLinesDropdown ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }}>▼</span>
-                            </button>
-                            {showLinesDropdown && (
-                              <div style={{
-                                position: 'absolute', top: '100%', left: 0, zIndex: 100,
-                                background: '#141418', border: '1px solid #2a2a35', borderRadius: '4px',
-                                padding: '8px', marginTop: '4px', minWidth: '180px', maxHeight: '200px', overflowY: 'auto'
-                              }}>
-                                {lines.map((line, idx) => (
-                                  <label key={idx} style={{
-                                    display: 'flex', alignItems: 'center', gap: '8px',
-                                    fontSize: '11px', color: '#888', cursor: 'pointer',
-                                    padding: '6px 8px', borderRadius: '4px',
-                                    background: selectedCurveLines[line.name] !== false ? 'rgba(34, 197, 94, 0.1)' : 'transparent'
-                                  }}>
-                                    <input
-                                      type="checkbox"
-                                      checked={selectedCurveLines[line.name] !== false}
-                                      onChange={e => setSelectedCurveLines(prev => ({ ...prev, [line.name]: e.target.checked }))}
-                                      style={{ width: '14px', height: '14px', accentColor: line.color }}
-                                    />
-                                    <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: line.color }} />
-                                    <span style={{ color: selectedCurveLines[line.name] !== false ? '#fff' : '#888' }}>{line.name}</span>
-                                  </label>
-                                ))}
-                                <div style={{ borderTop: '1px solid #2a2a35', marginTop: '8px', paddingTop: '8px', display: 'flex', gap: '8px' }}>
-                                  <button
-                                    onClick={() => setSelectedCurveLines(lines.reduce((acc, l) => ({ ...acc, [l.name]: true }), {}))}
-                                    style={{ flex: 1, padding: '4px 8px', background: '#22c55e', border: 'none', borderRadius: '4px', color: '#fff', fontSize: '10px', cursor: 'pointer' }}
-                                  >All</button>
-                                  <button
-                                    onClick={() => setSelectedCurveLines(lines.reduce((acc, l) => ({ ...acc, [l.name]: false }), {}))}
-                                    style={{ flex: 1, padding: '4px 8px', background: '#1a1a22', border: '1px solid #2a2a35', borderRadius: '4px', color: '#888', fontSize: '10px', cursor: 'pointer' }}
-                                  >None</button>
-                                </div>
-                              </div>
-                            )}
-                          </div>
-                        )}
                         {/* Graph area - full width now */}
                         <div style={{ flex: 1, position: 'relative', display: 'flex', minHeight: '200px' }}>
                           {sorted.length < 2 ? (
@@ -777,7 +753,7 @@ export default function AccountPage() {
                             for (let v = yMax; v >= yMin; v -= yStep) yLabels.push(v)
                             
                             const hasNegative = minBal < 0
-                            const belowStart = equityCurveGroupBy === 'total' && currentBalance < startingBalance
+                            const belowStart = equityCurveGroupBy === 'total' && minBal < startingBalance
                             const zeroY = hasNegative ? ((yMax - 0) / yRange) * 100 : null
                             
                             const svgW = 100, svgH = 100
@@ -813,7 +789,7 @@ export default function AccountPage() {
                             
                             return (
                               <>
-                                <div style={{ width: '38px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', flexShrink: 0 }}>
+                                <div style={{ width: '28px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', flexShrink: 0 }}>
                                   {yLabels.map((v, i) => <span key={i} style={{ fontSize: '9px', color: '#888', lineHeight: 1, textAlign: 'right' }}>{equityCurveGroupBy === 'total' ? `$${(v/1000).toFixed(v >= 1000 ? 0 : 1)}k` : `$${v}`}</span>)}
                                 </div>
                                 <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
@@ -934,7 +910,7 @@ export default function AccountPage() {
                     return (
                       <>
                         {/* Header row with title, controls and enlarge */}
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px', flexWrap: 'wrap', gap: '8px', paddingLeft: '38px' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px', flexWrap: 'wrap', gap: '8px' }}>
                           <span style={{ fontSize: '12px', color: '#888', textTransform: 'uppercase' }}>Performance by {graphGroupBy === 'symbol' ? 'Pair' : graphGroupBy}</span>
                           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                             <select value={barGraphMetric} onChange={e => setBarGraphMetric(e.target.value)} style={{ padding: '4px 8px', background: '#141418', border: '1px solid #1a1a22', borderRadius: '4px', color: '#fff', fontSize: '11px' }}>
@@ -955,7 +931,7 @@ export default function AccountPage() {
                         </div>
                         {/* Graph - full width */}
                         <div style={{ flex: 1, display: 'flex', minHeight: '200px' }}>
-                          <div style={{ width: '38px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', flexShrink: 0 }}>
+                          <div style={{ width: '28px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', flexShrink: 0 }}>
                             {yLabels.map((v, i) => <span key={i} style={{ fontSize: '9px', color: '#888', lineHeight: 1, textAlign: 'right' }}>{v}</span>)}
                           </div>
                           <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
@@ -1031,7 +1007,7 @@ export default function AccountPage() {
             <div style={{ display: 'flex', gap: '16px', marginBottom: '16px' }}>
               {/* Net Daily PnL - bars fill full width */}
               <div style={{ flex: 1, background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '16px' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px', paddingLeft: '38px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
                   <span style={{ fontSize: '13px', color: '#888', textTransform: 'uppercase' }}>Net Daily PnL</span>
                   <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '10px', color: '#888', cursor: 'pointer', background: includeDaysNotTraded ? '#22c55e' : '#1a1a22', padding: '4px 10px', borderRadius: '4px', border: '1px solid #2a2a35' }}>
                     <span style={{ color: includeDaysNotTraded ? '#fff' : '#888' }}>{includeDaysNotTraded ? '✓' : ''}</span>
@@ -1082,7 +1058,7 @@ export default function AccountPage() {
                     
                     return (
                       <>
-                        <div style={{ width: '38px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', flexShrink: 0 }}>
+                        <div style={{ width: '28px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', flexShrink: 0 }}>
                           {yLabels.map((v, i) => <span key={i} style={{ fontSize: '9px', color: '#888', textAlign: 'right' }}>${v}</span>)}
                         </div>
                         <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
@@ -1739,7 +1715,7 @@ export default function AccountPage() {
                 const yMin = Math.floor(minBal / yStep) * yStep
                 const yRange = yMax - yMin || yStep
                 const hasNegative = minBal < 0
-                const belowStartEnl = equityCurveGroupBy === 'total' && currentBalance < startingBalance
+                const belowStartEnl = equityCurveGroupBy === 'total' && minBal < startingBalance
                 const zeroY = hasNegative ? ((yMax - 0) / yRange) * 100 : null
 
                 const yLabels = []
@@ -1775,7 +1751,7 @@ export default function AccountPage() {
                 return (
                   <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
                     <div style={{ flex: 1, display: 'flex' }}>
-                      <div style={{ width: '60px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', flexShrink: 0, paddingBottom: '20px' }}>
+                      <div style={{ width: '40px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', flexShrink: 0, paddingBottom: '20px' }}>
                         {yLabels.map((v, i) => <span key={i} style={{ fontSize: '11px', color: '#888', textAlign: 'right' }}>{equityCurveGroupBy === 'total' ? `$${(v/1000).toFixed(v >= 1000 ? 0 : 1)}k` : `$${v}`}</span>)}
                       </div>
                       <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
@@ -1869,7 +1845,7 @@ export default function AccountPage() {
                 return (
                   <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
                     <div style={{ flex: 1, display: 'flex' }}>
-                      <div style={{ width: '60px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', flexShrink: 0, paddingBottom: '30px' }}>
+                      <div style={{ width: '40px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', flexShrink: 0, paddingBottom: '30px' }}>
                         {yLabelsBar.map((v, i) => <span key={i} style={{ fontSize: '11px', color: '#888', textAlign: 'right' }}>{v}</span>)}
                       </div>
                       <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
