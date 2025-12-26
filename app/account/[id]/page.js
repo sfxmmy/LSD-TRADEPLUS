@@ -48,6 +48,7 @@ export default function AccountPage() {
   const [graphGroupBy, setGraphGroupBy] = useState('symbol')
   const [equityCurveGroupBy, setEquityCurveGroupBy] = useState('total')
   const [selectedCurveLines, setSelectedCurveLines] = useState({})
+  const [showLinesDropdown, setShowLinesDropdown] = useState(false)
   const [enlargedChart, setEnlargedChart] = useState(null)
   const [includeDaysNotTraded, setIncludeDaysNotTraded] = useState(false)
   const [analysisGroupBy, setAnalysisGroupBy] = useState('direction')
@@ -64,12 +65,43 @@ export default function AccountPage() {
   const [deleteConfirmId, setDeleteConfirmId] = useState(null)
   const [deleteConfirmText, setDeleteConfirmText] = useState('')
 
+  const tradesScrollRef = useRef(null)
+  const fixedScrollRef = useRef(null)
+  const [tradesScrollWidth, setTradesScrollWidth] = useState(0)
+
   useEffect(() => {
     const checkMobile = () => setIsMobile(window.innerWidth < 768)
     checkMobile()
     window.addEventListener('resize', checkMobile)
     return () => window.removeEventListener('resize', checkMobile)
   }, [])
+
+  // Sync scroll between trades table and fixed scrollbar
+  useEffect(() => {
+    const tradesEl = tradesScrollRef.current
+    const fixedEl = fixedScrollRef.current
+    if (!tradesEl || !fixedEl) return
+
+    const updateScrollWidth = () => {
+      if (tradesEl.scrollWidth) setTradesScrollWidth(tradesEl.scrollWidth)
+    }
+    updateScrollWidth()
+
+    const syncToFixed = () => { if (fixedEl) fixedEl.scrollLeft = tradesEl.scrollLeft }
+    const syncToTrades = () => { if (tradesEl) tradesEl.scrollLeft = fixedEl.scrollLeft }
+
+    tradesEl.addEventListener('scroll', syncToFixed)
+    fixedEl.addEventListener('scroll', syncToTrades)
+
+    const resizeObserver = new ResizeObserver(updateScrollWidth)
+    resizeObserver.observe(tradesEl)
+
+    return () => {
+      tradesEl.removeEventListener('scroll', syncToFixed)
+      fixedEl.removeEventListener('scroll', syncToTrades)
+      resizeObserver.disconnect()
+    }
+  }, [activeTab, trades])
 
   useEffect(() => { loadData() }, [])
   useEffect(() => {
@@ -340,7 +372,7 @@ export default function AccountPage() {
   }
 
   return (
-    <div style={{ height: '100vh', background: '#0a0a0f', overflow: 'hidden' }} onMouseMove={e => setMousePos({ x: e.clientX, y: e.clientY })}>
+    <div style={{ height: '100vh', background: '#0a0a0f', overflow: activeTab === 'trades' ? 'hidden' : 'auto' }} onMouseMove={e => setMousePos({ x: e.clientX, y: e.clientY })}>
       {/* Global scrollbar styles */}
       <style>{`
         .trades-scroll::-webkit-scrollbar { width: 10px; height: 10px; }
@@ -444,13 +476,21 @@ export default function AccountPage() {
             {trades.length === 0 ? (
               <div style={{ padding: isMobile ? '40px 20px' : '60px', textAlign: 'center', color: '#888', fontSize: '15px' }}>No trades yet. Click "+ LOG NEW TRADE" to add your first trade.</div>
             ) : (
-              <div className="trades-scroll" style={{ 
-                position: 'absolute', 
-                inset: 0, 
-                overflow: 'scroll',
-                scrollbarWidth: 'thin',
-                scrollbarColor: '#2a2a35 #0a0a0f'
-              }}>
+              <>
+              <div
+                ref={tradesScrollRef}
+                className="trades-scroll"
+                style={{
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  bottom: '16px',
+                  overflowX: 'scroll',
+                  overflowY: 'scroll',
+                  scrollbarWidth: 'thin',
+                  scrollbarColor: '#2a2a35 #0a0a0f'
+                }}>
                 <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: '1200px' }}>
                   <thead style={{ position: 'sticky', top: 0, zIndex: 10, background: '#0a0a0f' }}>
                     <tr>
@@ -506,6 +546,24 @@ export default function AccountPage() {
                   </tbody>
                 </table>
               </div>
+              {/* Fixed horizontal scrollbar at bottom */}
+              <div
+                ref={fixedScrollRef}
+                className="trades-scroll"
+                style={{
+                  position: 'absolute',
+                  bottom: 0,
+                  left: 0,
+                  right: 0,
+                  height: '16px',
+                  overflowX: 'scroll',
+                  overflowY: 'hidden',
+                  background: '#0a0a0f'
+                }}
+              >
+                <div style={{ width: tradesScrollWidth, height: '1px' }} />
+              </div>
+              </>
             )}
           </div>
         )}
@@ -621,7 +679,7 @@ export default function AccountPage() {
                     return (
                       <>
                         {/* Header row with title, stats, controls and enlarge button */}
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px', flexWrap: 'wrap', gap: '8px' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px', flexWrap: 'wrap', gap: '8px', paddingLeft: '38px' }}>
                           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                             <span style={{ fontSize: '12px', color: '#888', textTransform: 'uppercase' }}>Equity Curve</span>
                             <span style={{ fontSize: '11px', color: '#666' }}>Start: <span style={{ color: '#fff' }}>${displayStart.toLocaleString()}</span></span>
@@ -638,16 +696,55 @@ export default function AccountPage() {
                             <button onClick={() => setEnlargedChart(enlargedChart === 'equity' ? null : 'equity')} style={{ background: '#1a1a22', border: '1px solid #2a2a35', borderRadius: '4px', padding: '4px 8px', color: '#888', fontSize: '10px', cursor: 'pointer' }}>⛶</button>
                           </div>
                         </div>
-                        {/* Checkboxes row if grouped */}
+                        {/* Dropdown for line selection if grouped */}
                         {equityCurveGroupBy !== 'total' && lines.length > 0 && (
-                          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginBottom: '8px' }}>
-                            {lines.map((line, idx) => (
-                              <label key={idx} style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '10px', color: '#888', cursor: 'pointer' }}>
-                                <input type="checkbox" checked={selectedCurveLines[line.name] !== false} onChange={e => setSelectedCurveLines(prev => ({ ...prev, [line.name]: e.target.checked }))} style={{ width: '12px', height: '12px', accentColor: line.color }} />
-                                <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: line.color }} />
-                                <span>{line.name}</span>
-                              </label>
-                            ))}
+                          <div style={{ position: 'relative', marginBottom: '8px' }}>
+                            <button
+                              onClick={() => setShowLinesDropdown(!showLinesDropdown)}
+                              style={{
+                                display: 'flex', alignItems: 'center', gap: '6px',
+                                padding: '6px 12px', background: '#1a1a22', border: '1px solid #2a2a35',
+                                borderRadius: '4px', color: '#888', fontSize: '11px', cursor: 'pointer'
+                              }}
+                            >
+                              <span>Show/Hide Lines ({lines.filter(l => selectedCurveLines[l.name] !== false).length}/{lines.length})</span>
+                              <span style={{ transform: showLinesDropdown ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }}>▼</span>
+                            </button>
+                            {showLinesDropdown && (
+                              <div style={{
+                                position: 'absolute', top: '100%', left: 0, zIndex: 100,
+                                background: '#141418', border: '1px solid #2a2a35', borderRadius: '4px',
+                                padding: '8px', marginTop: '4px', minWidth: '180px', maxHeight: '200px', overflowY: 'auto'
+                              }}>
+                                {lines.map((line, idx) => (
+                                  <label key={idx} style={{
+                                    display: 'flex', alignItems: 'center', gap: '8px',
+                                    fontSize: '11px', color: '#888', cursor: 'pointer',
+                                    padding: '6px 8px', borderRadius: '4px',
+                                    background: selectedCurveLines[line.name] !== false ? 'rgba(34, 197, 94, 0.1)' : 'transparent'
+                                  }}>
+                                    <input
+                                      type="checkbox"
+                                      checked={selectedCurveLines[line.name] !== false}
+                                      onChange={e => setSelectedCurveLines(prev => ({ ...prev, [line.name]: e.target.checked }))}
+                                      style={{ width: '14px', height: '14px', accentColor: line.color }}
+                                    />
+                                    <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: line.color }} />
+                                    <span style={{ color: selectedCurveLines[line.name] !== false ? '#fff' : '#888' }}>{line.name}</span>
+                                  </label>
+                                ))}
+                                <div style={{ borderTop: '1px solid #2a2a35', marginTop: '8px', paddingTop: '8px', display: 'flex', gap: '8px' }}>
+                                  <button
+                                    onClick={() => setSelectedCurveLines(lines.reduce((acc, l) => ({ ...acc, [l.name]: true }), {}))}
+                                    style={{ flex: 1, padding: '4px 8px', background: '#22c55e', border: 'none', borderRadius: '4px', color: '#fff', fontSize: '10px', cursor: 'pointer' }}
+                                  >All</button>
+                                  <button
+                                    onClick={() => setSelectedCurveLines(lines.reduce((acc, l) => ({ ...acc, [l.name]: false }), {}))}
+                                    style={{ flex: 1, padding: '4px 8px', background: '#1a1a22', border: '1px solid #2a2a35', borderRadius: '4px', color: '#888', fontSize: '10px', cursor: 'pointer' }}
+                                  >None</button>
+                                </div>
+                              </div>
+                            )}
                           </div>
                         )}
                         {/* Graph area - full width now */}
@@ -680,7 +777,7 @@ export default function AccountPage() {
                             for (let v = yMax; v >= yMin; v -= yStep) yLabels.push(v)
                             
                             const hasNegative = minBal < 0
-                            const belowStart = equityCurveGroupBy === 'total' && minBal < startingBalance
+                            const belowStart = equityCurveGroupBy === 'total' && currentBalance < startingBalance
                             const zeroY = hasNegative ? ((yMax - 0) / yRange) * 100 : null
                             
                             const svgW = 100, svgH = 100
@@ -837,7 +934,7 @@ export default function AccountPage() {
                     return (
                       <>
                         {/* Header row with title, controls and enlarge */}
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px', flexWrap: 'wrap', gap: '8px' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px', flexWrap: 'wrap', gap: '8px', paddingLeft: '38px' }}>
                           <span style={{ fontSize: '12px', color: '#888', textTransform: 'uppercase' }}>Performance by {graphGroupBy === 'symbol' ? 'Pair' : graphGroupBy}</span>
                           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                             <select value={barGraphMetric} onChange={e => setBarGraphMetric(e.target.value)} style={{ padding: '4px 8px', background: '#141418', border: '1px solid #1a1a22', borderRadius: '4px', color: '#fff', fontSize: '11px' }}>
@@ -934,7 +1031,7 @@ export default function AccountPage() {
             <div style={{ display: 'flex', gap: '16px', marginBottom: '16px' }}>
               {/* Net Daily PnL - bars fill full width */}
               <div style={{ flex: 1, background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '16px' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px', paddingLeft: '38px' }}>
                   <span style={{ fontSize: '13px', color: '#888', textTransform: 'uppercase' }}>Net Daily PnL</span>
                   <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '10px', color: '#888', cursor: 'pointer', background: includeDaysNotTraded ? '#22c55e' : '#1a1a22', padding: '4px 10px', borderRadius: '4px', border: '1px solid #2a2a35' }}>
                     <span style={{ color: includeDaysNotTraded ? '#fff' : '#888' }}>{includeDaysNotTraded ? '✓' : ''}</span>
@@ -1521,6 +1618,70 @@ export default function AccountPage() {
                     </select>
                   </>
                 )}
+                {enlargedChart === 'equity' && equityCurveGroupBy !== 'total' && (
+                  <div style={{ position: 'relative' }}>
+                    <button
+                      onClick={(e) => { e.stopPropagation(); setShowLinesDropdown(!showLinesDropdown) }}
+                      style={{
+                        display: 'flex', alignItems: 'center', gap: '6px',
+                        padding: '6px 12px', background: '#1a1a22', border: '1px solid #2a2a35',
+                        borderRadius: '4px', color: '#888', fontSize: '11px', cursor: 'pointer'
+                      }}
+                    >
+                      <span>Lines</span>
+                      <span style={{ transform: showLinesDropdown ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }}>▼</span>
+                    </button>
+                    {showLinesDropdown && (
+                      <div onClick={e => e.stopPropagation()} style={{
+                        position: 'absolute', top: '100%', left: 0, zIndex: 200,
+                        background: '#141418', border: '1px solid #2a2a35', borderRadius: '4px',
+                        padding: '8px', marginTop: '4px', minWidth: '180px', maxHeight: '300px', overflowY: 'auto'
+                      }}>
+                        {(() => {
+                          const lineColors = ['#22c55e', '#3b82f6', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#14b8a6', '#f97316', '#06b6d4']
+                          const sorted = trades.length >= 2 ? [...trades].sort((a, b) => new Date(a.date) - new Date(b.date)) : []
+                          const groups = {}
+                          sorted.forEach(t => {
+                            let key = equityCurveGroupBy === 'symbol' ? t.symbol : equityCurveGroupBy === 'direction' ? t.direction : getExtraData(t)[equityCurveGroupBy] || 'Unknown'
+                            if (!groups[key]) groups[key] = true
+                          })
+                          const lineNames = Object.keys(groups).slice(0, 9)
+                          return (
+                            <>
+                              {lineNames.map((name, idx) => (
+                                <label key={idx} style={{
+                                  display: 'flex', alignItems: 'center', gap: '8px',
+                                  fontSize: '11px', color: '#888', cursor: 'pointer',
+                                  padding: '6px 8px', borderRadius: '4px',
+                                  background: selectedCurveLines[name] !== false ? 'rgba(34, 197, 94, 0.1)' : 'transparent'
+                                }}>
+                                  <input
+                                    type="checkbox"
+                                    checked={selectedCurveLines[name] !== false}
+                                    onChange={e => setSelectedCurveLines(prev => ({ ...prev, [name]: e.target.checked }))}
+                                    style={{ width: '14px', height: '14px', accentColor: lineColors[idx % lineColors.length] }}
+                                  />
+                                  <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: lineColors[idx % lineColors.length] }} />
+                                  <span style={{ color: selectedCurveLines[name] !== false ? '#fff' : '#888' }}>{name}</span>
+                                </label>
+                              ))}
+                              <div style={{ borderTop: '1px solid #2a2a35', marginTop: '8px', paddingTop: '8px', display: 'flex', gap: '8px' }}>
+                                <button
+                                  onClick={() => setSelectedCurveLines(lineNames.reduce((acc, n) => ({ ...acc, [n]: true }), {}))}
+                                  style={{ flex: 1, padding: '4px 8px', background: '#22c55e', border: 'none', borderRadius: '4px', color: '#fff', fontSize: '10px', cursor: 'pointer' }}
+                                >All</button>
+                                <button
+                                  onClick={() => setSelectedCurveLines(lineNames.reduce((acc, n) => ({ ...acc, [n]: false }), {}))}
+                                  style={{ flex: 1, padding: '4px 8px', background: '#1a1a22', border: '1px solid #2a2a35', borderRadius: '4px', color: '#888', fontSize: '10px', cursor: 'pointer' }}
+                                >None</button>
+                              </div>
+                            </>
+                          )
+                        })()}
+                      </div>
+                    )}
+                  </div>
+                )}
                 {enlargedChart === 'bar' && (
                   <>
                     <select value={barGraphMetric} onChange={e => setBarGraphMetric(e.target.value)} style={{ padding: '4px 8px', background: '#141418', border: '1px solid #1a1a22', borderRadius: '4px', color: '#fff', fontSize: '11px' }}>
@@ -1578,7 +1739,7 @@ export default function AccountPage() {
                 const yMin = Math.floor(minBal / yStep) * yStep
                 const yRange = yMax - yMin || yStep
                 const hasNegative = minBal < 0
-                const belowStartEnl = equityCurveGroupBy === 'total' && minBal < startingBalance
+                const belowStartEnl = equityCurveGroupBy === 'total' && currentBalance < startingBalance
                 const zeroY = hasNegative ? ((yMax - 0) / yRange) * 100 : null
 
                 const yLabels = []
@@ -1624,10 +1785,38 @@ export default function AccountPage() {
                             {yLabels.map((_, i) => <div key={i} style={{ borderTop: '1px solid #1a1a22' }} />)}
                           </div>
                           {zeroY !== null && <div style={{ position: 'absolute', left: 0, right: 0, top: `${zeroY}%`, borderTop: '2px solid #666', zIndex: 1 }}><span style={{ position: 'absolute', left: '-60px', top: '-8px', fontSize: '11px', color: '#888' }}>$0</span></div>}
-                          <svg style={{ position: 'absolute', inset: 0, width: '100%', height: '100%' }} viewBox={`0 0 ${svgW} ${svgH}`} preserveAspectRatio="none">
+                          <svg style={{ position: 'absolute', inset: 0, width: '100%', height: '100%' }} viewBox={`0 0 ${svgW} ${svgH}`} preserveAspectRatio="none"
+                            onMouseMove={e => {
+                              const rect = e.currentTarget.getBoundingClientRect()
+                              const mouseX = ((e.clientX - rect.left) / rect.width) * svgW
+                              const mouseY = ((e.clientY - rect.top) / rect.height) * svgH
+
+                              let closestPoint = null, closestDist = Infinity, closestLine = null
+                              lineData.forEach(line => {
+                                line.chartPoints.forEach(p => {
+                                  const dist = Math.sqrt(Math.pow(mouseX - p.x, 2) + Math.pow(mouseY - p.y, 2))
+                                  if (dist < closestDist) { closestDist = dist; closestPoint = p; closestLine = line }
+                                })
+                              })
+
+                              if (closestDist < 10 && closestPoint) {
+                                setHoverPoint({ ...closestPoint, xPct: (closestPoint.x / svgW) * 100, yPct: (closestPoint.y / svgH) * 100, lineName: closestLine.name, lineColor: closestLine.color })
+                              } else { setHoverPoint(null) }
+                            }}
+                            onMouseLeave={() => setHoverPoint(null)}
+                          >
                             {areaD && <><defs><linearGradient id="eqGEnlG" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stopColor="#22c55e" stopOpacity="0.3" /><stop offset="100%" stopColor="#22c55e" stopOpacity="0" /></linearGradient><linearGradient id="eqGEnlR" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stopColor="#ef4444" stopOpacity="0.3" /><stop offset="100%" stopColor="#ef4444" stopOpacity="0" /></linearGradient></defs><path d={areaD} fill={belowStartEnl ? "url(#eqGEnlR)" : "url(#eqGEnlG)"} /></>}
                             {lineData.map((line, idx) => <path key={idx} d={line.pathD} fill="none" stroke={belowStartEnl ? '#ef4444' : line.color} strokeWidth="2" strokeLinecap="round" vectorEffect="non-scaling-stroke" />)}
                           </svg>
+                          {hoverPoint && <div style={{ position: 'absolute', left: `${hoverPoint.xPct}%`, top: `${hoverPoint.yPct}%`, transform: 'translate(-50%, -50%)', width: '12px', height: '12px', borderRadius: '50%', background: belowStartEnl ? '#ef4444' : (hoverPoint.lineColor || '#22c55e'), border: '2px solid #fff', pointerEvents: 'none', zIndex: 10 }} />}
+                          {hoverPoint && (
+                            <div style={{ position: 'absolute', left: `${hoverPoint.xPct}%`, top: `${hoverPoint.yPct}%`, transform: `translate(${hoverPoint.xPct > 80 ? 'calc(-100% - 15px)' : '15px'}, ${hoverPoint.yPct < 20 ? '0%' : hoverPoint.yPct > 80 ? '-100%' : '-50%'})`, background: '#1a1a22', border: '1px solid #2a2a35', borderRadius: '6px', padding: '10px 14px', fontSize: '12px', whiteSpace: 'nowrap', zIndex: 10, pointerEvents: 'none' }}>
+                              {hoverPoint.lineName && equityCurveGroupBy !== 'total' && <div style={{ color: hoverPoint.lineColor, fontWeight: 600, marginBottom: '4px' }}>{hoverPoint.lineName}</div>}
+                              <div style={{ color: '#888' }}>{hoverPoint.date ? new Date(hoverPoint.date).toLocaleDateString() : 'Start'}</div>
+                              <div style={{ fontWeight: 600, fontSize: '16px', color: '#fff' }}>${hoverPoint.balance?.toLocaleString()}</div>
+                              {hoverPoint.symbol && <div style={{ color: hoverPoint.pnl >= 0 ? '#22c55e' : '#ef4444' }}>{hoverPoint.symbol}: {hoverPoint.pnl >= 0 ? '+' : ''}${hoverPoint.pnl?.toFixed(0)}</div>}
+                            </div>
+                          )}
                         </div>
                         {/* X-axis labels */}
                         <div style={{ height: '20px', position: 'relative' }}>
@@ -1663,24 +1852,64 @@ export default function AccountPage() {
                 }).sort((a, b) => b.val - a.val).slice(0, 12)
                 
                 if (entries.length === 0) return <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#666' }}>No data</div>
-                
+
                 const maxVal = barGraphMetric === 'winrate' ? 100 : Math.max(...entries.map(e => Math.abs(e.val)), 1)
                 const niceMax = barGraphMetric === 'winrate' ? 100 : Math.ceil(maxVal / 100) * 100 || 100
-                
+
+                // Generate Y-axis labels
+                const yLabelCount = 6
+                const yLabelsBar = []
+                for (let i = 0; i < yLabelCount; i++) {
+                  const val = Math.round((niceMax / (yLabelCount - 1)) * (yLabelCount - 1 - i))
+                  if (barGraphMetric === 'winrate') yLabelsBar.push(val + '%')
+                  else if (barGraphMetric === 'pnl' || barGraphMetric === 'avgpnl') yLabelsBar.push('$' + val)
+                  else yLabelsBar.push(val.toString())
+                }
+
                 return (
                   <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
-                    <div style={{ flex: 1, display: 'flex', alignItems: 'flex-end', gap: '12px', padding: '20px' }}>
-                      {entries.map((item, i) => {
-                        const hPct = Math.max((Math.abs(item.val) / niceMax) * 100, 5)
-                        const isGreen = barGraphMetric === 'winrate' ? item.val >= 50 : item.val >= 0
-                        return (
-                          <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', height: '100%', justifyContent: 'flex-end' }}>
-                            <div style={{ fontSize: '14px', fontWeight: 600, color: isGreen ? '#22c55e' : '#ef4444', marginBottom: '8px' }}>{item.disp}</div>
-                            <div style={{ width: '100%', height: `${hPct}%`, background: isGreen ? '#22c55e' : '#ef4444', borderRadius: '6px 6px 0 0', minHeight: '20px' }} />
-                            <div style={{ marginTop: '8px', fontSize: '12px', color: '#888', textAlign: 'center' }}>{item.name}</div>
+                    <div style={{ flex: 1, display: 'flex' }}>
+                      <div style={{ width: '60px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', flexShrink: 0, paddingBottom: '30px' }}>
+                        {yLabelsBar.map((v, i) => <span key={i} style={{ fontSize: '11px', color: '#888', textAlign: 'right' }}>{v}</span>)}
+                      </div>
+                      <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+                        <div style={{ flex: 1, position: 'relative', borderLeft: '1px solid #333', borderBottom: '1px solid #333' }}>
+                          {/* Horizontal grid lines */}
+                          <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', pointerEvents: 'none' }}>
+                            {yLabelsBar.map((_, i) => <div key={i} style={{ borderTop: '1px solid #1a1a22' }} />)}
                           </div>
-                        )
-                      })}
+                          {/* Bars */}
+                          <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'flex-end', gap: '12px', padding: '0 20px' }}>
+                            {entries.map((item, i) => {
+                              const hPct = Math.max((Math.abs(item.val) / niceMax) * 100, 5)
+                              const isGreen = barGraphMetric === 'winrate' ? item.val >= 50 : item.val >= 0
+                              const isHovered = barHover === i
+                              return (
+                                <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', height: '100%', justifyContent: 'flex-end', position: 'relative' }}
+                                  onMouseEnter={() => setBarHover(i)}
+                                  onMouseLeave={() => setBarHover(null)}
+                                >
+                                  <div style={{ fontSize: '14px', color: isGreen ? '#22c55e' : '#ef4444', marginBottom: '4px', fontWeight: 600 }}>{item.disp}</div>
+                                  <div style={{ width: '100%', maxWidth: '80px', height: `${hPct}%`, background: isGreen ? '#22c55e' : '#ef4444', borderRadius: '6px 6px 0 0', minHeight: '20px', position: 'relative', cursor: 'pointer' }}>
+                                    {isHovered && (
+                                      <div style={{ position: 'fixed', left: mousePos.x + 15, top: mousePos.y - 10, background: '#1a1a22', border: '1px solid #2a2a35', borderRadius: '6px', padding: '10px 14px', fontSize: '12px', whiteSpace: 'nowrap', zIndex: 1000, pointerEvents: 'none' }}>
+                                        <div style={{ color: '#888', marginBottom: '4px' }}>{item.name}</div>
+                                        <div style={{ fontWeight: 600, fontSize: '16px', color: isGreen ? '#22c55e' : '#ef4444' }}>{item.disp}</div>
+                                      </div>
+                                    )}
+                                  </div>
+                                </div>
+                              )
+                            })}
+                          </div>
+                        </div>
+                        {/* X-axis labels */}
+                        <div style={{ height: '30px', display: 'flex', gap: '12px', padding: '8px 20px 0' }}>
+                          {entries.map((item, i) => (
+                            <div key={i} style={{ flex: 1, textAlign: 'center', fontSize: '12px', color: '#888' }}>{item.name}</div>
+                          ))}
+                        </div>
+                      </div>
                     </div>
                   </div>
                 )
