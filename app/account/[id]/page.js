@@ -844,6 +844,10 @@ export default function AccountPage() {
                                     <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', pointerEvents: 'none' }}>
                                       {yLabels.map((_, i) => <div key={i} style={{ borderTop: '1px solid #1a1a22' }} />)}
                                     </div>
+                                    {/* Vertical grid lines for date labels */}
+                                    {xLabels.map((l, i) => (
+                                      <div key={i} style={{ position: 'absolute', left: `${l.pct}%`, top: 0, bottom: 0, borderLeft: '1px solid #1a1a22', pointerEvents: 'none' }} />
+                                    ))}
                                     {/* Zero line if negative */}
                                     {zeroY !== null && (
                                       <div style={{ position: 'absolute', left: 0, right: 0, top: `${zeroY}%`, borderTop: '1px solid #444', zIndex: 1 }} />
@@ -889,7 +893,7 @@ export default function AccountPage() {
                                         <linearGradient id="eqGreen" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stopColor="#22c55e" stopOpacity="0.3" /><stop offset="100%" stopColor="#22c55e" stopOpacity="0" /></linearGradient>
                                         <linearGradient id="eqRed" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stopColor="#ef4444" stopOpacity="0.3" /><stop offset="100%" stopColor="#ef4444" stopOpacity="0" /></linearGradient>
                                         {lineData.map((line, idx) => (
-                                          <linearGradient key={idx} id={`lineGrad${idx}`} x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stopColor={line.color} stopOpacity="0.05" /><stop offset="100%" stopColor={line.color} stopOpacity="0" /></linearGradient>
+                                          <linearGradient key={idx} id={`lineGrad${idx}`} x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stopColor={line.color} stopOpacity="0.2" /><stop offset="100%" stopColor={line.color} stopOpacity="0" /></linearGradient>
                                         ))}
                                       </defs>
                                       {equityCurveGroupBy === 'total' && lineData[0] ? (
@@ -901,6 +905,7 @@ export default function AccountPage() {
                                         </>
                                       ) : lineData.map((line, idx) => (
                                         <g key={idx}>
+                                          {line.areaPath && <path d={line.areaPath} fill={`url(#lineGrad${idx})`} />}
                                           <path d={line.pathD} fill="none" stroke={line.color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />
                                         </g>
                                       ))}
@@ -1054,7 +1059,7 @@ export default function AccountPage() {
                                       onMouseLeave={() => setBarHover(null)}
                                     >
                                       <div style={{ fontSize: '10px', color: isGreen ? '#22c55e' : '#ef4444', marginBottom: '2px', fontWeight: 600 }}>{item.disp}</div>
-                                      <div style={{ width: '100%', maxWidth: '50px', height: `${hPct}%`, background: `linear-gradient(to bottom, ${isGreen ? 'rgba(34, 197, 94, 0.3)' : 'rgba(239, 68, 68, 0.3)'} 0%, transparent 100%)`, border: `2px solid ${isGreen ? '#22c55e' : '#ef4444'}`, borderBottom: 'none', borderRadius: '3px 3px 0 0', position: 'relative', cursor: 'pointer' }}>
+                                      <div style={{ width: '100%', maxWidth: '50px', height: `${hPct}%`, background: `linear-gradient(to bottom, ${isGreen ? `rgba(34, 197, 94, ${0.1 + (hPct / 100) * 0.25})` : `rgba(239, 68, 68, ${0.1 + (hPct / 100) * 0.25})`} 0%, transparent 100%)`, border: `2px solid ${isGreen ? '#22c55e' : '#ef4444'}`, borderBottom: 'none', borderRadius: '3px 3px 0 0', position: 'relative', cursor: 'pointer' }}>
                                         {isHovered && (
                                           <>
                                             <div style={{ position: 'absolute', bottom: '4px', left: '50%', transform: 'translateX(-50%)', width: '10px', height: '10px', borderRadius: '50%', background: isGreen ? '#22c55e' : '#ef4444', border: '2px solid #fff', zIndex: 5 }} />
@@ -1163,8 +1168,8 @@ export default function AccountPage() {
                     
                     return (
                       <>
-                        <div style={{ width: '24px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', flexShrink: 0, paddingRight: '2px' }}>
-                          {yLabels.map((v, i) => <span key={i} style={{ fontSize: '8px', color: '#888', textAlign: 'right' }}>${v}</span>)}
+                        <div style={{ width: '28px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', flexShrink: 0, paddingRight: '2px', paddingBottom: '18px' }}>
+                          {yLabels.map((v, i) => <span key={i} style={{ fontSize: '8px', color: '#888', textAlign: 'right' }}>{i === yLabels.length - 1 ? '$0' : `$${v}`}</span>)}
                         </div>
                         <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
                           <div style={{ flex: 1, position: 'relative', borderLeft: '1px solid #333', borderBottom: '1px solid #333' }}>
@@ -1172,6 +1177,10 @@ export default function AccountPage() {
                             <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', pointerEvents: 'none' }}>
                               {yLabels.map((_, i) => <div key={i} style={{ borderTop: '1px solid #1a1a22' }} />)}
                             </div>
+                            {/* Vertical grid lines for date labels */}
+                            {xLabels.map((l, i) => (
+                              <div key={i} style={{ position: 'absolute', left: `${l.pct}%`, top: 0, bottom: 0, borderLeft: '1px solid #1a1a22', pointerEvents: 'none' }} />
+                            ))}
                             {/* Bars */}
                             <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'flex-end', gap: '1px', padding: '0 2px' }}>
                               {sortedData.map((d, i) => {
@@ -1902,6 +1911,10 @@ export default function AccountPage() {
                           <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', pointerEvents: 'none' }}>
                             {yLabels.map((_, i) => <div key={i} style={{ borderTop: '1px solid #1a1a22' }} />)}
                           </div>
+                          {/* Vertical grid lines for date labels */}
+                          {xLabels.map((l, i) => (
+                            <div key={i} style={{ position: 'absolute', left: `${l.pct}%`, top: 0, bottom: 0, borderLeft: '1px solid #1a1a22', pointerEvents: 'none' }} />
+                          ))}
                           {zeroY !== null && <div style={{ position: 'absolute', left: 0, right: 0, top: `${zeroY}%`, borderTop: '2px solid #666', zIndex: 1 }}><span style={{ position: 'absolute', left: '-60px', top: '-8px', fontSize: '11px', color: '#888' }}>$0</span></div>}
                           <svg style={{ position: 'absolute', inset: 0, width: '100%', height: '100%' }} viewBox={`0 0 ${svgW} ${svgH}`} preserveAspectRatio="none"
                             onMouseMove={e => {
@@ -1927,7 +1940,7 @@ export default function AccountPage() {
                               <linearGradient id="eqGEnlG" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stopColor="#22c55e" stopOpacity="0.3" /><stop offset="100%" stopColor="#22c55e" stopOpacity="0" /></linearGradient>
                               <linearGradient id="eqGEnlR" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stopColor="#ef4444" stopOpacity="0.3" /><stop offset="100%" stopColor="#ef4444" stopOpacity="0" /></linearGradient>
                               {lineData.map((line, idx) => (
-                                <linearGradient key={idx} id={`lineGradEnl${idx}`} x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stopColor={line.color} stopOpacity="0.05" /><stop offset="100%" stopColor={line.color} stopOpacity="0" /></linearGradient>
+                                <linearGradient key={idx} id={`lineGradEnl${idx}`} x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stopColor={line.color} stopOpacity="0.2" /><stop offset="100%" stopColor={line.color} stopOpacity="0" /></linearGradient>
                               ))}
                             </defs>
                             {equityCurveGroupBy === 'total' && lineData[0] ? (
@@ -1939,6 +1952,7 @@ export default function AccountPage() {
                               </>
                             ) : lineData.map((line, idx) => (
                               <g key={idx}>
+                                {line.areaPath && <path d={line.areaPath} fill={`url(#lineGradEnl${idx})`} />}
                                 <path d={line.pathD} fill="none" stroke={line.color} strokeWidth="2.5" strokeLinecap="round" vectorEffect="non-scaling-stroke" />
                               </g>
                             ))}
@@ -2047,7 +2061,7 @@ export default function AccountPage() {
                                   onMouseLeave={() => setBarHover(null)}
                                 >
                                   <div style={{ fontSize: '14px', color: isGreen ? '#22c55e' : '#ef4444', marginBottom: '4px', fontWeight: 600 }}>{item.disp}</div>
-                                  <div style={{ width: '100%', maxWidth: '80px', height: `${hPct}%`, background: `linear-gradient(to bottom, ${isGreen ? 'rgba(34, 197, 94, 0.3)' : 'rgba(239, 68, 68, 0.3)'} 0%, transparent 100%)`, border: `2px solid ${isGreen ? '#22c55e' : '#ef4444'}`, borderBottom: 'none', borderRadius: '6px 6px 0 0', minHeight: '20px', position: 'relative', cursor: 'pointer' }}>
+                                  <div style={{ width: '100%', maxWidth: '80px', height: `${hPct}%`, background: `linear-gradient(to bottom, ${isGreen ? `rgba(34, 197, 94, ${0.1 + (hPct / 100) * 0.25})` : `rgba(239, 68, 68, ${0.1 + (hPct / 100) * 0.25})`} 0%, transparent 100%)`, border: `2px solid ${isGreen ? '#22c55e' : '#ef4444'}`, borderBottom: 'none', borderRadius: '6px 6px 0 0', minHeight: '20px', position: 'relative', cursor: 'pointer' }}>
                                     {isHovered && (
                                       <>
                                         <div style={{ position: 'absolute', bottom: '8px', left: '50%', transform: 'translateX(-50%)', width: '10px', height: '10px', borderRadius: '50%', background: isGreen ? '#22c55e' : '#ef4444', border: '2px solid #fff', zIndex: 5 }} />
@@ -2108,6 +2122,8 @@ export default function AccountPage() {
                   const biggestLoss = losses.length > 0 ? Math.min(...losses.map(t => parseFloat(t.pnl))) : 0
                   const avgPnl = filteredTrades.length > 0 ? totalPnl / filteredTrades.length : 0
                   const expectancy = filteredTrades.length > 0 ? (parseFloat(winrate) / 100 * avgWin - (1 - parseFloat(winrate) / 100) * avgLoss).toFixed(0) : 0
+                  const avgRR = avgLoss > 0 ? (avgWin / avgLoss).toFixed(2) : avgWin > 0 ? '∞' : '0'
+                  const breakeven = filteredTrades.filter(t => parseFloat(t.pnl) === 0).length
                   // Calculate streak
                   let currentStreak = 0, maxWinStreak = 0, maxLossStreak = 0, tempStreak = 0
                   filteredTrades.forEach(t => {
@@ -2115,20 +2131,38 @@ export default function AccountPage() {
                     else if (parseFloat(t.pnl) < 0) { tempStreak = tempStreak < 0 ? tempStreak - 1 : -1; maxLossStreak = Math.max(maxLossStreak, Math.abs(tempStreak)) }
                     currentStreak = tempStreak
                   })
+                  // Daily streak calculation
+                  const dailyPnlByDate = {}
+                  filteredTrades.forEach(t => { dailyPnlByDate[t.date] = (dailyPnlByDate[t.date] || 0) + (parseFloat(t.pnl) || 0) })
+                  const sortedDates = Object.keys(dailyPnlByDate).sort()
+                  let currentDayStreak = 0, maxDayWinStreak = 0, maxDayLossStreak = 0, tempDayStreak = 0
+                  sortedDates.forEach(d => {
+                    const pnl = dailyPnlByDate[d]
+                    if (pnl > 0) { tempDayStreak = tempDayStreak > 0 ? tempDayStreak + 1 : 1; maxDayWinStreak = Math.max(maxDayWinStreak, tempDayStreak) }
+                    else if (pnl < 0) { tempDayStreak = tempDayStreak < 0 ? tempDayStreak - 1 : -1; maxDayLossStreak = Math.max(maxDayLossStreak, Math.abs(tempDayStreak)) }
+                    currentDayStreak = tempDayStreak
+                  })
+                  const greenDays = Object.values(dailyPnlByDate).filter(p => p > 0).length
+                  const redDays = Object.values(dailyPnlByDate).filter(p => p < 0).length
+                  const totalDays = sortedDates.length
 
                   const stats = [
                     { label: 'Total P&L', value: `${totalPnl >= 0 ? '+' : ''}$${Math.round(totalPnl).toLocaleString()}`, color: totalPnl >= 0 ? '#22c55e' : '#ef4444' },
-                    { label: 'Trades', value: `${filteredTrades.length} (${wins.length}W/${losses.length}L)` },
+                    { label: 'Trades', value: `${filteredTrades.length} (${wins.length}W/${losses.length}L${breakeven > 0 ? `/${breakeven}BE` : ''})` },
                     { label: 'Winrate', value: `${winrate}%`, color: parseFloat(winrate) >= 50 ? '#22c55e' : '#ef4444' },
                     { label: 'Profit Factor', value: profitFactor, color: parseFloat(profitFactor) >= 1 ? '#22c55e' : '#ef4444' },
+                    { label: 'Avg RR', value: `${avgRR}R`, color: parseFloat(avgRR) >= 1 ? '#22c55e' : '#ef4444' },
                     { label: 'Avg Win', value: `+$${Math.round(avgWin).toLocaleString()}`, color: '#22c55e' },
                     { label: 'Avg Loss', value: `-$${Math.round(avgLoss).toLocaleString()}`, color: '#ef4444' },
                     { label: 'Avg Trade', value: `${avgPnl >= 0 ? '+' : ''}$${Math.round(avgPnl).toLocaleString()}`, color: avgPnl >= 0 ? '#22c55e' : '#ef4444' },
                     { label: 'Expectancy', value: `$${expectancy}`, color: parseFloat(expectancy) >= 0 ? '#22c55e' : '#ef4444' },
                     { label: 'Best Trade', value: `+$${Math.round(biggestWin).toLocaleString()}`, color: '#22c55e' },
                     { label: 'Worst Trade', value: `$${Math.round(biggestLoss).toLocaleString()}`, color: '#ef4444' },
-                    { label: 'Current Streak', value: currentStreak >= 0 ? `+${currentStreak}` : `${currentStreak}`, color: currentStreak >= 0 ? '#22c55e' : '#ef4444' },
-                    { label: 'Best Streak', value: `+${maxWinStreak}W / -${maxLossStreak}L` },
+                    { label: 'Trade Streak', value: currentStreak >= 0 ? `+${currentStreak}` : `${currentStreak}`, color: currentStreak >= 0 ? '#22c55e' : '#ef4444' },
+                    { label: 'Best Trade Streak', value: `+${maxWinStreak}W / -${maxLossStreak}L` },
+                    { label: 'Days Traded', value: `${totalDays} (${greenDays}G/${redDays}R)`, color: greenDays >= redDays ? '#22c55e' : '#ef4444' },
+                    { label: 'Day Streak', value: currentDayStreak >= 0 ? `+${currentDayStreak}` : `${currentDayStreak}`, color: currentDayStreak >= 0 ? '#22c55e' : '#ef4444' },
+                    { label: 'Best Day Streak', value: `+${maxDayWinStreak}G / -${maxDayLossStreak}R` },
                   ]
 
                   return (
