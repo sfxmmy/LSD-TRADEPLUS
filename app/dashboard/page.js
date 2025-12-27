@@ -144,6 +144,29 @@ export default function DashboardPage() {
     const areaBottom = hasNegative ? svgH - ((0 - yMin) / yRange) * svgH : svgH
     const areaD = pathD + ` L ${chartPoints[chartPoints.length - 1].x} ${areaBottom} L ${chartPoints[0].x} ${areaBottom} Z`
 
+    // Split coloring: green above start, red below
+    const startY = svgH - ((start - yMin) / yRange) * svgH
+    const greenSegments = [], redSegments = []
+    for (let i = 0; i < chartPoints.length - 1; i++) {
+      const p1 = chartPoints[i], p2 = chartPoints[i + 1]
+      const above1 = p1.balance >= start, above2 = p2.balance >= start
+      if (above1 === above2) {
+        (above1 ? greenSegments : redSegments).push({ x1: p1.x, y1: p1.y, x2: p2.x, y2: p2.y })
+      } else {
+        const t = (start - p1.balance) / (p2.balance - p1.balance)
+        const ix = p1.x + t * (p2.x - p1.x), iy = startY
+        if (above1) {
+          greenSegments.push({ x1: p1.x, y1: p1.y, x2: ix, y2: iy })
+          redSegments.push({ x1: ix, y1: iy, x2: p2.x, y2: p2.y })
+        } else {
+          redSegments.push({ x1: p1.x, y1: p1.y, x2: ix, y2: iy })
+          greenSegments.push({ x1: ix, y1: iy, x2: p2.x, y2: p2.y })
+        }
+      }
+    }
+    const greenPath = greenSegments.map(s => `M ${s.x1} ${s.y1} L ${s.x2} ${s.y2}`).join(' ')
+    const redPath = redSegments.map(s => `M ${s.x1} ${s.y1} L ${s.x2} ${s.y2}`).join(' ')
+
     function handleMouseMove(e) {
       if (!svgRef.current) return
       const rect = svgRef.current.getBoundingClientRect()
@@ -163,9 +186,9 @@ export default function DashboardPage() {
 
     return (
       <div style={{ position: 'relative', width: '100%', height: '100%', display: 'flex' }}>
-        <div style={{ width: '28px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', paddingBottom: '22px', flexShrink: 0, paddingRight: '2px' }}>
+        <div style={{ width: '38px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', paddingBottom: '22px', flexShrink: 0, paddingRight: '4px' }}>
           {yLabels.map((v, i) => (
-            <span key={i} style={{ fontSize: '11px', color: '#888', lineHeight: 1, textAlign: 'right' }}>${(v/1000).toFixed(0)}k</span>
+            <span key={i} style={{ fontSize: '10px', color: '#888', lineHeight: 1, textAlign: 'right' }}>{v >= 1000000 ? `$${(v/1000000).toFixed(1)}M` : v >= 1000 ? `$${(v/1000).toFixed(0)}k` : `$${v}`}</span>
           ))}
         </div>
         
@@ -199,12 +222,13 @@ export default function DashboardPage() {
                 </linearGradient>
               </defs>
               <path d={areaD} fill={belowStart ? "url(#areaGradRed)" : "url(#areaGradGreen)"} />
-              <path d={pathD} fill="none" stroke={belowStart ? "#ef4444" : "#22c55e"} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />
+              {greenPath && <path d={greenPath} fill="none" stroke="#22c55e" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />}
+              {redPath && <path d={redPath} fill="none" stroke="#ef4444" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />}
             </svg>
 
             {/* Hover dot on the line */}
             {hoverPoint && (
-              <div style={{ position: 'absolute', left: `${hoverPoint.xPct}%`, top: `${hoverPoint.yPct}%`, transform: 'translate(-50%, -50%)', width: '12px', height: '12px', borderRadius: '50%', background: belowStart ? '#ef4444' : '#22c55e', border: '2px solid #fff', pointerEvents: 'none', zIndex: 10 }} />
+              <div style={{ position: 'absolute', left: `${hoverPoint.xPct}%`, top: `${hoverPoint.yPct}%`, transform: 'translate(-50%, -50%)', width: '12px', height: '12px', borderRadius: '50%', background: hoverPoint.balance >= start ? '#22c55e' : '#ef4444', border: '2px solid #fff', pointerEvents: 'none', zIndex: 10 }} />
             )}
             
             {/* Tooltip next to the dot */}
@@ -218,9 +242,15 @@ export default function DashboardPage() {
             {/* Legend */}
             <div style={{ position: 'absolute', bottom: '4px', right: '4px', display: 'flex', alignItems: 'center', gap: '8px', background: 'rgba(13,13,18,0.9)', padding: '4px 8px', borderRadius: '4px', fontSize: '9px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                <div style={{ width: '12px', height: '2px', background: belowStart ? '#ef4444' : '#22c55e' }} />
-                <span style={{ color: '#888' }}>Balance</span>
+                <div style={{ width: '12px', height: '2px', background: '#22c55e' }} />
+                <span style={{ color: '#888' }}>Above</span>
               </div>
+              {belowStart && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                  <div style={{ width: '12px', height: '2px', background: '#ef4444' }} />
+                  <span style={{ color: '#888' }}>Below</span>
+                </div>
+              )}
               {startLineY !== null && (
                 <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                   <div style={{ width: '12px', height: '0', borderTop: '1px dashed #666' }} />

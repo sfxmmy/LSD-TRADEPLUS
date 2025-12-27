@@ -760,6 +760,9 @@ export default function AccountPage() {
                             
                             const svgW = 100, svgH = 100
                             
+                            // Calculate starting balance Y position in SVG coordinates
+                            const startY = svgH - ((startingBalance - yMin) / yRange) * svgH
+
                             const lineData = visibleLines.map(line => {
                               const chartPoints = line.points.map((p, i) => ({
                                 x: line.points.length > 1 ? (i / (line.points.length - 1)) * svgW : svgW / 2,
@@ -769,7 +772,39 @@ export default function AccountPage() {
                                 lineColor: line.color
                               }))
                               const pathD = chartPoints.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`).join(' ')
-                              return { ...line, chartPoints, pathD }
+
+                              // For total mode, create split paths (green above start, red below)
+                              let greenPath = '', redPath = ''
+                              if (equityCurveGroupBy === 'total') {
+                                const greenSegments = [], redSegments = []
+                                for (let i = 0; i < chartPoints.length - 1; i++) {
+                                  const p1 = chartPoints[i], p2 = chartPoints[i + 1]
+                                  const above1 = p1.balance >= startingBalance, above2 = p2.balance >= startingBalance
+
+                                  if (above1 === above2) {
+                                    // Both points same side - add to appropriate array
+                                    const arr = above1 ? greenSegments : redSegments
+                                    arr.push({ x1: p1.x, y1: p1.y, x2: p2.x, y2: p2.y })
+                                  } else {
+                                    // Crossing - find intersection point
+                                    const t = (startingBalance - p1.balance) / (p2.balance - p1.balance)
+                                    const ix = p1.x + t * (p2.x - p1.x), iy = startY
+                                    if (above1) {
+                                      greenSegments.push({ x1: p1.x, y1: p1.y, x2: ix, y2: iy })
+                                      redSegments.push({ x1: ix, y1: iy, x2: p2.x, y2: p2.y })
+                                    } else {
+                                      redSegments.push({ x1: p1.x, y1: p1.y, x2: ix, y2: iy })
+                                      greenSegments.push({ x1: ix, y1: iy, x2: p2.x, y2: p2.y })
+                                    }
+                                  }
+                                }
+                                // Build continuous paths from segments
+                                const buildPath = (segs) => segs.map((s, i) => `M ${s.x1} ${s.y1} L ${s.x2} ${s.y2}`).join(' ')
+                                greenPath = buildPath(greenSegments)
+                                redPath = buildPath(redSegments)
+                              }
+
+                              return { ...line, chartPoints, pathD, greenPath, redPath }
                             })
                             
                             const mainLine = lineData[0]
@@ -842,11 +877,16 @@ export default function AccountPage() {
                                       onMouseLeave={() => setHoverPoint(null)}
                                     >
                                       {areaD && <><defs><linearGradient id="eqGreen" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stopColor="#22c55e" stopOpacity="0.3" /><stop offset="100%" stopColor="#22c55e" stopOpacity="0" /></linearGradient><linearGradient id="eqRed" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stopColor="#ef4444" stopOpacity="0.3" /><stop offset="100%" stopColor="#ef4444" stopOpacity="0" /></linearGradient></defs><path d={areaD} fill={belowStart ? "url(#eqRed)" : "url(#eqGreen)"} /></>}
-                                      {lineData.map((line, idx) => (
-                                        <path key={idx} d={line.pathD} fill="none" stroke={belowStart ? '#ef4444' : line.color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />
+                                      {equityCurveGroupBy === 'total' && lineData[0] ? (
+                                        <>
+                                          {lineData[0].greenPath && <path d={lineData[0].greenPath} fill="none" stroke="#22c55e" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />}
+                                          {lineData[0].redPath && <path d={lineData[0].redPath} fill="none" stroke="#ef4444" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />}
+                                        </>
+                                      ) : lineData.map((line, idx) => (
+                                        <path key={idx} d={line.pathD} fill="none" stroke={line.color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />
                                       ))}
                                     </svg>
-                                    {hoverPoint && <div style={{ position: 'absolute', left: `${hoverPoint.xPct}%`, top: `${hoverPoint.yPct}%`, transform: 'translate(-50%, -50%)', width: '10px', height: '10px', borderRadius: '50%', background: belowStart ? '#ef4444' : (hoverPoint.lineColor || '#22c55e'), border: '2px solid #fff', pointerEvents: 'none', zIndex: 10 }} />}
+                                    {hoverPoint && <div style={{ position: 'absolute', left: `${hoverPoint.xPct}%`, top: `${hoverPoint.yPct}%`, transform: 'translate(-50%, -50%)', width: '10px', height: '10px', borderRadius: '50%', background: equityCurveGroupBy === 'total' ? (hoverPoint.balance >= startingBalance ? '#22c55e' : '#ef4444') : (hoverPoint.lineColor || '#22c55e'), border: '2px solid #fff', pointerEvents: 'none', zIndex: 10 }} />}
                                     {hoverPoint && (
                                       <div style={{ position: 'absolute', left: `${hoverPoint.xPct}%`, top: `${hoverPoint.yPct}%`, transform: `translate(${hoverPoint.xPct > 80 ? 'calc(-100% - 15px)' : '15px'}, ${hoverPoint.yPct < 20 ? '0%' : hoverPoint.yPct > 80 ? '-100%' : '-50%'})`, background: '#1a1a22', border: '1px solid #2a2a35', borderRadius: '6px', padding: '8px 12px', fontSize: '11px', whiteSpace: 'nowrap', zIndex: 10, pointerEvents: 'none' }}>
                                         {hoverPoint.lineName && equityCurveGroupBy !== 'total' && <div style={{ color: hoverPoint.lineColor, fontWeight: 600, marginBottom: '2px' }}>{hoverPoint.lineName}</div>}
@@ -860,9 +900,15 @@ export default function AccountPage() {
                                       {equityCurveGroupBy === 'total' ? (
                                         <>
                                           <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                                            <div style={{ width: '12px', height: '2px', background: belowStart ? '#ef4444' : '#22c55e' }} />
-                                            <span style={{ color: '#888' }}>Balance</span>
+                                            <div style={{ width: '12px', height: '2px', background: '#22c55e' }} />
+                                            <span style={{ color: '#888' }}>Above</span>
                                           </div>
+                                          {belowStart && (
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                              <div style={{ width: '12px', height: '2px', background: '#ef4444' }} />
+                                              <span style={{ color: '#888' }}>Below</span>
+                                            </div>
+                                          )}
                                           {startLineY !== null && (
                                             <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                                               <div style={{ width: '12px', height: '0', borderTop: '1px dashed #666' }} />
@@ -995,11 +1041,11 @@ export default function AccountPage() {
                                       onMouseLeave={() => setBarHover(null)}
                                     >
                                       <div style={{ fontSize: '10px', color: isGreen ? '#22c55e' : '#ef4444', marginBottom: '2px', fontWeight: 600 }}>{item.disp}</div>
-                                      <div style={{ width: '100%', maxWidth: '50px', height: `${hPct}%`, background: isGreen ? '#22c55e' : '#ef4444', borderRadius: '3px 3px 0 0', position: 'relative', cursor: 'pointer' }}>
+                                      <div style={{ width: '100%', maxWidth: '50px', height: `${hPct}%`, background: 'transparent', border: `2px solid ${isGreen ? '#22c55e' : '#ef4444'}`, borderBottom: 'none', borderRadius: '3px 3px 0 0', position: 'relative', cursor: 'pointer', boxShadow: `0 0 8px ${isGreen ? 'rgba(34, 197, 94, 0.4)' : 'rgba(239, 68, 68, 0.4)'}, inset 0 0 12px ${isGreen ? 'rgba(34, 197, 94, 0.15)' : 'rgba(239, 68, 68, 0.15)'}` }}>
                                         {isHovered && (
                                           <>
-                                            <div style={{ position: 'absolute', top: '4px', left: '50%', transform: 'translateX(-50%)', width: '8px', height: '8px', borderRadius: '50%', background: isGreen ? '#22c55e' : '#ef4444', border: '2px solid #fff', zIndex: 5 }} />
-                                            <div style={{ position: 'absolute', top: '0px', left: 'calc(50% + 10px)', background: '#1a1a22', border: '1px solid #2a2a35', borderRadius: '6px', padding: '6px 10px', fontSize: '11px', whiteSpace: 'nowrap', zIndex: 10, pointerEvents: 'none' }}>
+                                            <div style={{ position: 'absolute', bottom: '4px', left: '50%', transform: 'translateX(-50%)', width: '8px', height: '8px', borderRadius: '50%', background: isGreen ? '#22c55e' : '#ef4444', border: '2px solid #fff', zIndex: 5 }} />
+                                            <div style={{ position: 'absolute', bottom: '0px', left: 'calc(50% + 10px)', background: '#1a1a22', border: '1px solid #2a2a35', borderRadius: '6px', padding: '6px 10px', fontSize: '11px', whiteSpace: 'nowrap', zIndex: 10, pointerEvents: 'none' }}>
                                               <div style={{ color: '#888' }}>{item.name}</div>
                                               <div style={{ fontWeight: 600, color: isGreen ? '#22c55e' : '#ef4444' }}>{item.disp}</div>
                                             </div>
@@ -1780,6 +1826,7 @@ export default function AccountPage() {
                 }
 
                 const svgW = 100, svgH = 100
+                const startYEnl = svgH - ((startingBalance - yMin) / yRange) * svgH
                 const lineData = visibleLines.map(line => {
                   const chartPoints = line.points.map((p, i) => ({
                     x: line.points.length > 1 ? (i / (line.points.length - 1)) * svgW : svgW / 2,
@@ -1787,7 +1834,33 @@ export default function AccountPage() {
                     ...p
                   }))
                   const pathD = chartPoints.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`).join(' ')
-                  return { ...line, chartPoints, pathD }
+
+                  // Split coloring for total mode
+                  let greenPath = '', redPath = ''
+                  if (equityCurveGroupBy === 'total') {
+                    const greenSegments = [], redSegments = []
+                    for (let i = 0; i < chartPoints.length - 1; i++) {
+                      const p1 = chartPoints[i], p2 = chartPoints[i + 1]
+                      const above1 = p1.balance >= startingBalance, above2 = p2.balance >= startingBalance
+                      if (above1 === above2) {
+                        (above1 ? greenSegments : redSegments).push({ x1: p1.x, y1: p1.y, x2: p2.x, y2: p2.y })
+                      } else {
+                        const t = (startingBalance - p1.balance) / (p2.balance - p1.balance)
+                        const ix = p1.x + t * (p2.x - p1.x), iy = startYEnl
+                        if (above1) {
+                          greenSegments.push({ x1: p1.x, y1: p1.y, x2: ix, y2: iy })
+                          redSegments.push({ x1: ix, y1: iy, x2: p2.x, y2: p2.y })
+                        } else {
+                          redSegments.push({ x1: p1.x, y1: p1.y, x2: ix, y2: iy })
+                          greenSegments.push({ x1: ix, y1: iy, x2: p2.x, y2: p2.y })
+                        }
+                      }
+                    }
+                    greenPath = greenSegments.map(s => `M ${s.x1} ${s.y1} L ${s.x2} ${s.y2}`).join(' ')
+                    redPath = redSegments.map(s => `M ${s.x1} ${s.y1} L ${s.x2} ${s.y2}`).join(' ')
+                  }
+
+                  return { ...line, chartPoints, pathD, greenPath, redPath }
                 })
 
                 const mainLine = lineData[0]
@@ -1828,9 +1901,14 @@ export default function AccountPage() {
                             onMouseLeave={() => setHoverPoint(null)}
                           >
                             {areaD && <><defs><linearGradient id="eqGEnlG" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stopColor="#22c55e" stopOpacity="0.3" /><stop offset="100%" stopColor="#22c55e" stopOpacity="0" /></linearGradient><linearGradient id="eqGEnlR" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stopColor="#ef4444" stopOpacity="0.3" /><stop offset="100%" stopColor="#ef4444" stopOpacity="0" /></linearGradient></defs><path d={areaD} fill={belowStartEnl ? "url(#eqGEnlR)" : "url(#eqGEnlG)"} /></>}
-                            {lineData.map((line, idx) => <path key={idx} d={line.pathD} fill="none" stroke={belowStartEnl ? '#ef4444' : line.color} strokeWidth="2" strokeLinecap="round" vectorEffect="non-scaling-stroke" />)}
+                            {equityCurveGroupBy === 'total' && lineData[0] ? (
+                              <>
+                                {lineData[0].greenPath && <path d={lineData[0].greenPath} fill="none" stroke="#22c55e" strokeWidth="2" strokeLinecap="round" vectorEffect="non-scaling-stroke" />}
+                                {lineData[0].redPath && <path d={lineData[0].redPath} fill="none" stroke="#ef4444" strokeWidth="2" strokeLinecap="round" vectorEffect="non-scaling-stroke" />}
+                              </>
+                            ) : lineData.map((line, idx) => <path key={idx} d={line.pathD} fill="none" stroke={line.color} strokeWidth="2" strokeLinecap="round" vectorEffect="non-scaling-stroke" />)}
                           </svg>
-                          {hoverPoint && <div style={{ position: 'absolute', left: `${hoverPoint.xPct}%`, top: `${hoverPoint.yPct}%`, transform: 'translate(-50%, -50%)', width: '12px', height: '12px', borderRadius: '50%', background: belowStartEnl ? '#ef4444' : (hoverPoint.lineColor || '#22c55e'), border: '2px solid #fff', pointerEvents: 'none', zIndex: 10 }} />}
+                          {hoverPoint && <div style={{ position: 'absolute', left: `${hoverPoint.xPct}%`, top: `${hoverPoint.yPct}%`, transform: 'translate(-50%, -50%)', width: '12px', height: '12px', borderRadius: '50%', background: equityCurveGroupBy === 'total' ? (hoverPoint.balance >= startingBalance ? '#22c55e' : '#ef4444') : (hoverPoint.lineColor || '#22c55e'), border: '2px solid #fff', pointerEvents: 'none', zIndex: 10 }} />}
                           {hoverPoint && (
                             <div style={{ position: 'absolute', left: `${hoverPoint.xPct}%`, top: `${hoverPoint.yPct}%`, transform: `translate(${hoverPoint.xPct > 80 ? 'calc(-100% - 15px)' : '15px'}, ${hoverPoint.yPct < 20 ? '0%' : hoverPoint.yPct > 80 ? '-100%' : '-50%'})`, background: '#1a1a22', border: '1px solid #2a2a35', borderRadius: '6px', padding: '10px 14px', fontSize: '12px', whiteSpace: 'nowrap', zIndex: 10, pointerEvents: 'none' }}>
                               {hoverPoint.lineName && equityCurveGroupBy !== 'total' && <div style={{ color: hoverPoint.lineColor, fontWeight: 600, marginBottom: '4px' }}>{hoverPoint.lineName}</div>}
