@@ -103,7 +103,7 @@ export default function DashboardPage() {
     const maxBal = Math.max(...points.map(p => p.balance))
     const minBal = Math.min(...points.map(p => p.balance))
     const hasNegative = minBal < 0
-    const belowStart = cumulative < start // Current balance below starting balance
+    const belowStart = minBal < start // Red if balance ever went below starting
     const yStep = Math.ceil((maxBal - minBal) / 6 / 1000) * 1000 || 1000
     const yMax = Math.ceil(maxBal / yStep) * yStep
     const yMin = Math.floor(minBal / yStep) * yStep
@@ -111,8 +111,8 @@ export default function DashboardPage() {
     
     // Calculate zero line position (percentage from top) - for when actual balance goes negative
     const zeroY = hasNegative ? ((yMax - 0) / yRange) * 100 : null
-    // Calculate starting balance line (when balance drops below starting)
-    const startLineY = belowStart && !hasNegative ? ((yMax - start) / yRange) * 100 : null
+    // Calculate starting balance line - always show if start is within range
+    const startLineY = !hasNegative && start >= yMin && start <= yMax ? ((yMax - start) / yRange) * 100 : null
 
     const yLabels = []
     for (let v = yMax; v >= yMin; v -= yStep) {
@@ -163,7 +163,7 @@ export default function DashboardPage() {
 
     return (
       <div style={{ position: 'relative', width: '100%', height: '100%', display: 'flex' }}>
-        <div style={{ width: '45px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', paddingBottom: '22px', flexShrink: 0 }}>
+        <div style={{ width: '28px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', paddingBottom: '22px', flexShrink: 0, paddingRight: '2px' }}>
           {yLabels.map((v, i) => (
             <span key={i} style={{ fontSize: '11px', color: '#888', lineHeight: 1, textAlign: 'right' }}>${(v/1000).toFixed(0)}k</span>
           ))}
@@ -215,8 +215,21 @@ export default function DashboardPage() {
                 {hoverPoint.symbol && <div style={{ color: hoverPoint.pnl >= 0 ? '#22c55e' : '#ef4444' }}>{hoverPoint.symbol}: {hoverPoint.pnl >= 0 ? '+' : ''}${hoverPoint.pnl.toFixed(0)}</div>}
               </div>
             )}
+            {/* Legend */}
+            <div style={{ position: 'absolute', bottom: '4px', right: '4px', display: 'flex', alignItems: 'center', gap: '8px', background: 'rgba(13,13,18,0.9)', padding: '4px 8px', borderRadius: '4px', fontSize: '9px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                <div style={{ width: '12px', height: '2px', background: belowStart ? '#ef4444' : '#22c55e' }} />
+                <span style={{ color: '#888' }}>Balance</span>
+              </div>
+              {startLineY !== null && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                  <div style={{ width: '12px', height: '0', borderTop: '1px dashed #666' }} />
+                  <span style={{ color: '#888' }}>Start</span>
+                </div>
+              )}
+            </div>
           </div>
-          
+
           <div style={{ height: '22px', position: 'relative', overflow: 'hidden' }}>
             {xLabels.map((l, i) => {
               const isFirst = i === 0

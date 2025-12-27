@@ -698,7 +698,7 @@ export default function AccountPage() {
                               <div style={{ position: 'relative' }}>
                                 <button
                                   onClick={() => setShowLinesDropdown(!showLinesDropdown)}
-                                  style={{ display: 'flex', alignItems: 'center', gap: '4px', padding: '4px 8px', background: '#141418', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '4px', color: '#fff', fontSize: '11px', cursor: 'pointer', boxShadow: '0 0 4px rgba(255,255,255,0.1)' }}
+                                  style={{ display: 'flex', alignItems: 'center', gap: '4px', padding: '4px 8px', background: '#141418', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '4px', color: '#fff', fontSize: '11px', cursor: 'pointer' }}
                                 >
                                   <span>Filter</span>
                                   <span style={{ fontSize: '8px', transform: showLinesDropdown ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }}>▼</span>
@@ -753,8 +753,10 @@ export default function AccountPage() {
                             for (let v = yMax; v >= yMin; v -= yStep) yLabels.push(v)
                             
                             const hasNegative = minBal < 0
-                            const belowStart = equityCurveGroupBy === 'total' && currentBalance < startingBalance
+                            const belowStart = equityCurveGroupBy === 'total' && minBal < startingBalance
                             const zeroY = hasNegative ? ((yMax - 0) / yRange) * 100 : null
+                            // Starting balance line - always show if within range
+                            const startLineY = equityCurveGroupBy === 'total' && !hasNegative && startingBalance >= yMin && startingBalance <= yMax ? ((yMax - startingBalance) / yRange) * 100 : null
                             
                             const svgW = 100, svgH = 100
                             
@@ -789,7 +791,7 @@ export default function AccountPage() {
                             
                             return (
                               <>
-                                <div style={{ width: '32px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', flexShrink: 0, paddingRight: '4px' }}>
+                                <div style={{ width: '24px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', flexShrink: 0, paddingRight: '2px' }}>
                                   {yLabels.map((v, i) => <span key={i} style={{ fontSize: '8px', color: '#888', lineHeight: 1, textAlign: 'right' }}>{equityCurveGroupBy === 'total' ? `$${(v/1000).toFixed(v >= 1000 ? 0 : 1)}k` : `$${v}`}</span>)}
                                 </div>
                                 <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
@@ -802,23 +804,40 @@ export default function AccountPage() {
                                     {zeroY !== null && (
                                       <div style={{ position: 'absolute', left: 0, right: 0, top: `${zeroY}%`, borderTop: '1px solid #444', zIndex: 1 }} />
                                     )}
+                                    {/* Starting balance dotted line */}
+                                    {startLineY !== null && (
+                                      <div style={{ position: 'absolute', left: 0, right: 0, top: `${startLineY}%`, borderTop: '1px dashed #666', zIndex: 1 }}>
+                                        <span style={{ position: 'absolute', right: '4px', top: '-10px', fontSize: '8px', color: '#888' }}>Start</span>
+                                      </div>
+                                    )}
                                     <svg style={{ position: 'absolute', inset: 0, width: '100%', height: '100%' }} viewBox={`0 0 ${svgW} ${svgH}`} preserveAspectRatio="none"
                                       onMouseMove={e => {
                                         const rect = e.currentTarget.getBoundingClientRect()
                                         const mouseX = ((e.clientX - rect.left) / rect.width) * svgW
-                                        const mouseY = ((e.clientY - rect.top) / rect.height) * svgH
-                                        
-                                        let closestPoint = null, closestDist = Infinity, closestLine = null
-                                        lineData.forEach(line => {
-                                          line.chartPoints.forEach(p => {
-                                            const dist = Math.sqrt(Math.pow(mouseX - p.x, 2) + Math.pow(mouseY - p.y, 2))
-                                            if (dist < closestDist) { closestDist = dist; closestPoint = p; closestLine = line }
+
+                                        // For single line (total mode), use X-distance only like dashboard
+                                        // For multiple lines, use 2D distance
+                                        if (equityCurveGroupBy === 'total' && lineData.length === 1) {
+                                          const mainLine = lineData[0]
+                                          let closest = mainLine.chartPoints[0], minDist = Math.abs(mouseX - mainLine.chartPoints[0].x)
+                                          mainLine.chartPoints.forEach(p => {
+                                            const d = Math.abs(mouseX - p.x)
+                                            if (d < minDist) { minDist = d; closest = p }
                                           })
-                                        })
-                                        
-                                        if (closestDist < 15 && closestPoint) {
-                                          setHoverPoint({ ...closestPoint, xPct: (closestPoint.x / svgW) * 100, yPct: (closestPoint.y / svgH) * 100, lineName: closestLine.name, lineColor: closestLine.color })
-                                        } else { setHoverPoint(null) }
+                                          setHoverPoint({ ...closest, xPct: (closest.x / svgW) * 100, yPct: (closest.y / svgH) * 100, lineName: mainLine.name, lineColor: mainLine.color })
+                                        } else {
+                                          const mouseY = ((e.clientY - rect.top) / rect.height) * svgH
+                                          let closestPoint = null, closestDist = Infinity, closestLine = null
+                                          lineData.forEach(line => {
+                                            line.chartPoints.forEach(p => {
+                                              const dist = Math.sqrt(Math.pow(mouseX - p.x, 2) + Math.pow(mouseY - p.y, 2))
+                                              if (dist < closestDist) { closestDist = dist; closestPoint = p; closestLine = line }
+                                            })
+                                          })
+                                          if (closestDist < 15 && closestPoint) {
+                                            setHoverPoint({ ...closestPoint, xPct: (closestPoint.x / svgW) * 100, yPct: (closestPoint.y / svgH) * 100, lineName: closestLine.name, lineColor: closestLine.color })
+                                          } else { setHoverPoint(null) }
+                                        }
                                       }}
                                       onMouseLeave={() => setHoverPoint(null)}
                                     >
@@ -836,11 +855,35 @@ export default function AccountPage() {
                                         {hoverPoint.symbol && <div style={{ color: hoverPoint.pnl >= 0 ? '#22c55e' : '#ef4444' }}>{hoverPoint.symbol}: {hoverPoint.pnl >= 0 ? '+' : ''}${hoverPoint.pnl?.toFixed(0)}</div>}
                                       </div>
                                     )}
+                                    {/* Legend */}
+                                    <div style={{ position: 'absolute', bottom: '4px', right: '4px', display: 'flex', alignItems: 'center', gap: '8px', background: 'rgba(13,13,18,0.9)', padding: '4px 8px', borderRadius: '4px', fontSize: '9px' }}>
+                                      {equityCurveGroupBy === 'total' ? (
+                                        <>
+                                          <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                            <div style={{ width: '12px', height: '2px', background: belowStart ? '#ef4444' : '#22c55e' }} />
+                                            <span style={{ color: '#888' }}>Balance</span>
+                                          </div>
+                                          {startLineY !== null && (
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                              <div style={{ width: '12px', height: '0', borderTop: '1px dashed #666' }} />
+                                              <span style={{ color: '#888' }}>Start</span>
+                                            </div>
+                                          )}
+                                        </>
+                                      ) : (
+                                        lineData.slice(0, 4).map((line, idx) => (
+                                          <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                            <div style={{ width: '12px', height: '2px', background: line.color }} />
+                                            <span style={{ color: '#888' }}>{line.name}</span>
+                                          </div>
+                                        ))
+                                      )}
+                                    </div>
                                   </div>
                                   {/* X-axis with multiple date labels */}
                                   <div style={{ height: '18px', position: 'relative', marginLeft: '1px' }}>
                                     {xLabels.map((l, i) => (
-                                      <span key={i} style={{ position: 'absolute', left: `${l.pct}%`, transform: i === 0 ? 'none' : i === xLabels.length - 1 ? 'translateX(-100%)' : 'translateX(-50%)', fontSize: '9px', color: '#666' }}>{l.label}</span>
+                                      <span key={i} style={{ position: 'absolute', left: `${l.pct}%`, transform: i === 0 ? 'none' : i === xLabels.length - 1 ? 'translateX(-100%)' : 'translateX(-50%)', fontSize: '9px', color: '#888' }}>{l.label}</span>
                                     ))}
                                   </div>
                                 </div>
@@ -931,7 +974,7 @@ export default function AccountPage() {
                         </div>
                         {/* Graph - full width */}
                         <div style={{ flex: 1, display: 'flex', minHeight: '200px' }}>
-                          <div style={{ width: '32px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', flexShrink: 0, paddingRight: '4px' }}>
+                          <div style={{ width: '24px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', flexShrink: 0, paddingRight: '2px' }}>
                             {yLabels.map((v, i) => <span key={i} style={{ fontSize: '8px', color: '#888', lineHeight: 1, textAlign: 'right' }}>{v}</span>)}
                           </div>
                           <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
@@ -954,10 +997,13 @@ export default function AccountPage() {
                                       <div style={{ fontSize: '10px', color: isGreen ? '#22c55e' : '#ef4444', marginBottom: '2px', fontWeight: 600 }}>{item.disp}</div>
                                       <div style={{ width: '100%', maxWidth: '50px', height: `${hPct}%`, background: isGreen ? '#22c55e' : '#ef4444', borderRadius: '3px 3px 0 0', position: 'relative', cursor: 'pointer' }}>
                                         {isHovered && (
-                                          <div style={{ position: 'fixed', left: mousePos.x + 15, top: mousePos.y - 10, background: '#1a1a22', border: '1px solid #2a2a35', borderRadius: '6px', padding: '6px 10px', fontSize: '11px', whiteSpace: 'nowrap', zIndex: 1000, pointerEvents: 'none' }}>
-                                            <div style={{ color: '#888' }}>{item.name}</div>
-                                            <div style={{ fontWeight: 600, color: isGreen ? '#22c55e' : '#ef4444' }}>{item.disp}</div>
-                                          </div>
+                                          <>
+                                            <div style={{ position: 'absolute', top: '4px', left: '50%', transform: 'translateX(-50%)', width: '8px', height: '8px', borderRadius: '50%', background: isGreen ? '#22c55e' : '#ef4444', border: '2px solid #fff', zIndex: 5 }} />
+                                            <div style={{ position: 'absolute', top: '0px', left: 'calc(50% + 10px)', background: '#1a1a22', border: '1px solid #2a2a35', borderRadius: '6px', padding: '6px 10px', fontSize: '11px', whiteSpace: 'nowrap', zIndex: 10, pointerEvents: 'none' }}>
+                                              <div style={{ color: '#888' }}>{item.name}</div>
+                                              <div style={{ fontWeight: 600, color: isGreen ? '#22c55e' : '#ef4444' }}>{item.disp}</div>
+                                            </div>
+                                          </>
                                         )}
                                       </div>
                                     </div>
@@ -1058,7 +1104,7 @@ export default function AccountPage() {
                     
                     return (
                       <>
-                        <div style={{ width: '32px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', flexShrink: 0, paddingRight: '4px' }}>
+                        <div style={{ width: '24px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', flexShrink: 0, paddingRight: '2px' }}>
                           {yLabels.map((v, i) => <span key={i} style={{ fontSize: '8px', color: '#888', textAlign: 'right' }}>${v}</span>)}
                         </div>
                         <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
@@ -1098,7 +1144,7 @@ export default function AccountPage() {
                           {/* X-axis with multiple date labels */}
                           <div style={{ height: '18px', position: 'relative', marginLeft: '1px' }}>
                             {xLabels.map((l, i) => (
-                              <span key={i} style={{ position: 'absolute', left: `${l.pct}%`, transform: i === 0 ? 'none' : i === xLabels.length - 1 ? 'translateX(-100%)' : 'translateX(-50%)', fontSize: '9px', color: '#666' }}>{l.label}</span>
+                              <span key={i} style={{ position: 'absolute', left: `${l.pct}%`, transform: i === 0 ? 'none' : i === xLabels.length - 1 ? 'translateX(-100%)' : 'translateX(-50%)', fontSize: '9px', color: '#888' }}>{l.label}</span>
                             ))}
                           </div>
                         </div>
@@ -1715,7 +1761,7 @@ export default function AccountPage() {
                 const yMin = Math.floor(minBal / yStep) * yStep
                 const yRange = yMax - yMin || yStep
                 const hasNegative = minBal < 0
-                const belowStartEnl = equityCurveGroupBy === 'total' && currentBalance < startingBalance
+                const belowStartEnl = equityCurveGroupBy === 'total' && minBal < startingBalance
                 const zeroY = hasNegative ? ((yMax - 0) / yRange) * 100 : null
 
                 const yLabels = []
@@ -1797,7 +1843,7 @@ export default function AccountPage() {
                         {/* X-axis labels */}
                         <div style={{ height: '20px', position: 'relative' }}>
                           {xLabels.map((l, i) => (
-                            <span key={i} style={{ position: 'absolute', left: `${l.pct}%`, transform: i === 0 ? 'none' : i === xLabels.length - 1 ? 'translateX(-100%)' : 'translateX(-50%)', fontSize: '10px', color: '#666' }}>{l.label}</span>
+                            <span key={i} style={{ position: 'absolute', left: `${l.pct}%`, transform: i === 0 ? 'none' : i === xLabels.length - 1 ? 'translateX(-100%)' : 'translateX(-50%)', fontSize: '10px', color: '#888' }}>{l.label}</span>
                           ))}
                         </div>
                       </div>
