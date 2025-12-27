@@ -265,16 +265,9 @@ export default function DashboardPage() {
           </div>
 
           <div style={{ height: '26px', position: 'relative', overflow: 'hidden', display: 'flex', alignItems: 'center' }}>
-            {xLabels.map((l, i) => {
-              const isFirst = i === 0
-              const isLast = i === xLabels.length - 1
-              const style = isFirst
-                ? { position: 'absolute', left: '0', fontSize: '11px', color: '#ccc', fontWeight: 500, background: '#0d0d12', padding: '2px 6px', borderRadius: '3px', border: '1px solid #2a2a35' }
-                : isLast
-                  ? { position: 'absolute', right: '0', fontSize: '11px', color: '#ccc', fontWeight: 500, background: '#0d0d12', padding: '2px 6px', borderRadius: '3px', border: '1px solid #2a2a35' }
-                  : { position: 'absolute', left: `${l.pct}%`, transform: 'translateX(-50%)', fontSize: '11px', color: '#ccc', fontWeight: 500, background: '#0d0d12', padding: '2px 6px', borderRadius: '3px', border: '1px solid #2a2a35' }
-              return <span key={i} style={style}>{l.label}</span>
-            })}
+            {xLabels.map((l, i) => (
+              <span key={i} style={{ position: 'absolute', left: `${l.pct}%`, transform: 'translateX(-50%)', fontSize: '11px', color: '#ccc', fontWeight: 500, background: '#0d0d12', padding: '2px 6px', borderRadius: '3px', border: '1px solid #2a2a35' }}>{l.label}</span>
+            ))}
           </div>
         </div>
       </div>

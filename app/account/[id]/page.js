@@ -808,7 +808,12 @@ export default function AccountPage() {
                                 var redAreaPath = buildAreaPath(redSegments)
                               }
 
-                              return { ...line, chartPoints, pathD, greenPath, redPath, greenAreaPath, redAreaPath }
+                              // For multi-line mode, create area path (fills down to bottom)
+                              const areaPath = equityCurveGroupBy !== 'total' && chartPoints.length > 1
+                                ? pathD + ` L ${chartPoints[chartPoints.length - 1].x} ${svgH} L ${chartPoints[0].x} ${svgH} Z`
+                                : null
+
+                              return { ...line, chartPoints, pathD, greenPath, redPath, greenAreaPath, redAreaPath, areaPath }
                             })
                             
                             const mainLine = lineData[0]
@@ -830,7 +835,7 @@ export default function AccountPage() {
                             
                             return (
                               <>
-                                <div style={{ width: '24px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', flexShrink: 0, paddingRight: '2px' }}>
+                                <div style={{ width: '24px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', flexShrink: 0, paddingRight: '2px', paddingBottom: '22px' }}>
                                   {yLabels.map((v, i) => <span key={i} style={{ fontSize: '8px', color: '#888', lineHeight: 1, textAlign: 'right' }}>{equityCurveGroupBy === 'total' ? `$${(v/1000).toFixed(v >= 1000 ? 0 : 1)}k` : `$${v}`}</span>)}
                                 </div>
                                 <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
@@ -880,14 +885,25 @@ export default function AccountPage() {
                                       }}
                                       onMouseLeave={() => setHoverPoint(null)}
                                     >
-                                      {lineData[0] && <><defs><linearGradient id="eqGreen" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stopColor="#22c55e" stopOpacity="0.3" /><stop offset="100%" stopColor="#22c55e" stopOpacity="0" /></linearGradient><linearGradient id="eqRed" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stopColor="#ef4444" stopOpacity="0.3" /><stop offset="100%" stopColor="#ef4444" stopOpacity="0" /></linearGradient></defs>{lineData[0].greenAreaPath && <path d={lineData[0].greenAreaPath} fill="url(#eqGreen)" />}{lineData[0].redAreaPath && <path d={lineData[0].redAreaPath} fill="url(#eqRed)" />}</>}
+                                      <defs>
+                                        <linearGradient id="eqGreen" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stopColor="#22c55e" stopOpacity="0.3" /><stop offset="100%" stopColor="#22c55e" stopOpacity="0" /></linearGradient>
+                                        <linearGradient id="eqRed" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stopColor="#ef4444" stopOpacity="0.3" /><stop offset="100%" stopColor="#ef4444" stopOpacity="0" /></linearGradient>
+                                        {lineData.map((line, idx) => (
+                                          <linearGradient key={idx} id={`lineGrad${idx}`} x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stopColor={line.color} stopOpacity="0.25" /><stop offset="100%" stopColor={line.color} stopOpacity="0" /></linearGradient>
+                                        ))}
+                                      </defs>
                                       {equityCurveGroupBy === 'total' && lineData[0] ? (
                                         <>
+                                          {lineData[0].greenAreaPath && <path d={lineData[0].greenAreaPath} fill="url(#eqGreen)" />}
+                                          {lineData[0].redAreaPath && <path d={lineData[0].redAreaPath} fill="url(#eqRed)" />}
                                           {lineData[0].greenPath && <path d={lineData[0].greenPath} fill="none" stroke="#22c55e" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />}
                                           {lineData[0].redPath && <path d={lineData[0].redPath} fill="none" stroke="#ef4444" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />}
                                         </>
                                       ) : lineData.map((line, idx) => (
-                                        <path key={idx} d={line.pathD} fill="none" stroke={line.color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />
+                                        <g key={idx}>
+                                          {line.areaPath && <path d={line.areaPath} fill={`url(#lineGrad${idx})`} />}
+                                          <path d={line.pathD} fill="none" stroke={line.color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />
+                                        </g>
                                       ))}
                                     </svg>
                                     {hoverPoint && <div style={{ position: 'absolute', left: `${hoverPoint.xPct}%`, top: `${hoverPoint.yPct}%`, transform: 'translate(-50%, -50%)', width: '10px', height: '10px', borderRadius: '50%', background: equityCurveGroupBy === 'total' ? (hoverPoint.balance >= startingBalance ? '#22c55e' : '#ef4444') : (hoverPoint.lineColor || '#22c55e'), border: '2px solid #fff', pointerEvents: 'none', zIndex: 10 }} />}
@@ -933,7 +949,7 @@ export default function AccountPage() {
                                   {/* X-axis with multiple date labels */}
                                   <div style={{ height: '22px', position: 'relative', marginLeft: '1px', display: 'flex', alignItems: 'center' }}>
                                     {xLabels.map((l, i) => (
-                                      <span key={i} style={{ position: 'absolute', left: `${l.pct}%`, transform: i === 0 ? 'none' : i === xLabels.length - 1 ? 'translateX(-100%)' : 'translateX(-50%)', fontSize: '10px', color: '#ccc', fontWeight: 500, background: '#0d0d12', padding: '2px 4px', borderRadius: '3px', border: '1px solid #2a2a35' }}>{l.label}</span>
+                                      <span key={i} style={{ position: 'absolute', left: `${l.pct}%`, transform: 'translateX(-50%)', fontSize: '10px', color: '#ccc', fontWeight: 500, background: '#0d0d12', padding: '2px 4px', borderRadius: '3px', border: '1px solid #2a2a35' }}>{l.label}</span>
                                     ))}
                                   </div>
                                 </div>
@@ -1024,7 +1040,7 @@ export default function AccountPage() {
                         </div>
                         {/* Graph - full width */}
                         <div style={{ flex: 1, display: 'flex', minHeight: '200px' }}>
-                          <div style={{ width: '24px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', flexShrink: 0, paddingRight: '2px' }}>
+                          <div style={{ width: '24px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', flexShrink: 0, paddingRight: '2px', paddingBottom: '28px' }}>
                             {yLabels.map((v, i) => <span key={i} style={{ fontSize: '8px', color: '#888', lineHeight: 1, textAlign: 'right' }}>{v}</span>)}
                           </div>
                           <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
@@ -1045,7 +1061,7 @@ export default function AccountPage() {
                                       onMouseLeave={() => setBarHover(null)}
                                     >
                                       <div style={{ fontSize: '10px', color: isGreen ? '#22c55e' : '#ef4444', marginBottom: '2px', fontWeight: 600 }}>{item.disp}</div>
-                                      <div style={{ width: '100%', maxWidth: '50px', height: `${hPct}%`, background: 'transparent', border: `2px solid ${isGreen ? '#22c55e' : '#ef4444'}`, borderBottom: 'none', borderRadius: '3px 3px 0 0', position: 'relative', cursor: 'pointer', boxShadow: `0 0 10px ${isGreen ? 'rgba(34, 197, 94, 0.5)' : 'rgba(239, 68, 68, 0.5)'}, inset 0 0 20px ${isGreen ? 'rgba(34, 197, 94, 0.25)' : 'rgba(239, 68, 68, 0.25)'}` }}>
+                                      <div style={{ width: '100%', maxWidth: '50px', height: `${hPct}%`, background: `linear-gradient(to bottom, ${isGreen ? 'rgba(34, 197, 94, 0.3)' : 'rgba(239, 68, 68, 0.3)'} 0%, transparent 100%)`, border: `2px solid ${isGreen ? '#22c55e' : '#ef4444'}`, borderBottom: 'none', borderRadius: '3px 3px 0 0', position: 'relative', cursor: 'pointer', boxShadow: `0 0 10px ${isGreen ? 'rgba(34, 197, 94, 0.4)' : 'rgba(239, 68, 68, 0.4)'}` }}>
                                         {isHovered && (
                                           <>
                                             <div style={{ position: 'absolute', bottom: '4px', left: '50%', transform: 'translateX(-50%)', width: '8px', height: '8px', borderRadius: '50%', background: isGreen ? '#22c55e' : '#ef4444', border: '2px solid #fff', zIndex: 5 }} />
@@ -1356,7 +1372,7 @@ export default function AccountPage() {
               <div style={{ flex: 1, background: '#0d0d12', border: '2px solid #22c55e', borderRadius: '8px', padding: '12px' }}>
                 <div style={{ fontSize: '11px', color: '#888', textTransform: 'uppercase', marginBottom: '10px' }}>Trade Analysis</div>
                 <div style={{ display: 'flex', gap: '8px', marginBottom: '10px' }}>
-                  <select value={analysisGroupBy} onChange={e => setAnalysisGroupBy(e.target.value)} style={{ flex: 1, padding: '8px', background: '#0a0a0e', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '12px' }}>
+                  <select value={analysisGroupBy} onChange={e => setAnalysisGroupBy(e.target.value)} style={{ flex: 1, padding: '8px', background: '#141418', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '6px', color: '#fff', fontSize: '12px', boxShadow: '0 0 4px rgba(255,255,255,0.1)' }}>
                     <option value="direction">Direction</option>
                     <option value="confidence">Confidence</option>
                     <option value="session">Session</option>
@@ -1365,7 +1381,7 @@ export default function AccountPage() {
                       <option key={inp.id} value={inp.id}>{inp.label}</option>
                     ))}
                   </select>
-                  <select value={analysisMetric} onChange={e => setAnalysisMetric(e.target.value)} style={{ flex: 1, padding: '8px', background: '#0a0a0e', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '12px' }}>
+                  <select value={analysisMetric} onChange={e => setAnalysisMetric(e.target.value)} style={{ flex: 1, padding: '8px', background: '#141418', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '6px', color: '#fff', fontSize: '12px', boxShadow: '0 0 4px rgba(255,255,255,0.1)' }}>
                     <option value="avgpnl">Avg PnL</option>
                     <option value="winrate">Winrate</option>
                     <option value="pnl">Total PnL</option>
@@ -1524,11 +1540,11 @@ export default function AccountPage() {
                 <div key={input.id}>
                   <label style={{ display: 'block', fontSize: '11px', color: '#888', marginBottom: '6px', textTransform: 'uppercase' }}>{input.label} {input.required && <span style={{ color: '#ef4444' }}>*</span>}</label>
                   {input.type === 'select' ? (
-                    <select value={tradeForm[input.id] || ''} onChange={e => setTradeForm({...tradeForm, [input.id]: e.target.value})} style={{ width: '100%', padding: '10px', background: '#0a0a0e', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '14px', boxSizing: 'border-box' }}>
+                    <select value={tradeForm[input.id] || ''} onChange={e => setTradeForm({...tradeForm, [input.id]: e.target.value})} style={{ width: '100%', padding: '10px', background: '#141418', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '6px', color: '#fff', fontSize: '14px', boxSizing: 'border-box', boxShadow: '0 0 4px rgba(255,255,255,0.1)' }}>
                       {input.options?.map(o => <option key={o} value={o.toLowerCase()}>{o}</option>)}
                     </select>
                   ) : (
-                    <input type={input.type} value={tradeForm[input.id] || ''} onChange={e => setTradeForm({...tradeForm, [input.id]: e.target.value})} step={input.type === 'number' ? '0.01' : undefined} style={{ width: '100%', padding: '10px', background: '#0a0a0e', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '14px', boxSizing: 'border-box' }} />
+                    <input type={input.type} value={tradeForm[input.id] || ''} onChange={e => setTradeForm({...tradeForm, [input.id]: e.target.value})} step={input.type === 'number' ? '0.01' : undefined} style={{ width: '100%', padding: '10px', background: '#141418', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '6px', color: '#fff', fontSize: '14px', boxSizing: 'border-box', boxShadow: '0 0 4px rgba(255,255,255,0.1)' }} />
                   )}
                 </div>
               ))}
@@ -1543,11 +1559,11 @@ export default function AccountPage() {
                     <div key={input.id} style={{ gridColumn: input.type === 'textarea' ? 'span 2' : 'span 1' }}>
                       <label style={{ display: 'block', fontSize: '11px', color: '#888', marginBottom: '6px', textTransform: 'uppercase' }}>{input.label}</label>
                       {input.type === 'select' ? (
-                        <select value={tradeForm[input.id] || ''} onChange={e => setTradeForm({...tradeForm, [input.id]: e.target.value})} style={{ width: '100%', padding: '10px', background: '#0a0a0e', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '14px', boxSizing: 'border-box' }}>
+                        <select value={tradeForm[input.id] || ''} onChange={e => setTradeForm({...tradeForm, [input.id]: e.target.value})} style={{ width: '100%', padding: '10px', background: '#141418', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '6px', color: '#fff', fontSize: '14px', boxSizing: 'border-box', boxShadow: '0 0 4px rgba(255,255,255,0.1)' }}>
                           {input.options?.map(o => <option key={o} value={o.toLowerCase()}>{o}</option>)}
                         </select>
                       ) : input.type === 'textarea' ? (
-                        <textarea value={tradeForm[input.id] || ''} onChange={e => setTradeForm({...tradeForm, [input.id]: e.target.value})} rows={3} style={{ width: '100%', padding: '10px', background: '#0a0a0e', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '14px', resize: 'none', boxSizing: 'border-box' }} />
+                        <textarea value={tradeForm[input.id] || ''} onChange={e => setTradeForm({...tradeForm, [input.id]: e.target.value})} rows={3} style={{ width: '100%', padding: '10px', background: '#141418', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '6px', color: '#fff', fontSize: '14px', resize: 'none', boxSizing: 'border-box', boxShadow: '0 0 4px rgba(255,255,255,0.1)' }} />
                       ) : input.type === 'rating' ? (
                         <div style={{ display: 'flex', gap: '8px' }}>{[1,2,3,4,5].map(i => <button key={i} type="button" onClick={() => setTradeForm({...tradeForm, [input.id]: String(i)})} style={{ background: 'transparent', border: 'none', cursor: 'pointer', fontSize: '24px', color: i <= parseInt(tradeForm[input.id] || 0) ? '#22c55e' : '#333' }}>★</button>)}</div>
                       ) : input.type === 'file' ? (
@@ -1618,8 +1634,8 @@ export default function AccountPage() {
               {inputs.map((input, i) => (
                 <div key={input.id} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '12px', background: input.fixed ? '#141418' : '#0a0a0e', borderRadius: '6px', opacity: input.fixed ? 0.7 : 1 }}>
                   <input type="checkbox" checked={input.enabled} onChange={e => !input.fixed && updateInput(i, 'enabled', e.target.checked)} disabled={input.fixed} style={{ width: '18px', height: '18px', accentColor: '#22c55e' }} />
-                  <input type="text" value={input.label} onChange={e => updateInput(i, 'label', e.target.value)} disabled={input.fixed} style={{ flex: 1, padding: '8px 12px', background: '#141418', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '13px' }} />
-                  <select value={input.type} onChange={e => updateInput(i, 'type', e.target.value)} disabled={input.fixed} style={{ padding: '8px', background: '#141418', border: '1px solid #1a1a22', borderRadius: '6px', color: '#888', fontSize: '12px' }}>
+                  <input type="text" value={input.label} onChange={e => updateInput(i, 'label', e.target.value)} disabled={input.fixed} style={{ flex: 1, padding: '8px 12px', background: '#141418', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '6px', color: '#fff', fontSize: '13px', boxShadow: '0 0 4px rgba(255,255,255,0.1)' }} />
+                  <select value={input.type} onChange={e => updateInput(i, 'type', e.target.value)} disabled={input.fixed} style={{ padding: '8px', background: '#141418', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '6px', color: '#888', fontSize: '12px', boxShadow: '0 0 4px rgba(255,255,255,0.1)' }}>
                     {['text', 'number', 'date', 'select', 'textarea', 'rating', 'file'].map(t => <option key={t} value={t}>{t}</option>)}
                   </select>
                   {input.type === 'select' && !input.fixed && <button onClick={() => openOptionsEditor(i)} style={{ padding: '6px 12px', background: '#22c55e', border: 'none', borderRadius: '6px', color: '#fff', fontSize: '11px', cursor: 'pointer' }}>Opts</button>}
@@ -1928,7 +1944,7 @@ export default function AccountPage() {
                         {/* X-axis labels */}
                         <div style={{ height: '24px', position: 'relative', display: 'flex', alignItems: 'center' }}>
                           {xLabels.map((l, i) => (
-                            <span key={i} style={{ position: 'absolute', left: `${l.pct}%`, transform: i === 0 ? 'none' : i === xLabels.length - 1 ? 'translateX(-100%)' : 'translateX(-50%)', fontSize: '11px', color: '#ccc', fontWeight: 500, background: '#0d0d12', padding: '2px 6px', borderRadius: '3px', border: '1px solid #2a2a35' }}>{l.label}</span>
+                            <span key={i} style={{ position: 'absolute', left: `${l.pct}%`, transform: 'translateX(-50%)', fontSize: '11px', color: '#ccc', fontWeight: 500, background: '#0d0d12', padding: '2px 6px', borderRadius: '3px', border: '1px solid #2a2a35' }}>{l.label}</span>
                           ))}
                         </div>
                       </div>
