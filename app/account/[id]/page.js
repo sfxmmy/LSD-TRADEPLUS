@@ -822,7 +822,7 @@ export default function AccountPage() {
                             const areaD = equityCurveGroupBy === 'total' && mainLine ? mainLine.pathD + ` L ${mainLine.chartPoints[mainLine.chartPoints.length - 1].x} ${areaBottom} L ${mainLine.chartPoints[0].x} ${areaBottom} Z` : null
                             
                             // Generate X-axis labels (more evenly spaced dates)
-                            const xLabelCount = 7
+                            const xLabelCount = 10
                             const xLabels = []
                             for (let i = 0; i < xLabelCount; i++) {
                               const idx = Math.floor(i * (sorted.length - 1) / (xLabelCount - 1))
@@ -901,7 +901,6 @@ export default function AccountPage() {
                                         </>
                                       ) : lineData.map((line, idx) => (
                                         <g key={idx}>
-                                          {line.areaPath && <path d={line.areaPath} fill={`url(#lineGrad${idx})`} />}
                                           <path d={line.pathD} fill="none" stroke={line.color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />
                                         </g>
                                       ))}
@@ -916,31 +915,25 @@ export default function AccountPage() {
                                       </div>
                                     )}
                                     {/* Legend */}
-                                    <div style={{ position: 'absolute', bottom: '4px', right: '4px', display: 'flex', alignItems: 'center', gap: '10px', background: 'rgba(13,13,18,0.95)', padding: '6px 10px', borderRadius: '4px', fontSize: '11px', border: '1px solid #2a2a35' }}>
+                                    <div style={{ position: 'absolute', bottom: '4px', left: '4px', display: 'flex', alignItems: 'center', gap: '8px', background: 'rgba(13,13,18,0.9)', padding: '3px 6px', borderRadius: '3px', fontSize: '9px' }}>
                                       {equityCurveGroupBy === 'total' ? (
                                         <>
-                                          <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-                                            <div style={{ width: '14px', height: '3px', background: '#22c55e', borderRadius: '1px' }} />
-                                            <span style={{ color: '#ccc' }}>Above</span>
+                                          <div style={{ display: 'flex', alignItems: 'center', gap: '3px' }}>
+                                            <div style={{ width: '10px', height: '2px', background: '#22c55e' }} />
+                                            <span style={{ color: '#888' }}>Above</span>
                                           </div>
                                           {belowStart && (
-                                            <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-                                              <div style={{ width: '14px', height: '3px', background: '#ef4444', borderRadius: '1px' }} />
-                                              <span style={{ color: '#ccc' }}>Below</span>
-                                            </div>
-                                          )}
-                                          {startLineY !== null && (
-                                            <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-                                              <div style={{ width: '14px', height: '0', borderTop: '2px dashed #888' }} />
-                                              <span style={{ color: '#ccc' }}>Start</span>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '3px' }}>
+                                              <div style={{ width: '10px', height: '2px', background: '#ef4444' }} />
+                                              <span style={{ color: '#888' }}>Below</span>
                                             </div>
                                           )}
                                         </>
                                       ) : (
-                                        lineData.slice(0, 4).map((line, idx) => (
-                                          <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-                                            <div style={{ width: '14px', height: '3px', background: line.color, borderRadius: '1px' }} />
-                                            <span style={{ color: '#ccc' }}>{line.name}</span>
+                                        lineData.map((line, idx) => (
+                                          <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '3px' }}>
+                                            <div style={{ width: '10px', height: '2px', background: line.color }} />
+                                            <span style={{ color: '#888' }}>{line.name}</span>
                                           </div>
                                         ))
                                       )}
@@ -949,7 +942,7 @@ export default function AccountPage() {
                                   {/* X-axis with multiple date labels */}
                                   <div style={{ height: '22px', position: 'relative', marginLeft: '1px', display: 'flex', alignItems: 'center' }}>
                                     {xLabels.map((l, i) => (
-                                      <span key={i} style={{ position: 'absolute', left: `${l.pct}%`, transform: 'translateX(-50%)', fontSize: '10px', color: '#ccc', fontWeight: 500, background: '#0d0d12', padding: '2px 4px', borderRadius: '3px', border: '1px solid #2a2a35' }}>{l.label}</span>
+                                      <span key={i} style={{ position: 'absolute', left: `${l.pct}%`, transform: 'translateX(-50%)', fontSize: '9px', color: '#888' }}>{l.label}</span>
                                     ))}
                                   </div>
                                 </div>
@@ -1064,7 +1057,7 @@ export default function AccountPage() {
                                       <div style={{ width: '100%', maxWidth: '50px', height: `${hPct}%`, background: `linear-gradient(to bottom, ${isGreen ? 'rgba(34, 197, 94, 0.3)' : 'rgba(239, 68, 68, 0.3)'} 0%, transparent 100%)`, border: `2px solid ${isGreen ? '#22c55e' : '#ef4444'}`, borderBottom: 'none', borderRadius: '3px 3px 0 0', position: 'relative', cursor: 'pointer' }}>
                                         {isHovered && (
                                           <>
-                                            <div style={{ position: 'absolute', bottom: '4px', left: '50%', transform: 'translateX(-50%)', width: '8px', height: '8px', borderRadius: '50%', background: isGreen ? '#22c55e' : '#ef4444', border: '2px solid #fff', zIndex: 5 }} />
+                                            <div style={{ position: 'absolute', bottom: '4px', left: '50%', transform: 'translateX(-50%)', width: '10px', height: '10px', borderRadius: '50%', background: isGreen ? '#22c55e' : '#ef4444', border: '2px solid #fff', zIndex: 5 }} />
                                             <div style={{ position: 'absolute', bottom: '0px', left: 'calc(50% + 10px)', background: '#1a1a22', border: '1px solid #2a2a35', borderRadius: '6px', padding: '6px 10px', fontSize: '11px', whiteSpace: 'nowrap', zIndex: 10, pointerEvents: 'none' }}>
                                               <div style={{ fontWeight: 700, color: '#fff', fontSize: '12px', marginBottom: '2px' }}>{item.name}</div>
                                               <div style={{ fontWeight: 600, color: isGreen ? '#22c55e' : '#ef4444' }}>{item.disp}</div>
@@ -1160,7 +1153,7 @@ export default function AccountPage() {
                     const sortedData = [...displayData].sort((a, b) => new Date(a.date) - new Date(b.date))
                     
                     // Generate X-axis labels (evenly spaced, showing date under bars)
-                    const xLabelCount = Math.min(sortedData.length, 12)
+                    const xLabelCount = Math.min(sortedData.length, 15)
                     const xLabels = []
                     for (let i = 0; i < xLabelCount; i++) {
                       const idx = Math.floor(i * (sortedData.length - 1) / Math.max(1, xLabelCount - 1))
@@ -1312,8 +1305,9 @@ export default function AccountPage() {
                   ))}
                 </div>
                 <div style={{ width: '1px', background: '#1a1a22', margin: '0 10px' }} />
-                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minWidth: '100px' }}>
-                  <select value={pairAnalysisType} onChange={e => setPairAnalysisType(e.target.value)} style={{ fontSize: '10px', color: '#ccc', marginBottom: '6px', background: '#141418', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '6px', padding: '6px 10px', cursor: 'pointer', boxShadow: '0 0 8px rgba(255,255,255,0.15)' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', minWidth: '110px' }}>
+                  <div style={{ fontSize: '10px', color: '#888', textTransform: 'uppercase', marginBottom: '6px', fontWeight: 600 }}>Pair Analysis</div>
+                  <select value={pairAnalysisType} onChange={e => setPairAnalysisType(e.target.value)} style={{ fontSize: '9px', color: '#ccc', marginBottom: '6px', background: '#141418', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '4px', padding: '4px 8px', cursor: 'pointer', boxShadow: '0 0 6px rgba(255,255,255,0.1)' }}>
                     <option value="best">Best Pair</option>
                     <option value="worst">Worst Pair</option>
                     <option value="most">Most Used</option>
@@ -1340,9 +1334,9 @@ export default function AccountPage() {
                             <div style={{ fontSize: '12px', fontWeight: 700, color: '#22c55e' }}>{wr}%</div>
                           </div>
                         </div>
-                        <div style={{ display: 'flex', gap: '6px', marginTop: '2px', fontSize: '9px' }}>
-                          <span><span style={{ color: '#22c55e' }}>●</span> W</span>
-                          <span><span style={{ color: '#ef4444' }}>●</span> L</span>
+                        <div style={{ display: 'flex', gap: '8px', marginTop: '4px', fontSize: '8px' }}>
+                          <span><span style={{ color: '#22c55e' }}>●</span> Win</span>
+                          <span><span style={{ color: '#ef4444' }}>●</span> Loss</span>
                         </div>
                       </>
                     )
@@ -1835,7 +1829,7 @@ export default function AccountPage() {
                 for (let v = yMax; v >= yMin; v -= yStep) yLabels.push(v)
 
                 // X-axis labels
-                const xLabelCount = 12
+                const xLabelCount = 15
                 const xLabels = []
                 for (let i = 0; i < xLabelCount; i++) {
                   const idx = Math.floor(i * (sorted.length - 1) / (xLabelCount - 1))
@@ -1945,8 +1939,7 @@ export default function AccountPage() {
                               </>
                             ) : lineData.map((line, idx) => (
                               <g key={idx}>
-                                {line.areaPath && <path d={line.areaPath} fill={`url(#lineGradEnl${idx})`} />}
-                                <path d={line.pathD} fill="none" stroke={line.color} strokeWidth="2" strokeLinecap="round" vectorEffect="non-scaling-stroke" />
+                                <path d={line.pathD} fill="none" stroke={line.color} strokeWidth="2.5" strokeLinecap="round" vectorEffect="non-scaling-stroke" />
                               </g>
                             ))}
                           </svg>
@@ -1961,29 +1954,29 @@ export default function AccountPage() {
                           )}
                         </div>
                         {/* X-axis labels */}
-                        <div style={{ height: '24px', position: 'relative', display: 'flex', alignItems: 'center' }}>
+                        <div style={{ height: '20px', position: 'relative', display: 'flex', alignItems: 'center' }}>
                           {xLabels.map((l, i) => (
-                            <span key={i} style={{ position: 'absolute', left: `${l.pct}%`, transform: 'translateX(-50%)', fontSize: '11px', color: '#ccc', fontWeight: 500, background: '#0d0d12', padding: '2px 6px', borderRadius: '3px', border: '1px solid #2a2a35' }}>{l.label}</span>
+                            <span key={i} style={{ position: 'absolute', left: `${l.pct}%`, transform: 'translateX(-50%)', fontSize: '10px', color: '#888' }}>{l.label}</span>
                           ))}
                         </div>
                         {/* Legend */}
-                        <div style={{ display: 'flex', justifyContent: 'center', gap: '16px', padding: '12px 0', flexWrap: 'wrap' }}>
+                        <div style={{ display: 'flex', justifyContent: 'center', gap: '12px', padding: '8px 0', flexWrap: 'wrap' }}>
                           {equityCurveGroupBy === 'total' ? (
                             <>
-                              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                                <div style={{ width: '20px', height: '4px', background: '#22c55e', borderRadius: '2px' }} />
-                                <span style={{ fontSize: '12px', color: '#ccc' }}>Above Start</span>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                <div style={{ width: '16px', height: '3px', background: '#22c55e' }} />
+                                <span style={{ fontSize: '10px', color: '#888' }}>Above</span>
                               </div>
-                              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                                <div style={{ width: '20px', height: '4px', background: '#ef4444', borderRadius: '2px' }} />
-                                <span style={{ fontSize: '12px', color: '#ccc' }}>Below Start</span>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                <div style={{ width: '16px', height: '3px', background: '#ef4444' }} />
+                                <span style={{ fontSize: '10px', color: '#888' }}>Below</span>
                               </div>
                             </>
                           ) : (
                             lineData.map((line, idx) => (
-                              <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                                <div style={{ width: '20px', height: '4px', background: line.color, borderRadius: '2px' }} />
-                                <span style={{ fontSize: '12px', color: '#ccc' }}>{line.name}</span>
+                              <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                <div style={{ width: '16px', height: '3px', background: line.color }} />
+                                <span style={{ fontSize: '10px', color: '#888' }}>{line.name}</span>
                               </div>
                             ))
                           )}
@@ -2083,8 +2076,8 @@ export default function AccountPage() {
               })()}
               </div>
               {/* Stats Sidebar */}
-              <div style={{ width: '240px', background: '#0a0a0e', borderRadius: '8px', border: '1px solid #1a1a22', padding: '10px', flexShrink: 0, display: 'flex', flexDirection: 'column' }}>
-                <div style={{ fontSize: '10px', color: '#888', textTransform: 'uppercase', marginBottom: '6px', fontWeight: 600 }}>Statistics</div>
+              <div style={{ width: '220px', background: '#0a0a0e', borderRadius: '8px', border: '1px solid #1a1a22', padding: '8px', flexShrink: 0 }}>
+                <div style={{ fontSize: '9px', color: '#888', textTransform: 'uppercase', marginBottom: '4px', fontWeight: 600 }}>Statistics</div>
                 {(() => {
                   // Calculate stats based on selected lines/data - same for both charts
                   let filteredTrades = []
@@ -2114,26 +2107,36 @@ export default function AccountPage() {
                   const biggestWin = wins.length > 0 ? Math.max(...wins.map(t => parseFloat(t.pnl))) : 0
                   const biggestLoss = losses.length > 0 ? Math.min(...losses.map(t => parseFloat(t.pnl))) : 0
                   const avgPnl = filteredTrades.length > 0 ? totalPnl / filteredTrades.length : 0
+                  const expectancy = filteredTrades.length > 0 ? (parseFloat(winrate) / 100 * avgWin - (1 - parseFloat(winrate) / 100) * avgLoss).toFixed(0) : 0
+                  // Calculate streak
+                  let currentStreak = 0, maxWinStreak = 0, maxLossStreak = 0, tempStreak = 0
+                  filteredTrades.forEach(t => {
+                    if (parseFloat(t.pnl) > 0) { tempStreak = tempStreak > 0 ? tempStreak + 1 : 1; maxWinStreak = Math.max(maxWinStreak, tempStreak) }
+                    else if (parseFloat(t.pnl) < 0) { tempStreak = tempStreak < 0 ? tempStreak - 1 : -1; maxLossStreak = Math.max(maxLossStreak, Math.abs(tempStreak)) }
+                    currentStreak = tempStreak
+                  })
 
                   const stats = [
                     { label: 'Total P&L', value: `${totalPnl >= 0 ? '+' : ''}$${Math.round(totalPnl).toLocaleString()}`, color: totalPnl >= 0 ? '#22c55e' : '#ef4444' },
-                    { label: 'Total Trades', value: filteredTrades.length },
-                    { label: 'Wins / Losses', value: `${wins.length} / ${losses.length}`, color: '#fff' },
+                    { label: 'Trades', value: `${filteredTrades.length} (${wins.length}W/${losses.length}L)` },
                     { label: 'Winrate', value: `${winrate}%`, color: parseFloat(winrate) >= 50 ? '#22c55e' : '#ef4444' },
                     { label: 'Profit Factor', value: profitFactor, color: parseFloat(profitFactor) >= 1 ? '#22c55e' : '#ef4444' },
-                    { label: 'Average Win', value: `+$${Math.round(avgWin).toLocaleString()}`, color: '#22c55e' },
-                    { label: 'Average Loss', value: `-$${Math.round(avgLoss).toLocaleString()}`, color: '#ef4444' },
+                    { label: 'Avg Win', value: `+$${Math.round(avgWin).toLocaleString()}`, color: '#22c55e' },
+                    { label: 'Avg Loss', value: `-$${Math.round(avgLoss).toLocaleString()}`, color: '#ef4444' },
                     { label: 'Avg Trade', value: `${avgPnl >= 0 ? '+' : ''}$${Math.round(avgPnl).toLocaleString()}`, color: avgPnl >= 0 ? '#22c55e' : '#ef4444' },
+                    { label: 'Expectancy', value: `$${expectancy}`, color: parseFloat(expectancy) >= 0 ? '#22c55e' : '#ef4444' },
                     { label: 'Best Trade', value: `+$${Math.round(biggestWin).toLocaleString()}`, color: '#22c55e' },
                     { label: 'Worst Trade', value: `$${Math.round(biggestLoss).toLocaleString()}`, color: '#ef4444' },
+                    { label: 'Current Streak', value: currentStreak >= 0 ? `+${currentStreak}` : `${currentStreak}`, color: currentStreak >= 0 ? '#22c55e' : '#ef4444' },
+                    { label: 'Best Streak', value: `+${maxWinStreak}W / -${maxLossStreak}L` },
                   ]
 
                   return (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '3px', flex: 1 }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
                       {stats.map((stat, i) => (
-                        <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '5px 6px', background: '#0d0d12', borderRadius: '3px', border: '1px solid #1a1a22' }}>
-                          <span style={{ fontSize: '9px', color: '#888' }}>{stat.label}</span>
-                          <span style={{ fontSize: '10px', fontWeight: 600, color: stat.color || '#fff' }}>{stat.value}</span>
+                        <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '4px 5px', background: '#0d0d12', borderRadius: '2px' }}>
+                          <span style={{ fontSize: '8px', color: '#666' }}>{stat.label}</span>
+                          <span style={{ fontSize: '9px', fontWeight: 600, color: stat.color || '#fff' }}>{stat.value}</span>
                         </div>
                       ))}
                     </div>
