@@ -843,10 +843,6 @@ export default function AccountPage() {
                                   {yLabels.map((v, i) => <span key={i} style={{ fontSize: '8px', color: '#888', lineHeight: 1, textAlign: 'right' }}>{equityCurveGroupBy === 'total' ? `$${(v/1000).toFixed(v >= 1000 ? 0 : 1)}k` : `$${v}`}</span>)}
                                 </div>
                                 <div style={{ flex: 1, display: 'flex', flexDirection: 'column', position: 'relative' }}>
-                                  {/* Vertical grid lines extending to date labels */}
-                                  {xLabels.map((l, i) => (
-                                    <div key={i} style={{ position: 'absolute', left: `${l.pct}%`, top: 0, bottom: 0, borderLeft: '1px solid #1a1a22', pointerEvents: 'none', zIndex: 0 }} />
-                                  ))}
                                   <div style={{ flex: 1, position: 'relative', borderLeft: '1px solid #333', borderBottom: hasNegative ? 'none' : '1px solid #333' }}>
                                     {/* Horizontal grid lines */}
                                     <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', pointerEvents: 'none' }}>
@@ -896,14 +892,12 @@ export default function AccountPage() {
                                       <defs>
                                         <linearGradient id="eqGreen" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stopColor="#22c55e" stopOpacity="0.3" /><stop offset="100%" stopColor="#22c55e" stopOpacity="0" /></linearGradient>
                                         <linearGradient id="eqRed" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stopColor="#ef4444" stopOpacity="0.3" /><stop offset="100%" stopColor="#ef4444" stopOpacity="0" /></linearGradient>
-                                        {/* SVG filters for line glow - each color gets its own glow filter */}
+                                        {/* Gradients for each line's downward shadow */}
                                         {lineData.map((line, idx) => (
-                                          <filter key={idx} id={`glow${idx}`} x="-50%" y="-50%" width="200%" height="200%">
-                                            <feGaussianBlur stdDeviation="3" result="blur" />
-                                            <feFlood floodColor={line.color} floodOpacity="0.6" result="color" />
-                                            <feComposite in="color" in2="blur" operator="in" result="glow" />
-                                            <feMerge><feMergeNode in="glow" /><feMergeNode in="SourceGraphic" /></feMerge>
-                                          </filter>
+                                          <linearGradient key={idx} id={`shadow${idx}`} x1="0%" y1="0%" x2="0%" y2="100%">
+                                            <stop offset="0%" stopColor={line.color} stopOpacity="0.35" />
+                                            <stop offset="100%" stopColor={line.color} stopOpacity="0" />
+                                          </linearGradient>
                                         ))}
                                       </defs>
                                       {equityCurveGroupBy === 'total' && lineData[0] ? (
@@ -913,11 +907,19 @@ export default function AccountPage() {
                                           {lineData[0].greenPath && <path d={lineData[0].greenPath} fill="none" stroke="#22c55e" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />}
                                           {lineData[0].redPath && <path d={lineData[0].redPath} fill="none" stroke="#ef4444" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />}
                                         </>
-                                      ) : lineData.map((line, idx) => (
-                                        <g key={idx}>
-                                          <path d={line.pathD} fill="none" stroke={line.color} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" filter={`url(#glow${idx})`} />
-                                        </g>
-                                      ))}
+                                      ) : lineData.map((line, idx) => {
+                                        // Create shadow area path - narrow band below the line (8 SVG units depth)
+                                        const shadowDepth = 8
+                                        const pts = line.chartPoints
+                                        const shadowPath = pts.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`).join(' ') +
+                                          pts.slice().reverse().map((p, i) => `${i === 0 ? ' L' : ' L'} ${p.x} ${Math.min(p.y + shadowDepth, svgH)}`).join('') + ' Z'
+                                        return (
+                                          <g key={idx}>
+                                            <path d={shadowPath} fill={`url(#shadow${idx})`} />
+                                            <path d={line.pathD} fill="none" stroke={line.color} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />
+                                          </g>
+                                        )
+                                      })}
                                     </svg>
                                     {hoverPoint && <div style={{ position: 'absolute', left: `${hoverPoint.xPct}%`, top: `${hoverPoint.yPct}%`, transform: 'translate(-50%, -50%)', width: '10px', height: '10px', borderRadius: '50%', background: equityCurveGroupBy === 'total' ? (hoverPoint.balance >= startingBalance ? '#22c55e' : '#ef4444') : (hoverPoint.lineColor || '#22c55e'), border: '2px solid #fff', pointerEvents: 'none', zIndex: 10 }} />}
                                     {hoverPoint && (
@@ -953,10 +955,13 @@ export default function AccountPage() {
                                       )}
                                     </div>
                                   </div>
-                                  {/* X-axis with multiple date labels */}
-                                  <div style={{ height: '22px', position: 'relative', marginLeft: '1px', display: 'flex', alignItems: 'center' }}>
+                                  {/* X-axis with tick marks and date labels */}
+                                  <div style={{ height: '22px', position: 'relative', marginLeft: '1px' }}>
                                     {xLabels.map((l, i) => (
-                                      <span key={i} style={{ position: 'absolute', left: `${l.pct}%`, transform: 'translateX(-50%)', fontSize: '9px', color: '#888' }}>{l.label}</span>
+                                      <div key={i} style={{ position: 'absolute', left: `${l.pct}%`, transform: 'translateX(-50%)', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                                        <div style={{ width: '1px', height: '6px', background: '#444' }} />
+                                        <span style={{ fontSize: '9px', color: '#888', marginTop: '2px' }}>{l.label}</span>
+                                      </div>
                                     ))}
                                   </div>
                                 </div>
@@ -1182,10 +1187,6 @@ export default function AccountPage() {
                           {yLabels.map((v, i) => <span key={i} style={{ fontSize: '8px', color: '#888', textAlign: 'right' }}>{i === yLabels.length - 1 ? '$0' : `$${v}`}</span>)}
                         </div>
                         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', position: 'relative' }}>
-                          {/* Vertical grid lines extending to date labels */}
-                          {xLabels.map((l, i) => (
-                            <div key={i} style={{ position: 'absolute', left: `${l.pct}%`, top: 0, bottom: 0, borderLeft: '1px solid #1a1a22', pointerEvents: 'none', zIndex: 0 }} />
-                          ))}
                           <div style={{ flex: 1, position: 'relative', borderLeft: '1px solid #333', borderBottom: '1px solid #333' }}>
                             {/* Horizontal grid lines */}
                             <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', pointerEvents: 'none' }}>
@@ -1219,10 +1220,13 @@ export default function AccountPage() {
                               })}
                             </div>
                           </div>
-                          {/* X-axis with multiple date labels */}
-                          <div style={{ height: '18px', position: 'relative', marginLeft: '1px' }}>
+                          {/* X-axis with tick marks and date labels */}
+                          <div style={{ height: '22px', position: 'relative', marginLeft: '1px' }}>
                             {xLabels.map((l, i) => (
-                              <span key={i} style={{ position: 'absolute', left: `${l.pct}%`, transform: i === 0 ? 'none' : i === xLabels.length - 1 ? 'translateX(-100%)' : 'translateX(-50%)', fontSize: '9px', color: '#888' }}>{l.label}</span>
+                              <div key={i} style={{ position: 'absolute', left: `${l.pct}%`, transform: 'translateX(-50%)', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                                <div style={{ width: '1px', height: '6px', background: '#444' }} />
+                                <span style={{ fontSize: '9px', color: '#888', marginTop: '2px' }}>{l.label}</span>
+                              </div>
                             ))}
                           </div>
                         </div>
@@ -1999,14 +2003,12 @@ export default function AccountPage() {
                             <defs>
                               <linearGradient id="eqGEnlG" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stopColor="#22c55e" stopOpacity="0.3" /><stop offset="100%" stopColor="#22c55e" stopOpacity="0" /></linearGradient>
                               <linearGradient id="eqGEnlR" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stopColor="#ef4444" stopOpacity="0.3" /><stop offset="100%" stopColor="#ef4444" stopOpacity="0" /></linearGradient>
-                              {/* SVG filters for line glow - each color gets its own glow filter */}
+                              {/* Gradients for each line's downward shadow */}
                               {lineData.map((line, idx) => (
-                                <filter key={idx} id={`glowEnl${idx}`} x="-50%" y="-50%" width="200%" height="200%">
-                                  <feGaussianBlur stdDeviation="4" result="blur" />
-                                  <feFlood floodColor={line.color} floodOpacity="0.6" result="color" />
-                                  <feComposite in="color" in2="blur" operator="in" result="glow" />
-                                  <feMerge><feMergeNode in="glow" /><feMergeNode in="SourceGraphic" /></feMerge>
-                                </filter>
+                                <linearGradient key={idx} id={`shadowEnl${idx}`} x1="0%" y1="0%" x2="0%" y2="100%">
+                                  <stop offset="0%" stopColor={line.color} stopOpacity="0.35" />
+                                  <stop offset="100%" stopColor={line.color} stopOpacity="0" />
+                                </linearGradient>
                               ))}
                             </defs>
                             {equityCurveGroupBy === 'total' && lineData[0] ? (
@@ -2018,7 +2020,8 @@ export default function AccountPage() {
                               </>
                             ) : lineData.map((line, idx) => (
                               <g key={idx}>
-                                <path d={line.pathD} fill="none" stroke={line.color} strokeWidth="3" strokeLinecap="round" vectorEffect="non-scaling-stroke" filter={`url(#glowEnl${idx})`} />
+                                {line.areaPath && <path d={line.areaPath} fill={`url(#shadowEnl${idx})`} />}
+                                <path d={line.pathD} fill="none" stroke={line.color} strokeWidth="3" strokeLinecap="round" vectorEffect="non-scaling-stroke" />
                               </g>
                             ))}
                           </svg>
@@ -2032,10 +2035,13 @@ export default function AccountPage() {
                             </div>
                           )}
                         </div>
-                        {/* X-axis labels */}
-                        <div style={{ height: '20px', position: 'relative', display: 'flex', alignItems: 'center' }}>
+                        {/* X-axis with tick marks and labels */}
+                        <div style={{ height: '26px', position: 'relative' }}>
                           {xLabels.map((l, i) => (
-                            <span key={i} style={{ position: 'absolute', left: `${l.pct}%`, transform: 'translateX(-50%)', fontSize: '10px', color: '#888' }}>{l.label}</span>
+                            <div key={i} style={{ position: 'absolute', left: `${l.pct}%`, transform: 'translateX(-50%)', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                              <div style={{ width: '1px', height: '8px', background: '#444' }} />
+                              <span style={{ fontSize: '10px', color: '#888', marginTop: '2px' }}>{l.label}</span>
+                            </div>
                           ))}
                         </div>
                         {/* Legend */}
