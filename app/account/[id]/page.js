@@ -802,9 +802,13 @@ export default function AccountPage() {
                                 const buildPath = (segs) => segs.map((s, i) => `M ${s.x1} ${s.y1} L ${s.x2} ${s.y2}`).join(' ')
                                 greenPath = buildPath(greenSegments)
                                 redPath = buildPath(redSegments)
+                                // Build area fills for each segment (closed polygons to startY line)
+                                const buildAreaPath = (segs) => segs.map(s => `M ${s.x1} ${s.y1} L ${s.x2} ${s.y2} L ${s.x2} ${startY} L ${s.x1} ${startY} Z`).join(' ')
+                                var greenAreaPath = buildAreaPath(greenSegments)
+                                var redAreaPath = buildAreaPath(redSegments)
                               }
 
-                              return { ...line, chartPoints, pathD, greenPath, redPath }
+                              return { ...line, chartPoints, pathD, greenPath, redPath, greenAreaPath, redAreaPath }
                             })
                             
                             const mainLine = lineData[0]
@@ -876,7 +880,7 @@ export default function AccountPage() {
                                       }}
                                       onMouseLeave={() => setHoverPoint(null)}
                                     >
-                                      {areaD && <><defs><linearGradient id="eqGreen" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stopColor="#22c55e" stopOpacity="0.3" /><stop offset="100%" stopColor="#22c55e" stopOpacity="0" /></linearGradient><linearGradient id="eqRed" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stopColor="#ef4444" stopOpacity="0.3" /><stop offset="100%" stopColor="#ef4444" stopOpacity="0" /></linearGradient></defs><path d={areaD} fill={belowStart ? "url(#eqRed)" : "url(#eqGreen)"} /></>}
+                                      {lineData[0] && <><defs><linearGradient id="eqGreen" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stopColor="#22c55e" stopOpacity="0.3" /><stop offset="100%" stopColor="#22c55e" stopOpacity="0" /></linearGradient><linearGradient id="eqRed" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stopColor="#ef4444" stopOpacity="0.3" /><stop offset="100%" stopColor="#ef4444" stopOpacity="0" /></linearGradient></defs>{lineData[0].greenAreaPath && <path d={lineData[0].greenAreaPath} fill="url(#eqGreen)" />}{lineData[0].redAreaPath && <path d={lineData[0].redAreaPath} fill="url(#eqRed)" />}</>}
                                       {equityCurveGroupBy === 'total' && lineData[0] ? (
                                         <>
                                           {lineData[0].greenPath && <path d={lineData[0].greenPath} fill="none" stroke="#22c55e" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />}
@@ -927,9 +931,9 @@ export default function AccountPage() {
                                     </div>
                                   </div>
                                   {/* X-axis with multiple date labels */}
-                                  <div style={{ height: '18px', position: 'relative', marginLeft: '1px' }}>
+                                  <div style={{ height: '22px', position: 'relative', marginLeft: '1px', display: 'flex', alignItems: 'center' }}>
                                     {xLabels.map((l, i) => (
-                                      <span key={i} style={{ position: 'absolute', left: `${l.pct}%`, transform: i === 0 ? 'none' : i === xLabels.length - 1 ? 'translateX(-100%)' : 'translateX(-50%)', fontSize: '9px', color: '#888' }}>{l.label}</span>
+                                      <span key={i} style={{ position: 'absolute', left: `${l.pct}%`, transform: i === 0 ? 'none' : i === xLabels.length - 1 ? 'translateX(-100%)' : 'translateX(-50%)', fontSize: '10px', color: '#ccc', fontWeight: 500, background: '#0d0d12', padding: '2px 4px', borderRadius: '3px', border: '1px solid #2a2a35' }}>{l.label}</span>
                                     ))}
                                   </div>
                                 </div>
@@ -1041,7 +1045,7 @@ export default function AccountPage() {
                                       onMouseLeave={() => setBarHover(null)}
                                     >
                                       <div style={{ fontSize: '10px', color: isGreen ? '#22c55e' : '#ef4444', marginBottom: '2px', fontWeight: 600 }}>{item.disp}</div>
-                                      <div style={{ width: '100%', maxWidth: '50px', height: `${hPct}%`, background: 'transparent', border: `2px solid ${isGreen ? '#22c55e' : '#ef4444'}`, borderBottom: 'none', borderRadius: '3px 3px 0 0', position: 'relative', cursor: 'pointer', boxShadow: `0 0 8px ${isGreen ? 'rgba(34, 197, 94, 0.4)' : 'rgba(239, 68, 68, 0.4)'}, inset 0 0 12px ${isGreen ? 'rgba(34, 197, 94, 0.15)' : 'rgba(239, 68, 68, 0.15)'}` }}>
+                                      <div style={{ width: '100%', maxWidth: '50px', height: `${hPct}%`, background: 'transparent', border: `2px solid ${isGreen ? '#22c55e' : '#ef4444'}`, borderBottom: 'none', borderRadius: '3px 3px 0 0', position: 'relative', cursor: 'pointer', boxShadow: `0 0 10px ${isGreen ? 'rgba(34, 197, 94, 0.5)' : 'rgba(239, 68, 68, 0.5)'}, inset 0 0 20px ${isGreen ? 'rgba(34, 197, 94, 0.25)' : 'rgba(239, 68, 68, 0.25)'}` }}>
                                         {isHovered && (
                                           <>
                                             <div style={{ position: 'absolute', bottom: '4px', left: '50%', transform: 'translateX(-50%)', width: '8px', height: '8px', borderRadius: '50%', background: isGreen ? '#22c55e' : '#ef4444', border: '2px solid #fff', zIndex: 5 }} />
@@ -1057,10 +1061,10 @@ export default function AccountPage() {
                                 })}
                               </div>
                             </div>
-                            <div style={{ paddingTop: '4px', marginLeft: '1px' }}>
+                            <div style={{ paddingTop: '6px', marginLeft: '1px' }}>
                               <div style={{ display: 'flex', gap: '6px', padding: '0 4px' }}>
                                 {entries.map((item, i) => (
-                                  <div key={i} style={{ flex: 1, textAlign: 'center', fontSize: '9px', color: '#888', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.name}</div>
+                                  <div key={i} style={{ flex: 1, textAlign: 'center', fontSize: '10px', color: '#ccc', fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', background: '#0d0d12', padding: '2px 4px', borderRadius: '3px', border: '1px solid #2a2a35' }}>{item.name}</div>
                                 ))}
                               </div>
                             </div>
@@ -1858,9 +1862,12 @@ export default function AccountPage() {
                     }
                     greenPath = greenSegments.map(s => `M ${s.x1} ${s.y1} L ${s.x2} ${s.y2}`).join(' ')
                     redPath = redSegments.map(s => `M ${s.x1} ${s.y1} L ${s.x2} ${s.y2}`).join(' ')
+                    // Build area fills for each segment (closed polygons to startY line)
+                    var greenAreaPath = greenSegments.map(s => `M ${s.x1} ${s.y1} L ${s.x2} ${s.y2} L ${s.x2} ${startYEnl} L ${s.x1} ${startYEnl} Z`).join(' ')
+                    var redAreaPath = redSegments.map(s => `M ${s.x1} ${s.y1} L ${s.x2} ${s.y2} L ${s.x2} ${startYEnl} L ${s.x1} ${startYEnl} Z`).join(' ')
                   }
 
-                  return { ...line, chartPoints, pathD, greenPath, redPath }
+                  return { ...line, chartPoints, pathD, greenPath, redPath, greenAreaPath, redAreaPath }
                 })
 
                 const mainLine = lineData[0]
@@ -1900,7 +1907,7 @@ export default function AccountPage() {
                             }}
                             onMouseLeave={() => setHoverPoint(null)}
                           >
-                            {areaD && <><defs><linearGradient id="eqGEnlG" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stopColor="#22c55e" stopOpacity="0.3" /><stop offset="100%" stopColor="#22c55e" stopOpacity="0" /></linearGradient><linearGradient id="eqGEnlR" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stopColor="#ef4444" stopOpacity="0.3" /><stop offset="100%" stopColor="#ef4444" stopOpacity="0" /></linearGradient></defs><path d={areaD} fill={belowStartEnl ? "url(#eqGEnlR)" : "url(#eqGEnlG)"} /></>}
+                            {lineData[0] && <><defs><linearGradient id="eqGEnlG" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stopColor="#22c55e" stopOpacity="0.3" /><stop offset="100%" stopColor="#22c55e" stopOpacity="0" /></linearGradient><linearGradient id="eqGEnlR" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stopColor="#ef4444" stopOpacity="0.3" /><stop offset="100%" stopColor="#ef4444" stopOpacity="0" /></linearGradient></defs>{lineData[0].greenAreaPath && <path d={lineData[0].greenAreaPath} fill="url(#eqGEnlG)" />}{lineData[0].redAreaPath && <path d={lineData[0].redAreaPath} fill="url(#eqGEnlR)" />}</>}
                             {equityCurveGroupBy === 'total' && lineData[0] ? (
                               <>
                                 {lineData[0].greenPath && <path d={lineData[0].greenPath} fill="none" stroke="#22c55e" strokeWidth="2" strokeLinecap="round" vectorEffect="non-scaling-stroke" />}
@@ -1919,9 +1926,9 @@ export default function AccountPage() {
                           )}
                         </div>
                         {/* X-axis labels */}
-                        <div style={{ height: '20px', position: 'relative' }}>
+                        <div style={{ height: '24px', position: 'relative', display: 'flex', alignItems: 'center' }}>
                           {xLabels.map((l, i) => (
-                            <span key={i} style={{ position: 'absolute', left: `${l.pct}%`, transform: i === 0 ? 'none' : i === xLabels.length - 1 ? 'translateX(-100%)' : 'translateX(-50%)', fontSize: '10px', color: '#888' }}>{l.label}</span>
+                            <span key={i} style={{ position: 'absolute', left: `${l.pct}%`, transform: i === 0 ? 'none' : i === xLabels.length - 1 ? 'translateX(-100%)' : 'translateX(-50%)', fontSize: '11px', color: '#ccc', fontWeight: 500, background: '#0d0d12', padding: '2px 6px', borderRadius: '3px', border: '1px solid #2a2a35' }}>{l.label}</span>
                           ))}
                         </div>
                       </div>

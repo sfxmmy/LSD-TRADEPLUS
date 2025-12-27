@@ -166,6 +166,9 @@ export default function DashboardPage() {
     }
     const greenPath = greenSegments.map(s => `M ${s.x1} ${s.y1} L ${s.x2} ${s.y2}`).join(' ')
     const redPath = redSegments.map(s => `M ${s.x1} ${s.y1} L ${s.x2} ${s.y2}`).join(' ')
+    // Build area fills for each segment (closed polygons to startY line)
+    const greenAreaPath = greenSegments.map(s => `M ${s.x1} ${s.y1} L ${s.x2} ${s.y2} L ${s.x2} ${startY} L ${s.x1} ${startY} Z`).join(' ')
+    const redAreaPath = redSegments.map(s => `M ${s.x1} ${s.y1} L ${s.x2} ${s.y2} L ${s.x2} ${startY} L ${s.x1} ${startY} Z`).join(' ')
 
     function handleMouseMove(e) {
       if (!svgRef.current) return
@@ -221,7 +224,8 @@ export default function DashboardPage() {
                   <stop offset="100%" stopColor="#ef4444" stopOpacity="0" />
                 </linearGradient>
               </defs>
-              <path d={areaD} fill={belowStart ? "url(#areaGradRed)" : "url(#areaGradGreen)"} />
+              {greenAreaPath && <path d={greenAreaPath} fill="url(#areaGradGreen)" />}
+              {redAreaPath && <path d={redAreaPath} fill="url(#areaGradRed)" />}
               {greenPath && <path d={greenPath} fill="none" stroke="#22c55e" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />}
               {redPath && <path d={redPath} fill="none" stroke="#ef4444" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />}
             </svg>
@@ -260,15 +264,15 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          <div style={{ height: '22px', position: 'relative', overflow: 'hidden' }}>
+          <div style={{ height: '26px', position: 'relative', overflow: 'hidden', display: 'flex', alignItems: 'center' }}>
             {xLabels.map((l, i) => {
               const isFirst = i === 0
               const isLast = i === xLabels.length - 1
-              const style = isFirst 
-                ? { position: 'absolute', left: '0', fontSize: '11px', color: '#888' }
-                : isLast 
-                  ? { position: 'absolute', right: '0', fontSize: '11px', color: '#888' }
-                  : { position: 'absolute', left: `${l.pct}%`, transform: 'translateX(-50%)', fontSize: '11px', color: '#888' }
+              const style = isFirst
+                ? { position: 'absolute', left: '0', fontSize: '11px', color: '#ccc', fontWeight: 500, background: '#0d0d12', padding: '2px 6px', borderRadius: '3px', border: '1px solid #2a2a35' }
+                : isLast
+                  ? { position: 'absolute', right: '0', fontSize: '11px', color: '#ccc', fontWeight: 500, background: '#0d0d12', padding: '2px 6px', borderRadius: '3px', border: '1px solid #2a2a35' }
+                  : { position: 'absolute', left: `${l.pct}%`, transform: 'translateX(-50%)', fontSize: '11px', color: '#ccc', fontWeight: 500, background: '#0d0d12', padding: '2px 6px', borderRadius: '3px', border: '1px solid #2a2a35' }
               return <span key={i} style={style}>{l.label}</span>
             })}
           </div>
