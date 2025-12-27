@@ -821,8 +821,8 @@ export default function AccountPage() {
                             const areaBottom = hasNegative ? svgH - ((0 - yMin) / yRange) * svgH : svgH
                             const areaD = equityCurveGroupBy === 'total' && mainLine ? mainLine.pathD + ` L ${mainLine.chartPoints[mainLine.chartPoints.length - 1].x} ${areaBottom} L ${mainLine.chartPoints[0].x} ${areaBottom} Z` : null
                             
-                            // Generate X-axis labels (5-7 evenly spaced dates)
-                            const xLabelCount = enlargedChart === 'equity' ? 7 : 5
+                            // Generate X-axis labels (more evenly spaced dates)
+                            const xLabelCount = 7
                             const xLabels = []
                             for (let i = 0; i < xLabelCount; i++) {
                               const idx = Math.floor(i * (sorted.length - 1) / (xLabelCount - 1))
@@ -889,7 +889,7 @@ export default function AccountPage() {
                                         <linearGradient id="eqGreen" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stopColor="#22c55e" stopOpacity="0.3" /><stop offset="100%" stopColor="#22c55e" stopOpacity="0" /></linearGradient>
                                         <linearGradient id="eqRed" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stopColor="#ef4444" stopOpacity="0.3" /><stop offset="100%" stopColor="#ef4444" stopOpacity="0" /></linearGradient>
                                         {lineData.map((line, idx) => (
-                                          <linearGradient key={idx} id={`lineGrad${idx}`} x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stopColor={line.color} stopOpacity="0.15" /><stop offset="100%" stopColor={line.color} stopOpacity="0" /></linearGradient>
+                                          <linearGradient key={idx} id={`lineGrad${idx}`} x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stopColor={line.color} stopOpacity="0.08" /><stop offset="100%" stopColor={line.color} stopOpacity="0" /></linearGradient>
                                         ))}
                                       </defs>
                                       {equityCurveGroupBy === 'total' && lineData[0] ? (
@@ -1066,7 +1066,7 @@ export default function AccountPage() {
                                           <>
                                             <div style={{ position: 'absolute', bottom: '4px', left: '50%', transform: 'translateX(-50%)', width: '8px', height: '8px', borderRadius: '50%', background: isGreen ? '#22c55e' : '#ef4444', border: '2px solid #fff', zIndex: 5 }} />
                                             <div style={{ position: 'absolute', bottom: '0px', left: 'calc(50% + 10px)', background: '#1a1a22', border: '1px solid #2a2a35', borderRadius: '6px', padding: '6px 10px', fontSize: '11px', whiteSpace: 'nowrap', zIndex: 10, pointerEvents: 'none' }}>
-                                              <div style={{ color: '#888' }}>{item.name}</div>
+                                              <div style={{ fontWeight: 700, color: '#fff', fontSize: '12px', marginBottom: '2px' }}>{item.name}</div>
                                               <div style={{ fontWeight: 600, color: isGreen ? '#22c55e' : '#ef4444' }}>{item.disp}</div>
                                             </div>
                                           </>
@@ -1160,7 +1160,7 @@ export default function AccountPage() {
                     const sortedData = [...displayData].sort((a, b) => new Date(a.date) - new Date(b.date))
                     
                     // Generate X-axis labels (evenly spaced, showing date under bars)
-                    const xLabelCount = Math.min(sortedData.length, 10)
+                    const xLabelCount = Math.min(sortedData.length, 12)
                     const xLabels = []
                     for (let i = 0; i < xLabelCount; i++) {
                       const idx = Math.floor(i * (sortedData.length - 1) / Math.max(1, xLabelCount - 1))
@@ -1565,7 +1565,7 @@ export default function AccountPage() {
                       ) : input.type === 'textarea' ? (
                         <textarea value={tradeForm[input.id] || ''} onChange={e => setTradeForm({...tradeForm, [input.id]: e.target.value})} rows={3} style={{ width: '100%', padding: '10px', background: '#141418', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '6px', color: '#fff', fontSize: '14px', resize: 'none', boxSizing: 'border-box', boxShadow: '0 0 4px rgba(255,255,255,0.1)' }} />
                       ) : input.type === 'rating' ? (
-                        <div style={{ display: 'flex', gap: '6px' }}>{[1,2,3,4,5].map(i => <button key={i} type="button" onClick={() => setTradeForm({...tradeForm, [input.id]: String(i)})} style={{ width: '40px', height: '40px', background: '#141418', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '6px', cursor: 'pointer', fontSize: '20px', color: i <= parseInt(tradeForm[input.id] || 0) ? '#22c55e' : '#444', boxShadow: '0 0 4px rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>★</button>)}</div>
+                        <div style={{ display: 'flex', gap: '6px' }}>{[1,2,3,4,5].map(i => <button key={i} type="button" onClick={() => setTradeForm({...tradeForm, [input.id]: String(i)})} style={{ width: '40px', height: '40px', background: '#141418', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '6px', cursor: 'pointer', fontSize: '20px', color: i <= parseInt(tradeForm[input.id] || 0) ? '#22c55e' : '#555', boxShadow: '0 0 8px rgba(255,255,255,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>★</button>)}</div>
                       ) : input.type === 'file' ? (
                         <div 
                           style={{ 
@@ -1835,7 +1835,7 @@ export default function AccountPage() {
                 for (let v = yMax; v >= yMin; v -= yStep) yLabels.push(v)
 
                 // X-axis labels
-                const xLabelCount = 10
+                const xLabelCount = 12
                 const xLabels = []
                 for (let i = 0; i < xLabelCount; i++) {
                   const idx = Math.floor(i * (sorted.length - 1) / (xLabelCount - 1))
@@ -1933,7 +1933,7 @@ export default function AccountPage() {
                               <linearGradient id="eqGEnlG" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stopColor="#22c55e" stopOpacity="0.3" /><stop offset="100%" stopColor="#22c55e" stopOpacity="0" /></linearGradient>
                               <linearGradient id="eqGEnlR" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stopColor="#ef4444" stopOpacity="0.3" /><stop offset="100%" stopColor="#ef4444" stopOpacity="0" /></linearGradient>
                               {lineData.map((line, idx) => (
-                                <linearGradient key={idx} id={`lineGradEnl${idx}`} x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stopColor={line.color} stopOpacity="0.15" /><stop offset="100%" stopColor={line.color} stopOpacity="0" /></linearGradient>
+                                <linearGradient key={idx} id={`lineGradEnl${idx}`} x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stopColor={line.color} stopOpacity="0.08" /><stop offset="100%" stopColor={line.color} stopOpacity="0" /></linearGradient>
                               ))}
                             </defs>
                             {equityCurveGroupBy === 'total' && lineData[0] ? (
@@ -2036,8 +2036,8 @@ export default function AccountPage() {
                                     {isHovered && (
                                       <>
                                         <div style={{ position: 'absolute', bottom: '8px', left: '50%', transform: 'translateX(-50%)', width: '10px', height: '10px', borderRadius: '50%', background: isGreen ? '#22c55e' : '#ef4444', border: '2px solid #fff', zIndex: 5 }} />
-                                        <div style={{ position: 'fixed', left: mousePos.x + 15, top: mousePos.y - 10, background: '#1a1a22', border: '1px solid #2a2a35', borderRadius: '6px', padding: '10px 14px', fontSize: '12px', whiteSpace: 'nowrap', zIndex: 1000, pointerEvents: 'none' }}>
-                                          <div style={{ color: '#888', marginBottom: '4px' }}>{item.name}</div>
+                                        <div style={{ position: 'absolute', bottom: '0px', left: 'calc(50% + 12px)', background: '#1a1a22', border: '1px solid #2a2a35', borderRadius: '6px', padding: '8px 12px', fontSize: '12px', whiteSpace: 'nowrap', zIndex: 10, pointerEvents: 'none' }}>
+                                          <div style={{ fontWeight: 700, color: '#fff', fontSize: '14px', marginBottom: '2px' }}>{item.name}</div>
                                           <div style={{ fontWeight: 600, fontSize: '16px', color: isGreen ? '#22c55e' : '#ef4444' }}>{item.disp}</div>
                                         </div>
                                       </>
@@ -2061,28 +2061,34 @@ export default function AccountPage() {
               })()}
               </div>
               {/* Stats Sidebar */}
-              <div style={{ width: '280px', background: '#0a0a0e', borderRadius: '8px', border: '1px solid #1a1a22', padding: '16px', overflowY: 'auto', flexShrink: 0 }}>
-                <div style={{ fontSize: '12px', color: '#888', textTransform: 'uppercase', marginBottom: '12px', fontWeight: 600 }}>Statistics</div>
+              <div style={{ width: '260px', background: '#0a0a0e', borderRadius: '8px', border: '1px solid #1a1a22', padding: '12px', flexShrink: 0 }}>
+                <div style={{ fontSize: '11px', color: '#888', textTransform: 'uppercase', marginBottom: '8px', fontWeight: 600 }}>Statistics</div>
                 {(() => {
                   // Calculate stats based on selected lines/data
-                  let filteredTrades = trades
-                  if (enlargedChart === 'equity' && equityCurveGroupBy !== 'total') {
-                    const selectedKeys = Object.keys(selectedCurveLines).filter(k => selectedCurveLines[k] !== false)
-                    if (selectedKeys.length > 0) {
-                      filteredTrades = trades.filter(t => {
-                        const key = equityCurveGroupBy === 'symbol' ? t.symbol : equityCurveGroupBy === 'direction' ? t.direction : (JSON.parse(t.extra_data || '{}')[equityCurveGroupBy] || 'Unknown')
-                        return selectedKeys.includes(key)
-                      })
+                  let filteredTrades = []
+                  if (enlargedChart === 'equity') {
+                    if (equityCurveGroupBy === 'total') {
+                      filteredTrades = trades
+                    } else {
+                      const selectedKeys = Object.keys(selectedCurveLines).filter(k => selectedCurveLines[k] !== false)
+                      if (selectedKeys.length > 0) {
+                        filteredTrades = trades.filter(t => {
+                          const key = equityCurveGroupBy === 'symbol' ? t.symbol : equityCurveGroupBy === 'direction' ? t.direction : (JSON.parse(t.extra_data || '{}')[equityCurveGroupBy] || 'Unknown')
+                          return selectedKeys.includes(key)
+                        })
+                      }
                     }
+                  } else if (enlargedChart === 'bar') {
+                    filteredTrades = trades
                   }
 
                   const wins = filteredTrades.filter(t => parseFloat(t.pnl) > 0)
                   const losses = filteredTrades.filter(t => parseFloat(t.pnl) < 0)
                   const totalPnl = filteredTrades.reduce((s, t) => s + (parseFloat(t.pnl) || 0), 0)
-                  const winrate = filteredTrades.length > 0 ? ((wins.length / filteredTrades.length) * 100).toFixed(1) : 0
+                  const winrate = filteredTrades.length > 0 ? ((wins.length / filteredTrades.length) * 100).toFixed(1) : '0'
                   const avgWin = wins.length > 0 ? wins.reduce((s, t) => s + parseFloat(t.pnl), 0) / wins.length : 0
                   const avgLoss = losses.length > 0 ? Math.abs(losses.reduce((s, t) => s + parseFloat(t.pnl), 0) / losses.length) : 0
-                  const profitFactor = avgLoss > 0 ? ((avgWin * wins.length) / (avgLoss * losses.length)).toFixed(2) : '∞'
+                  const profitFactor = avgLoss > 0 ? ((avgWin * wins.length) / (avgLoss * losses.length)).toFixed(2) : wins.length > 0 ? '∞' : '0'
                   const biggestWin = wins.length > 0 ? Math.max(...wins.map(t => parseFloat(t.pnl))) : 0
                   const biggestLoss = losses.length > 0 ? Math.min(...losses.map(t => parseFloat(t.pnl))) : 0
                   const avgPnl = filteredTrades.length > 0 ? totalPnl / filteredTrades.length : 0
@@ -2102,11 +2108,11 @@ export default function AccountPage() {
                   ]
 
                   return (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                       {stats.map((stat, i) => (
-                        <div key={i} style={{ display: 'flex', justifyContent: 'space-between', padding: '8px', background: '#0d0d12', borderRadius: '4px', border: '1px solid #1a1a22' }}>
-                          <span style={{ fontSize: '11px', color: '#888' }}>{stat.label}</span>
-                          <span style={{ fontSize: '12px', fontWeight: 600, color: stat.color || '#fff' }}>{stat.value}</span>
+                        <div key={i} style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 8px', background: '#0d0d12', borderRadius: '4px', border: '1px solid #1a1a22' }}>
+                          <span style={{ fontSize: '10px', color: '#888' }}>{stat.label}</span>
+                          <span style={{ fontSize: '11px', fontWeight: 600, color: stat.color || '#fff' }}>{stat.value}</span>
                         </div>
                       ))}
                     </div>
