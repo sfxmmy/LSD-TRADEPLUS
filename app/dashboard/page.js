@@ -122,13 +122,13 @@ export default function DashboardPage() {
     const datesWithTrades = points.filter(p => p.date).map((p, idx) => ({ date: p.date, pointIdx: idx + 1 }))
     const xLabels = []
     if (datesWithTrades.length > 0) {
-      const numLabels = Math.min(5, datesWithTrades.length)
+      const numLabels = Math.min(8, datesWithTrades.length)
       for (let i = 0; i < numLabels; i++) {
         const dataIdx = Math.floor(i * (datesWithTrades.length - 1) / Math.max(1, numLabels - 1))
         const item = datesWithTrades[dataIdx]
         const date = new Date(item.date)
         const pct = points.length > 1 ? (item.pointIdx / (points.length - 1)) * 100 : 50
-        xLabels.push({ label: `${date.getDate()}/${date.getMonth() + 1}/${String(date.getFullYear()).slice(-2)}`, pct })
+        xLabels.push({ label: `${String(date.getDate()).padStart(2, '0')}/${String(date.getMonth() + 1).padStart(2, '0')}/${String(date.getFullYear()).slice(-2)}`, pct })
       }
     }
 

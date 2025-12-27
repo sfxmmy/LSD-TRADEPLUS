@@ -825,7 +825,7 @@ export default function AccountPage() {
                             const areaBottom = hasNegative ? svgH - ((0 - yMin) / yRange) * svgH : svgH
                             const areaD = equityCurveGroupBy === 'total' && mainLine ? mainLine.pathD + ` L ${mainLine.chartPoints[mainLine.chartPoints.length - 1].x} ${areaBottom} L ${mainLine.chartPoints[0].x} ${areaBottom} Z` : null
                             
-                            // Generate X-axis labels (more evenly spaced dates)
+                            // Generate X-axis labels (more evenly spaced dates) - double digit format
                             const xLabelCount = 10
                             const xLabels = []
                             for (let i = 0; i < xLabelCount; i++) {
@@ -833,16 +833,20 @@ export default function AccountPage() {
                               const trade = sorted[idx]
                               if (trade?.date) {
                                 const d = new Date(trade.date)
-                                xLabels.push({ label: `${d.getDate()}/${d.getMonth() + 1}`, pct: (i / (xLabelCount - 1)) * 100 })
+                                xLabels.push({ label: `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}`, pct: (i / (xLabelCount - 1)) * 100 })
                               }
                             }
-                            
+
                             return (
                               <>
                                 <div style={{ width: '24px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', flexShrink: 0, paddingRight: '2px', paddingBottom: '22px' }}>
                                   {yLabels.map((v, i) => <span key={i} style={{ fontSize: '8px', color: '#888', lineHeight: 1, textAlign: 'right' }}>{equityCurveGroupBy === 'total' ? `$${(v/1000).toFixed(v >= 1000 ? 0 : 1)}k` : `$${v}`}</span>)}
                                 </div>
-                                <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+                                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', position: 'relative' }}>
+                                  {/* Vertical grid lines extending to date labels */}
+                                  {xLabels.map((l, i) => (
+                                    <div key={i} style={{ position: 'absolute', left: `${l.pct}%`, top: 0, bottom: 0, borderLeft: '1px solid #1a1a22', pointerEvents: 'none', zIndex: 0 }} />
+                                  ))}
                                   <div style={{ flex: 1, position: 'relative', borderLeft: '1px solid #333', borderBottom: hasNegative ? 'none' : '1px solid #333' }}>
                                     {/* Horizontal grid lines */}
                                     <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', pointerEvents: 'none' }}>
@@ -892,8 +896,14 @@ export default function AccountPage() {
                                       <defs>
                                         <linearGradient id="eqGreen" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stopColor="#22c55e" stopOpacity="0.3" /><stop offset="100%" stopColor="#22c55e" stopOpacity="0" /></linearGradient>
                                         <linearGradient id="eqRed" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stopColor="#ef4444" stopOpacity="0.3" /><stop offset="100%" stopColor="#ef4444" stopOpacity="0" /></linearGradient>
+                                        {/* SVG filters for line glow - each color gets its own glow filter */}
                                         {lineData.map((line, idx) => (
-                                          <linearGradient key={idx} id={`lineGrad${idx}`} x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stopColor={line.color} stopOpacity="0.5" /><stop offset="100%" stopColor={line.color} stopOpacity="0" /></linearGradient>
+                                          <filter key={idx} id={`glow${idx}`} x="-50%" y="-50%" width="200%" height="200%">
+                                            <feGaussianBlur stdDeviation="3" result="blur" />
+                                            <feFlood floodColor={line.color} floodOpacity="0.6" result="color" />
+                                            <feComposite in="color" in2="blur" operator="in" result="glow" />
+                                            <feMerge><feMergeNode in="glow" /><feMergeNode in="SourceGraphic" /></feMerge>
+                                          </filter>
                                         ))}
                                       </defs>
                                       {equityCurveGroupBy === 'total' && lineData[0] ? (
@@ -905,8 +915,7 @@ export default function AccountPage() {
                                         </>
                                       ) : lineData.map((line, idx) => (
                                         <g key={idx}>
-                                          {line.areaPath && <path d={line.areaPath} fill={`url(#lineGrad${idx})`} />}
-                                          <path d={line.pathD} fill="none" stroke={line.color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />
+                                          <path d={line.pathD} fill="none" stroke={line.color} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" filter={`url(#glow${idx})`} />
                                         </g>
                                       ))}
                                     </svg>
@@ -1157,14 +1166,14 @@ export default function AccountPage() {
                     
                     const sortedData = [...displayData].sort((a, b) => new Date(a.date) - new Date(b.date))
                     
-                    // Generate X-axis labels (evenly spaced across the chart)
-                    const xLabelCount = Math.min(sortedData.length, 10)
+                    // Generate X-axis labels (evenly spaced across the chart) - double digit format
+                    const xLabelCount = Math.min(sortedData.length, 15)
                     const xLabels = []
                     for (let i = 0; i < xLabelCount; i++) {
                       const idx = Math.floor(i * (sortedData.length - 1) / Math.max(1, xLabelCount - 1))
                       const d = new Date(sortedData[idx]?.date)
                       // Use evenly spaced percentages based on label index, not data index
-                      xLabels.push({ label: `${d.getDate()}/${d.getMonth() + 1}`, pct: xLabelCount > 1 ? (i / (xLabelCount - 1)) * 100 : 50 })
+                      xLabels.push({ label: `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}`, pct: xLabelCount > 1 ? (i / (xLabelCount - 1)) * 100 : 50 })
                     }
                     
                     return (
@@ -1473,6 +1482,56 @@ export default function AccountPage() {
                 </div>
               </div>
             </div>
+
+            {/* Auto-generated widgets for custom inputs */}
+            {(() => {
+              const customInputs = getCustomSelectInputs().filter(i => !['direction', 'session', 'confidence', 'timeframe', 'symbol'].includes(i.id))
+              if (customInputs.length === 0) return null
+              return (
+                <div style={{ display: 'flex', gap: '16px', marginTop: '16px', flexWrap: 'wrap' }}>
+                  {customInputs.map(input => {
+                    // Calculate stats for this custom input
+                    const stats = {}
+                    trades.forEach(t => {
+                      const val = getExtraData(t)[input.id] || 'Not Set'
+                      if (!stats[val]) stats[val] = { wins: 0, losses: 0, pnl: 0, count: 0 }
+                      if (t.outcome === 'win') stats[val].wins++
+                      else if (t.outcome === 'loss') stats[val].losses++
+                      stats[val].pnl += parseFloat(t.pnl) || 0
+                      stats[val].count++
+                    })
+                    const entries = Object.entries(stats).sort((a, b) => b[1].count - a[1].count).slice(0, 5)
+                    if (entries.length === 0) return null
+                    const maxCount = Math.max(...entries.map(e => e[1].count))
+
+                    return (
+                      <div key={input.id} style={{ flex: '1 1 280px', maxWidth: '350px', background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '14px' }}>
+                        <div style={{ fontSize: '11px', color: '#888', textTransform: 'uppercase', marginBottom: '12px' }}>By {input.label}</div>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                          {entries.map(([val, data], idx) => {
+                            const wr = data.wins + data.losses > 0 ? Math.round((data.wins / (data.wins + data.losses)) * 100) : 0
+                            const barWidth = (data.count / maxCount) * 100
+                            return (
+                              <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                <div style={{ width: '70px', fontSize: '11px', color: '#ccc', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{val}</div>
+                                <div style={{ flex: 1, height: '18px', background: '#1a1a22', borderRadius: '3px', position: 'relative', overflow: 'hidden' }}>
+                                  <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: `${barWidth}%`, background: data.pnl >= 0 ? '#22c55e' : '#ef4444', opacity: 0.3, borderRadius: '3px' }} />
+                                  <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 6px', fontSize: '9px' }}>
+                                    <span style={{ color: '#888' }}>{data.count} trades</span>
+                                    <span style={{ color: wr >= 50 ? '#22c55e' : '#ef4444' }}>{wr}% WR</span>
+                                  </div>
+                                </div>
+                                <div style={{ width: '55px', fontSize: '10px', fontWeight: 600, color: data.pnl >= 0 ? '#22c55e' : '#ef4444', textAlign: 'right' }}>{data.pnl >= 0 ? '+' : ''}${Math.round(data.pnl)}</div>
+                              </div>
+                            )
+                          })}
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+              )
+            })()}
           </div>
         )}
 
@@ -1838,7 +1897,7 @@ export default function AccountPage() {
                 const yLabels = []
                 for (let v = yMax; v >= yMin; v -= yStep) yLabels.push(v)
 
-                // X-axis labels
+                // X-axis labels - double digit format
                 const xLabelCount = 15
                 const xLabels = []
                 for (let i = 0; i < xLabelCount; i++) {
@@ -1846,7 +1905,7 @@ export default function AccountPage() {
                   const trade = sorted[idx]
                   if (trade?.date) {
                     const d = new Date(trade.date)
-                    xLabels.push({ label: `${d.getDate()}/${d.getMonth() + 1}`, pct: (i / (xLabelCount - 1)) * 100 })
+                    xLabels.push({ label: `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}`, pct: (i / (xLabelCount - 1)) * 100 })
                   }
                 }
 
@@ -1940,8 +1999,14 @@ export default function AccountPage() {
                             <defs>
                               <linearGradient id="eqGEnlG" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stopColor="#22c55e" stopOpacity="0.3" /><stop offset="100%" stopColor="#22c55e" stopOpacity="0" /></linearGradient>
                               <linearGradient id="eqGEnlR" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stopColor="#ef4444" stopOpacity="0.3" /><stop offset="100%" stopColor="#ef4444" stopOpacity="0" /></linearGradient>
+                              {/* SVG filters for line glow - each color gets its own glow filter */}
                               {lineData.map((line, idx) => (
-                                <linearGradient key={idx} id={`lineGradEnl${idx}`} x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stopColor={line.color} stopOpacity="0.5" /><stop offset="100%" stopColor={line.color} stopOpacity="0" /></linearGradient>
+                                <filter key={idx} id={`glowEnl${idx}`} x="-50%" y="-50%" width="200%" height="200%">
+                                  <feGaussianBlur stdDeviation="4" result="blur" />
+                                  <feFlood floodColor={line.color} floodOpacity="0.6" result="color" />
+                                  <feComposite in="color" in2="blur" operator="in" result="glow" />
+                                  <feMerge><feMergeNode in="glow" /><feMergeNode in="SourceGraphic" /></feMerge>
+                                </filter>
                               ))}
                             </defs>
                             {equityCurveGroupBy === 'total' && lineData[0] ? (
@@ -1953,8 +2018,7 @@ export default function AccountPage() {
                               </>
                             ) : lineData.map((line, idx) => (
                               <g key={idx}>
-                                {line.areaPath && <path d={line.areaPath} fill={`url(#lineGradEnl${idx})`} />}
-                                <path d={line.pathD} fill="none" stroke={line.color} strokeWidth="2.5" strokeLinecap="round" vectorEffect="non-scaling-stroke" />
+                                <path d={line.pathD} fill="none" stroke={line.color} strokeWidth="3" strokeLinecap="round" vectorEffect="non-scaling-stroke" filter={`url(#glowEnl${idx})`} />
                               </g>
                             ))}
                           </svg>
