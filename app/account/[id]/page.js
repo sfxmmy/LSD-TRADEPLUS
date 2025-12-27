@@ -889,7 +889,7 @@ export default function AccountPage() {
                                         <linearGradient id="eqGreen" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stopColor="#22c55e" stopOpacity="0.3" /><stop offset="100%" stopColor="#22c55e" stopOpacity="0" /></linearGradient>
                                         <linearGradient id="eqRed" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stopColor="#ef4444" stopOpacity="0.3" /><stop offset="100%" stopColor="#ef4444" stopOpacity="0" /></linearGradient>
                                         {lineData.map((line, idx) => (
-                                          <linearGradient key={idx} id={`lineGrad${idx}`} x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stopColor={line.color} stopOpacity="0.25" /><stop offset="100%" stopColor={line.color} stopOpacity="0" /></linearGradient>
+                                          <linearGradient key={idx} id={`lineGrad${idx}`} x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stopColor={line.color} stopOpacity="0.15" /><stop offset="100%" stopColor={line.color} stopOpacity="0" /></linearGradient>
                                         ))}
                                       </defs>
                                       {equityCurveGroupBy === 'total' && lineData[0] ? (
@@ -1565,7 +1565,7 @@ export default function AccountPage() {
                       ) : input.type === 'textarea' ? (
                         <textarea value={tradeForm[input.id] || ''} onChange={e => setTradeForm({...tradeForm, [input.id]: e.target.value})} rows={3} style={{ width: '100%', padding: '10px', background: '#141418', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '6px', color: '#fff', fontSize: '14px', resize: 'none', boxSizing: 'border-box', boxShadow: '0 0 4px rgba(255,255,255,0.1)' }} />
                       ) : input.type === 'rating' ? (
-                        <div style={{ display: 'flex', gap: '8px' }}>{[1,2,3,4,5].map(i => <button key={i} type="button" onClick={() => setTradeForm({...tradeForm, [input.id]: String(i)})} style={{ background: 'transparent', border: 'none', cursor: 'pointer', fontSize: '24px', color: i <= parseInt(tradeForm[input.id] || 0) ? '#22c55e' : '#333' }}>★</button>)}</div>
+                        <div style={{ display: 'flex', gap: '6px' }}>{[1,2,3,4,5].map(i => <button key={i} type="button" onClick={() => setTradeForm({...tradeForm, [input.id]: String(i)})} style={{ width: '40px', height: '40px', background: '#141418', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '6px', cursor: 'pointer', fontSize: '20px', color: i <= parseInt(tradeForm[input.id] || 0) ? '#22c55e' : '#444', boxShadow: '0 0 4px rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>★</button>)}</div>
                       ) : input.type === 'file' ? (
                         <div 
                           style={{ 
@@ -1789,7 +1789,8 @@ export default function AccountPage() {
               </div>
               <button onClick={() => setEnlargedChart(null)} style={{ background: 'transparent', border: 'none', color: '#888', fontSize: '28px', cursor: 'pointer' }}>×</button>
             </div>
-            <div style={{ height: 'calc(100% - 60px)', display: 'flex', flexDirection: 'column' }}>
+            <div style={{ height: 'calc(100% - 60px)', display: 'flex', gap: '16px' }}>
+              <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0 }}>
               {enlargedChart === 'equity' && (() => {
                 const sorted = trades.length >= 2 ? [...trades].sort((a, b) => new Date(a.date) - new Date(b.date)) : []
                 if (sorted.length < 2) return <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#666' }}>Need 2+ trades</div>
@@ -1883,7 +1884,12 @@ export default function AccountPage() {
                     var redAreaPath = redSegments.map(s => `M ${s.x1} ${s.y1} L ${s.x2} ${s.y2} L ${s.x2} ${startYEnl} L ${s.x1} ${startYEnl} Z`).join(' ')
                   }
 
-                  return { ...line, chartPoints, pathD, greenPath, redPath, greenAreaPath, redAreaPath }
+                  // For multi-line mode, create area path (fills down to bottom)
+                  const areaPath = equityCurveGroupBy !== 'total' && chartPoints.length > 1
+                    ? pathD + ` L ${chartPoints[chartPoints.length - 1].x} ${svgH} L ${chartPoints[0].x} ${svgH} Z`
+                    : null
+
+                  return { ...line, chartPoints, pathD, greenPath, redPath, greenAreaPath, redAreaPath, areaPath }
                 })
 
                 const mainLine = lineData[0]
@@ -1923,13 +1929,26 @@ export default function AccountPage() {
                             }}
                             onMouseLeave={() => setHoverPoint(null)}
                           >
-                            {lineData[0] && <><defs><linearGradient id="eqGEnlG" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stopColor="#22c55e" stopOpacity="0.3" /><stop offset="100%" stopColor="#22c55e" stopOpacity="0" /></linearGradient><linearGradient id="eqGEnlR" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stopColor="#ef4444" stopOpacity="0.3" /><stop offset="100%" stopColor="#ef4444" stopOpacity="0" /></linearGradient></defs>{lineData[0].greenAreaPath && <path d={lineData[0].greenAreaPath} fill="url(#eqGEnlG)" />}{lineData[0].redAreaPath && <path d={lineData[0].redAreaPath} fill="url(#eqGEnlR)" />}</>}
+                            <defs>
+                              <linearGradient id="eqGEnlG" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stopColor="#22c55e" stopOpacity="0.3" /><stop offset="100%" stopColor="#22c55e" stopOpacity="0" /></linearGradient>
+                              <linearGradient id="eqGEnlR" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stopColor="#ef4444" stopOpacity="0.3" /><stop offset="100%" stopColor="#ef4444" stopOpacity="0" /></linearGradient>
+                              {lineData.map((line, idx) => (
+                                <linearGradient key={idx} id={`lineGradEnl${idx}`} x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stopColor={line.color} stopOpacity="0.15" /><stop offset="100%" stopColor={line.color} stopOpacity="0" /></linearGradient>
+                              ))}
+                            </defs>
                             {equityCurveGroupBy === 'total' && lineData[0] ? (
                               <>
+                                {lineData[0].greenAreaPath && <path d={lineData[0].greenAreaPath} fill="url(#eqGEnlG)" />}
+                                {lineData[0].redAreaPath && <path d={lineData[0].redAreaPath} fill="url(#eqGEnlR)" />}
                                 {lineData[0].greenPath && <path d={lineData[0].greenPath} fill="none" stroke="#22c55e" strokeWidth="2" strokeLinecap="round" vectorEffect="non-scaling-stroke" />}
                                 {lineData[0].redPath && <path d={lineData[0].redPath} fill="none" stroke="#ef4444" strokeWidth="2" strokeLinecap="round" vectorEffect="non-scaling-stroke" />}
                               </>
-                            ) : lineData.map((line, idx) => <path key={idx} d={line.pathD} fill="none" stroke={line.color} strokeWidth="2" strokeLinecap="round" vectorEffect="non-scaling-stroke" />)}
+                            ) : lineData.map((line, idx) => (
+                              <g key={idx}>
+                                {line.areaPath && <path d={line.areaPath} fill={`url(#lineGradEnl${idx})`} />}
+                                <path d={line.pathD} fill="none" stroke={line.color} strokeWidth="2" strokeLinecap="round" vectorEffect="non-scaling-stroke" />
+                              </g>
+                            ))}
                           </svg>
                           {hoverPoint && <div style={{ position: 'absolute', left: `${hoverPoint.xPct}%`, top: `${hoverPoint.yPct}%`, transform: 'translate(-50%, -50%)', width: '12px', height: '12px', borderRadius: '50%', background: equityCurveGroupBy === 'total' ? (hoverPoint.balance >= startingBalance ? '#22c55e' : '#ef4444') : (hoverPoint.lineColor || '#22c55e'), border: '2px solid #fff', pointerEvents: 'none', zIndex: 10 }} />}
                           {hoverPoint && (
@@ -2013,12 +2032,15 @@ export default function AccountPage() {
                                   onMouseLeave={() => setBarHover(null)}
                                 >
                                   <div style={{ fontSize: '14px', color: isGreen ? '#22c55e' : '#ef4444', marginBottom: '4px', fontWeight: 600 }}>{item.disp}</div>
-                                  <div style={{ width: '100%', maxWidth: '80px', height: `${hPct}%`, background: isGreen ? '#22c55e' : '#ef4444', borderRadius: '6px 6px 0 0', minHeight: '20px', position: 'relative', cursor: 'pointer' }}>
+                                  <div style={{ width: '100%', maxWidth: '80px', height: `${hPct}%`, background: `linear-gradient(to bottom, ${isGreen ? 'rgba(34, 197, 94, 0.3)' : 'rgba(239, 68, 68, 0.3)'} 0%, transparent 100%)`, border: `2px solid ${isGreen ? '#22c55e' : '#ef4444'}`, borderBottom: 'none', borderRadius: '6px 6px 0 0', minHeight: '20px', position: 'relative', cursor: 'pointer', boxShadow: `0 0 12px ${isGreen ? 'rgba(34, 197, 94, 0.4)' : 'rgba(239, 68, 68, 0.4)'}` }}>
                                     {isHovered && (
-                                      <div style={{ position: 'fixed', left: mousePos.x + 15, top: mousePos.y - 10, background: '#1a1a22', border: '1px solid #2a2a35', borderRadius: '6px', padding: '10px 14px', fontSize: '12px', whiteSpace: 'nowrap', zIndex: 1000, pointerEvents: 'none' }}>
-                                        <div style={{ color: '#888', marginBottom: '4px' }}>{item.name}</div>
-                                        <div style={{ fontWeight: 600, fontSize: '16px', color: isGreen ? '#22c55e' : '#ef4444' }}>{item.disp}</div>
-                                      </div>
+                                      <>
+                                        <div style={{ position: 'absolute', bottom: '8px', left: '50%', transform: 'translateX(-50%)', width: '10px', height: '10px', borderRadius: '50%', background: isGreen ? '#22c55e' : '#ef4444', border: '2px solid #fff', zIndex: 5 }} />
+                                        <div style={{ position: 'fixed', left: mousePos.x + 15, top: mousePos.y - 10, background: '#1a1a22', border: '1px solid #2a2a35', borderRadius: '6px', padding: '10px 14px', fontSize: '12px', whiteSpace: 'nowrap', zIndex: 1000, pointerEvents: 'none' }}>
+                                          <div style={{ color: '#888', marginBottom: '4px' }}>{item.name}</div>
+                                          <div style={{ fontWeight: 600, fontSize: '16px', color: isGreen ? '#22c55e' : '#ef4444' }}>{item.disp}</div>
+                                        </div>
+                                      </>
                                     )}
                                   </div>
                                 </div>
@@ -2037,6 +2059,60 @@ export default function AccountPage() {
                   </div>
                 )
               })()}
+              </div>
+              {/* Stats Sidebar */}
+              <div style={{ width: '280px', background: '#0a0a0e', borderRadius: '8px', border: '1px solid #1a1a22', padding: '16px', overflowY: 'auto', flexShrink: 0 }}>
+                <div style={{ fontSize: '12px', color: '#888', textTransform: 'uppercase', marginBottom: '12px', fontWeight: 600 }}>Statistics</div>
+                {(() => {
+                  // Calculate stats based on selected lines/data
+                  let filteredTrades = trades
+                  if (enlargedChart === 'equity' && equityCurveGroupBy !== 'total') {
+                    const selectedKeys = Object.keys(selectedCurveLines).filter(k => selectedCurveLines[k] !== false)
+                    if (selectedKeys.length > 0) {
+                      filteredTrades = trades.filter(t => {
+                        const key = equityCurveGroupBy === 'symbol' ? t.symbol : equityCurveGroupBy === 'direction' ? t.direction : (JSON.parse(t.extra_data || '{}')[equityCurveGroupBy] || 'Unknown')
+                        return selectedKeys.includes(key)
+                      })
+                    }
+                  }
+
+                  const wins = filteredTrades.filter(t => parseFloat(t.pnl) > 0)
+                  const losses = filteredTrades.filter(t => parseFloat(t.pnl) < 0)
+                  const totalPnl = filteredTrades.reduce((s, t) => s + (parseFloat(t.pnl) || 0), 0)
+                  const winrate = filteredTrades.length > 0 ? ((wins.length / filteredTrades.length) * 100).toFixed(1) : 0
+                  const avgWin = wins.length > 0 ? wins.reduce((s, t) => s + parseFloat(t.pnl), 0) / wins.length : 0
+                  const avgLoss = losses.length > 0 ? Math.abs(losses.reduce((s, t) => s + parseFloat(t.pnl), 0) / losses.length) : 0
+                  const profitFactor = avgLoss > 0 ? ((avgWin * wins.length) / (avgLoss * losses.length)).toFixed(2) : '∞'
+                  const biggestWin = wins.length > 0 ? Math.max(...wins.map(t => parseFloat(t.pnl))) : 0
+                  const biggestLoss = losses.length > 0 ? Math.min(...losses.map(t => parseFloat(t.pnl))) : 0
+                  const avgPnl = filteredTrades.length > 0 ? totalPnl / filteredTrades.length : 0
+
+                  const stats = [
+                    { label: 'Total P&L', value: `${totalPnl >= 0 ? '+' : ''}$${Math.round(totalPnl).toLocaleString()}`, color: totalPnl >= 0 ? '#22c55e' : '#ef4444' },
+                    { label: 'Total Trades', value: filteredTrades.length },
+                    { label: 'Winning Trades', value: wins.length, color: '#22c55e' },
+                    { label: 'Losing Trades', value: losses.length, color: '#ef4444' },
+                    { label: 'Winrate', value: `${winrate}%`, color: parseFloat(winrate) >= 50 ? '#22c55e' : '#ef4444' },
+                    { label: 'Profit Factor', value: profitFactor, color: parseFloat(profitFactor) >= 1 ? '#22c55e' : '#ef4444' },
+                    { label: 'Average Win', value: `+$${Math.round(avgWin).toLocaleString()}`, color: '#22c55e' },
+                    { label: 'Average Loss', value: `-$${Math.round(avgLoss).toLocaleString()}`, color: '#ef4444' },
+                    { label: 'Avg Trade P&L', value: `${avgPnl >= 0 ? '+' : ''}$${Math.round(avgPnl).toLocaleString()}`, color: avgPnl >= 0 ? '#22c55e' : '#ef4444' },
+                    { label: 'Largest Win', value: `+$${Math.round(biggestWin).toLocaleString()}`, color: '#22c55e' },
+                    { label: 'Largest Loss', value: `$${Math.round(biggestLoss).toLocaleString()}`, color: '#ef4444' },
+                  ]
+
+                  return (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                      {stats.map((stat, i) => (
+                        <div key={i} style={{ display: 'flex', justifyContent: 'space-between', padding: '8px', background: '#0d0d12', borderRadius: '4px', border: '1px solid #1a1a22' }}>
+                          <span style={{ fontSize: '11px', color: '#888' }}>{stat.label}</span>
+                          <span style={{ fontSize: '12px', fontWeight: 600, color: stat.color || '#fff' }}>{stat.value}</span>
+                        </div>
+                      ))}
+                    </div>
+                  )
+                })()}
+              </div>
             </div>
           </div>
         </div>
