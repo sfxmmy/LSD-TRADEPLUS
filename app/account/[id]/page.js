@@ -808,10 +808,14 @@ export default function AccountPage() {
                                 var redAreaPath = buildAreaPath(redSegments)
                               }
 
-                              // For multi-line mode, create area path (fills down to bottom)
-                              const areaPath = equityCurveGroupBy !== 'total' && chartPoints.length > 1
-                                ? pathD + ` L ${chartPoints[chartPoints.length - 1].x} ${svgH} L ${chartPoints[0].x} ${svgH} Z`
-                                : null
+                              // For multi-line mode, create a narrow shadow below the line (not overlapping with other lines)
+                              let areaPath = null
+                              if (equityCurveGroupBy !== 'total' && chartPoints.length > 1) {
+                                const shadowDepth = 8 // Fixed depth in SVG units
+                                const offsetPoints = chartPoints.map(p => ({ x: p.x, y: Math.min(p.y + shadowDepth, svgH) }))
+                                areaPath = chartPoints.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`).join(' ') +
+                                  offsetPoints.slice().reverse().map((p, i) => `${i === 0 ? ' L' : ' L'} ${p.x} ${p.y}`).join('') + ' Z'
+                              }
 
                               return { ...line, chartPoints, pathD, greenPath, redPath, greenAreaPath, redAreaPath, areaPath }
                             })
@@ -844,10 +848,6 @@ export default function AccountPage() {
                                     <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', pointerEvents: 'none' }}>
                                       {yLabels.map((_, i) => <div key={i} style={{ borderTop: '1px solid #1a1a22' }} />)}
                                     </div>
-                                    {/* Vertical grid lines for date labels */}
-                                    {xLabels.map((l, i) => (
-                                      <div key={i} style={{ position: 'absolute', left: `${l.pct}%`, top: 0, bottom: 0, borderLeft: '1px solid #1a1a22', pointerEvents: 'none' }} />
-                                    ))}
                                     {/* Zero line if negative */}
                                     {zeroY !== null && (
                                       <div style={{ position: 'absolute', left: 0, right: 0, top: `${zeroY}%`, borderTop: '1px solid #444', zIndex: 1 }} />
@@ -893,7 +893,7 @@ export default function AccountPage() {
                                         <linearGradient id="eqGreen" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stopColor="#22c55e" stopOpacity="0.3" /><stop offset="100%" stopColor="#22c55e" stopOpacity="0" /></linearGradient>
                                         <linearGradient id="eqRed" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stopColor="#ef4444" stopOpacity="0.3" /><stop offset="100%" stopColor="#ef4444" stopOpacity="0" /></linearGradient>
                                         {lineData.map((line, idx) => (
-                                          <linearGradient key={idx} id={`lineGrad${idx}`} x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stopColor={line.color} stopOpacity="0.2" /><stop offset="100%" stopColor={line.color} stopOpacity="0" /></linearGradient>
+                                          <linearGradient key={idx} id={`lineGrad${idx}`} x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stopColor={line.color} stopOpacity="0.5" /><stop offset="100%" stopColor={line.color} stopOpacity="0" /></linearGradient>
                                         ))}
                                       </defs>
                                       {equityCurveGroupBy === 'total' && lineData[0] ? (
@@ -1157,13 +1157,14 @@ export default function AccountPage() {
                     
                     const sortedData = [...displayData].sort((a, b) => new Date(a.date) - new Date(b.date))
                     
-                    // Generate X-axis labels (evenly spaced, showing date under bars)
-                    const xLabelCount = Math.min(sortedData.length, 15)
+                    // Generate X-axis labels (evenly spaced across the chart)
+                    const xLabelCount = Math.min(sortedData.length, 10)
                     const xLabels = []
                     for (let i = 0; i < xLabelCount; i++) {
                       const idx = Math.floor(i * (sortedData.length - 1) / Math.max(1, xLabelCount - 1))
                       const d = new Date(sortedData[idx]?.date)
-                      xLabels.push({ label: `${d.getDate()}/${d.getMonth() + 1}`, pct: sortedData.length > 1 ? (idx / (sortedData.length - 1)) * 100 : 50 })
+                      // Use evenly spaced percentages based on label index, not data index
+                      xLabels.push({ label: `${d.getDate()}/${d.getMonth() + 1}`, pct: xLabelCount > 1 ? (i / (xLabelCount - 1)) * 100 : 50 })
                     }
                     
                     return (
@@ -1171,16 +1172,16 @@ export default function AccountPage() {
                         <div style={{ width: '28px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', flexShrink: 0, paddingRight: '2px', paddingBottom: '18px' }}>
                           {yLabels.map((v, i) => <span key={i} style={{ fontSize: '8px', color: '#888', textAlign: 'right' }}>{i === yLabels.length - 1 ? '$0' : `$${v}`}</span>)}
                         </div>
-                        <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+                        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', position: 'relative' }}>
+                          {/* Vertical grid lines extending to date labels */}
+                          {xLabels.map((l, i) => (
+                            <div key={i} style={{ position: 'absolute', left: `${l.pct}%`, top: 0, bottom: 0, borderLeft: '1px solid #1a1a22', pointerEvents: 'none', zIndex: 0 }} />
+                          ))}
                           <div style={{ flex: 1, position: 'relative', borderLeft: '1px solid #333', borderBottom: '1px solid #333' }}>
                             {/* Horizontal grid lines */}
                             <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', pointerEvents: 'none' }}>
                               {yLabels.map((_, i) => <div key={i} style={{ borderTop: '1px solid #1a1a22' }} />)}
                             </div>
-                            {/* Vertical grid lines for date labels */}
-                            {xLabels.map((l, i) => (
-                              <div key={i} style={{ position: 'absolute', left: `${l.pct}%`, top: 0, bottom: 0, borderLeft: '1px solid #1a1a22', pointerEvents: 'none' }} />
-                            ))}
                             {/* Bars */}
                             <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'flex-end', gap: '1px', padding: '0 2px' }}>
                               {sortedData.map((d, i) => {
@@ -1887,10 +1888,14 @@ export default function AccountPage() {
                     var redAreaPath = redSegments.map(s => `M ${s.x1} ${s.y1} L ${s.x2} ${s.y2} L ${s.x2} ${startYEnl} L ${s.x1} ${startYEnl} Z`).join(' ')
                   }
 
-                  // For multi-line mode, create area path (fills down to bottom)
-                  const areaPath = equityCurveGroupBy !== 'total' && chartPoints.length > 1
-                    ? pathD + ` L ${chartPoints[chartPoints.length - 1].x} ${svgH} L ${chartPoints[0].x} ${svgH} Z`
-                    : null
+                  // For multi-line mode, create a narrow shadow below the line (not overlapping with other lines)
+                  let areaPath = null
+                  if (equityCurveGroupBy !== 'total' && chartPoints.length > 1) {
+                    const shadowDepth = 8 // Fixed depth in SVG units
+                    const offsetPoints = chartPoints.map(p => ({ x: p.x, y: Math.min(p.y + shadowDepth, svgH) }))
+                    areaPath = chartPoints.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`).join(' ') +
+                      offsetPoints.slice().reverse().map((p, i) => `${i === 0 ? ' L' : ' L'} ${p.x} ${p.y}`).join('') + ' Z'
+                  }
 
                   return { ...line, chartPoints, pathD, greenPath, redPath, greenAreaPath, redAreaPath, areaPath }
                 })
@@ -1911,10 +1916,6 @@ export default function AccountPage() {
                           <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', pointerEvents: 'none' }}>
                             {yLabels.map((_, i) => <div key={i} style={{ borderTop: '1px solid #1a1a22' }} />)}
                           </div>
-                          {/* Vertical grid lines for date labels */}
-                          {xLabels.map((l, i) => (
-                            <div key={i} style={{ position: 'absolute', left: `${l.pct}%`, top: 0, bottom: 0, borderLeft: '1px solid #1a1a22', pointerEvents: 'none' }} />
-                          ))}
                           {zeroY !== null && <div style={{ position: 'absolute', left: 0, right: 0, top: `${zeroY}%`, borderTop: '2px solid #666', zIndex: 1 }}><span style={{ position: 'absolute', left: '-60px', top: '-8px', fontSize: '11px', color: '#888' }}>$0</span></div>}
                           <svg style={{ position: 'absolute', inset: 0, width: '100%', height: '100%' }} viewBox={`0 0 ${svgW} ${svgH}`} preserveAspectRatio="none"
                             onMouseMove={e => {
@@ -1940,7 +1941,7 @@ export default function AccountPage() {
                               <linearGradient id="eqGEnlG" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stopColor="#22c55e" stopOpacity="0.3" /><stop offset="100%" stopColor="#22c55e" stopOpacity="0" /></linearGradient>
                               <linearGradient id="eqGEnlR" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stopColor="#ef4444" stopOpacity="0.3" /><stop offset="100%" stopColor="#ef4444" stopOpacity="0" /></linearGradient>
                               {lineData.map((line, idx) => (
-                                <linearGradient key={idx} id={`lineGradEnl${idx}`} x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stopColor={line.color} stopOpacity="0.2" /><stop offset="100%" stopColor={line.color} stopOpacity="0" /></linearGradient>
+                                <linearGradient key={idx} id={`lineGradEnl${idx}`} x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stopColor={line.color} stopOpacity="0.5" /><stop offset="100%" stopColor={line.color} stopOpacity="0" /></linearGradient>
                               ))}
                             </defs>
                             {equityCurveGroupBy === 'total' && lineData[0] ? (

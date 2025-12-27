@@ -201,10 +201,6 @@ export default function DashboardPage() {
             <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', pointerEvents: 'none' }}>
               {yLabels.map((_, i) => <div key={i} style={{ borderTop: '1px solid #1a1a22' }} />)}
             </div>
-            {/* Vertical grid lines for date labels */}
-            {xLabels.map((l, i) => (
-              <div key={i} style={{ position: 'absolute', left: `${l.pct}%`, top: 0, bottom: 0, borderLeft: '1px solid #1a1a22', pointerEvents: 'none' }} />
-            ))}
             {/* Zero line if negative values exist */}
             {zeroY !== null && (
               <div style={{ position: 'absolute', left: 0, right: 0, top: `${zeroY}%`, borderTop: '2px solid #666', zIndex: 1 }}>
