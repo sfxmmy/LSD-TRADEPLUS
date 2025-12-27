@@ -889,7 +889,7 @@ export default function AccountPage() {
                                         <linearGradient id="eqGreen" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stopColor="#22c55e" stopOpacity="0.3" /><stop offset="100%" stopColor="#22c55e" stopOpacity="0" /></linearGradient>
                                         <linearGradient id="eqRed" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stopColor="#ef4444" stopOpacity="0.3" /><stop offset="100%" stopColor="#ef4444" stopOpacity="0" /></linearGradient>
                                         {lineData.map((line, idx) => (
-                                          <linearGradient key={idx} id={`lineGrad${idx}`} x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stopColor={line.color} stopOpacity="0.08" /><stop offset="100%" stopColor={line.color} stopOpacity="0" /></linearGradient>
+                                          <linearGradient key={idx} id={`lineGrad${idx}`} x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stopColor={line.color} stopOpacity="0.05" /><stop offset="100%" stopColor={line.color} stopOpacity="0" /></linearGradient>
                                         ))}
                                       </defs>
                                       {equityCurveGroupBy === 'total' && lineData[0] ? (
@@ -916,31 +916,31 @@ export default function AccountPage() {
                                       </div>
                                     )}
                                     {/* Legend */}
-                                    <div style={{ position: 'absolute', bottom: '4px', right: '4px', display: 'flex', alignItems: 'center', gap: '8px', background: 'rgba(13,13,18,0.9)', padding: '4px 8px', borderRadius: '4px', fontSize: '9px' }}>
+                                    <div style={{ position: 'absolute', bottom: '4px', right: '4px', display: 'flex', alignItems: 'center', gap: '10px', background: 'rgba(13,13,18,0.95)', padding: '6px 10px', borderRadius: '4px', fontSize: '11px', border: '1px solid #2a2a35' }}>
                                       {equityCurveGroupBy === 'total' ? (
                                         <>
-                                          <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                                            <div style={{ width: '12px', height: '2px', background: '#22c55e' }} />
-                                            <span style={{ color: '#888' }}>Above</span>
+                                          <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                                            <div style={{ width: '14px', height: '3px', background: '#22c55e', borderRadius: '1px' }} />
+                                            <span style={{ color: '#ccc' }}>Above</span>
                                           </div>
                                           {belowStart && (
-                                            <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                                              <div style={{ width: '12px', height: '2px', background: '#ef4444' }} />
-                                              <span style={{ color: '#888' }}>Below</span>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                                              <div style={{ width: '14px', height: '3px', background: '#ef4444', borderRadius: '1px' }} />
+                                              <span style={{ color: '#ccc' }}>Below</span>
                                             </div>
                                           )}
                                           {startLineY !== null && (
-                                            <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                                              <div style={{ width: '12px', height: '0', borderTop: '1px dashed #666' }} />
-                                              <span style={{ color: '#888' }}>Start</span>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                                              <div style={{ width: '14px', height: '0', borderTop: '2px dashed #888' }} />
+                                              <span style={{ color: '#ccc' }}>Start</span>
                                             </div>
                                           )}
                                         </>
                                       ) : (
                                         lineData.slice(0, 4).map((line, idx) => (
-                                          <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                                            <div style={{ width: '12px', height: '2px', background: line.color }} />
-                                            <span style={{ color: '#888' }}>{line.name}</span>
+                                          <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                                            <div style={{ width: '14px', height: '3px', background: line.color, borderRadius: '1px' }} />
+                                            <span style={{ color: '#ccc' }}>{line.name}</span>
                                           </div>
                                         ))
                                       )}
@@ -1061,7 +1061,7 @@ export default function AccountPage() {
                                       onMouseLeave={() => setBarHover(null)}
                                     >
                                       <div style={{ fontSize: '10px', color: isGreen ? '#22c55e' : '#ef4444', marginBottom: '2px', fontWeight: 600 }}>{item.disp}</div>
-                                      <div style={{ width: '100%', maxWidth: '50px', height: `${hPct}%`, background: `linear-gradient(to bottom, ${isGreen ? 'rgba(34, 197, 94, 0.3)' : 'rgba(239, 68, 68, 0.3)'} 0%, transparent 100%)`, border: `2px solid ${isGreen ? '#22c55e' : '#ef4444'}`, borderBottom: 'none', borderRadius: '3px 3px 0 0', position: 'relative', cursor: 'pointer', boxShadow: `0 0 10px ${isGreen ? 'rgba(34, 197, 94, 0.4)' : 'rgba(239, 68, 68, 0.4)'}` }}>
+                                      <div style={{ width: '100%', maxWidth: '50px', height: `${hPct}%`, background: `linear-gradient(to bottom, ${isGreen ? 'rgba(34, 197, 94, 0.3)' : 'rgba(239, 68, 68, 0.3)'} 0%, transparent 100%)`, border: `2px solid ${isGreen ? '#22c55e' : '#ef4444'}`, borderBottom: 'none', borderRadius: '3px 3px 0 0', position: 'relative', cursor: 'pointer' }}>
                                         {isHovered && (
                                           <>
                                             <div style={{ position: 'absolute', bottom: '4px', left: '50%', transform: 'translateX(-50%)', width: '8px', height: '8px', borderRadius: '50%', background: isGreen ? '#22c55e' : '#ef4444', border: '2px solid #fff', zIndex: 5 }} />
@@ -1313,7 +1313,7 @@ export default function AccountPage() {
                 </div>
                 <div style={{ width: '1px', background: '#1a1a22', margin: '0 10px' }} />
                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minWidth: '100px' }}>
-                  <select value={pairAnalysisType} onChange={e => setPairAnalysisType(e.target.value)} style={{ fontSize: '9px', color: '#888', marginBottom: '4px', background: 'transparent', border: '1px solid #1a1a22', borderRadius: '4px', padding: '2px 4px', cursor: 'pointer' }}>
+                  <select value={pairAnalysisType} onChange={e => setPairAnalysisType(e.target.value)} style={{ fontSize: '10px', color: '#ccc', marginBottom: '6px', background: '#141418', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '6px', padding: '6px 10px', cursor: 'pointer', boxShadow: '0 0 8px rgba(255,255,255,0.15)' }}>
                     <option value="best">Best Pair</option>
                     <option value="worst">Worst Pair</option>
                     <option value="most">Most Used</option>
@@ -1933,7 +1933,7 @@ export default function AccountPage() {
                               <linearGradient id="eqGEnlG" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stopColor="#22c55e" stopOpacity="0.3" /><stop offset="100%" stopColor="#22c55e" stopOpacity="0" /></linearGradient>
                               <linearGradient id="eqGEnlR" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stopColor="#ef4444" stopOpacity="0.3" /><stop offset="100%" stopColor="#ef4444" stopOpacity="0" /></linearGradient>
                               {lineData.map((line, idx) => (
-                                <linearGradient key={idx} id={`lineGradEnl${idx}`} x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stopColor={line.color} stopOpacity="0.08" /><stop offset="100%" stopColor={line.color} stopOpacity="0" /></linearGradient>
+                                <linearGradient key={idx} id={`lineGradEnl${idx}`} x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stopColor={line.color} stopOpacity="0.05" /><stop offset="100%" stopColor={line.color} stopOpacity="0" /></linearGradient>
                               ))}
                             </defs>
                             {equityCurveGroupBy === 'total' && lineData[0] ? (
@@ -1965,6 +1965,28 @@ export default function AccountPage() {
                           {xLabels.map((l, i) => (
                             <span key={i} style={{ position: 'absolute', left: `${l.pct}%`, transform: 'translateX(-50%)', fontSize: '11px', color: '#ccc', fontWeight: 500, background: '#0d0d12', padding: '2px 6px', borderRadius: '3px', border: '1px solid #2a2a35' }}>{l.label}</span>
                           ))}
+                        </div>
+                        {/* Legend */}
+                        <div style={{ display: 'flex', justifyContent: 'center', gap: '16px', padding: '12px 0', flexWrap: 'wrap' }}>
+                          {equityCurveGroupBy === 'total' ? (
+                            <>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                <div style={{ width: '20px', height: '4px', background: '#22c55e', borderRadius: '2px' }} />
+                                <span style={{ fontSize: '12px', color: '#ccc' }}>Above Start</span>
+                              </div>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                <div style={{ width: '20px', height: '4px', background: '#ef4444', borderRadius: '2px' }} />
+                                <span style={{ fontSize: '12px', color: '#ccc' }}>Below Start</span>
+                              </div>
+                            </>
+                          ) : (
+                            lineData.map((line, idx) => (
+                              <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                <div style={{ width: '20px', height: '4px', background: line.color, borderRadius: '2px' }} />
+                                <span style={{ fontSize: '12px', color: '#ccc' }}>{line.name}</span>
+                              </div>
+                            ))
+                          )}
                         </div>
                       </div>
                     </div>
@@ -2032,7 +2054,7 @@ export default function AccountPage() {
                                   onMouseLeave={() => setBarHover(null)}
                                 >
                                   <div style={{ fontSize: '14px', color: isGreen ? '#22c55e' : '#ef4444', marginBottom: '4px', fontWeight: 600 }}>{item.disp}</div>
-                                  <div style={{ width: '100%', maxWidth: '80px', height: `${hPct}%`, background: `linear-gradient(to bottom, ${isGreen ? 'rgba(34, 197, 94, 0.3)' : 'rgba(239, 68, 68, 0.3)'} 0%, transparent 100%)`, border: `2px solid ${isGreen ? '#22c55e' : '#ef4444'}`, borderBottom: 'none', borderRadius: '6px 6px 0 0', minHeight: '20px', position: 'relative', cursor: 'pointer', boxShadow: `0 0 12px ${isGreen ? 'rgba(34, 197, 94, 0.4)' : 'rgba(239, 68, 68, 0.4)'}` }}>
+                                  <div style={{ width: '100%', maxWidth: '80px', height: `${hPct}%`, background: `linear-gradient(to bottom, ${isGreen ? 'rgba(34, 197, 94, 0.3)' : 'rgba(239, 68, 68, 0.3)'} 0%, transparent 100%)`, border: `2px solid ${isGreen ? '#22c55e' : '#ef4444'}`, borderBottom: 'none', borderRadius: '6px 6px 0 0', minHeight: '20px', position: 'relative', cursor: 'pointer' }}>
                                     {isHovered && (
                                       <>
                                         <div style={{ position: 'absolute', bottom: '8px', left: '50%', transform: 'translateX(-50%)', width: '10px', height: '10px', borderRadius: '50%', background: isGreen ? '#22c55e' : '#ef4444', border: '2px solid #fff', zIndex: 5 }} />
@@ -2061,10 +2083,10 @@ export default function AccountPage() {
               })()}
               </div>
               {/* Stats Sidebar */}
-              <div style={{ width: '260px', background: '#0a0a0e', borderRadius: '8px', border: '1px solid #1a1a22', padding: '12px', flexShrink: 0 }}>
-                <div style={{ fontSize: '11px', color: '#888', textTransform: 'uppercase', marginBottom: '8px', fontWeight: 600 }}>Statistics</div>
+              <div style={{ width: '240px', background: '#0a0a0e', borderRadius: '8px', border: '1px solid #1a1a22', padding: '10px', flexShrink: 0, display: 'flex', flexDirection: 'column' }}>
+                <div style={{ fontSize: '10px', color: '#888', textTransform: 'uppercase', marginBottom: '6px', fontWeight: 600 }}>Statistics</div>
                 {(() => {
-                  // Calculate stats based on selected lines/data
+                  // Calculate stats based on selected lines/data - same for both charts
                   let filteredTrades = []
                   if (enlargedChart === 'equity') {
                     if (equityCurveGroupBy === 'total') {
@@ -2096,23 +2118,22 @@ export default function AccountPage() {
                   const stats = [
                     { label: 'Total P&L', value: `${totalPnl >= 0 ? '+' : ''}$${Math.round(totalPnl).toLocaleString()}`, color: totalPnl >= 0 ? '#22c55e' : '#ef4444' },
                     { label: 'Total Trades', value: filteredTrades.length },
-                    { label: 'Winning Trades', value: wins.length, color: '#22c55e' },
-                    { label: 'Losing Trades', value: losses.length, color: '#ef4444' },
+                    { label: 'Wins / Losses', value: `${wins.length} / ${losses.length}`, color: '#fff' },
                     { label: 'Winrate', value: `${winrate}%`, color: parseFloat(winrate) >= 50 ? '#22c55e' : '#ef4444' },
                     { label: 'Profit Factor', value: profitFactor, color: parseFloat(profitFactor) >= 1 ? '#22c55e' : '#ef4444' },
                     { label: 'Average Win', value: `+$${Math.round(avgWin).toLocaleString()}`, color: '#22c55e' },
                     { label: 'Average Loss', value: `-$${Math.round(avgLoss).toLocaleString()}`, color: '#ef4444' },
-                    { label: 'Avg Trade P&L', value: `${avgPnl >= 0 ? '+' : ''}$${Math.round(avgPnl).toLocaleString()}`, color: avgPnl >= 0 ? '#22c55e' : '#ef4444' },
-                    { label: 'Largest Win', value: `+$${Math.round(biggestWin).toLocaleString()}`, color: '#22c55e' },
-                    { label: 'Largest Loss', value: `$${Math.round(biggestLoss).toLocaleString()}`, color: '#ef4444' },
+                    { label: 'Avg Trade', value: `${avgPnl >= 0 ? '+' : ''}$${Math.round(avgPnl).toLocaleString()}`, color: avgPnl >= 0 ? '#22c55e' : '#ef4444' },
+                    { label: 'Best Trade', value: `+$${Math.round(biggestWin).toLocaleString()}`, color: '#22c55e' },
+                    { label: 'Worst Trade', value: `$${Math.round(biggestLoss).toLocaleString()}`, color: '#ef4444' },
                   ]
 
                   return (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '3px', flex: 1 }}>
                       {stats.map((stat, i) => (
-                        <div key={i} style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 8px', background: '#0d0d12', borderRadius: '4px', border: '1px solid #1a1a22' }}>
-                          <span style={{ fontSize: '10px', color: '#888' }}>{stat.label}</span>
-                          <span style={{ fontSize: '11px', fontWeight: 600, color: stat.color || '#fff' }}>{stat.value}</span>
+                        <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '5px 6px', background: '#0d0d12', borderRadius: '3px', border: '1px solid #1a1a22' }}>
+                          <span style={{ fontSize: '9px', color: '#888' }}>{stat.label}</span>
+                          <span style={{ fontSize: '10px', fontWeight: 600, color: stat.color || '#fff' }}>{stat.value}</span>
                         </div>
                       ))}
                     </div>

@@ -244,21 +244,21 @@ export default function DashboardPage() {
               </div>
             )}
             {/* Legend */}
-            <div style={{ position: 'absolute', bottom: '4px', right: '4px', display: 'flex', alignItems: 'center', gap: '8px', background: 'rgba(13,13,18,0.9)', padding: '4px 8px', borderRadius: '4px', fontSize: '9px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                <div style={{ width: '12px', height: '2px', background: '#22c55e' }} />
-                <span style={{ color: '#888' }}>Above</span>
+            <div style={{ position: 'absolute', bottom: '4px', right: '4px', display: 'flex', alignItems: 'center', gap: '10px', background: 'rgba(13,13,18,0.95)', padding: '6px 10px', borderRadius: '4px', fontSize: '11px', border: '1px solid #2a2a35' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                <div style={{ width: '14px', height: '3px', background: '#22c55e', borderRadius: '1px' }} />
+                <span style={{ color: '#ccc' }}>Above</span>
               </div>
               {belowStart && (
-                <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                  <div style={{ width: '12px', height: '2px', background: '#ef4444' }} />
-                  <span style={{ color: '#888' }}>Below</span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                  <div style={{ width: '14px', height: '3px', background: '#ef4444', borderRadius: '1px' }} />
+                  <span style={{ color: '#ccc' }}>Below</span>
                 </div>
               )}
               {startLineY !== null && (
-                <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                  <div style={{ width: '12px', height: '0', borderTop: '1px dashed #666' }} />
-                  <span style={{ color: '#888' }}>Start</span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                  <div style={{ width: '14px', height: '0', borderTop: '2px dashed #888' }} />
+                  <span style={{ color: '#ccc' }}>Start</span>
                 </div>
               )}
             </div>
