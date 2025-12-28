@@ -636,67 +636,67 @@ export default function AccountPage() {
           <div style={{ padding: isMobile ? '0' : '16px 24px' }}>
             {/* ROW 1: Stats + Graphs - both graphs same height, aligned with Total Trades bottom */}
             <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', gap: '16px', marginBottom: '16px' }}>
-              {/* Stats Column - Reorganized into sections */}
-              <div style={{ width: isMobile ? '100%' : '220px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              {/* Stats Column - Compact */}
+              <div style={{ width: isMobile ? '100%' : '200px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
                 {/* Main Stats */}
-                <div style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '12px' }}>
-                  <div style={{ fontSize: '10px', color: '#666', textTransform: 'uppercase', marginBottom: '8px', letterSpacing: '0.5px' }}>Overview</div>
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
-                    <div style={{ textAlign: 'center', padding: '8px', background: '#141418', borderRadius: '6px' }}>
-                      <div style={{ fontSize: '20px', fontWeight: 700, color: totalPnl >= 0 ? '#22c55e' : '#ef4444' }}>{totalPnl >= 0 ? '+' : ''}${Math.abs(totalPnl).toLocaleString()}</div>
-                      <div style={{ fontSize: '9px', color: '#666', marginTop: '2px' }}>Total PnL</div>
+                <div style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '6px', padding: '8px' }}>
+                  <div style={{ fontSize: '9px', color: '#666', textTransform: 'uppercase', marginBottom: '6px', letterSpacing: '0.5px' }}>Overview</div>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px' }}>
+                    <div style={{ textAlign: 'center', padding: '6px', background: '#141418', borderRadius: '4px' }}>
+                      <div style={{ fontSize: '16px', fontWeight: 700, color: totalPnl >= 0 ? '#22c55e' : '#ef4444' }}>{totalPnl >= 0 ? '+' : ''}${Math.abs(totalPnl).toLocaleString()}</div>
+                      <div style={{ fontSize: '8px', color: '#666' }}>Total PnL</div>
                     </div>
-                    <div style={{ textAlign: 'center', padding: '8px', background: '#141418', borderRadius: '6px' }}>
-                      <div style={{ fontSize: '20px', fontWeight: 700, color: '#22c55e' }}>{trades.length}</div>
-                      <div style={{ fontSize: '9px', color: '#666', marginTop: '2px' }}>Total Trades</div>
+                    <div style={{ textAlign: 'center', padding: '6px', background: '#141418', borderRadius: '4px' }}>
+                      <div style={{ fontSize: '16px', fontWeight: 700, color: '#22c55e' }}>{trades.length}</div>
+                      <div style={{ fontSize: '8px', color: '#666' }}>Total Trades</div>
                     </div>
                   </div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '8px', padding: '6px 0', borderTop: '1px solid #1a1a22' }}>
-                    <span style={{ fontSize: '11px', color: '#888' }}>Profit Factor</span>
-                    <span style={{ fontSize: '13px', fontWeight: 600, color: parseFloat(profitFactor) >= 1 ? '#22c55e' : '#ef4444' }}>{profitFactor}</span>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '6px', padding: '4px 0', borderTop: '1px solid #1a1a22' }}>
+                    <span style={{ fontSize: '10px', color: '#888' }}>Profit Factor</span>
+                    <span style={{ fontSize: '12px', fontWeight: 600, color: parseFloat(profitFactor) >= 1 ? '#22c55e' : '#ef4444' }}>{profitFactor}</span>
                   </div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 0' }}>
-                    <span style={{ fontSize: '11px', color: '#888' }}>Expectancy</span>
-                    <span style={{ fontSize: '13px', fontWeight: 600, color: expectancy >= 0 ? '#22c55e' : '#ef4444' }}>${expectancy}</span>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', padding: '4px 0' }}>
+                    <span style={{ fontSize: '10px', color: '#888' }}>Expectancy</span>
+                    <span style={{ fontSize: '12px', fontWeight: 600, color: expectancy >= 0 ? '#22c55e' : '#ef4444' }}>${expectancy}</span>
                   </div>
                 </div>
 
                 {/* Winrate Section */}
-                <div style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '12px' }}>
-                  <div style={{ fontSize: '10px', color: '#666', textTransform: 'uppercase', marginBottom: '8px', letterSpacing: '0.5px' }}>Winrates</div>
-                  <div style={{ textAlign: 'center', padding: '10px', background: winrate >= 50 ? 'rgba(34,197,94,0.1)' : 'rgba(239,68,68,0.1)', borderRadius: '6px', marginBottom: '8px' }}>
-                    <div style={{ fontSize: '28px', fontWeight: 700, color: winrate >= 50 ? '#22c55e' : '#ef4444' }}>{winrate}%</div>
-                    <div style={{ fontSize: '9px', color: '#888' }}>Overall Winrate</div>
+                <div style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '6px', padding: '8px' }}>
+                  <div style={{ fontSize: '9px', color: '#666', textTransform: 'uppercase', marginBottom: '6px', letterSpacing: '0.5px' }}>Winrates</div>
+                  <div style={{ textAlign: 'center', padding: '6px', background: winrate >= 50 ? 'rgba(34,197,94,0.1)' : 'rgba(239,68,68,0.1)', borderRadius: '4px', marginBottom: '6px' }}>
+                    <div style={{ fontSize: '22px', fontWeight: 700, color: winrate >= 50 ? '#22c55e' : '#ef4444' }}>{winrate}%</div>
+                    <div style={{ fontSize: '8px', color: '#888' }}>Overall Winrate</div>
                   </div>
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px' }}>
-                    <div style={{ textAlign: 'center', padding: '6px', background: '#141418', borderRadius: '4px' }}>
-                      <div style={{ fontSize: '14px', fontWeight: 600, color: longWinrate >= 50 ? '#22c55e' : '#ef4444' }}>{longWinrate}%</div>
-                      <div style={{ fontSize: '8px', color: '#666' }}>Long WR</div>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '4px' }}>
+                    <div style={{ textAlign: 'center', padding: '4px', background: '#141418', borderRadius: '4px' }}>
+                      <div style={{ fontSize: '12px', fontWeight: 600, color: longWinrate >= 50 ? '#22c55e' : '#ef4444' }}>{longWinrate}%</div>
+                      <div style={{ fontSize: '7px', color: '#666' }}>Long WR</div>
                     </div>
-                    <div style={{ textAlign: 'center', padding: '6px', background: '#141418', borderRadius: '4px' }}>
-                      <div style={{ fontSize: '14px', fontWeight: 600, color: shortWinrate >= 50 ? '#22c55e' : '#ef4444' }}>{shortWinrate}%</div>
-                      <div style={{ fontSize: '8px', color: '#666' }}>Short WR</div>
+                    <div style={{ textAlign: 'center', padding: '4px', background: '#141418', borderRadius: '4px' }}>
+                      <div style={{ fontSize: '12px', fontWeight: 600, color: shortWinrate >= 50 ? '#22c55e' : '#ef4444' }}>{shortWinrate}%</div>
+                      <div style={{ fontSize: '7px', color: '#666' }}>Short WR</div>
                     </div>
-                    <div style={{ textAlign: 'center', padding: '6px', background: '#141418', borderRadius: '4px' }}>
-                      <div style={{ fontSize: '14px', fontWeight: 600, color: dayWinrate >= 50 ? '#22c55e' : '#ef4444' }}>{dayWinrate}%</div>
-                      <div style={{ fontSize: '8px', color: '#666' }}>Day WR</div>
+                    <div style={{ textAlign: 'center', padding: '4px', background: '#141418', borderRadius: '4px' }}>
+                      <div style={{ fontSize: '12px', fontWeight: 600, color: dayWinrate >= 50 ? '#22c55e' : '#ef4444' }}>{dayWinrate}%</div>
+                      <div style={{ fontSize: '7px', color: '#666' }}>Day WR</div>
                     </div>
-                    <div style={{ textAlign: 'center', padding: '6px', background: '#141418', borderRadius: '4px' }}>
-                      <div style={{ fontSize: '14px', fontWeight: 600, color: consistencyScore >= 50 ? '#22c55e' : '#ef4444' }}>{consistencyScore}%</div>
-                      <div style={{ fontSize: '8px', color: '#666' }}>Consistency</div>
+                    <div style={{ textAlign: 'center', padding: '4px', background: '#141418', borderRadius: '4px' }}>
+                      <div style={{ fontSize: '12px', fontWeight: 600, color: consistencyScore >= 50 ? '#22c55e' : '#ef4444' }}>{consistencyScore}%</div>
+                      <div style={{ fontSize: '7px', color: '#666' }}>Consistency</div>
                     </div>
                   </div>
                 </div>
 
                 {/* Avg Win/Loss */}
-                <div style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '12px' }}>
-                  <div style={{ fontSize: '10px', color: '#666', textTransform: 'uppercase', marginBottom: '8px', letterSpacing: '0.5px' }}>Averages</div>
-                  <div style={{ display: 'flex', gap: '6px', marginBottom: '6px' }}>
-                    <div style={{ flex: 1, textAlign: 'center', padding: '8px', background: 'rgba(34,197,94,0.1)', borderRadius: '4px', border: '1px solid rgba(34,197,94,0.2)' }}>
-                      <div style={{ fontSize: '16px', fontWeight: 700, color: '#22c55e' }}>+${avgWin}</div>
-                      <div style={{ fontSize: '8px', color: '#888' }}>Avg Win</div>
+                <div style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '6px', padding: '8px' }}>
+                  <div style={{ fontSize: '9px', color: '#666', textTransform: 'uppercase', marginBottom: '6px', letterSpacing: '0.5px' }}>Averages</div>
+                  <div style={{ display: 'flex', gap: '4px', marginBottom: '4px' }}>
+                    <div style={{ flex: 1, textAlign: 'center', padding: '6px', background: 'rgba(34,197,94,0.1)', borderRadius: '4px', border: '1px solid rgba(34,197,94,0.2)' }}>
+                      <div style={{ fontSize: '14px', fontWeight: 700, color: '#22c55e' }}>+${avgWin}</div>
+                      <div style={{ fontSize: '7px', color: '#888' }}>Avg Win</div>
                     </div>
-                    <div style={{ flex: 1, textAlign: 'center', padding: '8px', background: 'rgba(239,68,68,0.1)', borderRadius: '4px', border: '1px solid rgba(239,68,68,0.2)' }}>
+                    <div style={{ flex: 1, textAlign: 'center', padding: '6px', background: 'rgba(239,68,68,0.1)', borderRadius: '4px', border: '1px solid rgba(239,68,68,0.2)' }}>
                       <div style={{ fontSize: '16px', fontWeight: 700, color: '#ef4444' }}>-${avgLoss}</div>
                       <div style={{ fontSize: '8px', color: '#888' }}>Avg Loss</div>
                     </div>
@@ -712,19 +712,19 @@ export default function AccountPage() {
                 </div>
 
                 {/* Streaks */}
-                <div style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '12px' }}>
-                  <div style={{ fontSize: '10px', color: '#666', textTransform: 'uppercase', marginBottom: '8px', letterSpacing: '0.5px' }}>Streaks</div>
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '6px' }}>
-                    <div style={{ textAlign: 'center', padding: '6px', background: '#141418', borderRadius: '4px' }}>
-                      <div style={{ fontSize: '14px', fontWeight: 600, color: streaks.cs >= 0 ? '#22c55e' : '#ef4444' }}>{streaks.cs >= 0 ? '+' : ''}{streaks.cs}</div>
-                      <div style={{ fontSize: '8px', color: '#666' }}>Current</div>
+                <div style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '6px', padding: '8px' }}>
+                  <div style={{ fontSize: '9px', color: '#666', textTransform: 'uppercase', marginBottom: '6px', letterSpacing: '0.5px' }}>Streaks</div>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '4px' }}>
+                    <div style={{ textAlign: 'center', padding: '4px', background: '#141418', borderRadius: '4px' }}>
+                      <div style={{ fontSize: '12px', fontWeight: 600, color: streaks.cs >= 0 ? '#22c55e' : '#ef4444' }}>{streaks.cs >= 0 ? '+' : ''}{streaks.cs}</div>
+                      <div style={{ fontSize: '7px', color: '#666' }}>Current</div>
                     </div>
-                    <div style={{ textAlign: 'center', padding: '6px', background: '#141418', borderRadius: '4px' }}>
-                      <div style={{ fontSize: '14px', fontWeight: 600, color: '#22c55e' }}>{streaks.mw}</div>
-                      <div style={{ fontSize: '8px', color: '#666' }}>Max Win</div>
+                    <div style={{ textAlign: 'center', padding: '4px', background: '#141418', borderRadius: '4px' }}>
+                      <div style={{ fontSize: '12px', fontWeight: 600, color: '#22c55e' }}>{streaks.mw}</div>
+                      <div style={{ fontSize: '7px', color: '#666' }}>Max Win</div>
                     </div>
-                    <div style={{ textAlign: 'center', padding: '6px', background: '#141418', borderRadius: '4px' }}>
-                      <div style={{ fontSize: '14px', fontWeight: 600, color: '#ef4444' }}>{streaks.ml}</div>
+                    <div style={{ textAlign: 'center', padding: '4px', background: '#141418', borderRadius: '4px' }}>
+                      <div style={{ fontSize: '12px', fontWeight: 600, color: '#ef4444' }}>{streaks.ml}</div>
                       <div style={{ fontSize: '8px', color: '#666' }}>Max Loss</div>
                     </div>
                   </div>
@@ -734,7 +734,7 @@ export default function AccountPage() {
               {/* Graphs - side by side */}
               <div style={{ flex: 1, display: 'flex', flexDirection: isMobile ? 'column' : 'row', gap: '12px' }}>
                 {/* Equity Curve with groupBy dropdown */}
-                <div style={{ flex: 1, background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '16px', display: 'flex', flexDirection: 'column', position: 'relative', minHeight: isMobile ? '160px' : '200px' }}>
+                <div style={{ flex: 1, background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '10px', display: 'flex', flexDirection: 'column', position: 'relative', minHeight: isMobile ? '100px' : '130px' }}>
                   {(() => {
                     // Calculate visible lines first so we can compute dynamic Start/Current
                     const sorted = trades.length >= 2 ? [...trades].sort((a, b) => new Date(a.date) - new Date(b.date)) : []
@@ -833,7 +833,7 @@ export default function AccountPage() {
                           </div>
                         </div>
                         {/* Graph area - full width now */}
-                        <div style={{ flex: 1, position: 'relative', display: 'flex', minHeight: '140px' }}>
+                        <div style={{ flex: 1, position: 'relative', display: 'flex', minHeight: '90px' }}>
                           {sorted.length < 2 ? (
                             <div style={{ height: '100%', width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#666' }}>Need 2+ trades</div>
                           ) : (() => {
@@ -1218,7 +1218,7 @@ export default function AccountPage() {
                 </div>
 
                 {/* Bar Chart - with title and Y-axis */}
-                <div style={{ flex: 1, background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '16px', display: 'flex', flexDirection: 'column', minHeight: isMobile ? '180px' : '200px' }}>
+                <div style={{ flex: 1, background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '10px', display: 'flex', flexDirection: 'column', minHeight: isMobile ? '100px' : '130px' }}>
                   {(() => {
                     const groupedData = {}
                     const customSelects = getCustomSelectInputs()
@@ -1294,7 +1294,7 @@ export default function AccountPage() {
                           </div>
                         </div>
                         {/* Graph - full width */}
-                        <div style={{ flex: 1, display: 'flex', minHeight: '140px' }}>
+                        <div style={{ flex: 1, display: 'flex', minHeight: '90px' }}>
                           <div style={{ width: '24px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', flexShrink: 0, paddingRight: '2px', paddingBottom: '28px' }}>
                             {yLabels.map((v, i) => <span key={i} style={{ fontSize: '8px', color: '#888', lineHeight: 1, textAlign: 'right' }}>{v}</span>)}
                           </div>
@@ -1382,7 +1382,7 @@ export default function AccountPage() {
                     <span style={{ color: includeDaysNotTraded ? '#fff' : '#888' }}>Include non-trading days</span>
                   </label>
                 </div>
-                <div style={{ height: '140px', display: 'flex' }}>
+                <div style={{ height: '90px', display: 'flex' }}>
                   {dailyPnL.length === 0 ? <div style={{ height: '100%', width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#666' }}>No data</div> : (() => {
                     let displayData = dailyPnL
                     if (includeDaysNotTraded && dailyPnL.length > 1) {
