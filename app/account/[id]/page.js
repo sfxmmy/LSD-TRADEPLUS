@@ -303,6 +303,42 @@ export default function AccountPage() {
     return Math.round((winningDays / days.length) * 100)
   })()
 
+  // Extended winrate statistics
+  const longTrades = trades.filter(t => t.direction === 'long')
+  const shortTrades = trades.filter(t => t.direction === 'short')
+  const longWins = longTrades.filter(t => t.outcome === 'win').length
+  const shortWins = shortTrades.filter(t => t.outcome === 'win').length
+  const longWinrate = longTrades.length > 0 ? Math.round((longWins / longTrades.length) * 100) : 0
+  const shortWinrate = shortTrades.length > 0 ? Math.round((shortWins / shortTrades.length) * 100) : 0
+  const longPnl = longTrades.reduce((s, t) => s + (parseFloat(t.pnl) || 0), 0)
+  const shortPnl = shortTrades.reduce((s, t) => s + (parseFloat(t.pnl) || 0), 0)
+
+  // Winrate by pair
+  const winrateByPair = (() => {
+    const byPair = {}
+    trades.forEach(t => {
+      if (!byPair[t.symbol]) byPair[t.symbol] = { wins: 0, total: 0, pnl: 0 }
+      byPair[t.symbol].total++
+      byPair[t.symbol].pnl += parseFloat(t.pnl) || 0
+      if (t.outcome === 'win') byPair[t.symbol].wins++
+    })
+    return Object.entries(byPair).map(([pair, data]) => ({
+      pair,
+      winrate: Math.round((data.wins / data.total) * 100),
+      trades: data.total,
+      pnl: data.pnl
+    })).sort((a, b) => b.winrate - a.winrate)
+  })()
+  const bestPairWinrate = winrateByPair[0] || { pair: '-', winrate: 0 }
+  const worstPairWinrate = winrateByPair[winrateByPair.length - 1] || { pair: '-', winrate: 0 }
+  const bestPairPnl = [...winrateByPair].sort((a, b) => b.pnl - a.pnl)[0] || { pair: '-', pnl: 0 }
+  const worstPairPnl = [...winrateByPair].sort((a, b) => a.pnl - b.pnl)[0] || { pair: '-', pnl: 0 }
+
+  // Daily winrate (% of green days)
+  const greenDays = dailyPnL.filter(d => d.pnl > 0).length
+  const redDays = dailyPnL.filter(d => d.pnl < 0).length
+  const dayWinrate = (greenDays + redDays) > 0 ? Math.round((greenDays / (greenDays + redDays)) * 100) : 0
+
   // Monthly growth %
   const monthlyGrowth = (() => {
     if (trades.length === 0) return '0'
@@ -600,25 +636,98 @@ export default function AccountPage() {
           <div style={{ padding: isMobile ? '0' : '16px 24px' }}>
             {/* ROW 1: Stats + Graphs - both graphs same height, aligned with Total Trades bottom */}
             <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', gap: '16px', marginBottom: '16px' }}>
-              {/* Stats Column */}
-              <div style={{ width: isMobile ? '100%' : '200px', display: 'flex', flexDirection: isMobile ? 'row' : 'column', flexWrap: isMobile ? 'wrap' : 'nowrap', gap: '6px' }}>
-                {[
-                  { l: 'Total PnL', v: `${totalPnl >= 0 ? '+' : ''}$${totalPnl.toLocaleString()}`, c: totalPnl >= 0 ? '#22c55e' : '#ef4444' },
-                  { l: 'Winrate', v: `${winrate}%`, c: winrate >= 50 ? '#22c55e' : '#ef4444' },
-                  { l: 'Profit Factor', v: profitFactor, c: '#fff' },
-                  { l: 'Avg Win', v: `+$${avgWin}`, c: '#22c55e' },
-                  { l: 'Avg Loss', v: `-$${avgLoss}`, c: '#ef4444' },
-                  { l: 'Streak', v: `${streaks.cs >= 0 ? '+' : ''}${streaks.cs}`, c: streaks.cs >= 0 ? '#22c55e' : '#ef4444' },
-                  { l: 'Best Pair', v: mostTradedPair, c: '#22c55e' },
-                ].map((s, i) => (
-                  <div key={i} style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: isMobile ? '8px 10px' : '10px 14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flex: isMobile ? '1 1 45%' : 'none' }}>
-                    <span style={{ fontSize: isMobile ? '11px' : '13px', color: '#888' }}>{s.l}</span>
-                    <span style={{ fontSize: isMobile ? '14px' : '18px', fontWeight: 700, color: s.c }}>{s.v}</span>
+              {/* Stats Column - Reorganized into sections */}
+              <div style={{ width: isMobile ? '100%' : '220px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                {/* Main Stats */}
+                <div style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '12px' }}>
+                  <div style={{ fontSize: '10px', color: '#666', textTransform: 'uppercase', marginBottom: '8px', letterSpacing: '0.5px' }}>Overview</div>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+                    <div style={{ textAlign: 'center', padding: '8px', background: '#141418', borderRadius: '6px' }}>
+                      <div style={{ fontSize: '20px', fontWeight: 700, color: totalPnl >= 0 ? '#22c55e' : '#ef4444' }}>{totalPnl >= 0 ? '+' : ''}${Math.abs(totalPnl).toLocaleString()}</div>
+                      <div style={{ fontSize: '9px', color: '#666', marginTop: '2px' }}>Total PnL</div>
+                    </div>
+                    <div style={{ textAlign: 'center', padding: '8px', background: '#141418', borderRadius: '6px' }}>
+                      <div style={{ fontSize: '20px', fontWeight: 700, color: '#22c55e' }}>{trades.length}</div>
+                      <div style={{ fontSize: '9px', color: '#666', marginTop: '2px' }}>Total Trades</div>
+                    </div>
                   </div>
-                ))}
-                <div style={{ background: '#0d0d12', border: '2px solid #22c55e', borderRadius: '8px', padding: isMobile ? '10px' : '14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '4px', flex: isMobile ? '1 1 100%' : 'none' }}>
-                  <span style={{ fontSize: isMobile ? '12px' : '13px', color: '#888' }}>Total Trades</span>
-                  <span style={{ fontSize: isMobile ? '22px' : '28px', fontWeight: 700, color: '#22c55e' }}>{trades.length}</span>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '8px', padding: '6px 0', borderTop: '1px solid #1a1a22' }}>
+                    <span style={{ fontSize: '11px', color: '#888' }}>Profit Factor</span>
+                    <span style={{ fontSize: '13px', fontWeight: 600, color: parseFloat(profitFactor) >= 1 ? '#22c55e' : '#ef4444' }}>{profitFactor}</span>
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 0' }}>
+                    <span style={{ fontSize: '11px', color: '#888' }}>Expectancy</span>
+                    <span style={{ fontSize: '13px', fontWeight: 600, color: expectancy >= 0 ? '#22c55e' : '#ef4444' }}>${expectancy}</span>
+                  </div>
+                </div>
+
+                {/* Winrate Section */}
+                <div style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '12px' }}>
+                  <div style={{ fontSize: '10px', color: '#666', textTransform: 'uppercase', marginBottom: '8px', letterSpacing: '0.5px' }}>Winrates</div>
+                  <div style={{ textAlign: 'center', padding: '10px', background: winrate >= 50 ? 'rgba(34,197,94,0.1)' : 'rgba(239,68,68,0.1)', borderRadius: '6px', marginBottom: '8px' }}>
+                    <div style={{ fontSize: '28px', fontWeight: 700, color: winrate >= 50 ? '#22c55e' : '#ef4444' }}>{winrate}%</div>
+                    <div style={{ fontSize: '9px', color: '#888' }}>Overall Winrate</div>
+                  </div>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px' }}>
+                    <div style={{ textAlign: 'center', padding: '6px', background: '#141418', borderRadius: '4px' }}>
+                      <div style={{ fontSize: '14px', fontWeight: 600, color: longWinrate >= 50 ? '#22c55e' : '#ef4444' }}>{longWinrate}%</div>
+                      <div style={{ fontSize: '8px', color: '#666' }}>Long WR</div>
+                    </div>
+                    <div style={{ textAlign: 'center', padding: '6px', background: '#141418', borderRadius: '4px' }}>
+                      <div style={{ fontSize: '14px', fontWeight: 600, color: shortWinrate >= 50 ? '#22c55e' : '#ef4444' }}>{shortWinrate}%</div>
+                      <div style={{ fontSize: '8px', color: '#666' }}>Short WR</div>
+                    </div>
+                    <div style={{ textAlign: 'center', padding: '6px', background: '#141418', borderRadius: '4px' }}>
+                      <div style={{ fontSize: '14px', fontWeight: 600, color: dayWinrate >= 50 ? '#22c55e' : '#ef4444' }}>{dayWinrate}%</div>
+                      <div style={{ fontSize: '8px', color: '#666' }}>Day WR</div>
+                    </div>
+                    <div style={{ textAlign: 'center', padding: '6px', background: '#141418', borderRadius: '4px' }}>
+                      <div style={{ fontSize: '14px', fontWeight: 600, color: consistencyScore >= 50 ? '#22c55e' : '#ef4444' }}>{consistencyScore}%</div>
+                      <div style={{ fontSize: '8px', color: '#666' }}>Consistency</div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Avg Win/Loss */}
+                <div style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '12px' }}>
+                  <div style={{ fontSize: '10px', color: '#666', textTransform: 'uppercase', marginBottom: '8px', letterSpacing: '0.5px' }}>Averages</div>
+                  <div style={{ display: 'flex', gap: '6px', marginBottom: '6px' }}>
+                    <div style={{ flex: 1, textAlign: 'center', padding: '8px', background: 'rgba(34,197,94,0.1)', borderRadius: '4px', border: '1px solid rgba(34,197,94,0.2)' }}>
+                      <div style={{ fontSize: '16px', fontWeight: 700, color: '#22c55e' }}>+${avgWin}</div>
+                      <div style={{ fontSize: '8px', color: '#888' }}>Avg Win</div>
+                    </div>
+                    <div style={{ flex: 1, textAlign: 'center', padding: '8px', background: 'rgba(239,68,68,0.1)', borderRadius: '4px', border: '1px solid rgba(239,68,68,0.2)' }}>
+                      <div style={{ fontSize: '16px', fontWeight: 700, color: '#ef4444' }}>-${avgLoss}</div>
+                      <div style={{ fontSize: '8px', color: '#888' }}>Avg Loss</div>
+                    </div>
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', padding: '4px 0' }}>
+                    <span style={{ fontSize: '10px', color: '#666' }}>Risk/Reward</span>
+                    <span style={{ fontSize: '11px', fontWeight: 600, color: '#fff' }}>{returnOnRisk}</span>
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', padding: '4px 0' }}>
+                    <span style={{ fontSize: '10px', color: '#666' }}>Avg Trade</span>
+                    <span style={{ fontSize: '11px', fontWeight: 600, color: avgPnl >= 0 ? '#22c55e' : '#ef4444' }}>${avgPnl}</span>
+                  </div>
+                </div>
+
+                {/* Streaks */}
+                <div style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '12px' }}>
+                  <div style={{ fontSize: '10px', color: '#666', textTransform: 'uppercase', marginBottom: '8px', letterSpacing: '0.5px' }}>Streaks</div>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '6px' }}>
+                    <div style={{ textAlign: 'center', padding: '6px', background: '#141418', borderRadius: '4px' }}>
+                      <div style={{ fontSize: '14px', fontWeight: 600, color: streaks.cs >= 0 ? '#22c55e' : '#ef4444' }}>{streaks.cs >= 0 ? '+' : ''}{streaks.cs}</div>
+                      <div style={{ fontSize: '8px', color: '#666' }}>Current</div>
+                    </div>
+                    <div style={{ textAlign: 'center', padding: '6px', background: '#141418', borderRadius: '4px' }}>
+                      <div style={{ fontSize: '14px', fontWeight: 600, color: '#22c55e' }}>{streaks.mw}</div>
+                      <div style={{ fontSize: '8px', color: '#666' }}>Max Win</div>
+                    </div>
+                    <div style={{ textAlign: 'center', padding: '6px', background: '#141418', borderRadius: '4px' }}>
+                      <div style={{ fontSize: '14px', fontWeight: 600, color: '#ef4444' }}>{streaks.ml}</div>
+                      <div style={{ fontSize: '8px', color: '#666' }}>Max Loss</div>
+                    </div>
+                  </div>
                 </div>
               </div>
 
@@ -960,6 +1069,18 @@ export default function AccountPage() {
                                         )
                                       })()}
                                     </svg>
+                                    {/* Line labels at end of each line */}
+                                    {equityCurveGroupBy !== 'total' && lineData.map((line, idx) => {
+                                      const lastPt = line.chartPoints[line.chartPoints.length - 1]
+                                      if (!lastPt) return null
+                                      const xPct = (lastPt.x / svgW) * 100
+                                      const yPct = (lastPt.y / svgH) * 100
+                                      return (
+                                        <div key={`label${idx}`} style={{ position: 'absolute', right: '2px', top: `${yPct}%`, transform: 'translateY(-50%)', fontSize: '8px', fontWeight: 600, color: line.color, background: 'rgba(13,13,18,0.85)', padding: '1px 4px', borderRadius: '2px', whiteSpace: 'nowrap', pointerEvents: 'none' }}>
+                                          {line.name}
+                                        </div>
+                                      )
+                                    })}
                                     {hoverPoint && <div style={{ position: 'absolute', left: `${hoverPoint.xPct}%`, top: `${hoverPoint.yPct}%`, transform: 'translate(-50%, -50%)', width: '10px', height: '10px', borderRadius: '50%', background: equityCurveGroupBy === 'total' ? (hoverPoint.balance >= startingBalance ? '#22c55e' : '#ef4444') : (hoverPoint.lineColor || '#22c55e'), border: '2px solid #fff', pointerEvents: 'none', zIndex: 10 }} />}
                                     {hoverPoint && (
                                       <div style={{ position: 'absolute', left: `${hoverPoint.xPct}%`, top: `${hoverPoint.yPct}%`, transform: `translate(${hoverPoint.xPct > 80 ? 'calc(-100% - 15px)' : '15px'}, ${hoverPoint.yPct < 20 ? '0%' : hoverPoint.yPct > 80 ? '-100%' : '-50%'})`, background: '#1a1a22', border: '1px solid #2a2a35', borderRadius: '6px', padding: '8px 12px', fontSize: '11px', whiteSpace: 'nowrap', zIndex: 10, pointerEvents: 'none' }}>
@@ -969,30 +1090,21 @@ export default function AccountPage() {
                                         {hoverPoint.symbol && <div style={{ color: hoverPoint.pnl >= 0 ? '#22c55e' : '#ef4444' }}>{hoverPoint.symbol}: {hoverPoint.pnl >= 0 ? '+' : ''}${hoverPoint.pnl?.toFixed(0)}</div>}
                                       </div>
                                     )}
-                                    {/* Legend */}
-                                    <div style={{ position: 'absolute', bottom: '4px', left: '4px', display: 'flex', alignItems: 'center', gap: '8px', background: 'rgba(13,13,18,0.9)', padding: '3px 6px', borderRadius: '3px', fontSize: '9px' }}>
-                                      {equityCurveGroupBy === 'total' ? (
-                                        <>
+                                    {/* Legend for total mode only */}
+                                    {equityCurveGroupBy === 'total' && (
+                                      <div style={{ position: 'absolute', bottom: '4px', left: '4px', display: 'flex', alignItems: 'center', gap: '8px', background: 'rgba(13,13,18,0.9)', padding: '3px 6px', borderRadius: '3px', fontSize: '9px' }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '3px' }}>
+                                          <div style={{ width: '10px', height: '2px', background: '#22c55e' }} />
+                                          <span style={{ color: '#888' }}>Above</span>
+                                        </div>
+                                        {belowStart && (
                                           <div style={{ display: 'flex', alignItems: 'center', gap: '3px' }}>
-                                            <div style={{ width: '10px', height: '2px', background: '#22c55e' }} />
-                                            <span style={{ color: '#888' }}>Above</span>
+                                            <div style={{ width: '10px', height: '2px', background: '#ef4444' }} />
+                                            <span style={{ color: '#888' }}>Below</span>
                                           </div>
-                                          {belowStart && (
-                                            <div style={{ display: 'flex', alignItems: 'center', gap: '3px' }}>
-                                              <div style={{ width: '10px', height: '2px', background: '#ef4444' }} />
-                                              <span style={{ color: '#888' }}>Below</span>
-                                            </div>
-                                          )}
-                                        </>
-                                      ) : (
-                                        lineData.map((line, idx) => (
-                                          <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '3px' }}>
-                                            <div style={{ width: '10px', height: '2px', background: line.color }} />
-                                            <span style={{ color: '#888' }}>{line.name}</span>
-                                          </div>
-                                        ))
-                                      )}
-                                    </div>
+                                        )}
+                                      </div>
+                                    )}
                                   </div>
                                   {/* X-axis with tick marks and date labels */}
                                   <div style={{ height: '22px', position: 'relative', marginLeft: '1px' }}>
@@ -1795,7 +1907,7 @@ export default function AccountPage() {
       {/* Enlarged Chart Modal */}
       {enlargedChart && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.95)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100 }} onClick={() => setEnlargedChart(null)}>
-          <div style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '12px', padding: '24px', width: '90vw', maxWidth: '1200px', height: '80vh' }} onClick={e => e.stopPropagation()}>
+          <div style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '12px', padding: '24px', width: '95vw', maxWidth: '1600px', height: '90vh' }} onClick={e => e.stopPropagation()}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
                 <span style={{ fontSize: '18px', fontWeight: 600, color: '#fff' }}>{enlargedChart === 'equity' ? 'Equity Curve' : enlargedChart === 'bar' ? 'Performance by ' + (graphGroupBy === 'symbol' ? 'Pair' : graphGroupBy) : 'Net Daily PnL'}</span>
@@ -2097,6 +2209,17 @@ export default function AccountPage() {
                               )
                             })()}
                           </svg>
+                          {/* Line labels at end of each line */}
+                          {equityCurveGroupBy !== 'total' && lineData.map((line, idx) => {
+                            const lastPt = line.chartPoints[line.chartPoints.length - 1]
+                            if (!lastPt) return null
+                            const yPct = (lastPt.y / svgH) * 100
+                            return (
+                              <div key={`labelEnl${idx}`} style={{ position: 'absolute', right: '4px', top: `${yPct}%`, transform: 'translateY(-50%)', fontSize: '11px', fontWeight: 600, color: line.color, background: 'rgba(13,13,18,0.9)', padding: '2px 8px', borderRadius: '4px', whiteSpace: 'nowrap', pointerEvents: 'none' }}>
+                                {line.name}
+                              </div>
+                            )
+                          })}
                           {hoverPoint && <div style={{ position: 'absolute', left: `${hoverPoint.xPct}%`, top: `${hoverPoint.yPct}%`, transform: 'translate(-50%, -50%)', width: '12px', height: '12px', borderRadius: '50%', background: equityCurveGroupBy === 'total' ? (hoverPoint.balance >= startingBalance ? '#22c55e' : '#ef4444') : (hoverPoint.lineColor || '#22c55e'), border: '2px solid #fff', pointerEvents: 'none', zIndex: 10 }} />}
                           {hoverPoint && (
                             <div style={{ position: 'absolute', left: `${hoverPoint.xPct}%`, top: `${hoverPoint.yPct}%`, transform: `translate(${hoverPoint.xPct > 80 ? 'calc(-100% - 15px)' : '15px'}, ${hoverPoint.yPct < 20 ? '0%' : hoverPoint.yPct > 80 ? '-100%' : '-50%'})`, background: '#1a1a22', border: '1px solid #2a2a35', borderRadius: '6px', padding: '10px 14px', fontSize: '12px', whiteSpace: 'nowrap', zIndex: 10, pointerEvents: 'none' }}>
@@ -2116,28 +2239,19 @@ export default function AccountPage() {
                             </div>
                           ))}
                         </div>
-                        {/* Legend */}
-                        <div style={{ display: 'flex', justifyContent: 'center', gap: '12px', padding: '8px 0', flexWrap: 'wrap' }}>
-                          {equityCurveGroupBy === 'total' ? (
-                            <>
-                              <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                                <div style={{ width: '16px', height: '3px', background: '#22c55e' }} />
-                                <span style={{ fontSize: '10px', color: '#888' }}>Above</span>
-                              </div>
-                              <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                                <div style={{ width: '16px', height: '3px', background: '#ef4444' }} />
-                                <span style={{ fontSize: '10px', color: '#888' }}>Below</span>
-                              </div>
-                            </>
-                          ) : (
-                            lineData.map((line, idx) => (
-                              <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                                <div style={{ width: '16px', height: '3px', background: line.color }} />
-                                <span style={{ fontSize: '10px', color: '#888' }}>{line.name}</span>
-                              </div>
-                            ))
-                          )}
-                        </div>
+                        {/* Legend for total mode only */}
+                        {equityCurveGroupBy === 'total' && (
+                          <div style={{ display: 'flex', justifyContent: 'center', gap: '12px', padding: '8px 0', flexWrap: 'wrap' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                              <div style={{ width: '16px', height: '3px', background: '#22c55e' }} />
+                              <span style={{ fontSize: '10px', color: '#888' }}>Above Start</span>
+                            </div>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                              <div style={{ width: '16px', height: '3px', background: '#ef4444' }} />
+                              <span style={{ fontSize: '10px', color: '#888' }}>Below Start</span>
+                            </div>
+                          </div>
+                        )}
                       </div>
                     </div>
                   </div>
