@@ -1468,7 +1468,7 @@ export default function AccountPage() {
             </div>
 
             {/* ROW 4: Stats + Donut + Performance + Trade Analysis + Expectancy */}
-            <div style={{ display: 'flex', gap: '16px', marginBottom: '16px' }}>
+            <div style={{ display: 'flex', gap: '16px', marginBottom: '16px', overflow: 'visible' }}>
               {/* Stats + Donut */}
               <div style={{ width: '320px', background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '14px', display: 'flex' }}>
                 <div style={{ flex: 1 }}>
@@ -1545,9 +1545,10 @@ export default function AccountPage() {
               </div>
 
               {/* Trade Analysis - with green glow effect */}
-              <div style={{ flex: 1, position: 'relative', zIndex: 2 }}>
-                <div style={{ position: 'absolute', inset: '-20px', background: 'radial-gradient(ellipse at center, rgba(34,197,94,0.15) 0%, rgba(34,197,94,0.05) 40%, transparent 70%)', borderRadius: '30px', pointerEvents: 'none', zIndex: -1 }} />
-                <div style={{ background: '#0d0d12', border: '2px solid #22c55e', borderRadius: '8px', padding: '12px', boxShadow: '0 0 20px rgba(34,197,94,0.3), 0 0 40px rgba(34,197,94,0.15), inset 0 0 20px rgba(34,197,94,0.05)' }}>
+              <div style={{ flex: 1, position: 'relative' }}>
+                {/* Outer glow layer - extends behind adjacent widgets */}
+                <div style={{ position: 'absolute', inset: '-40px', background: 'radial-gradient(ellipse at center, rgba(34,197,94,0.25) 0%, rgba(34,197,94,0.12) 30%, rgba(34,197,94,0.04) 60%, transparent 80%)', borderRadius: '50px', pointerEvents: 'none', filter: 'blur(8px)' }} />
+                <div style={{ position: 'relative', background: '#0d0d12', border: '2px solid #22c55e', borderRadius: '8px', padding: '12px', boxShadow: '0 0 30px rgba(34,197,94,0.5), 0 0 60px rgba(34,197,94,0.25), 0 0 100px rgba(34,197,94,0.15), inset 0 0 30px rgba(34,197,94,0.08)' }}>
                   <div style={{ fontSize: '11px', color: '#22c55e', textTransform: 'uppercase', marginBottom: '10px', fontWeight: 600, textShadow: '0 0 10px rgba(34,197,94,0.5)' }}>Trade Analysis</div>
                   <div style={{ display: 'flex', gap: '6px', marginBottom: '8px' }}>
                     <select value={analysisGroupBy} onChange={e => setAnalysisGroupBy(e.target.value)} style={{ flex: 1, padding: '6px', background: '#141418', border: '1px solid rgba(34,197,94,0.3)', borderRadius: '4px', color: '#fff', fontSize: '11px' }}>
@@ -2240,13 +2241,13 @@ export default function AccountPage() {
                               )
                             })()}
                           </svg>
-                          {/* Line labels at end of each line */}
+                          {/* Line labels at end of each line - no border, gradient text matching line */}
                           {equityCurveGroupBy !== 'total' && lineData.map((line, idx) => {
                             const lastPt = line.chartPoints[line.chartPoints.length - 1]
                             if (!lastPt) return null
                             const yPct = (lastPt.y / svgH) * 100
                             return (
-                              <div key={`labelEnl${idx}`} style={{ position: 'absolute', right: '4px', top: `${yPct}%`, transform: 'translateY(-50%)', fontSize: '11px', fontWeight: 600, color: line.color, background: 'rgba(13,13,18,0.9)', padding: '2px 8px', borderRadius: '4px', whiteSpace: 'nowrap', pointerEvents: 'none' }}>
+                              <div key={`labelEnl${idx}`} style={{ position: 'absolute', right: '8px', top: `${yPct}%`, transform: 'translateY(-50%)', fontSize: '12px', fontWeight: 700, color: line.color, textShadow: `0 0 10px ${line.color}, 0 0 20px ${line.color}, 0 0 30px ${line.color}40`, whiteSpace: 'nowrap', pointerEvents: 'none', letterSpacing: '0.5px' }}>
                                 {line.name}
                               </div>
                             )
@@ -2270,8 +2271,8 @@ export default function AccountPage() {
                             </div>
                           ))}
                         </div>
-                        {/* Legend for total mode only */}
-                        {equityCurveGroupBy === 'total' && (
+                        {/* Legend */}
+                        {equityCurveGroupBy === 'total' ? (
                           <div style={{ display: 'flex', justifyContent: 'center', gap: '12px', padding: '8px 0', flexWrap: 'wrap' }}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                               <div style={{ width: '16px', height: '3px', background: '#22c55e' }} />
@@ -2281,6 +2282,15 @@ export default function AccountPage() {
                               <div style={{ width: '16px', height: '3px', background: '#ef4444' }} />
                               <span style={{ fontSize: '10px', color: '#888' }}>Below Start</span>
                             </div>
+                          </div>
+                        ) : (
+                          <div style={{ display: 'flex', justifyContent: 'center', gap: '16px', padding: '10px 0', flexWrap: 'wrap' }}>
+                            {lineData.map((line, idx) => (
+                              <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                <div style={{ width: '12px', height: '12px', borderRadius: '50%', background: line.color, boxShadow: `0 0 8px ${line.color}` }} />
+                                <span style={{ fontSize: '11px', color: '#fff', fontWeight: 500 }}>{line.name}</span>
+                              </div>
+                            ))}
                           </div>
                         )}
                       </div>
