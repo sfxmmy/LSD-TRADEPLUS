@@ -17,6 +17,16 @@ export default function DashboardPage() {
   const [editName, setEditName] = useState('')
   const [creating, setCreating] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
+  const [viewMode, setViewMode] = useState('cards') // 'cards' or 'list'
+  // Quick trade entry state
+  const [quickTradeAccount, setQuickTradeAccount] = useState('')
+  const [quickTradeSymbol, setQuickTradeSymbol] = useState('')
+  const [quickTradeOutcome, setQuickTradeOutcome] = useState('win')
+  const [quickTradePnl, setQuickTradePnl] = useState('')
+  const [quickTradeRR, setQuickTradeRR] = useState('')
+  const [quickTradeDate, setQuickTradeDate] = useState(new Date().toISOString().split('T')[0])
+  const [quickTradeDirection, setQuickTradeDirection] = useState('long')
+  const [submittingTrade, setSubmittingTrade] = useState(false)
 
   useEffect(() => {
     const checkMobile = () => setIsMobile(window.innerWidth < 768)
@@ -83,6 +93,40 @@ export default function DashboardPage() {
     const newTrades = { ...trades }; delete newTrades[accountId]; setTrades(newTrades)
     setShowDeleteModal(null); setDeleteConfirm('')
   }
+
+  async function submitQuickTrade() {
+    if (!quickTradeAccount || !quickTradeSymbol.trim() || !quickTradePnl) return
+    setSubmittingTrade(true)
+    const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY)
+    const { data, error } = await supabase.from('trades').insert({
+      account_id: quickTradeAccount,
+      symbol: quickTradeSymbol.trim().toUpperCase(),
+      outcome: quickTradeOutcome,
+      pnl: parseFloat(quickTradePnl) || 0,
+      rr: quickTradeRR || null,
+      date: quickTradeDate,
+      direction: quickTradeDirection,
+      extra_data: JSON.stringify({})
+    }).select().single()
+    if (error) { alert('Error: ' + error.message); setSubmittingTrade(false); return }
+    // Add to local state
+    setTrades(prev => ({
+      ...prev,
+      [quickTradeAccount]: [...(prev[quickTradeAccount] || []), data].sort((a, b) => new Date(a.date) - new Date(b.date))
+    }))
+    // Reset form
+    setQuickTradeSymbol('')
+    setQuickTradePnl('')
+    setQuickTradeRR('')
+    setSubmittingTrade(false)
+  }
+
+  // Set default account when accounts load
+  useEffect(() => {
+    if (accounts.length > 0 && !quickTradeAccount) {
+      setQuickTradeAccount(accounts[0].id)
+    }
+  }, [accounts])
 
   function EquityCurve({ accountTrades, startingBalance }) {
     const [hoverPoint, setHoverPoint] = useState(null)
@@ -294,7 +338,60 @@ export default function DashboardPage() {
         </div>
       </header>
 
-      <div style={{ maxWidth: '1400px', margin: '0 auto', padding: isMobile ? '16px' : '24px 40px' }}>
+      <div style={{ display: 'flex', gap: '20px', maxWidth: '1600px', margin: '0 auto', padding: isMobile ? '16px' : '24px 40px' }}>
+        {/* Fixed Left Sidebar - Quick Trade Entry */}
+        {!isMobile && accounts.length > 0 && (
+          <div style={{ width: '240px', flexShrink: 0, position: 'sticky', top: '20px', height: 'fit-content' }}>
+            <div style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '10px', padding: '16px' }}>
+              <div style={{ fontSize: '12px', color: '#888', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '14px', fontWeight: 600 }}>Quick Trade</div>
+
+              {/* Journal Select */}
+              <div style={{ marginBottom: '10px' }}>
+                <select value={quickTradeAccount} onChange={e => setQuickTradeAccount(e.target.value)} style={{ width: '100%', padding: '10px 12px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '13px' }}>
+                  {accounts.map(acc => <option key={acc.id} value={acc.id}>{acc.name}</option>)}
+                </select>
+              </div>
+
+              {/* Symbol */}
+              <div style={{ marginBottom: '10px' }}>
+                <input type="text" value={quickTradeSymbol} onChange={e => setQuickTradeSymbol(e.target.value)} placeholder="Symbol (e.g. XAUUSD)" style={{ width: '100%', padding: '10px 12px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '13px', boxSizing: 'border-box' }} />
+              </div>
+
+              {/* Direction */}
+              <div style={{ display: 'flex', gap: '6px', marginBottom: '10px' }}>
+                {['long', 'short'].map(d => (
+                  <button key={d} onClick={() => setQuickTradeDirection(d)} style={{ flex: 1, padding: '8px', background: quickTradeDirection === d ? (d === 'long' ? '#22c55e' : '#ef4444') : '#141418', border: '1px solid #1a1a22', borderRadius: '4px', color: quickTradeDirection === d ? '#fff' : '#888', fontSize: '11px', textTransform: 'uppercase', cursor: 'pointer', fontWeight: 600 }}>{d}</button>
+                ))}
+              </div>
+
+              {/* Outcome */}
+              <div style={{ display: 'flex', gap: '6px', marginBottom: '10px' }}>
+                {['win', 'loss', 'be'].map(o => (
+                  <button key={o} onClick={() => setQuickTradeOutcome(o)} style={{ flex: 1, padding: '8px', background: quickTradeOutcome === o ? (o === 'win' ? 'rgba(34,197,94,0.2)' : o === 'loss' ? 'rgba(239,68,68,0.2)' : 'rgba(255,255,255,0.1)') : '#141418', border: `1px solid ${quickTradeOutcome === o ? (o === 'win' ? '#22c55e' : o === 'loss' ? '#ef4444' : '#666') : '#1a1a22'}`, borderRadius: '4px', color: quickTradeOutcome === o ? (o === 'win' ? '#22c55e' : o === 'loss' ? '#ef4444' : '#fff') : '#888', fontSize: '11px', textTransform: 'uppercase', cursor: 'pointer', fontWeight: 600 }}>{o}</button>
+                ))}
+              </div>
+
+              {/* PnL and RR */}
+              <div style={{ display: 'flex', gap: '8px', marginBottom: '10px' }}>
+                <input type="number" value={quickTradePnl} onChange={e => setQuickTradePnl(e.target.value)} placeholder="P&L ($)" style={{ flex: 1, padding: '10px 12px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '13px', boxSizing: 'border-box' }} />
+                <input type="text" value={quickTradeRR} onChange={e => setQuickTradeRR(e.target.value)} placeholder="RR" style={{ width: '60px', padding: '10px 12px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '13px', boxSizing: 'border-box' }} />
+              </div>
+
+              {/* Date */}
+              <div style={{ marginBottom: '14px' }}>
+                <input type="date" value={quickTradeDate} onChange={e => setQuickTradeDate(e.target.value)} style={{ width: '100%', padding: '10px 12px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '13px', boxSizing: 'border-box' }} />
+              </div>
+
+              {/* Submit */}
+              <button onClick={submitQuickTrade} disabled={submittingTrade || !quickTradeSymbol.trim() || !quickTradePnl} style={{ width: '100%', padding: '12px', background: (submittingTrade || !quickTradeSymbol.trim() || !quickTradePnl) ? '#1a1a22' : '#22c55e', border: 'none', borderRadius: '6px', color: (submittingTrade || !quickTradeSymbol.trim() || !quickTradePnl) ? '#666' : '#fff', fontWeight: 600, fontSize: '13px', cursor: (submittingTrade || !quickTradeSymbol.trim() || !quickTradePnl) ? 'not-allowed' : 'pointer' }}>
+                {submittingTrade ? 'Adding...' : '+ Add Trade'}
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Main Content */}
+        <div style={{ flex: 1, minWidth: 0 }}>
         {accounts.length === 0 ? (
           <div style={{ textAlign: 'center', padding: isMobile ? '40px 20px' : '80px 40px', background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '10px' }}>
             <h2 style={{ fontSize: isMobile ? '20px' : '24px', marginBottom: '12px' }}>Welcome to LSDTRADE+</h2>
@@ -302,6 +399,73 @@ export default function DashboardPage() {
             <button onClick={() => setShowModal(true)} style={{ padding: isMobile ? '12px 20px' : '14px 28px', background: '#22c55e', border: 'none', borderRadius: '6px', color: '#fff', fontWeight: 600, fontSize: isMobile ? '14px' : '16px', cursor: 'pointer' }}>+ Create Your First Journal</button>
           </div>
         ) : (
+          <>
+          {/* View Toggle */}
+          <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '16px' }}>
+            <div style={{ display: 'flex', background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '6px', overflow: 'hidden' }}>
+              <button onClick={() => setViewMode('cards')} style={{ padding: '8px 14px', background: viewMode === 'cards' ? '#22c55e' : 'transparent', border: 'none', color: viewMode === 'cards' ? '#fff' : '#888', fontSize: '12px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="7" height="7" /><rect x="14" y="3" width="7" height="7" /><rect x="3" y="14" width="7" height="7" /><rect x="14" y="14" width="7" height="7" /></svg>
+                Cards
+              </button>
+              <button onClick={() => setViewMode('list')} style={{ padding: '8px 14px', background: viewMode === 'list' ? '#22c55e' : 'transparent', border: 'none', color: viewMode === 'list' ? '#fff' : '#888', fontSize: '12px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="8" y1="6" x2="21" y2="6" /><line x1="8" y1="12" x2="21" y2="12" /><line x1="8" y1="18" x2="21" y2="18" /><line x1="3" y1="6" x2="3.01" y2="6" /><line x1="3" y1="12" x2="3.01" y2="12" /><line x1="3" y1="18" x2="3.01" y2="18" /></svg>
+                List
+              </button>
+            </div>
+          </div>
+
+          {/* List View */}
+          {viewMode === 'list' ? (
+            <div style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '10px', overflow: 'hidden' }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                <thead>
+                  <tr style={{ borderBottom: '1px solid #1a1a22' }}>
+                    {['Journal', 'Balance', 'P&L', 'Winrate', 'Trades', 'Profit Factor', 'Avg RR', 'Actions'].map((h, i) => (
+                      <th key={i} style={{ padding: '14px 16px', textAlign: i === 0 ? 'left' : 'center', color: '#888', fontSize: '11px', fontWeight: 600, textTransform: 'uppercase' }}>{h}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {accounts.map(account => {
+                    const accTrades = trades[account.id] || []
+                    const wins = accTrades.filter(t => t.outcome === 'win').length
+                    const losses = accTrades.filter(t => t.outcome === 'loss').length
+                    const totalPnl = accTrades.reduce((sum, t) => sum + (parseFloat(t.pnl) || 0), 0)
+                    const winrate = (wins + losses) > 0 ? Math.round((wins / (wins + losses)) * 100) : 0
+                    const avgRR = accTrades.length > 0 ? (accTrades.reduce((sum, t) => sum + (parseFloat(t.rr) || 0), 0) / accTrades.length).toFixed(1) : '0'
+                    const currentBalance = (parseFloat(account.starting_balance) || 0) + totalPnl
+                    const grossProfit = accTrades.filter(t => parseFloat(t.pnl) > 0).reduce((sum, t) => sum + parseFloat(t.pnl), 0)
+                    const grossLoss = Math.abs(accTrades.filter(t => parseFloat(t.pnl) < 0).reduce((sum, t) => sum + parseFloat(t.pnl), 0))
+                    const profitFactor = grossLoss > 0 ? (grossProfit / grossLoss).toFixed(1) : grossProfit > 0 ? '∞' : '0'
+                    return (
+                      <tr key={account.id} style={{ borderBottom: '1px solid #1a1a22' }}>
+                        <td style={{ padding: '14px 16px' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                            <span style={{ fontSize: '15px', fontWeight: 600, color: '#fff' }}>{account.name}</span>
+                            <button onClick={() => { setEditName(account.name); setShowEditModal(account.id) }} style={{ background: 'transparent', border: 'none', cursor: 'pointer', padding: '2px' }}>
+                              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#666" strokeWidth="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" /><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" /></svg>
+                            </button>
+                          </div>
+                        </td>
+                        <td style={{ padding: '14px 16px', textAlign: 'center', fontWeight: 600, fontSize: '14px', color: currentBalance >= (parseFloat(account.starting_balance) || 0) ? '#22c55e' : '#ef4444' }}>${currentBalance.toLocaleString()}</td>
+                        <td style={{ padding: '14px 16px', textAlign: 'center', fontWeight: 600, fontSize: '14px', color: totalPnl >= 0 ? '#22c55e' : '#ef4444' }}>{totalPnl >= 0 ? '+' : ''}${totalPnl.toLocaleString()}</td>
+                        <td style={{ padding: '14px 16px', textAlign: 'center', fontSize: '14px', color: winrate >= 50 ? '#22c55e' : '#ef4444' }}>{winrate}%</td>
+                        <td style={{ padding: '14px 16px', textAlign: 'center', fontSize: '14px', color: '#888' }}>{accTrades.length}</td>
+                        <td style={{ padding: '14px 16px', textAlign: 'center', fontSize: '14px', color: parseFloat(profitFactor) >= 1 ? '#22c55e' : '#ef4444' }}>{profitFactor}</td>
+                        <td style={{ padding: '14px 16px', textAlign: 'center', fontSize: '14px', color: '#888' }}>{avgRR}R</td>
+                        <td style={{ padding: '14px 16px', textAlign: 'center' }}>
+                          <div style={{ display: 'flex', gap: '8px', justifyContent: 'center' }}>
+                            <a href={`/account/${account.id}`} style={{ padding: '8px 14px', background: '#22c55e', borderRadius: '4px', color: '#fff', fontWeight: 600, fontSize: '12px', textDecoration: 'none' }}>Enter</a>
+                            <a href={`/account/${account.id}?tab=statistics`} style={{ padding: '8px 14px', background: 'transparent', border: '1px solid #22c55e', borderRadius: '4px', color: '#22c55e', fontWeight: 600, fontSize: '12px', textDecoration: 'none' }}>Stats</a>
+                          </div>
+                        </td>
+                      </tr>
+                    )
+                  })}
+                </tbody>
+              </table>
+            </div>
+          ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
             {accounts.map(account => {
               const accTrades = trades[account.id] || []
@@ -334,7 +498,7 @@ export default function DashboardPage() {
                   {/* Chart + Stats Row */}
                   <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', padding: isMobile ? '0 16px 16px' : '0 24px 16px', gap: '16px' }}>
                     {/* Chart */}
-                    <div style={{ flex: 1, height: isMobile ? '200px' : '340px', overflow: 'hidden' }}>
+                    <div style={{ flex: 1, height: isMobile ? '180px' : '260px', overflow: 'hidden' }}>
                       <EquityCurve accountTrades={accTrades} startingBalance={account.starting_balance} />
                     </div>
 
@@ -422,7 +586,10 @@ export default function DashboardPage() {
               )
             })}
           </div>
+          )}
+          </>
         )}
+        </div>
 
         {/* Modals */}
         {showModal && (
