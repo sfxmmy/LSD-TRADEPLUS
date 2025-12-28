@@ -1382,7 +1382,7 @@ export default function AccountPage() {
                     <span style={{ color: includeDaysNotTraded ? '#fff' : '#888' }}>Include non-trading days</span>
                   </label>
                 </div>
-                <div style={{ height: '140px', display: 'flex' }}>
+                <div style={{ height: '200px', display: 'flex' }}>
                   {dailyPnL.length === 0 ? <div style={{ height: '100%', width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#666' }}>No data</div> : (() => {
                     let displayData = dailyPnL
                     if (includeDaysNotTraded && dailyPnL.length > 1) {
