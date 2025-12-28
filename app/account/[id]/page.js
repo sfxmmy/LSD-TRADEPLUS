@@ -734,7 +734,7 @@ export default function AccountPage() {
               {/* Graphs - side by side */}
               <div style={{ flex: 1, display: 'flex', flexDirection: isMobile ? 'column' : 'row', gap: '12px' }}>
                 {/* Equity Curve with groupBy dropdown */}
-                <div style={{ flex: 1, background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '12px', display: 'flex', flexDirection: 'column', position: 'relative', minHeight: isMobile ? '140px' : '160px' }}>
+                <div style={{ flex: 1, background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '16px', display: 'flex', flexDirection: 'column', position: 'relative', minHeight: isMobile ? '160px' : '200px' }}>
                   {(() => {
                     // Calculate visible lines first so we can compute dynamic Start/Current
                     const sorted = trades.length >= 2 ? [...trades].sort((a, b) => new Date(a.date) - new Date(b.date)) : []
@@ -833,7 +833,7 @@ export default function AccountPage() {
                           </div>
                         </div>
                         {/* Graph area - full width now */}
-                        <div style={{ flex: 1, position: 'relative', display: 'flex', minHeight: '110px' }}>
+                        <div style={{ flex: 1, position: 'relative', display: 'flex', minHeight: '140px' }}>
                           {sorted.length < 2 ? (
                             <div style={{ height: '100%', width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#666' }}>Need 2+ trades</div>
                           ) : (() => {
@@ -1218,7 +1218,7 @@ export default function AccountPage() {
                 </div>
 
                 {/* Bar Chart - with title and Y-axis */}
-                <div style={{ flex: 1, background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '12px', display: 'flex', flexDirection: 'column', minHeight: isMobile ? '140px' : '160px' }}>
+                <div style={{ flex: 1, background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '16px', display: 'flex', flexDirection: 'column', minHeight: isMobile ? '180px' : '200px' }}>
                   {(() => {
                     const groupedData = {}
                     const customSelects = getCustomSelectInputs()
@@ -1294,7 +1294,7 @@ export default function AccountPage() {
                           </div>
                         </div>
                         {/* Graph - full width */}
-                        <div style={{ flex: 1, display: 'flex', minHeight: '110px' }}>
+                        <div style={{ flex: 1, display: 'flex', minHeight: '140px' }}>
                           <div style={{ width: '24px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', flexShrink: 0, paddingRight: '2px', paddingBottom: '28px' }}>
                             {yLabels.map((v, i) => <span key={i} style={{ fontSize: '8px', color: '#888', lineHeight: 1, textAlign: 'right' }}>{v}</span>)}
                           </div>
@@ -1382,7 +1382,7 @@ export default function AccountPage() {
                     <span style={{ color: includeDaysNotTraded ? '#fff' : '#888' }}>Include non-trading days</span>
                   </label>
                 </div>
-                <div style={{ height: '110px', display: 'flex' }}>
+                <div style={{ height: '140px', display: 'flex' }}>
                   {dailyPnL.length === 0 ? <div style={{ height: '100%', width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#666' }}>No data</div> : (() => {
                     let displayData = dailyPnL
                     if (includeDaysNotTraded && dailyPnL.length > 1) {
@@ -1809,14 +1809,28 @@ export default function AccountPage() {
                     <StatBox label="Short Trades" value={shortTrades.length} color="#fff" />
                   </div>
 
-                  {/* Notes Quick View */}
-                  <div style={{ background: 'linear-gradient(145deg, #0d0d14 0%, #0a0a10 100%)', border: '1px solid #3b82f6', borderRadius: '8px', padding: '12px 14px', boxShadow: '0 0 20px rgba(59,130,246,0.15), inset 0 1px 0 rgba(59,130,246,0.1)' }}>
-                    <div style={{ fontSize: '10px', color: '#3b82f6', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '8px', borderBottom: '1px solid rgba(59,130,246,0.2)', paddingBottom: '6px', fontWeight: 600 }}>Notes</div>
-                    <StatBox label="Streak" value={(streaks.cs >= 0 ? '+' : '') + streaks.cs} color={streaks.cs >= 0 ? '#22c55e' : '#ef4444'} />
-                    <StatBox label="Best" value={'+' + streaks.mw} color="#22c55e" />
-                    <StatBox label="Worst" value={'-' + Math.abs(streaks.ml)} color="#ef4444" />
-                    <div style={{ marginTop: '6px', paddingTop: '6px', borderTop: '1px solid rgba(59,130,246,0.2)' }}>
-                      <button onClick={() => setActiveTab('notes')} style={{ width: '100%', padding: '6px', background: 'rgba(59,130,246,0.1)', border: '1px solid rgba(59,130,246,0.3)', borderRadius: '4px', color: '#3b82f6', fontSize: '10px', cursor: 'pointer', fontWeight: 600 }}>View Notes →</button>
+                  {/* Streaks */}
+                  <div style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '12px 14px' }}>
+                    <div style={{ fontSize: '10px', color: '#888', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '8px', borderBottom: '1px solid #1a1a22', paddingBottom: '6px' }}>Streaks</div>
+                    <StatBox label="Current" value={(streaks.cs >= 0 ? '+' : '') + streaks.cs} color={streaks.cs >= 0 ? '#22c55e' : '#ef4444'} />
+                    <StatBox label="Best Win" value={'+' + streaks.mw} color="#22c55e" />
+                    <StatBox label="Worst Loss" value={'-' + Math.abs(streaks.ml)} color="#ef4444" />
+                  </div>
+
+                  {/* AI Insights */}
+                  <div style={{ background: 'linear-gradient(145deg, #0d0d14 0%, #0a0a10 100%)', border: '1px solid #8b5cf6', borderRadius: '8px', padding: '12px 14px', boxShadow: '0 0 20px rgba(139,92,246,0.15), inset 0 1px 0 rgba(139,92,246,0.1)' }}>
+                    <div style={{ fontSize: '10px', color: '#8b5cf6', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '8px', borderBottom: '1px solid rgba(139,92,246,0.2)', paddingBottom: '6px', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <span>✨</span> AI Insight
+                    </div>
+                    <div style={{ fontSize: '11px', color: '#ccc', lineHeight: 1.5 }}>
+                      {(() => {
+                        if (trades.length < 5) return "Add more trades to get personalized insights about your trading performance."
+                        if (winrate >= 60 && parseFloat(profitFactor) >= 2) return `Strong performance! ${winrate}% winrate with ${profitFactor} profit factor. Your ${mostTradedPair} trades are particularly effective.`
+                        if (winrate < 40) return `Focus on trade selection. Your ${winrate}% winrate suggests reviewing entry criteria. Consider reducing position sizes.`
+                        if (parseFloat(avgRR) < 1) return `Your average RR of ${avgRR} is below 1:1. Consider holding winners longer or tightening stop losses.`
+                        if (streaks.cs < -3) return `Current losing streak of ${Math.abs(streaks.cs)}. Consider taking a break and reviewing recent setups before your next trade.`
+                        return `Solid ${winrate}% winrate. Your best pair is ${mostTradedPair}. Focus on setups with higher RR potential.`
+                      })()}
                     </div>
                   </div>
                 </div>
