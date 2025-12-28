@@ -334,6 +334,13 @@ export default function AccountPage() {
   const bestPairPnl = [...winrateByPair].sort((a, b) => b.pnl - a.pnl)[0] || { pair: '-', pnl: 0 }
   const worstPairPnl = [...winrateByPair].sort((a, b) => a.pnl - b.pnl)[0] || { pair: '-', pnl: 0 }
 
+  // Daily PnL data for net daily chart
+  const dailyPnL = (() => {
+    const byDay = {}
+    trades.forEach(t => { byDay[t.date] = (byDay[t.date] || 0) + (parseFloat(t.pnl) || 0) })
+    return Object.entries(byDay).sort((a, b) => new Date(a[0]) - new Date(b[0])).map(([date, pnl]) => ({ date, pnl }))
+  })()
+
   // Daily winrate (% of green days)
   const greenDays = dailyPnL.filter(d => d.pnl > 0).length
   const redDays = dailyPnL.filter(d => d.pnl < 0).length
@@ -348,13 +355,6 @@ export default function AccountPage() {
     const monthsDiff = Math.max(1, (lastDate.getFullYear() - firstDate.getFullYear()) * 12 + (lastDate.getMonth() - firstDate.getMonth()) + 1)
     const totalGrowth = ((currentBalance / startingBalance) - 1) * 100
     return (totalGrowth / monthsDiff).toFixed(1)
-  })()
-
-  // Daily PnL data for net daily chart
-  const dailyPnL = (() => {
-    const byDay = {}
-    trades.forEach(t => { byDay[t.date] = (byDay[t.date] || 0) + (parseFloat(t.pnl) || 0) })
-    return Object.entries(byDay).sort((a, b) => new Date(a[0]) - new Date(b[0])).map(([date, pnl]) => ({ date, pnl }))
   })()
 
   const tabTitles = { trades: 'TRADING AREA', statistics: 'STATISTICS AREA', notes: 'NOTES AREA' }
