@@ -1727,58 +1727,98 @@ export default function AccountPage() {
               </div>
             </div>
 
-            {/* ROW 5: Compact stats grid */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '8px', marginBottom: '12px', position: 'relative', zIndex: 2 }}>
-              {(() => {
-                const tradesThisWeek = trades.filter(t => {
-                  const d = new Date(t.date)
-                  const now = new Date()
-                  const weekAgo = new Date(now.setDate(now.getDate() - 7))
-                  return d >= weekAgo
-                }).length
-                const tradingDays = Object.keys(dailyPnL.reduce((acc, d) => { acc[d.date] = 1; return acc }, {})).length
-                const biggestWin = Math.max(...trades.filter(t => t.outcome === 'win').map(t => parseFloat(t.pnl) || 0), 0)
-                const biggestLoss = Math.min(...trades.filter(t => t.outcome === 'loss').map(t => parseFloat(t.pnl) || 0), 0)
-                const longTrades = trades.filter(t => t.direction === 'long')
-                const shortTrades = trades.filter(t => t.direction === 'short')
-                const longWins = longTrades.filter(t => t.outcome === 'win').length
-                const shortWins = shortTrades.filter(t => t.outcome === 'win').length
-                const longWr = longTrades.length > 0 ? Math.round((longWins / longTrades.length) * 100) : 0
-                const shortWr = shortTrades.length > 0 ? Math.round((shortWins / shortTrades.length) * 100) : 0
+            {/* ROW 5: Grouped stats sections */}
+            {(() => {
+              const tradesThisWeek = trades.filter(t => {
+                const d = new Date(t.date)
+                const now = new Date()
+                const weekAgo = new Date(now.setDate(now.getDate() - 7))
+                return d >= weekAgo
+              }).length
+              const tradingDays = Object.keys(dailyPnL.reduce((acc, d) => { acc[d.date] = 1; return acc }, {})).length
+              const biggestWin = Math.max(...trades.filter(t => t.outcome === 'win').map(t => parseFloat(t.pnl) || 0), 0)
+              const biggestLoss = Math.min(...trades.filter(t => t.outcome === 'loss').map(t => parseFloat(t.pnl) || 0), 0)
+              const longTrades = trades.filter(t => t.direction === 'long')
+              const shortTrades = trades.filter(t => t.direction === 'short')
+              const longWins = longTrades.filter(t => t.outcome === 'win').length
+              const shortWins = shortTrades.filter(t => t.outcome === 'win').length
+              const longWr = longTrades.length > 0 ? Math.round((longWins / longTrades.length) * 100) : 0
+              const shortWr = shortTrades.length > 0 ? Math.round((shortWins / shortTrades.length) * 100) : 0
+              const growth = ((currentBalance / startingBalance - 1) * 100).toFixed(1)
 
-                return [
-                  { label: 'Balance', value: '$' + Math.round(currentBalance).toLocaleString(), color: currentBalance >= startingBalance ? '#22c55e' : '#ef4444' },
-                  { label: 'Net P&L', value: (totalPnl >= 0 ? '+' : '') + '$' + Math.abs(Math.round(totalPnl)).toLocaleString(), color: totalPnl >= 0 ? '#22c55e' : '#ef4444' },
-                  { label: 'Growth', value: ((currentBalance / startingBalance - 1) * 100).toFixed(1) + '%', color: currentBalance >= startingBalance ? '#22c55e' : '#ef4444' },
-                  { label: 'Winrate', value: winrate + '%', color: winrate >= 50 ? '#22c55e' : '#ef4444' },
-                  { label: 'Wins / Losses', value: wins + ' / ' + losses, color: '#fff' },
-                  { label: 'Profit Factor', value: profitFactor, color: parseFloat(profitFactor) >= 1.5 ? '#22c55e' : parseFloat(profitFactor) >= 1 ? '#f59e0b' : '#ef4444' },
-                  { label: 'Avg RR', value: avgRR + 'R', color: parseFloat(avgRR) >= 1.5 ? '#22c55e' : '#fff' },
-                  { label: 'Expectancy', value: '$' + expectancy, color: parseFloat(expectancy) >= 0 ? '#22c55e' : '#ef4444' },
-                  { label: 'Avg Win', value: '+$' + avgWin, color: '#22c55e' },
-                  { label: 'Avg Loss', value: '-$' + avgLoss, color: '#ef4444' },
-                  { label: 'Biggest Win', value: '+$' + Math.round(biggestWin).toLocaleString(), color: '#22c55e' },
-                  { label: 'Biggest Loss', value: '-$' + Math.abs(Math.round(biggestLoss)).toLocaleString(), color: '#ef4444' },
-                  { label: 'Risk/Reward', value: returnOnRisk + 'x', color: '#22c55e' },
-                  { label: 'Consistency', value: consistencyScore + '%', color: consistencyScore >= 60 ? '#22c55e' : consistencyScore >= 40 ? '#f59e0b' : '#ef4444' },
-                  { label: 'Total Trades', value: trades.length, color: '#fff' },
-                  { label: 'Trading Days', value: tradingDays, color: '#fff' },
-                  { label: 'Trades/Day', value: avgTradesPerDay, color: '#fff' },
-                  { label: 'This Week', value: tradesThisWeek, color: '#3b82f6' },
-                  { label: 'Long WR', value: longWr + '%', color: longWr >= 50 ? '#22c55e' : '#ef4444' },
-                  { label: 'Short WR', value: shortWr + '%', color: shortWr >= 50 ? '#22c55e' : '#ef4444' },
-                  { label: 'Streak', value: (streaks.cs >= 0 ? '+' : '') + streaks.cs, color: streaks.cs >= 0 ? '#22c55e' : '#ef4444' },
-                  { label: 'Best Streak', value: streaks.mw, color: '#22c55e' },
-                  { label: 'Worst Streak', value: streaks.ml, color: '#ef4444' },
-                  { label: 'Monthly', value: monthlyGrowth + '%', color: parseFloat(monthlyGrowth) >= 0 ? '#22c55e' : '#ef4444' },
-                ].map((stat, i) => (
-                  <div key={i} style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '6px', padding: '10px 12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <span style={{ fontSize: '11px', color: '#666' }}>{stat.label}</span>
-                    <span style={{ fontSize: '14px', fontWeight: 600, color: stat.color }}>{stat.value}</span>
+              const StatBox = ({ label, value, color }) => (
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '6px 0' }}>
+                  <span style={{ fontSize: '11px', color: '#666' }}>{label}</span>
+                  <span style={{ fontSize: '13px', fontWeight: 600, color }}>{value}</span>
+                </div>
+              )
+
+              return (
+                <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(4, 1fr)', gap: '12px', marginBottom: '12px', position: 'relative', zIndex: 2 }}>
+                  {/* Account Overview */}
+                  <div style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '12px 14px' }}>
+                    <div style={{ fontSize: '10px', color: '#888', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '8px', borderBottom: '1px solid #1a1a22', paddingBottom: '6px' }}>Account</div>
+                    <StatBox label="Balance" value={'$' + Math.round(currentBalance).toLocaleString()} color={currentBalance >= startingBalance ? '#22c55e' : '#ef4444'} />
+                    <StatBox label="Net P&L" value={(totalPnl >= 0 ? '+' : '-') + '$' + Math.abs(Math.round(totalPnl)).toLocaleString()} color={totalPnl >= 0 ? '#22c55e' : '#ef4444'} />
+                    <StatBox label="Growth" value={growth + '%'} color={parseFloat(growth) >= 0 ? '#22c55e' : '#ef4444'} />
+                    <StatBox label="Monthly" value={monthlyGrowth + '%'} color={parseFloat(monthlyGrowth) >= 0 ? '#22c55e' : '#ef4444'} />
                   </div>
-                ))
-              })()}
-            </div>
+
+                  {/* Performance */}
+                  <div style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '12px 14px' }}>
+                    <div style={{ fontSize: '10px', color: '#888', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '8px', borderBottom: '1px solid #1a1a22', paddingBottom: '6px' }}>Performance</div>
+                    <StatBox label="Winrate" value={winrate + '%'} color={winrate >= 50 ? '#22c55e' : '#ef4444'} />
+                    <StatBox label="Wins / Losses" value={wins + ' / ' + losses} color="#fff" />
+                    <StatBox label="Profit Factor" value={profitFactor} color={parseFloat(profitFactor) >= 1.5 ? '#22c55e' : parseFloat(profitFactor) >= 1 ? '#f59e0b' : '#ef4444'} />
+                    <StatBox label="Expectancy" value={'$' + expectancy} color={parseFloat(expectancy) >= 0 ? '#22c55e' : '#ef4444'} />
+                  </div>
+
+                  {/* Trade Analysis */}
+                  <div style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '12px 14px' }}>
+                    <div style={{ fontSize: '10px', color: '#888', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '8px', borderBottom: '1px solid #1a1a22', paddingBottom: '6px' }}>Trades</div>
+                    <StatBox label="Total" value={trades.length} color="#fff" />
+                    <StatBox label="Trading Days" value={tradingDays} color="#fff" />
+                    <StatBox label="Avg/Day" value={avgTradesPerDay} color="#fff" />
+                    <StatBox label="This Week" value={tradesThisWeek} color="#3b82f6" />
+                  </div>
+
+                  {/* Risk & Reward */}
+                  <div style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '12px 14px' }}>
+                    <div style={{ fontSize: '10px', color: '#888', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '8px', borderBottom: '1px solid #1a1a22', paddingBottom: '6px' }}>Risk & Reward</div>
+                    <StatBox label="Avg RR" value={avgRR + 'R'} color={parseFloat(avgRR) >= 1.5 ? '#22c55e' : '#fff'} />
+                    <StatBox label="Return/Risk" value={returnOnRisk + 'x'} color="#22c55e" />
+                    <StatBox label="Consistency" value={consistencyScore + '%'} color={consistencyScore >= 60 ? '#22c55e' : consistencyScore >= 40 ? '#f59e0b' : '#ef4444'} />
+                    <StatBox label="Streak" value={(streaks.cs >= 0 ? '+' : '') + streaks.cs} color={streaks.cs >= 0 ? '#22c55e' : '#ef4444'} />
+                  </div>
+
+                  {/* Win/Loss Analysis */}
+                  <div style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '12px 14px' }}>
+                    <div style={{ fontSize: '10px', color: '#888', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '8px', borderBottom: '1px solid #1a1a22', paddingBottom: '6px' }}>Win/Loss</div>
+                    <StatBox label="Avg Win" value={'+$' + avgWin} color="#22c55e" />
+                    <StatBox label="Avg Loss" value={'-$' + avgLoss} color="#ef4444" />
+                    <StatBox label="Best Trade" value={'+$' + Math.round(biggestWin).toLocaleString()} color="#22c55e" />
+                    <StatBox label="Worst Trade" value={'-$' + Math.abs(Math.round(biggestLoss)).toLocaleString()} color="#ef4444" />
+                  </div>
+
+                  {/* Direction */}
+                  <div style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '12px 14px' }}>
+                    <div style={{ fontSize: '10px', color: '#888', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '8px', borderBottom: '1px solid #1a1a22', paddingBottom: '6px' }}>Direction</div>
+                    <StatBox label="Long WR" value={longWr + '%'} color={longWr >= 50 ? '#22c55e' : '#ef4444'} />
+                    <StatBox label="Long Trades" value={longTrades.length} color="#fff" />
+                    <StatBox label="Short WR" value={shortWr + '%'} color={shortWr >= 50 ? '#22c55e' : '#ef4444'} />
+                    <StatBox label="Short Trades" value={shortTrades.length} color="#fff" />
+                  </div>
+
+                  {/* Streaks */}
+                  <div style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '12px 14px' }}>
+                    <div style={{ fontSize: '10px', color: '#888', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '8px', borderBottom: '1px solid #1a1a22', paddingBottom: '6px' }}>Streaks</div>
+                    <StatBox label="Current" value={(streaks.cs >= 0 ? '+' : '') + streaks.cs} color={streaks.cs >= 0 ? '#22c55e' : '#ef4444'} />
+                    <StatBox label="Best Win" value={'+' + streaks.mw} color="#22c55e" />
+                    <StatBox label="Worst Loss" value={'-' + Math.abs(streaks.ml)} color="#ef4444" />
+                  </div>
+                </div>
+              )
+            })()}
 
             {/* Auto-generated widgets for custom inputs */}
             {(() => {
