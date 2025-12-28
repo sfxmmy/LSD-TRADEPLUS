@@ -901,36 +901,56 @@ export default function AccountPage() {
                                           {lineData[0].redPath && <path d={lineData[0].redPath} fill="none" stroke="#ef4444" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />}
                                         </>
                                       ) : (() => {
-                                        // Sort lines by average Y position (lowest Y = highest on screen = drawn last to be on top)
+                                        // Sort lines by average Y position (ascending = top lines first)
                                         const sortedLines = [...lineData].map((line, origIdx) => {
                                           const avgY = line.chartPoints.reduce((sum, p) => sum + p.y, 0) / line.chartPoints.length
                                           return { ...line, origIdx, avgY }
-                                        }).sort((a, b) => b.avgY - a.avgY) // Draw from bottom to top
+                                        }).sort((a, b) => a.avgY - b.avgY) // Top lines first (lowest Y)
 
                                         return (
                                           <>
-                                            {/* Draw gradient areas - bottom lines first, top lines last (so top lines cover bottom) */}
+                                            <defs>
+                                              {/* Create clipPath for each line - clips glow to region between this line and next line below */}
+                                              {sortedLines.map((line, sortIdx) => {
+                                                const pts = line.chartPoints
+                                                const nextLine = sortedLines[sortIdx + 1]
+                                                // Clip region: from this line down to next line (or bottom)
+                                                let clipPath
+                                                if (nextLine) {
+                                                  // Interpolate next line's Y at each X position of current line
+                                                  const nextPts = nextLine.chartPoints
+                                                  const bottomPts = pts.map(p => {
+                                                    // Find closest X in nextLine and get its Y
+                                                    let closestIdx = 0, minDist = Infinity
+                                                    nextPts.forEach((np, ni) => {
+                                                      const dist = Math.abs(np.x - p.x)
+                                                      if (dist < minDist) { minDist = dist; closestIdx = ni }
+                                                    })
+                                                    return { x: p.x, y: nextPts[closestIdx].y }
+                                                  })
+                                                  clipPath = pts.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`).join(' ') +
+                                                    bottomPts.slice().reverse().map(p => ` L ${p.x} ${p.y}`).join('') + ' Z'
+                                                } else {
+                                                  // Last line - clip to bottom of SVG
+                                                  clipPath = pts.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`).join(' ') +
+                                                    ` L ${pts[pts.length - 1].x} ${svgH} L ${pts[0].x} ${svgH} Z`
+                                                }
+                                                return <clipPath key={`clip${line.origIdx}`} id={`clip${line.origIdx}`}><path d={clipPath} /></clipPath>
+                                              })}
+                                              {/* Gradient for each line */}
+                                              {sortedLines.map((line) => (
+                                                <linearGradient key={`grad${line.origIdx}`} id={`grad${line.origIdx}`} x1="0%" y1="0%" x2="0%" y2="100%">
+                                                  <stop offset="0%" stopColor={line.color} stopOpacity="0.3" />
+                                                  <stop offset="100%" stopColor={line.color} stopOpacity="0" />
+                                                </linearGradient>
+                                              ))}
+                                            </defs>
+                                            {/* Draw gradient areas with clipPaths */}
                                             {sortedLines.map((line) => {
                                               const pts = line.chartPoints
-                                              const glowDepth = 18 // SVG units below the line
-                                              // Create area from line down to glowDepth below each point
-                                              const bottomPts = pts.map(p => ({ x: p.x, y: Math.min(p.y + glowDepth, svgH) }))
                                               const areaPath = pts.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`).join(' ') +
-                                                bottomPts.slice().reverse().map((p, i) => ` L ${p.x} ${p.y}`).join('') + ' Z'
-                                              // Calculate gradient bounds for this specific line
-                                              const minY = Math.min(...pts.map(p => p.y))
-                                              const maxY = Math.min(Math.max(...pts.map(p => p.y)) + glowDepth, svgH)
-                                              return (
-                                                <g key={`area${line.origIdx}`}>
-                                                  <defs>
-                                                    <linearGradient id={`grad${line.origIdx}`} x1="0" y1={minY} x2="0" y2={maxY} gradientUnits="userSpaceOnUse">
-                                                      <stop offset="0%" stopColor={line.color} stopOpacity="0.35" />
-                                                      <stop offset="100%" stopColor={line.color} stopOpacity="0" />
-                                                    </linearGradient>
-                                                  </defs>
-                                                  <path d={areaPath} fill={`url(#grad${line.origIdx})`} />
-                                                </g>
-                                              )
+                                                ` L ${pts[pts.length - 1].x} ${svgH} L ${pts[0].x} ${svgH} Z`
+                                              return <path key={`area${line.origIdx}`} d={areaPath} fill={`url(#grad${line.origIdx})`} clipPath={`url(#clip${line.origIdx})`} />
                                             })}
                                             {/* Draw all lines on top */}
                                             {lineData.map((line, idx) => (
@@ -2022,36 +2042,52 @@ export default function AccountPage() {
                                 {lineData[0].redPath && <path d={lineData[0].redPath} fill="none" stroke="#ef4444" strokeWidth="2" strokeLinecap="round" vectorEffect="non-scaling-stroke" />}
                               </>
                             ) : (() => {
-                              // Sort lines by average Y position (lowest Y = highest on screen = drawn last to be on top)
+                              // Sort lines by average Y position (ascending = top lines first)
                               const sortedLines = [...lineData].map((line, origIdx) => {
                                 const avgY = line.chartPoints.reduce((sum, p) => sum + p.y, 0) / line.chartPoints.length
                                 return { ...line, origIdx, avgY }
-                              }).sort((a, b) => b.avgY - a.avgY) // Draw from bottom to top
+                              }).sort((a, b) => a.avgY - b.avgY) // Top lines first (lowest Y)
 
                               return (
                                 <>
-                                  {/* Draw gradient areas - bottom lines first, top lines last (so top lines cover bottom) */}
+                                  <defs>
+                                    {/* Create clipPath for each line - clips glow to region between this line and next line below */}
+                                    {sortedLines.map((line, sortIdx) => {
+                                      const pts = line.chartPoints
+                                      const nextLine = sortedLines[sortIdx + 1]
+                                      let clipPath
+                                      if (nextLine) {
+                                        const nextPts = nextLine.chartPoints
+                                        const bottomPts = pts.map(p => {
+                                          let closestIdx = 0, minDist = Infinity
+                                          nextPts.forEach((np, ni) => {
+                                            const dist = Math.abs(np.x - p.x)
+                                            if (dist < minDist) { minDist = dist; closestIdx = ni }
+                                          })
+                                          return { x: p.x, y: nextPts[closestIdx].y }
+                                        })
+                                        clipPath = pts.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`).join(' ') +
+                                          bottomPts.slice().reverse().map(p => ` L ${p.x} ${p.y}`).join('') + ' Z'
+                                      } else {
+                                        clipPath = pts.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`).join(' ') +
+                                          ` L ${pts[pts.length - 1].x} ${svgH} L ${pts[0].x} ${svgH} Z`
+                                      }
+                                      return <clipPath key={`clipEnl${line.origIdx}`} id={`clipEnl${line.origIdx}`}><path d={clipPath} /></clipPath>
+                                    })}
+                                    {/* Gradient for each line */}
+                                    {sortedLines.map((line) => (
+                                      <linearGradient key={`gradEnl${line.origIdx}`} id={`gradEnl${line.origIdx}`} x1="0%" y1="0%" x2="0%" y2="100%">
+                                        <stop offset="0%" stopColor={line.color} stopOpacity="0.3" />
+                                        <stop offset="100%" stopColor={line.color} stopOpacity="0" />
+                                      </linearGradient>
+                                    ))}
+                                  </defs>
+                                  {/* Draw gradient areas with clipPaths */}
                                   {sortedLines.map((line) => {
                                     const pts = line.chartPoints
-                                    const glowDepth = 18 // SVG units below the line
-                                    // Create area from line down to glowDepth below each point
-                                    const bottomPts = pts.map(p => ({ x: p.x, y: Math.min(p.y + glowDepth, svgH) }))
                                     const areaPath = pts.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`).join(' ') +
-                                      bottomPts.slice().reverse().map((p, i) => ` L ${p.x} ${p.y}`).join('') + ' Z'
-                                    // Calculate gradient bounds for this specific line
-                                    const minY = Math.min(...pts.map(p => p.y))
-                                    const maxY = Math.min(Math.max(...pts.map(p => p.y)) + glowDepth, svgH)
-                                    return (
-                                      <g key={`areaEnl${line.origIdx}`}>
-                                        <defs>
-                                          <linearGradient id={`gradEnl${line.origIdx}`} x1="0" y1={minY} x2="0" y2={maxY} gradientUnits="userSpaceOnUse">
-                                            <stop offset="0%" stopColor={line.color} stopOpacity="0.35" />
-                                            <stop offset="100%" stopColor={line.color} stopOpacity="0" />
-                                          </linearGradient>
-                                        </defs>
-                                        <path d={areaPath} fill={`url(#gradEnl${line.origIdx})`} />
-                                      </g>
-                                    )
+                                      ` L ${pts[pts.length - 1].x} ${svgH} L ${pts[0].x} ${svgH} Z`
+                                    return <path key={`areaEnl${line.origIdx}`} d={areaPath} fill={`url(#gradEnl${line.origIdx})`} clipPath={`url(#clipEnl${line.origIdx})`} />
                                   })}
                                   {/* Draw all lines on top */}
                                   {lineData.map((line, idx) => (
