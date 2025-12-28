@@ -892,10 +892,10 @@ export default function AccountPage() {
                                       <defs>
                                         <linearGradient id="eqGreen" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stopColor="#22c55e" stopOpacity="0.3" /><stop offset="100%" stopColor="#22c55e" stopOpacity="0" /></linearGradient>
                                         <linearGradient id="eqRed" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stopColor="#ef4444" stopOpacity="0.3" /><stop offset="100%" stopColor="#ef4444" stopOpacity="0" /></linearGradient>
-                                        {/* Gradients for each line's downward shadow */}
+                                        {/* Gradient for each line - fades from line color to transparent going down */}
                                         {lineData.map((line, idx) => (
-                                          <linearGradient key={idx} id={`shadow${idx}`} x1="0%" y1="0%" x2="0%" y2="100%">
-                                            <stop offset="0%" stopColor={line.color} stopOpacity="0.35" />
+                                          <linearGradient key={idx} id={`lineGrad${idx}`} x1="0%" y1="0%" x2="0%" y2="100%">
+                                            <stop offset="0%" stopColor={line.color} stopOpacity="0.3" />
                                             <stop offset="100%" stopColor={line.color} stopOpacity="0" />
                                           </linearGradient>
                                         ))}
@@ -907,19 +907,20 @@ export default function AccountPage() {
                                           {lineData[0].greenPath && <path d={lineData[0].greenPath} fill="none" stroke="#22c55e" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />}
                                           {lineData[0].redPath && <path d={lineData[0].redPath} fill="none" stroke="#ef4444" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />}
                                         </>
-                                      ) : lineData.map((line, idx) => {
-                                        // Create shadow area path - narrow band below the line (8 SVG units depth)
-                                        const shadowDepth = 8
-                                        const pts = line.chartPoints
-                                        const shadowPath = pts.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`).join(' ') +
-                                          pts.slice().reverse().map((p, i) => `${i === 0 ? ' L' : ' L'} ${p.x} ${Math.min(p.y + shadowDepth, svgH)}`).join('') + ' Z'
-                                        return (
-                                          <g key={idx}>
-                                            <path d={shadowPath} fill={`url(#shadow${idx})`} />
-                                            <path d={line.pathD} fill="none" stroke={line.color} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />
-                                          </g>
-                                        )
-                                      })}
+                                      ) : (
+                                        <>
+                                          {/* Draw all area fills first (isolated to prevent color mixing) */}
+                                          {lineData.map((line, idx) => {
+                                            const pts = line.chartPoints
+                                            const areaPath = pts.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`).join(' ') + ` L ${pts[pts.length - 1].x} ${svgH} L ${pts[0].x} ${svgH} Z`
+                                            return <path key={`area${idx}`} d={areaPath} fill={`url(#lineGrad${idx})`} style={{ mixBlendMode: 'screen' }} />
+                                          })}
+                                          {/* Draw all lines on top */}
+                                          {lineData.map((line, idx) => (
+                                            <path key={`line${idx}`} d={line.pathD} fill="none" stroke={line.color} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />
+                                          ))}
+                                        </>
+                                      )}
                                     </svg>
                                     {hoverPoint && <div style={{ position: 'absolute', left: `${hoverPoint.xPct}%`, top: `${hoverPoint.yPct}%`, transform: 'translate(-50%, -50%)', width: '10px', height: '10px', borderRadius: '50%', background: equityCurveGroupBy === 'total' ? (hoverPoint.balance >= startingBalance ? '#22c55e' : '#ef4444') : (hoverPoint.lineColor || '#22c55e'), border: '2px solid #fff', pointerEvents: 'none', zIndex: 10 }} />}
                                     {hoverPoint && (
@@ -1951,16 +1952,7 @@ export default function AccountPage() {
                     var redAreaPath = redSegments.map(s => `M ${s.x1} ${s.y1} L ${s.x2} ${s.y2} L ${s.x2} ${startYEnl} L ${s.x1} ${startYEnl} Z`).join(' ')
                   }
 
-                  // For multi-line mode, create a narrow shadow below the line (not overlapping with other lines)
-                  let areaPath = null
-                  if (equityCurveGroupBy !== 'total' && chartPoints.length > 1) {
-                    const shadowDepth = 8 // Fixed depth in SVG units
-                    const offsetPoints = chartPoints.map(p => ({ x: p.x, y: Math.min(p.y + shadowDepth, svgH) }))
-                    areaPath = chartPoints.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`).join(' ') +
-                      offsetPoints.slice().reverse().map((p, i) => `${i === 0 ? ' L' : ' L'} ${p.x} ${p.y}`).join('') + ' Z'
-                  }
-
-                  return { ...line, chartPoints, pathD, greenPath, redPath, greenAreaPath, redAreaPath, areaPath }
+                  return { ...line, chartPoints, pathD, greenPath, redPath, greenAreaPath, redAreaPath }
                 })
 
                 const mainLine = lineData[0]
@@ -2003,10 +1995,10 @@ export default function AccountPage() {
                             <defs>
                               <linearGradient id="eqGEnlG" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stopColor="#22c55e" stopOpacity="0.3" /><stop offset="100%" stopColor="#22c55e" stopOpacity="0" /></linearGradient>
                               <linearGradient id="eqGEnlR" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stopColor="#ef4444" stopOpacity="0.3" /><stop offset="100%" stopColor="#ef4444" stopOpacity="0" /></linearGradient>
-                              {/* Gradients for each line's downward shadow */}
+                              {/* Gradient for each line - fades from line color to transparent going down */}
                               {lineData.map((line, idx) => (
-                                <linearGradient key={idx} id={`shadowEnl${idx}`} x1="0%" y1="0%" x2="0%" y2="100%">
-                                  <stop offset="0%" stopColor={line.color} stopOpacity="0.35" />
+                                <linearGradient key={idx} id={`lineGradEnl${idx}`} x1="0%" y1="0%" x2="0%" y2="100%">
+                                  <stop offset="0%" stopColor={line.color} stopOpacity="0.3" />
                                   <stop offset="100%" stopColor={line.color} stopOpacity="0" />
                                 </linearGradient>
                               ))}
@@ -2018,12 +2010,20 @@ export default function AccountPage() {
                                 {lineData[0].greenPath && <path d={lineData[0].greenPath} fill="none" stroke="#22c55e" strokeWidth="2" strokeLinecap="round" vectorEffect="non-scaling-stroke" />}
                                 {lineData[0].redPath && <path d={lineData[0].redPath} fill="none" stroke="#ef4444" strokeWidth="2" strokeLinecap="round" vectorEffect="non-scaling-stroke" />}
                               </>
-                            ) : lineData.map((line, idx) => (
-                              <g key={idx}>
-                                {line.areaPath && <path d={line.areaPath} fill={`url(#shadowEnl${idx})`} />}
-                                <path d={line.pathD} fill="none" stroke={line.color} strokeWidth="3" strokeLinecap="round" vectorEffect="non-scaling-stroke" />
-                              </g>
-                            ))}
+                            ) : (
+                              <>
+                                {/* Draw all area fills first (isolated to prevent color mixing) */}
+                                {lineData.map((line, idx) => {
+                                  const pts = line.chartPoints
+                                  const areaPath = pts.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`).join(' ') + ` L ${pts[pts.length - 1].x} ${svgH} L ${pts[0].x} ${svgH} Z`
+                                  return <path key={`area${idx}`} d={areaPath} fill={`url(#lineGradEnl${idx})`} style={{ mixBlendMode: 'screen' }} />
+                                })}
+                                {/* Draw all lines on top */}
+                                {lineData.map((line, idx) => (
+                                  <path key={`line${idx}`} d={line.pathD} fill="none" stroke={line.color} strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />
+                                ))}
+                              </>
+                            )}
                           </svg>
                           {hoverPoint && <div style={{ position: 'absolute', left: `${hoverPoint.xPct}%`, top: `${hoverPoint.yPct}%`, transform: 'translate(-50%, -50%)', width: '12px', height: '12px', borderRadius: '50%', background: equityCurveGroupBy === 'total' ? (hoverPoint.balance >= startingBalance ? '#22c55e' : '#ef4444') : (hoverPoint.lineColor || '#22c55e'), border: '2px solid #fff', pointerEvents: 'none', zIndex: 10 }} />}
                           {hoverPoint && (
