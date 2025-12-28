@@ -1628,11 +1628,11 @@ export default function AccountPage() {
                 </div>
               </div>
 
-              {/* Trade Analysis - with green glow effect that extends behind other widgets */}
+              {/* Trade Analysis - with green glow effect */}
               <div style={{ flex: 1.2, position: 'relative', zIndex: 0 }}>
-                {/* Outer glow layer - positioned behind everything */}
-                <div style={{ position: 'absolute', inset: '-60px', background: 'radial-gradient(ellipse at center, rgba(34,197,94,0.4) 0%, rgba(34,197,94,0.2) 30%, rgba(34,197,94,0.08) 55%, transparent 75%)', borderRadius: '80px', pointerEvents: 'none', filter: 'blur(15px)' }} />
-                <div style={{ position: 'relative', background: 'linear-gradient(145deg, #0d0d12 0%, #0a0a0e 100%)', border: '2px solid #22c55e', borderRadius: '10px', padding: '14px', boxShadow: '0 0 50px rgba(34,197,94,0.5), 0 0 100px rgba(34,197,94,0.25), inset 0 1px 0 rgba(34,197,94,0.2)' }}>
+                {/* Outer glow layer - subtle */}
+                <div style={{ position: 'absolute', inset: '-30px', background: 'radial-gradient(ellipse at center, rgba(34,197,94,0.2) 0%, rgba(34,197,94,0.08) 40%, transparent 70%)', borderRadius: '40px', pointerEvents: 'none', filter: 'blur(10px)' }} />
+                <div style={{ position: 'relative', background: 'linear-gradient(145deg, #0d0d12 0%, #0a0a0e 100%)', border: '2px solid #22c55e', borderRadius: '10px', padding: '14px', boxShadow: '0 0 25px rgba(34,197,94,0.3), inset 0 1px 0 rgba(34,197,94,0.2)' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
                     <div style={{ fontSize: '12px', color: '#22c55e', textTransform: 'uppercase', fontWeight: 700, textShadow: '0 0 10px rgba(34,197,94,0.5)', letterSpacing: '1px' }}>Trade Analysis</div>
                     <div style={{ fontSize: '9px', color: '#666' }}>{trades.length} trades</div>
@@ -1747,9 +1747,9 @@ export default function AccountPage() {
               const growth = ((currentBalance / startingBalance - 1) * 100).toFixed(1)
 
               const StatBox = ({ label, value, color }) => (
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '6px 0' }}>
-                  <span style={{ fontSize: '11px', color: '#666' }}>{label}</span>
-                  <span style={{ fontSize: '13px', fontWeight: 600, color }}>{value}</span>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '7px 0' }}>
+                  <span style={{ fontSize: '12px', color: '#999', fontWeight: 500 }}>{label}</span>
+                  <span style={{ fontSize: '14px', fontWeight: 700, color }}>{value}</span>
                 </div>
               )
 
@@ -1757,7 +1757,7 @@ export default function AccountPage() {
                 <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(4, 1fr)', gap: '12px', marginBottom: '12px', position: 'relative', zIndex: 2 }}>
                   {/* Account Overview */}
                   <div style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '12px 14px' }}>
-                    <div style={{ fontSize: '10px', color: '#888', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '8px', borderBottom: '1px solid #1a1a22', paddingBottom: '6px' }}>Account</div>
+                    <div style={{ fontSize: '11px', color: '#aaa', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '8px', borderBottom: '1px solid #1a1a22', paddingBottom: '6px', fontWeight: 600 }}>Account</div>
                     <StatBox label="Balance" value={'$' + Math.round(currentBalance).toLocaleString()} color={currentBalance >= startingBalance ? '#22c55e' : '#ef4444'} />
                     <StatBox label="Net P&L" value={(totalPnl >= 0 ? '+' : '-') + '$' + Math.abs(Math.round(totalPnl)).toLocaleString()} color={totalPnl >= 0 ? '#22c55e' : '#ef4444'} />
                     <StatBox label="Growth" value={growth + '%'} color={parseFloat(growth) >= 0 ? '#22c55e' : '#ef4444'} />
@@ -1766,7 +1766,7 @@ export default function AccountPage() {
 
                   {/* Performance */}
                   <div style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '12px 14px' }}>
-                    <div style={{ fontSize: '10px', color: '#888', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '8px', borderBottom: '1px solid #1a1a22', paddingBottom: '6px' }}>Performance</div>
+                    <div style={{ fontSize: '11px', color: '#aaa', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '8px', borderBottom: '1px solid #1a1a22', paddingBottom: '6px', fontWeight: 600 }}>Performance</div>
                     <StatBox label="Winrate" value={winrate + '%'} color={winrate >= 50 ? '#22c55e' : '#ef4444'} />
                     <StatBox label="Wins / Losses" value={wins + ' / ' + losses} color="#fff" />
                     <StatBox label="Profit Factor" value={profitFactor} color={parseFloat(profitFactor) >= 1.5 ? '#22c55e' : parseFloat(profitFactor) >= 1 ? '#f59e0b' : '#ef4444'} />
@@ -1775,7 +1775,7 @@ export default function AccountPage() {
 
                   {/* Trade Analysis */}
                   <div style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '12px 14px' }}>
-                    <div style={{ fontSize: '10px', color: '#888', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '8px', borderBottom: '1px solid #1a1a22', paddingBottom: '6px' }}>Trades</div>
+                    <div style={{ fontSize: '11px', color: '#aaa', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '8px', borderBottom: '1px solid #1a1a22', paddingBottom: '6px', fontWeight: 600 }}>Trades</div>
                     <StatBox label="Total" value={trades.length} color="#fff" />
                     <StatBox label="Trading Days" value={tradingDays} color="#fff" />
                     <StatBox label="Avg/Day" value={avgTradesPerDay} color="#fff" />
@@ -1784,7 +1784,7 @@ export default function AccountPage() {
 
                   {/* Risk & Reward */}
                   <div style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '12px 14px' }}>
-                    <div style={{ fontSize: '10px', color: '#888', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '8px', borderBottom: '1px solid #1a1a22', paddingBottom: '6px' }}>Risk & Reward</div>
+                    <div style={{ fontSize: '11px', color: '#aaa', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '8px', borderBottom: '1px solid #1a1a22', paddingBottom: '6px', fontWeight: 600 }}>Risk & Reward</div>
                     <StatBox label="Avg RR" value={avgRR + 'R'} color={parseFloat(avgRR) >= 1.5 ? '#22c55e' : '#fff'} />
                     <StatBox label="Return/Risk" value={returnOnRisk + 'x'} color="#22c55e" />
                     <StatBox label="Consistency" value={consistencyScore + '%'} color={consistencyScore >= 60 ? '#22c55e' : consistencyScore >= 40 ? '#f59e0b' : '#ef4444'} />
@@ -1793,7 +1793,7 @@ export default function AccountPage() {
 
                   {/* Win/Loss Analysis */}
                   <div style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '12px 14px' }}>
-                    <div style={{ fontSize: '10px', color: '#888', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '8px', borderBottom: '1px solid #1a1a22', paddingBottom: '6px' }}>Win/Loss</div>
+                    <div style={{ fontSize: '11px', color: '#aaa', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '8px', borderBottom: '1px solid #1a1a22', paddingBottom: '6px', fontWeight: 600 }}>Win/Loss</div>
                     <StatBox label="Avg Win" value={'+$' + avgWin} color="#22c55e" />
                     <StatBox label="Avg Loss" value={'-$' + avgLoss} color="#ef4444" />
                     <StatBox label="Best Trade" value={'+$' + Math.round(biggestWin).toLocaleString()} color="#22c55e" />
@@ -1802,7 +1802,7 @@ export default function AccountPage() {
 
                   {/* Direction */}
                   <div style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '12px 14px' }}>
-                    <div style={{ fontSize: '10px', color: '#888', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '8px', borderBottom: '1px solid #1a1a22', paddingBottom: '6px' }}>Direction</div>
+                    <div style={{ fontSize: '11px', color: '#aaa', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '8px', borderBottom: '1px solid #1a1a22', paddingBottom: '6px', fontWeight: 600 }}>Direction</div>
                     <StatBox label="Long WR" value={longWr + '%'} color={longWr >= 50 ? '#22c55e' : '#ef4444'} />
                     <StatBox label="Long Trades" value={longTrades.length} color="#fff" />
                     <StatBox label="Short WR" value={shortWr + '%'} color={shortWr >= 50 ? '#22c55e' : '#ef4444'} />
@@ -1811,25 +1811,77 @@ export default function AccountPage() {
 
                   {/* Streaks */}
                   <div style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '12px 14px' }}>
-                    <div style={{ fontSize: '10px', color: '#888', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '8px', borderBottom: '1px solid #1a1a22', paddingBottom: '6px' }}>Streaks</div>
+                    <div style={{ fontSize: '11px', color: '#aaa', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '8px', borderBottom: '1px solid #1a1a22', paddingBottom: '6px', fontWeight: 600 }}>Streaks</div>
                     <StatBox label="Current" value={(streaks.cs >= 0 ? '+' : '') + streaks.cs} color={streaks.cs >= 0 ? '#22c55e' : '#ef4444'} />
                     <StatBox label="Best Win" value={'+' + streaks.mw} color="#22c55e" />
                     <StatBox label="Worst Loss" value={'-' + Math.abs(streaks.ml)} color="#ef4444" />
                   </div>
 
-                  {/* AI Insights */}
+                  {/* AI Insights - Daily rotating */}
                   <div style={{ background: 'linear-gradient(145deg, #0d0d14 0%, #0a0a10 100%)', border: '1px solid #8b5cf6', borderRadius: '8px', padding: '12px 14px', boxShadow: '0 0 20px rgba(139,92,246,0.15), inset 0 1px 0 rgba(139,92,246,0.1)' }}>
-                    <div style={{ fontSize: '10px', color: '#8b5cf6', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '8px', borderBottom: '1px solid rgba(139,92,246,0.2)', paddingBottom: '6px', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '6px' }}>
-                      <span>✨</span> AI Insight
+                    <div style={{ fontSize: '11px', color: '#8b5cf6', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '8px', borderBottom: '1px solid rgba(139,92,246,0.2)', paddingBottom: '6px', fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                      <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><span>✨</span> AI Insight</span>
+                      <span style={{ fontSize: '9px', color: '#666', fontWeight: 400 }}>{new Date().toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}</span>
                     </div>
-                    <div style={{ fontSize: '11px', color: '#ccc', lineHeight: 1.5 }}>
+                    <div style={{ fontSize: '12px', color: '#ddd', lineHeight: 1.6 }}>
                       {(() => {
-                        if (trades.length < 5) return "Add more trades to get personalized insights about your trading performance."
-                        if (winrate >= 60 && parseFloat(profitFactor) >= 2) return `Strong performance! ${winrate}% winrate with ${profitFactor} profit factor. Your ${mostTradedPair} trades are particularly effective.`
-                        if (winrate < 40) return `Focus on trade selection. Your ${winrate}% winrate suggests reviewing entry criteria. Consider reducing position sizes.`
-                        if (parseFloat(avgRR) < 1) return `Your average RR of ${avgRR} is below 1:1. Consider holding winners longer or tightening stop losses.`
-                        if (streaks.cs < -3) return `Current losing streak of ${Math.abs(streaks.cs)}. Consider taking a break and reviewing recent setups before your next trade.`
-                        return `Solid ${winrate}% winrate. Your best pair is ${mostTradedPair}. Focus on setups with higher RR potential.`
+                        const dayOfYear = Math.floor((new Date() - new Date(new Date().getFullYear(), 0, 0)) / 86400000)
+                        const dayOfWeek = new Date().getDay()
+                        const isWeekend = dayOfWeek === 0 || dayOfWeek === 6
+
+                        if (trades.length < 5) return "Welcome! Add more trades to unlock personalized AI insights. I'll analyze your patterns, identify strengths, and suggest improvements based on your unique trading style."
+
+                        // Calculate additional metrics for insights
+                        const recentTrades = trades.slice(-10)
+                        const recentWins = recentTrades.filter(t => t.outcome === 'win').length
+                        const recentWinrate = recentTrades.length > 0 ? Math.round((recentWins / recentTrades.length) * 100) : 0
+                        const isImproving = recentWinrate > winrate
+                        const avgWinAmount = wins > 0 ? Math.round(trades.filter(t => t.outcome === 'win').reduce((s, t) => s + (parseFloat(t.pnl) || 0), 0) / wins) : 0
+                        const avgLossAmount = losses > 0 ? Math.abs(Math.round(trades.filter(t => t.outcome === 'loss').reduce((s, t) => s + (parseFloat(t.pnl) || 0), 0) / losses)) : 0
+
+                        // Daily rotating insights based on day of year + performance
+                        const insights = []
+
+                        // Performance-based primary insight
+                        if (winrate >= 60 && parseFloat(profitFactor) >= 2) {
+                          insights.push(`Outstanding performance! Your ${winrate}% winrate combined with ${profitFactor} profit factor puts you in elite territory. Your ${mostTradedPair} setups are clearly working well - consider sizing up on high-conviction trades.`)
+                        } else if (winrate >= 50 && parseFloat(profitFactor) >= 1.5) {
+                          insights.push(`Solid trading! With ${winrate}% winrate and ${profitFactor} profit factor, you're profitable. ${isImproving ? 'Recent trades show improvement - keep this momentum going.' : 'Focus on consistency and avoid overtrading during choppy conditions.'}`)
+                        } else if (winrate < 40) {
+                          insights.push(`Your ${winrate}% winrate needs attention. Review your entry criteria - are you chasing moves or waiting for proper setups? Consider paper trading new strategies before risking capital.`)
+                        } else {
+                          insights.push(`Your ${winrate}% winrate is decent. To improve, focus on trade selection quality over quantity. ${mostTradedPair} is your most traded pair - ensure you're not overexposed.`)
+                        }
+
+                        // RR-based insight
+                        if (parseFloat(avgRR) < 1) {
+                          insights.push(`Your ${avgRR}R average suggests you're cutting winners short or letting losers run. Aim for minimum 1.5R on every trade. Review your exit strategy.`)
+                        } else if (parseFloat(avgRR) >= 2) {
+                          insights.push(`Excellent risk management with ${avgRR}R average! This means you can be profitable even with 40% winrate. Protect this edge.`)
+                        }
+
+                        // Streak-based insight
+                        if (streaks.cs < -3) {
+                          insights.push(`You're on a ${Math.abs(streaks.cs)}-trade losing streak. Take a step back, reduce size, and only take A+ setups. Your best streak was ${streaks.mw} wins - you can get back there.`)
+                        } else if (streaks.cs >= 5) {
+                          insights.push(`${streaks.cs}-trade win streak! Stay disciplined and don't get overconfident. This is when many traders give back profits by oversizing.`)
+                        }
+
+                        // Win/loss amount insight
+                        if (avgWinAmount > 0 && avgLossAmount > 0) {
+                          const ratio = (avgWinAmount / avgLossAmount).toFixed(1)
+                          if (parseFloat(ratio) < 1) {
+                            insights.push(`Your average win ($${avgWinAmount}) is smaller than your average loss ($${avgLossAmount}). Consider using wider take-profits or tighter stop-losses.`)
+                          }
+                        }
+
+                        // Weekend/weekday context
+                        if (isWeekend) {
+                          insights.push(`Weekend analysis time: Review your ${trades.length} trades from this period. Look for patterns in your winners and identify what setups to avoid.`)
+                        }
+
+                        // Return rotated insight based on day
+                        return insights[dayOfYear % insights.length] || insights[0]
                       })()}
                     </div>
                   </div>
