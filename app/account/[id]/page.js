@@ -892,13 +892,6 @@ export default function AccountPage() {
                                       <defs>
                                         <linearGradient id="eqGreen" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stopColor="#22c55e" stopOpacity="0.3" /><stop offset="100%" stopColor="#22c55e" stopOpacity="0" /></linearGradient>
                                         <linearGradient id="eqRed" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stopColor="#ef4444" stopOpacity="0.3" /><stop offset="100%" stopColor="#ef4444" stopOpacity="0" /></linearGradient>
-                                        {/* Gradient for each line - fades from line color to transparent going down */}
-                                        {lineData.map((line, idx) => (
-                                          <linearGradient key={idx} id={`lineGrad${idx}`} x1="0%" y1="0%" x2="0%" y2="100%">
-                                            <stop offset="0%" stopColor={line.color} stopOpacity="0.3" />
-                                            <stop offset="100%" stopColor={line.color} stopOpacity="0" />
-                                          </linearGradient>
-                                        ))}
                                       </defs>
                                       {equityCurveGroupBy === 'total' && lineData[0] ? (
                                         <>
@@ -907,20 +900,45 @@ export default function AccountPage() {
                                           {lineData[0].greenPath && <path d={lineData[0].greenPath} fill="none" stroke="#22c55e" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />}
                                           {lineData[0].redPath && <path d={lineData[0].redPath} fill="none" stroke="#ef4444" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />}
                                         </>
-                                      ) : (
-                                        <>
-                                          {/* Draw all area fills first (isolated to prevent color mixing) */}
-                                          {lineData.map((line, idx) => {
-                                            const pts = line.chartPoints
-                                            const areaPath = pts.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`).join(' ') + ` L ${pts[pts.length - 1].x} ${svgH} L ${pts[0].x} ${svgH} Z`
-                                            return <path key={`area${idx}`} d={areaPath} fill={`url(#lineGrad${idx})`} style={{ mixBlendMode: 'screen' }} />
-                                          })}
-                                          {/* Draw all lines on top */}
-                                          {lineData.map((line, idx) => (
-                                            <path key={`line${idx}`} d={line.pathD} fill="none" stroke={line.color} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />
-                                          ))}
-                                        </>
-                                      )}
+                                      ) : (() => {
+                                        // Sort lines by average Y position (lowest Y = highest on screen = drawn last to be on top)
+                                        const sortedLines = [...lineData].map((line, origIdx) => {
+                                          const avgY = line.chartPoints.reduce((sum, p) => sum + p.y, 0) / line.chartPoints.length
+                                          return { ...line, origIdx, avgY }
+                                        }).sort((a, b) => b.avgY - a.avgY) // Draw from bottom to top
+
+                                        return (
+                                          <>
+                                            {/* Draw gradient areas - bottom lines first, top lines last (so top lines cover bottom) */}
+                                            {sortedLines.map((line) => {
+                                              const pts = line.chartPoints
+                                              const glowDepth = 18 // SVG units below the line
+                                              // Create area from line down to glowDepth below each point
+                                              const bottomPts = pts.map(p => ({ x: p.x, y: Math.min(p.y + glowDepth, svgH) }))
+                                              const areaPath = pts.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`).join(' ') +
+                                                bottomPts.slice().reverse().map((p, i) => ` L ${p.x} ${p.y}`).join('') + ' Z'
+                                              // Calculate gradient bounds for this specific line
+                                              const minY = Math.min(...pts.map(p => p.y))
+                                              const maxY = Math.min(Math.max(...pts.map(p => p.y)) + glowDepth, svgH)
+                                              return (
+                                                <g key={`area${line.origIdx}`}>
+                                                  <defs>
+                                                    <linearGradient id={`grad${line.origIdx}`} x1="0" y1={minY} x2="0" y2={maxY} gradientUnits="userSpaceOnUse">
+                                                      <stop offset="0%" stopColor={line.color} stopOpacity="0.35" />
+                                                      <stop offset="100%" stopColor={line.color} stopOpacity="0" />
+                                                    </linearGradient>
+                                                  </defs>
+                                                  <path d={areaPath} fill={`url(#grad${line.origIdx})`} />
+                                                </g>
+                                              )
+                                            })}
+                                            {/* Draw all lines on top */}
+                                            {lineData.map((line, idx) => (
+                                              <path key={`line${idx}`} d={line.pathD} fill="none" stroke={line.color} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />
+                                            ))}
+                                          </>
+                                        )
+                                      })()}
                                     </svg>
                                     {hoverPoint && <div style={{ position: 'absolute', left: `${hoverPoint.xPct}%`, top: `${hoverPoint.yPct}%`, transform: 'translate(-50%, -50%)', width: '10px', height: '10px', borderRadius: '50%', background: equityCurveGroupBy === 'total' ? (hoverPoint.balance >= startingBalance ? '#22c55e' : '#ef4444') : (hoverPoint.lineColor || '#22c55e'), border: '2px solid #fff', pointerEvents: 'none', zIndex: 10 }} />}
                                     {hoverPoint && (
@@ -1995,13 +2013,6 @@ export default function AccountPage() {
                             <defs>
                               <linearGradient id="eqGEnlG" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stopColor="#22c55e" stopOpacity="0.3" /><stop offset="100%" stopColor="#22c55e" stopOpacity="0" /></linearGradient>
                               <linearGradient id="eqGEnlR" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stopColor="#ef4444" stopOpacity="0.3" /><stop offset="100%" stopColor="#ef4444" stopOpacity="0" /></linearGradient>
-                              {/* Gradient for each line - fades from line color to transparent going down */}
-                              {lineData.map((line, idx) => (
-                                <linearGradient key={idx} id={`lineGradEnl${idx}`} x1="0%" y1="0%" x2="0%" y2="100%">
-                                  <stop offset="0%" stopColor={line.color} stopOpacity="0.3" />
-                                  <stop offset="100%" stopColor={line.color} stopOpacity="0" />
-                                </linearGradient>
-                              ))}
                             </defs>
                             {equityCurveGroupBy === 'total' && lineData[0] ? (
                               <>
@@ -2010,20 +2021,45 @@ export default function AccountPage() {
                                 {lineData[0].greenPath && <path d={lineData[0].greenPath} fill="none" stroke="#22c55e" strokeWidth="2" strokeLinecap="round" vectorEffect="non-scaling-stroke" />}
                                 {lineData[0].redPath && <path d={lineData[0].redPath} fill="none" stroke="#ef4444" strokeWidth="2" strokeLinecap="round" vectorEffect="non-scaling-stroke" />}
                               </>
-                            ) : (
-                              <>
-                                {/* Draw all area fills first (isolated to prevent color mixing) */}
-                                {lineData.map((line, idx) => {
-                                  const pts = line.chartPoints
-                                  const areaPath = pts.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`).join(' ') + ` L ${pts[pts.length - 1].x} ${svgH} L ${pts[0].x} ${svgH} Z`
-                                  return <path key={`area${idx}`} d={areaPath} fill={`url(#lineGradEnl${idx})`} style={{ mixBlendMode: 'screen' }} />
-                                })}
-                                {/* Draw all lines on top */}
-                                {lineData.map((line, idx) => (
-                                  <path key={`line${idx}`} d={line.pathD} fill="none" stroke={line.color} strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />
-                                ))}
-                              </>
-                            )}
+                            ) : (() => {
+                              // Sort lines by average Y position (lowest Y = highest on screen = drawn last to be on top)
+                              const sortedLines = [...lineData].map((line, origIdx) => {
+                                const avgY = line.chartPoints.reduce((sum, p) => sum + p.y, 0) / line.chartPoints.length
+                                return { ...line, origIdx, avgY }
+                              }).sort((a, b) => b.avgY - a.avgY) // Draw from bottom to top
+
+                              return (
+                                <>
+                                  {/* Draw gradient areas - bottom lines first, top lines last (so top lines cover bottom) */}
+                                  {sortedLines.map((line) => {
+                                    const pts = line.chartPoints
+                                    const glowDepth = 18 // SVG units below the line
+                                    // Create area from line down to glowDepth below each point
+                                    const bottomPts = pts.map(p => ({ x: p.x, y: Math.min(p.y + glowDepth, svgH) }))
+                                    const areaPath = pts.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`).join(' ') +
+                                      bottomPts.slice().reverse().map((p, i) => ` L ${p.x} ${p.y}`).join('') + ' Z'
+                                    // Calculate gradient bounds for this specific line
+                                    const minY = Math.min(...pts.map(p => p.y))
+                                    const maxY = Math.min(Math.max(...pts.map(p => p.y)) + glowDepth, svgH)
+                                    return (
+                                      <g key={`areaEnl${line.origIdx}`}>
+                                        <defs>
+                                          <linearGradient id={`gradEnl${line.origIdx}`} x1="0" y1={minY} x2="0" y2={maxY} gradientUnits="userSpaceOnUse">
+                                            <stop offset="0%" stopColor={line.color} stopOpacity="0.35" />
+                                            <stop offset="100%" stopColor={line.color} stopOpacity="0" />
+                                          </linearGradient>
+                                        </defs>
+                                        <path d={areaPath} fill={`url(#gradEnl${line.origIdx})`} />
+                                      </g>
+                                    )
+                                  })}
+                                  {/* Draw all lines on top */}
+                                  {lineData.map((line, idx) => (
+                                    <path key={`line${idx}`} d={line.pathD} fill="none" stroke={line.color} strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />
+                                  ))}
+                                </>
+                              )
+                            })()}
                           </svg>
                           {hoverPoint && <div style={{ position: 'absolute', left: `${hoverPoint.xPct}%`, top: `${hoverPoint.yPct}%`, transform: 'translate(-50%, -50%)', width: '12px', height: '12px', borderRadius: '50%', background: equityCurveGroupBy === 'total' ? (hoverPoint.balance >= startingBalance ? '#22c55e' : '#ef4444') : (hoverPoint.lineColor || '#22c55e'), border: '2px solid #fff', pointerEvents: 'none', zIndex: 10 }} />}
                           {hoverPoint && (
