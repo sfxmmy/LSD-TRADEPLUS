@@ -27,6 +27,7 @@ export default function DashboardPage() {
   const [quickTradeDate, setQuickTradeDate] = useState(new Date().toISOString().split('T')[0])
   const [quickTradeDirection, setQuickTradeDirection] = useState('long')
   const [submittingTrade, setSubmittingTrade] = useState(false)
+  const [quickTradeExtraData, setQuickTradeExtraData] = useState({})
 
   useEffect(() => {
     const checkMobile = () => setIsMobile(window.innerWidth < 768)
@@ -106,7 +107,7 @@ export default function DashboardPage() {
       rr: quickTradeRR || null,
       date: quickTradeDate,
       direction: quickTradeDirection,
-      extra_data: JSON.stringify({})
+      extra_data: JSON.stringify(quickTradeExtraData)
     }).select().single()
     if (error) { alert('Error: ' + error.message); setSubmittingTrade(false); return }
     // Add to local state
@@ -118,7 +119,18 @@ export default function DashboardPage() {
     setQuickTradeSymbol('')
     setQuickTradePnl('')
     setQuickTradeRR('')
+    setQuickTradeExtraData({})
     setSubmittingTrade(false)
+  }
+
+  // Get custom inputs for selected journal
+  function getSelectedAccountCustomInputs() {
+    const selectedAccount = accounts.find(a => a.id === quickTradeAccount)
+    if (!selectedAccount?.custom_inputs) return []
+    try {
+      const inputs = JSON.parse(selectedAccount.custom_inputs)
+      return inputs.filter(i => i.enabled && i.type === 'select' && !['outcome', 'direction'].includes(i.id))
+    } catch { return [] }
   }
 
   // Set default account when accounts load
@@ -378,14 +390,40 @@ export default function DashboardPage() {
               </div>
 
               {/* Date */}
-              <div style={{ marginBottom: '14px' }}>
+              <div style={{ marginBottom: '10px' }}>
                 <input type="date" value={quickTradeDate} onChange={e => setQuickTradeDate(e.target.value)} style={{ width: '100%', padding: '10px 12px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '13px', boxSizing: 'border-box' }} />
               </div>
 
+              {/* Custom Inputs for selected journal */}
+              {getSelectedAccountCustomInputs().map(input => (
+                <div key={input.id} style={{ marginBottom: '10px' }}>
+                  <select
+                    value={quickTradeExtraData[input.id] || ''}
+                    onChange={e => setQuickTradeExtraData(prev => ({ ...prev, [input.id]: e.target.value }))}
+                    style={{ width: '100%', padding: '10px 12px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '13px' }}
+                  >
+                    <option value="">{input.label || input.id}</option>
+                    {(input.options || []).map(opt => <option key={opt} value={opt}>{opt}</option>)}
+                  </select>
+                </div>
+              ))}
+
               {/* Submit */}
-              <button onClick={submitQuickTrade} disabled={submittingTrade || !quickTradeSymbol.trim() || !quickTradePnl} style={{ width: '100%', padding: '12px', background: (submittingTrade || !quickTradeSymbol.trim() || !quickTradePnl) ? '#1a1a22' : '#22c55e', border: 'none', borderRadius: '6px', color: (submittingTrade || !quickTradeSymbol.trim() || !quickTradePnl) ? '#666' : '#fff', fontWeight: 600, fontSize: '13px', cursor: (submittingTrade || !quickTradeSymbol.trim() || !quickTradePnl) ? 'not-allowed' : 'pointer' }}>
+              <button onClick={submitQuickTrade} disabled={submittingTrade || !quickTradeSymbol.trim() || !quickTradePnl} style={{ width: '100%', padding: '12px', background: (submittingTrade || !quickTradeSymbol.trim() || !quickTradePnl) ? '#1a1a22' : '#22c55e', border: 'none', borderRadius: '6px', color: (submittingTrade || !quickTradeSymbol.trim() || !quickTradePnl) ? '#666' : '#fff', fontWeight: 600, fontSize: '13px', cursor: (submittingTrade || !quickTradeSymbol.trim() || !quickTradePnl) ? 'not-allowed' : 'pointer', marginBottom: '16px' }}>
                 {submittingTrade ? 'Adding...' : '+ Add Trade'}
               </button>
+
+              {/* View Toggle */}
+              <div style={{ display: 'flex', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px', overflow: 'hidden' }}>
+                <button onClick={() => setViewMode('cards')} style={{ flex: 1, padding: '8px', background: viewMode === 'cards' ? '#22c55e' : 'transparent', border: 'none', color: viewMode === 'cards' ? '#fff' : '#888', fontSize: '11px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}>
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="7" height="7" /><rect x="14" y="3" width="7" height="7" /><rect x="3" y="14" width="7" height="7" /><rect x="14" y="14" width="7" height="7" /></svg>
+                  Cards
+                </button>
+                <button onClick={() => setViewMode('list')} style={{ flex: 1, padding: '8px', background: viewMode === 'list' ? '#22c55e' : 'transparent', border: 'none', color: viewMode === 'list' ? '#fff' : '#888', fontSize: '11px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}>
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="8" y1="6" x2="21" y2="6" /><line x1="8" y1="12" x2="21" y2="12" /><line x1="8" y1="18" x2="21" y2="18" /><line x1="3" y1="6" x2="3.01" y2="6" /><line x1="3" y1="12" x2="3.01" y2="12" /><line x1="3" y1="18" x2="3.01" y2="18" /></svg>
+                  List
+                </button>
+              </div>
             </div>
           </div>
         )}
@@ -400,20 +438,6 @@ export default function DashboardPage() {
           </div>
         ) : (
           <>
-          {/* View Toggle */}
-          <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '16px' }}>
-            <div style={{ display: 'flex', background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '6px', overflow: 'hidden' }}>
-              <button onClick={() => setViewMode('cards')} style={{ padding: '8px 14px', background: viewMode === 'cards' ? '#22c55e' : 'transparent', border: 'none', color: viewMode === 'cards' ? '#fff' : '#888', fontSize: '12px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="7" height="7" /><rect x="14" y="3" width="7" height="7" /><rect x="3" y="14" width="7" height="7" /><rect x="14" y="14" width="7" height="7" /></svg>
-                Cards
-              </button>
-              <button onClick={() => setViewMode('list')} style={{ padding: '8px 14px', background: viewMode === 'list' ? '#22c55e' : 'transparent', border: 'none', color: viewMode === 'list' ? '#fff' : '#888', fontSize: '12px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="8" y1="6" x2="21" y2="6" /><line x1="8" y1="12" x2="21" y2="12" /><line x1="8" y1="18" x2="21" y2="18" /><line x1="3" y1="6" x2="3.01" y2="6" /><line x1="3" y1="12" x2="3.01" y2="12" /><line x1="3" y1="18" x2="3.01" y2="18" /></svg>
-                List
-              </button>
-            </div>
-          </div>
-
           {/* List View */}
           {viewMode === 'list' ? (
             <div style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '10px', overflow: 'hidden' }}>
@@ -498,7 +522,7 @@ export default function DashboardPage() {
                   {/* Chart + Stats Row */}
                   <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', padding: isMobile ? '0 16px 16px' : '0 24px 16px', gap: '16px' }}>
                     {/* Chart */}
-                    <div style={{ flex: 1, height: isMobile ? '180px' : '260px', overflow: 'hidden' }}>
+                    <div style={{ flex: 1, height: isMobile ? '200px' : '320px', overflow: 'hidden' }}>
                       <EquityCurve accountTrades={accTrades} startingBalance={account.starting_balance} />
                     </div>
 
