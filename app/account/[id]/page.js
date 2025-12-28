@@ -1010,11 +1010,25 @@ export default function AccountPage() {
                                           {lineData[0].redPath && <path d={lineData[0].redPath} fill="none" stroke="#ef4444" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />}
                                         </>
                                       ) : (() => {
-                                        // Sort lines by average Y position (ascending = top lines first)
+                                        // Sort lines by final Y position (end of line) - top lines first
                                         const sortedLines = [...lineData].map((line, origIdx) => {
-                                          const avgY = line.chartPoints.reduce((sum, p) => sum + p.y, 0) / line.chartPoints.length
-                                          return { ...line, origIdx, avgY }
-                                        }).sort((a, b) => a.avgY - b.avgY) // Top lines first (lowest Y)
+                                          const lastY = line.chartPoints[line.chartPoints.length - 1]?.y || 0
+                                          return { ...line, origIdx, lastY }
+                                        }).sort((a, b) => a.lastY - b.lastY) // Top lines first (lowest Y)
+
+                                        // Helper to interpolate Y value at a given X for a line
+                                        const interpolateY = (pts, x) => {
+                                          if (pts.length === 0) return svgH
+                                          if (x <= pts[0].x) return pts[0].y
+                                          if (x >= pts[pts.length - 1].x) return pts[pts.length - 1].y
+                                          for (let i = 0; i < pts.length - 1; i++) {
+                                            if (x >= pts[i].x && x <= pts[i + 1].x) {
+                                              const t = (x - pts[i].x) / (pts[i + 1].x - pts[i].x)
+                                              return pts[i].y + t * (pts[i + 1].y - pts[i].y)
+                                            }
+                                          }
+                                          return pts[pts.length - 1].y
+                                        }
 
                                         return (
                                           <>
@@ -1023,39 +1037,37 @@ export default function AccountPage() {
                                               {sortedLines.map((line, sortIdx) => {
                                                 const pts = line.chartPoints
                                                 const nextLine = sortedLines[sortIdx + 1]
-                                                // Clip region: from this line down to next line (or bottom)
-                                                let clipPath
-                                                if (nextLine) {
-                                                  // Interpolate next line's Y at each X position of current line
-                                                  const nextPts = nextLine.chartPoints
-                                                  const bottomPts = pts.map(p => {
-                                                    // Find closest X in nextLine and get its Y
-                                                    let closestIdx = 0, minDist = Infinity
-                                                    nextPts.forEach((np, ni) => {
-                                                      const dist = Math.abs(np.x - p.x)
-                                                      if (dist < minDist) { minDist = dist; closestIdx = ni }
-                                                    })
-                                                    return { x: p.x, y: nextPts[closestIdx].y }
-                                                  })
-                                                  clipPath = pts.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`).join(' ') +
-                                                    bottomPts.slice().reverse().map(p => ` L ${p.x} ${p.y}`).join('') + ' Z'
-                                                } else {
-                                                  // Last line - clip to bottom of SVG
-                                                  clipPath = pts.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`).join(' ') +
-                                                    ` L ${pts[pts.length - 1].x} ${svgH} L ${pts[0].x} ${svgH} Z`
+                                                // Generate X sample points across the full width
+                                                const xMin = Math.min(...pts.map(p => p.x))
+                                                const xMax = Math.max(...pts.map(p => p.x))
+                                                const numSamples = 50
+                                                const xSamples = []
+                                                for (let i = 0; i <= numSamples; i++) {
+                                                  xSamples.push(xMin + (xMax - xMin) * (i / numSamples))
                                                 }
+
+                                                // Top edge: this line's Y values
+                                                const topEdge = xSamples.map(x => ({ x, y: interpolateY(pts, x) }))
+                                                // Bottom edge: next line's Y values or SVG bottom
+                                                const bottomEdge = nextLine
+                                                  ? xSamples.map(x => ({ x, y: interpolateY(nextLine.chartPoints, x) }))
+                                                  : xSamples.map(x => ({ x, y: svgH }))
+
+                                                const clipPath = topEdge.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`).join(' ') +
+                                                  bottomEdge.slice().reverse().map(p => ` L ${p.x} ${p.y}`).join('') + ' Z'
+
                                                 return <clipPath key={`clip${line.origIdx}`} id={`clip${line.origIdx}`}><path d={clipPath} /></clipPath>
                                               })}
                                               {/* Gradient for each line */}
                                               {sortedLines.map((line) => (
                                                 <linearGradient key={`grad${line.origIdx}`} id={`grad${line.origIdx}`} x1="0%" y1="0%" x2="0%" y2="100%">
-                                                  <stop offset="0%" stopColor={line.color} stopOpacity="0.3" />
+                                                  <stop offset="0%" stopColor={line.color} stopOpacity="0.4" />
                                                   <stop offset="100%" stopColor={line.color} stopOpacity="0" />
                                                 </linearGradient>
                                               ))}
                                             </defs>
-                                            {/* Draw gradient areas with clipPaths */}
-                                            {sortedLines.map((line) => {
+                                            {/* Draw gradient areas with clipPaths - bottom to top order */}
+                                            {[...sortedLines].reverse().map((line) => {
                                               const pts = line.chartPoints
                                               const areaPath = pts.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`).join(' ') +
                                                 ` L ${pts[pts.length - 1].x} ${svgH} L ${pts[0].x} ${svgH} Z`
@@ -1069,13 +1081,21 @@ export default function AccountPage() {
                                         )
                                       })()}
                                     </svg>
-                                    {/* Line labels at end of each line - no border, gradient text matching line */}
+                                    {/* Line labels at end of each line - rotated to match line angle */}
                                     {equityCurveGroupBy !== 'total' && lineData.map((line, idx) => {
-                                      const lastPt = line.chartPoints[line.chartPoints.length - 1]
-                                      if (!lastPt) return null
+                                      const pts = line.chartPoints
+                                      if (pts.length < 2) return null
+                                      const lastPt = pts[pts.length - 1]
+                                      const prevPt = pts[pts.length - 2]
+                                      // Calculate angle from last segment (in degrees)
+                                      const dx = lastPt.x - prevPt.x
+                                      const dy = lastPt.y - prevPt.y
+                                      const angle = Math.atan2(dy, dx) * (180 / Math.PI)
+                                      // Clamp angle for readability
+                                      const clampedAngle = Math.max(-45, Math.min(45, angle))
                                       const yPct = (lastPt.y / svgH) * 100
                                       return (
-                                        <div key={`label${idx}`} style={{ position: 'absolute', right: '4px', top: `${yPct}%`, transform: 'translateY(-50%)', fontSize: '9px', fontWeight: 700, color: line.color, textShadow: `0 0 8px ${line.color}, 0 0 16px ${line.color}`, whiteSpace: 'nowrap', pointerEvents: 'none', letterSpacing: '0.5px' }}>
+                                        <div key={`label${idx}`} style={{ position: 'absolute', right: '4px', top: `${yPct}%`, transform: `translateY(-50%) rotate(${clampedAngle}deg)`, transformOrigin: 'right center', fontSize: '9px', fontWeight: 600, color: line.color, whiteSpace: 'nowrap', pointerEvents: 'none' }}>
                                           {line.name}
                                         </div>
                                       )
@@ -1104,10 +1124,10 @@ export default function AccountPage() {
                                         )}
                                       </div>
                                     ) : (
-                                      <div style={{ position: 'absolute', top: '4px', right: '4px', display: 'flex', flexWrap: 'wrap', gap: '6px', background: 'rgba(13,13,18,0.9)', padding: '4px 8px', borderRadius: '4px', fontSize: '8px', maxWidth: '180px' }}>
+                                      <div style={{ position: 'absolute', top: '4px', left: '4px', display: 'flex', flexDirection: 'column', gap: '3px', background: 'rgba(13,13,18,0.9)', padding: '6px 8px', borderRadius: '4px', fontSize: '8px' }}>
                                         {lineData.map((line, idx) => (
-                                          <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '3px' }}>
-                                            <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: line.color, boxShadow: `0 0 4px ${line.color}` }} />
+                                          <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                            <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: line.color }} />
                                             <span style={{ color: '#aaa' }}>{line.name}</span>
                                           </div>
                                         ))}
@@ -1544,11 +1564,11 @@ export default function AccountPage() {
                 </div>
               </div>
 
-              {/* Trade Analysis - with green glow effect */}
-              <div style={{ flex: 1, position: 'relative' }}>
-                {/* Outer glow layer - extends behind adjacent widgets */}
-                <div style={{ position: 'absolute', inset: '-40px', background: 'radial-gradient(ellipse at center, rgba(34,197,94,0.25) 0%, rgba(34,197,94,0.12) 30%, rgba(34,197,94,0.04) 60%, transparent 80%)', borderRadius: '50px', pointerEvents: 'none', filter: 'blur(8px)' }} />
-                <div style={{ position: 'relative', background: '#0d0d12', border: '2px solid #22c55e', borderRadius: '8px', padding: '12px', boxShadow: '0 0 30px rgba(34,197,94,0.5), 0 0 60px rgba(34,197,94,0.25), 0 0 100px rgba(34,197,94,0.15), inset 0 0 30px rgba(34,197,94,0.08)' }}>
+              {/* Trade Analysis - with green glow effect that extends behind other widgets */}
+              <div style={{ flex: 1, position: 'relative', zIndex: 1 }}>
+                {/* Outer glow layer - positioned behind everything with negative z-index */}
+                <div style={{ position: 'absolute', inset: '-50px', background: 'radial-gradient(ellipse at center, rgba(34,197,94,0.35) 0%, rgba(34,197,94,0.2) 25%, rgba(34,197,94,0.08) 50%, transparent 75%)', borderRadius: '60px', pointerEvents: 'none', filter: 'blur(12px)', zIndex: -10 }} />
+                <div style={{ position: 'relative', background: '#0d0d12', border: '2px solid #22c55e', borderRadius: '8px', padding: '12px', boxShadow: '0 0 40px rgba(34,197,94,0.6), 0 0 80px rgba(34,197,94,0.3), 0 0 120px rgba(34,197,94,0.2)', zIndex: 1 }}>
                   <div style={{ fontSize: '11px', color: '#22c55e', textTransform: 'uppercase', marginBottom: '10px', fontWeight: 600, textShadow: '0 0 10px rgba(34,197,94,0.5)' }}>Trade Analysis</div>
                   <div style={{ display: 'flex', gap: '6px', marginBottom: '8px' }}>
                     <select value={analysisGroupBy} onChange={e => setAnalysisGroupBy(e.target.value)} style={{ flex: 1, padding: '6px', background: '#141418', border: '1px solid rgba(34,197,94,0.3)', borderRadius: '4px', color: '#fff', fontSize: '11px' }}>
@@ -2186,11 +2206,25 @@ export default function AccountPage() {
                                 {lineData[0].redPath && <path d={lineData[0].redPath} fill="none" stroke="#ef4444" strokeWidth="2" strokeLinecap="round" vectorEffect="non-scaling-stroke" />}
                               </>
                             ) : (() => {
-                              // Sort lines by average Y position (ascending = top lines first)
+                              // Sort lines by final Y position (end of line) - top lines first
                               const sortedLines = [...lineData].map((line, origIdx) => {
-                                const avgY = line.chartPoints.reduce((sum, p) => sum + p.y, 0) / line.chartPoints.length
-                                return { ...line, origIdx, avgY }
-                              }).sort((a, b) => a.avgY - b.avgY) // Top lines first (lowest Y)
+                                const lastY = line.chartPoints[line.chartPoints.length - 1]?.y || 0
+                                return { ...line, origIdx, lastY }
+                              }).sort((a, b) => a.lastY - b.lastY) // Top lines first (lowest Y)
+
+                              // Helper to interpolate Y value at a given X for a line
+                              const interpolateY = (pts, x) => {
+                                if (pts.length === 0) return svgH
+                                if (x <= pts[0].x) return pts[0].y
+                                if (x >= pts[pts.length - 1].x) return pts[pts.length - 1].y
+                                for (let i = 0; i < pts.length - 1; i++) {
+                                  if (x >= pts[i].x && x <= pts[i + 1].x) {
+                                    const t = (x - pts[i].x) / (pts[i + 1].x - pts[i].x)
+                                    return pts[i].y + t * (pts[i + 1].y - pts[i].y)
+                                  }
+                                }
+                                return pts[pts.length - 1].y
+                              }
 
                               return (
                                 <>
@@ -2199,35 +2233,31 @@ export default function AccountPage() {
                                     {sortedLines.map((line, sortIdx) => {
                                       const pts = line.chartPoints
                                       const nextLine = sortedLines[sortIdx + 1]
-                                      let clipPath
-                                      if (nextLine) {
-                                        const nextPts = nextLine.chartPoints
-                                        const bottomPts = pts.map(p => {
-                                          let closestIdx = 0, minDist = Infinity
-                                          nextPts.forEach((np, ni) => {
-                                            const dist = Math.abs(np.x - p.x)
-                                            if (dist < minDist) { minDist = dist; closestIdx = ni }
-                                          })
-                                          return { x: p.x, y: nextPts[closestIdx].y }
-                                        })
-                                        clipPath = pts.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`).join(' ') +
-                                          bottomPts.slice().reverse().map(p => ` L ${p.x} ${p.y}`).join('') + ' Z'
-                                      } else {
-                                        clipPath = pts.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`).join(' ') +
-                                          ` L ${pts[pts.length - 1].x} ${svgH} L ${pts[0].x} ${svgH} Z`
+                                      const xMin = Math.min(...pts.map(p => p.x))
+                                      const xMax = Math.max(...pts.map(p => p.x))
+                                      const numSamples = 50
+                                      const xSamples = []
+                                      for (let i = 0; i <= numSamples; i++) {
+                                        xSamples.push(xMin + (xMax - xMin) * (i / numSamples))
                                       }
+                                      const topEdge = xSamples.map(x => ({ x, y: interpolateY(pts, x) }))
+                                      const bottomEdge = nextLine
+                                        ? xSamples.map(x => ({ x, y: interpolateY(nextLine.chartPoints, x) }))
+                                        : xSamples.map(x => ({ x, y: svgH }))
+                                      const clipPath = topEdge.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`).join(' ') +
+                                        bottomEdge.slice().reverse().map(p => ` L ${p.x} ${p.y}`).join('') + ' Z'
                                       return <clipPath key={`clipEnl${line.origIdx}`} id={`clipEnl${line.origIdx}`}><path d={clipPath} /></clipPath>
                                     })}
                                     {/* Gradient for each line */}
                                     {sortedLines.map((line) => (
                                       <linearGradient key={`gradEnl${line.origIdx}`} id={`gradEnl${line.origIdx}`} x1="0%" y1="0%" x2="0%" y2="100%">
-                                        <stop offset="0%" stopColor={line.color} stopOpacity="0.3" />
+                                        <stop offset="0%" stopColor={line.color} stopOpacity="0.4" />
                                         <stop offset="100%" stopColor={line.color} stopOpacity="0" />
                                       </linearGradient>
                                     ))}
                                   </defs>
-                                  {/* Draw gradient areas with clipPaths */}
-                                  {sortedLines.map((line) => {
+                                  {/* Draw gradient areas with clipPaths - bottom to top order */}
+                                  {[...sortedLines].reverse().map((line) => {
                                     const pts = line.chartPoints
                                     const areaPath = pts.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`).join(' ') +
                                       ` L ${pts[pts.length - 1].x} ${svgH} L ${pts[0].x} ${svgH} Z`
@@ -2241,17 +2271,36 @@ export default function AccountPage() {
                               )
                             })()}
                           </svg>
-                          {/* Line labels at end of each line - no border, gradient text matching line */}
+                          {/* Line labels at end of each line - rotated to match line angle */}
                           {equityCurveGroupBy !== 'total' && lineData.map((line, idx) => {
-                            const lastPt = line.chartPoints[line.chartPoints.length - 1]
-                            if (!lastPt) return null
+                            const pts = line.chartPoints
+                            if (pts.length < 2) return null
+                            const lastPt = pts[pts.length - 1]
+                            const prevPt = pts[pts.length - 2]
+                            // Calculate angle from last segment (in degrees)
+                            const dx = lastPt.x - prevPt.x
+                            const dy = lastPt.y - prevPt.y
+                            const angle = Math.atan2(dy, dx) * (180 / Math.PI)
+                            // Clamp angle for readability
+                            const clampedAngle = Math.max(-45, Math.min(45, angle))
                             const yPct = (lastPt.y / svgH) * 100
                             return (
-                              <div key={`labelEnl${idx}`} style={{ position: 'absolute', right: '8px', top: `${yPct}%`, transform: 'translateY(-50%)', fontSize: '12px', fontWeight: 700, color: line.color, textShadow: `0 0 10px ${line.color}, 0 0 20px ${line.color}, 0 0 30px ${line.color}40`, whiteSpace: 'nowrap', pointerEvents: 'none', letterSpacing: '0.5px' }}>
+                              <div key={`labelEnl${idx}`} style={{ position: 'absolute', right: '8px', top: `${yPct}%`, transform: `translateY(-50%) rotate(${clampedAngle}deg)`, transformOrigin: 'right center', fontSize: '11px', fontWeight: 600, color: line.color, whiteSpace: 'nowrap', pointerEvents: 'none' }}>
                                 {line.name}
                               </div>
                             )
                           })}
+                          {/* Legend - top left for multi-line */}
+                          {equityCurveGroupBy !== 'total' && (
+                            <div style={{ position: 'absolute', top: '8px', left: '8px', display: 'flex', flexDirection: 'column', gap: '4px', background: 'rgba(13,13,18,0.9)', padding: '8px 10px', borderRadius: '6px', fontSize: '10px' }}>
+                              {lineData.map((line, idx) => (
+                                <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                  <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: line.color }} />
+                                  <span style={{ color: '#aaa' }}>{line.name}</span>
+                                </div>
+                              ))}
+                            </div>
+                          )}
                           {hoverPoint && <div style={{ position: 'absolute', left: `${hoverPoint.xPct}%`, top: `${hoverPoint.yPct}%`, transform: 'translate(-50%, -50%)', width: '12px', height: '12px', borderRadius: '50%', background: equityCurveGroupBy === 'total' ? (hoverPoint.balance >= startingBalance ? '#22c55e' : '#ef4444') : (hoverPoint.lineColor || '#22c55e'), border: '2px solid #fff', pointerEvents: 'none', zIndex: 10 }} />}
                           {hoverPoint && (
                             <div style={{ position: 'absolute', left: `${hoverPoint.xPct}%`, top: `${hoverPoint.yPct}%`, transform: `translate(${hoverPoint.xPct > 80 ? 'calc(-100% - 15px)' : '15px'}, ${hoverPoint.yPct < 20 ? '0%' : hoverPoint.yPct > 80 ? '-100%' : '-50%'})`, background: '#1a1a22', border: '1px solid #2a2a35', borderRadius: '6px', padding: '10px 14px', fontSize: '12px', whiteSpace: 'nowrap', zIndex: 10, pointerEvents: 'none' }}>
@@ -2271,8 +2320,8 @@ export default function AccountPage() {
                             </div>
                           ))}
                         </div>
-                        {/* Legend */}
-                        {equityCurveGroupBy === 'total' ? (
+                        {/* Legend - only for total mode (multi-line has legend in top-left of chart) */}
+                        {equityCurveGroupBy === 'total' && (
                           <div style={{ display: 'flex', justifyContent: 'center', gap: '12px', padding: '8px 0', flexWrap: 'wrap' }}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                               <div style={{ width: '16px', height: '3px', background: '#22c55e' }} />
@@ -2282,15 +2331,6 @@ export default function AccountPage() {
                               <div style={{ width: '16px', height: '3px', background: '#ef4444' }} />
                               <span style={{ fontSize: '10px', color: '#888' }}>Below Start</span>
                             </div>
-                          </div>
-                        ) : (
-                          <div style={{ display: 'flex', justifyContent: 'center', gap: '16px', padding: '10px 0', flexWrap: 'wrap' }}>
-                            {lineData.map((line, idx) => (
-                              <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                                <div style={{ width: '12px', height: '12px', borderRadius: '50%', background: line.color, boxShadow: `0 0 8px ${line.color}` }} />
-                                <span style={{ fontSize: '11px', color: '#fff', fontWeight: 500 }}>{line.name}</span>
-                              </div>
-                            ))}
                           </div>
                         )}
                       </div>
