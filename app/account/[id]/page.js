@@ -1081,7 +1081,7 @@ export default function AccountPage() {
                                         )
                                       })()}
                                     </svg>
-                                    {/* Line labels at end of each line - rotated to match line angle */}
+                                    {/* Line labels at end of each line - rotated to match line angle, positioned above */}
                                     {equityCurveGroupBy !== 'total' && lineData.map((line, idx) => {
                                       const pts = line.chartPoints
                                       if (pts.length < 2) return null
@@ -1095,7 +1095,7 @@ export default function AccountPage() {
                                       const clampedAngle = Math.max(-45, Math.min(45, angle))
                                       const yPct = (lastPt.y / svgH) * 100
                                       return (
-                                        <div key={`label${idx}`} style={{ position: 'absolute', right: '4px', top: `${yPct}%`, transform: `translateY(-50%) rotate(${clampedAngle}deg)`, transformOrigin: 'right center', fontSize: '9px', fontWeight: 600, color: line.color, whiteSpace: 'nowrap', pointerEvents: 'none' }}>
+                                        <div key={`label${idx}`} style={{ position: 'absolute', right: '4px', top: `${yPct}%`, transform: `translateY(-100%) rotate(${clampedAngle}deg)`, transformOrigin: 'right bottom', fontSize: '9px', fontWeight: 600, color: line.color, whiteSpace: 'nowrap', pointerEvents: 'none', marginTop: '-2px' }}>
                                           {line.name}
                                         </div>
                                       )
@@ -1488,9 +1488,9 @@ export default function AccountPage() {
             </div>
 
             {/* ROW 4: Stats + Donut + Performance + Trade Analysis + Expectancy */}
-            <div style={{ display: 'flex', gap: '16px', marginBottom: '16px', overflow: 'visible' }}>
+            <div style={{ display: 'flex', gap: '16px', marginBottom: '16px', overflow: 'visible', position: 'relative' }}>
               {/* Stats + Donut */}
-              <div style={{ width: '320px', background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '14px', display: 'flex' }}>
+              <div style={{ width: '320px', background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '14px', display: 'flex', position: 'relative', zIndex: 2 }}>
                 <div style={{ flex: 1 }}>
                   {[
                     { l: 'Avg. Trend', v: avgTrend },
@@ -1547,7 +1547,7 @@ export default function AccountPage() {
               </div>
 
               {/* Performance - compact */}
-              <div style={{ width: '280px', background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '12px' }}>
+              <div style={{ width: '280px', background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '12px', position: 'relative', zIndex: 2 }}>
                 <div style={{ fontSize: '11px', color: '#888', textTransform: 'uppercase', marginBottom: '10px' }}>Performance</div>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px' }}>
                   {[
@@ -1565,13 +1565,16 @@ export default function AccountPage() {
               </div>
 
               {/* Trade Analysis - with green glow effect that extends behind other widgets */}
-              <div style={{ flex: 1, position: 'relative', zIndex: 1 }}>
-                {/* Outer glow layer - positioned behind everything with negative z-index */}
-                <div style={{ position: 'absolute', inset: '-50px', background: 'radial-gradient(ellipse at center, rgba(34,197,94,0.35) 0%, rgba(34,197,94,0.2) 25%, rgba(34,197,94,0.08) 50%, transparent 75%)', borderRadius: '60px', pointerEvents: 'none', filter: 'blur(12px)', zIndex: -10 }} />
-                <div style={{ position: 'relative', background: '#0d0d12', border: '2px solid #22c55e', borderRadius: '8px', padding: '12px', boxShadow: '0 0 40px rgba(34,197,94,0.6), 0 0 80px rgba(34,197,94,0.3), 0 0 120px rgba(34,197,94,0.2)', zIndex: 1 }}>
-                  <div style={{ fontSize: '11px', color: '#22c55e', textTransform: 'uppercase', marginBottom: '10px', fontWeight: 600, textShadow: '0 0 10px rgba(34,197,94,0.5)' }}>Trade Analysis</div>
-                  <div style={{ display: 'flex', gap: '6px', marginBottom: '8px' }}>
-                    <select value={analysisGroupBy} onChange={e => setAnalysisGroupBy(e.target.value)} style={{ flex: 1, padding: '6px', background: '#141418', border: '1px solid rgba(34,197,94,0.3)', borderRadius: '4px', color: '#fff', fontSize: '11px' }}>
+              <div style={{ flex: 1.2, position: 'relative', zIndex: 0 }}>
+                {/* Outer glow layer - positioned behind everything */}
+                <div style={{ position: 'absolute', inset: '-60px', background: 'radial-gradient(ellipse at center, rgba(34,197,94,0.4) 0%, rgba(34,197,94,0.2) 30%, rgba(34,197,94,0.08) 55%, transparent 75%)', borderRadius: '80px', pointerEvents: 'none', filter: 'blur(15px)' }} />
+                <div style={{ position: 'relative', background: 'linear-gradient(145deg, #0d0d12 0%, #0a0a0e 100%)', border: '2px solid #22c55e', borderRadius: '10px', padding: '14px', boxShadow: '0 0 50px rgba(34,197,94,0.5), 0 0 100px rgba(34,197,94,0.25), inset 0 1px 0 rgba(34,197,94,0.2)' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+                    <div style={{ fontSize: '12px', color: '#22c55e', textTransform: 'uppercase', fontWeight: 700, textShadow: '0 0 10px rgba(34,197,94,0.5)', letterSpacing: '1px' }}>Trade Analysis</div>
+                    <div style={{ fontSize: '9px', color: '#666' }}>{trades.length} trades</div>
+                  </div>
+                  <div style={{ display: 'flex', gap: '6px', marginBottom: '10px' }}>
+                    <select value={analysisGroupBy} onChange={e => setAnalysisGroupBy(e.target.value)} style={{ flex: 1, padding: '7px 10px', background: 'linear-gradient(180deg, #1a1a22 0%, #141418 100%)', border: '1px solid rgba(34,197,94,0.4)', borderRadius: '6px', color: '#fff', fontSize: '11px', cursor: 'pointer' }}>
                       <option value="direction">Direction</option>
                       <option value="symbol">Pair</option>
                       <option value="confidence">Confidence</option>
@@ -1582,7 +1585,7 @@ export default function AccountPage() {
                         <option key={inp.id} value={inp.id}>{inp.label}</option>
                       ))}
                     </select>
-                    <select value={analysisMetric} onChange={e => setAnalysisMetric(e.target.value)} style={{ flex: 1, padding: '6px', background: '#141418', border: '1px solid rgba(34,197,94,0.3)', borderRadius: '4px', color: '#fff', fontSize: '11px' }}>
+                    <select value={analysisMetric} onChange={e => setAnalysisMetric(e.target.value)} style={{ flex: 1, padding: '7px 10px', background: 'linear-gradient(180deg, #1a1a22 0%, #141418 100%)', border: '1px solid rgba(34,197,94,0.4)', borderRadius: '6px', color: '#fff', fontSize: '11px', cursor: 'pointer' }}>
                       <option value="avgpnl">Avg PnL</option>
                       <option value="winrate">Winrate</option>
                       <option value="pnl">Total PnL</option>
@@ -1593,7 +1596,7 @@ export default function AccountPage() {
                       <option value="profitfactor">Profit Factor</option>
                     </select>
                   </div>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
                     {(() => {
                       const groups = {}
                       trades.forEach(t => {
@@ -1613,7 +1616,9 @@ export default function AccountPage() {
                         if (t.outcome === 'win') groups[key].w++
                         else if (t.outcome === 'loss') groups[key].l++
                       })
-                      return Object.entries(groups).slice(0, 5).map(([name, data]) => {
+                      const entries = Object.entries(groups).slice(0, 4)
+                      if (entries.length === 0) return <div style={{ color: '#666', textAlign: 'center', padding: '20px' }}>No data</div>
+                      return entries.map(([name, data]) => {
                         let val, disp
                         const avgWin = data.w > 0 ? data.pnl > 0 ? data.pnl / data.w : 0 : 0
                         const avgLoss = data.l > 0 ? Math.abs(data.pnl < 0 ? data.pnl / data.l : 0) : 0
@@ -1624,13 +1629,17 @@ export default function AccountPage() {
                         else if (analysisMetric === 'avgrr') { val = data.count > 0 ? data.rr / data.count : 0; disp = val.toFixed(1) + 'R' }
                         else if (analysisMetric === 'maxwin') { val = data.maxWin === -Infinity ? 0 : data.maxWin; disp = '+$' + Math.round(val) }
                         else if (analysisMetric === 'maxloss') { val = data.maxLoss === Infinity ? 0 : data.maxLoss; disp = '$' + Math.round(val) }
-                        else if (analysisMetric === 'profitfactor') { val = avgLoss > 0 ? (avgWin * data.w) / (avgLoss * data.l) : data.w > 0 ? 999 : 0; disp = val.toFixed(2) }
+                        else if (analysisMetric === 'profitfactor') { val = avgLoss > 0 && data.l > 0 ? (avgWin * data.w) / (avgLoss * data.l) : data.w > 0 ? 999 : 0; disp = val >= 999 ? '∞' : val.toFixed(2) }
                         else { val = data.count; disp = data.count.toString() }
                         const isPositive = analysisMetric === 'maxloss' ? val < 0 : val >= 0
+                        const wr = (data.w + data.l) > 0 ? Math.round((data.w / (data.w + data.l)) * 100) : 0
                         return (
-                          <div key={name} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '5px 8px', background: 'rgba(34,197,94,0.05)', borderRadius: '4px', border: '1px solid rgba(34,197,94,0.1)' }}>
-                            <span style={{ fontSize: '12px', color: '#fff', fontWeight: 500 }}>{name}</span>
-                            <span style={{ fontSize: '13px', fontWeight: 700, color: isPositive ? '#22c55e' : '#ef4444' }}>{disp}</span>
+                          <div key={name} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 10px', background: 'linear-gradient(90deg, rgba(34,197,94,0.08) 0%, rgba(34,197,94,0.02) 100%)', borderRadius: '6px', border: '1px solid rgba(34,197,94,0.15)' }}>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                              <span style={{ fontSize: '13px', color: '#fff', fontWeight: 600 }}>{name}</span>
+                              <span style={{ fontSize: '9px', color: '#666' }}>{data.count} trades • {wr}% WR</span>
+                            </div>
+                            <span style={{ fontSize: '15px', fontWeight: 700, color: isPositive ? '#22c55e' : '#ef4444' }}>{disp}</span>
                           </div>
                         )
                       })
@@ -1640,7 +1649,7 @@ export default function AccountPage() {
               </div>
 
               {/* Expectancy widgets - compact */}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', width: '110px' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', width: '110px', position: 'relative', zIndex: 2 }}>
                 <div style={{ flex: 1, background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '8px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
                   <div style={{ fontSize: '9px', color: '#888', textTransform: 'uppercase', marginBottom: '2px' }}>Avg Loss Exp.</div>
                   <div style={{ fontSize: '18px', fontWeight: 700, color: '#ef4444' }}>-${avgLoss}</div>
@@ -2271,7 +2280,7 @@ export default function AccountPage() {
                               )
                             })()}
                           </svg>
-                          {/* Line labels at end of each line - rotated to match line angle */}
+                          {/* Line labels at end of each line - rotated to match line angle, positioned above */}
                           {equityCurveGroupBy !== 'total' && lineData.map((line, idx) => {
                             const pts = line.chartPoints
                             if (pts.length < 2) return null
@@ -2285,7 +2294,7 @@ export default function AccountPage() {
                             const clampedAngle = Math.max(-45, Math.min(45, angle))
                             const yPct = (lastPt.y / svgH) * 100
                             return (
-                              <div key={`labelEnl${idx}`} style={{ position: 'absolute', right: '8px', top: `${yPct}%`, transform: `translateY(-50%) rotate(${clampedAngle}deg)`, transformOrigin: 'right center', fontSize: '11px', fontWeight: 600, color: line.color, whiteSpace: 'nowrap', pointerEvents: 'none' }}>
+                              <div key={`labelEnl${idx}`} style={{ position: 'absolute', right: '8px', top: `${yPct}%`, transform: `translateY(-100%) rotate(${clampedAngle}deg)`, transformOrigin: 'right bottom', fontSize: '11px', fontWeight: 600, color: line.color, whiteSpace: 'nowrap', pointerEvents: 'none', marginTop: '-4px' }}>
                                 {line.name}
                               </div>
                             )
