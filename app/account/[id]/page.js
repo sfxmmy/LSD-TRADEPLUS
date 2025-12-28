@@ -1083,40 +1083,54 @@ export default function AccountPage() {
                                     </svg>
                                     {/* Line labels at end of each line - with collision detection */}
                                     {equityCurveGroupBy !== 'total' && (() => {
-                                      // Calculate initial label positions and check for overlaps
-                                      const labelHeight = 12 // Approximate label height in pixels
-                                      const minSpacing = 14 // Minimum pixels between labels
+                                      const minYSpacing = 12 // Minimum Y pixels between labels
 
-                                      // Get label data with Y positions
+                                      // Get label data with positions
                                       const labels = lineData.map((line, idx) => {
                                         const pts = line.chartPoints
                                         if (pts.length < 2) return null
-                                        return { line, idx, pts, yPos: pts[pts.length - 1].y, ptIndex: pts.length - 1 }
+                                        return { line, idx, pts, yPos: pts[pts.length - 1].y, xPos: pts[pts.length - 1].x, ptIndex: pts.length - 1 }
                                       }).filter(Boolean)
 
-                                      // Sort by Y position
+                                      // Sort by Y position (top to bottom)
                                       labels.sort((a, b) => a.yPos - b.yPos)
 
-                                      // Adjust overlapping labels by moving them back along their line
-                                      for (let i = 1; i < labels.length; i++) {
-                                        const prev = labels[i - 1]
-                                        const curr = labels[i]
-                                        const yDiff = (curr.yPos - prev.yPos) / svgH * 100 // as percentage
+                                      // Check all labels against each other and move back along line if overlapping
+                                      const placedLabels = []
+                                      for (const label of labels) {
+                                        let ptIndex = label.ptIndex
+                                        let attempts = 0
+                                        const maxAttempts = Math.min(20, label.pts.length - 2)
 
-                                        if (yDiff < (minSpacing / svgH * 100) * 5) { // If too close
-                                          // Move current label back along its line until clear
-                                          let newPtIndex = curr.ptIndex
-                                          while (newPtIndex > 1) {
-                                            newPtIndex--
-                                            const newY = curr.pts[newPtIndex].y
-                                            const newYDiff = Math.abs(newY - prev.yPos) / svgH * 100
-                                            if (newYDiff >= (minSpacing / svgH * 100) * 5) {
-                                              curr.ptIndex = newPtIndex
-                                              curr.yPos = newY
+                                        while (attempts < maxAttempts) {
+                                          const testY = label.pts[ptIndex].y
+                                          const testX = label.pts[ptIndex].x
+
+                                          // Check against all placed labels
+                                          let hasCollision = false
+                                          for (const placed of placedLabels) {
+                                            const yDiff = Math.abs(testY - placed.yPos)
+                                            const xDiff = Math.abs(testX - placed.xPos)
+                                            // Collision if both X and Y are close
+                                            if (yDiff < minYSpacing && xDiff < 40) {
+                                              hasCollision = true
                                               break
                                             }
                                           }
+
+                                          if (!hasCollision) {
+                                            label.ptIndex = ptIndex
+                                            label.yPos = testY
+                                            label.xPos = testX
+                                            break
+                                          }
+
+                                          ptIndex--
+                                          if (ptIndex < 1) break
+                                          attempts++
                                         }
+
+                                        placedLabels.push(label)
                                       }
 
                                       return labels.map(({ line, idx, pts, ptIndex }) => {
@@ -1125,7 +1139,7 @@ export default function AccountPage() {
                                         const dx = pt.x - prevPt.x
                                         const dy = pt.y - prevPt.y
                                         const angle = Math.atan2(dy, dx) * (180 / Math.PI)
-                                        const clampedAngle = Math.max(-35, Math.min(35, angle))
+                                        const clampedAngle = Math.max(-30, Math.min(30, angle))
                                         const yPct = (pt.y / svgH) * 100
                                         const xPct = (pt.x / svgW) * 100
                                         const isAtEnd = ptIndex === pts.length - 1
@@ -1713,107 +1727,165 @@ export default function AccountPage() {
               </div>
             </div>
 
-            {/* ROW 5: Risk + Progress - enhanced */}
-            <div style={{ display: 'flex', gap: '16px', marginBottom: '16px', position: 'relative', zIndex: 2 }}>
-              <div style={{ flex: 1, background: 'linear-gradient(145deg, #0d0d12 0%, #0a0a0e 100%)', border: '1px solid #1a1a22', borderRadius: '10px', padding: '18px' }}>
-                <div style={{ fontSize: '13px', color: '#888', textTransform: 'uppercase', marginBottom: '14px', fontWeight: 600, letterSpacing: '0.5px' }}>Risk Management</div>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px' }}>
-                  {[
-                    { l: 'Avg RR', v: avgRR + 'R', c: parseFloat(avgRR) >= 1.5 ? '#22c55e' : '#fff', sub: 'risk/reward' },
-                    { l: 'Risk/Reward', v: returnOnRisk + 'x', c: '#22c55e', sub: 'return' },
-                    { l: 'Profit Factor', v: profitFactor, c: parseFloat(profitFactor) >= 1.5 ? '#22c55e' : parseFloat(profitFactor) >= 1 ? '#f59e0b' : '#ef4444', sub: 'gross P/L' },
-                    { l: 'Consistency', v: consistencyScore + '%', c: consistencyScore >= 60 ? '#22c55e' : consistencyScore >= 40 ? '#f59e0b' : '#ef4444', sub: 'green days' },
-                  ].map((item, i) => (
-                    <div key={i} style={{ padding: '14px 12px', background: 'linear-gradient(180deg, #0d0d12 0%, #0a0a0e 100%)', borderRadius: '8px', border: '1px solid #1a1a22', textAlign: 'center' }}>
-                      <div style={{ fontSize: '11px', color: '#666', marginBottom: '6px', textTransform: 'uppercase' }}>{item.l}</div>
-                      <div style={{ fontSize: '22px', fontWeight: 700, color: item.c, marginBottom: '2px' }}>{item.v}</div>
-                      <div style={{ fontSize: '9px', color: '#555' }}>{item.sub}</div>
-                    </div>
-                  ))}
+            {/* ROW 5: Risk + Progress - sidebar style */}
+            <div style={{ display: 'flex', gap: '12px', marginBottom: '12px', position: 'relative', zIndex: 2 }}>
+              {/* Risk Management */}
+              <div style={{ flex: 1, background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '12px' }}>
+                <div style={{ fontSize: '10px', color: '#666', textTransform: 'uppercase', marginBottom: '10px', letterSpacing: '0.5px' }}>Risk Management</div>
+                {/* Highlight box */}
+                <div style={{ textAlign: 'center', padding: '10px', background: parseFloat(profitFactor) >= 1.5 ? 'rgba(34,197,94,0.1)' : parseFloat(profitFactor) >= 1 ? 'rgba(245,158,11,0.1)' : 'rgba(239,68,68,0.1)', borderRadius: '6px', marginBottom: '10px' }}>
+                  <div style={{ fontSize: '26px', fontWeight: 700, color: parseFloat(profitFactor) >= 1.5 ? '#22c55e' : parseFloat(profitFactor) >= 1 ? '#f59e0b' : '#ef4444' }}>{profitFactor}</div>
+                  <div style={{ fontSize: '9px', color: '#888' }}>Profit Factor</div>
+                </div>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '6px' }}>
+                  <div style={{ textAlign: 'center', padding: '8px', background: '#141418', borderRadius: '4px' }}>
+                    <div style={{ fontSize: '16px', fontWeight: 600, color: parseFloat(avgRR) >= 1.5 ? '#22c55e' : '#fff' }}>{avgRR}R</div>
+                    <div style={{ fontSize: '8px', color: '#666' }}>Avg RR</div>
+                  </div>
+                  <div style={{ textAlign: 'center', padding: '8px', background: '#141418', borderRadius: '4px' }}>
+                    <div style={{ fontSize: '16px', fontWeight: 600, color: '#22c55e' }}>{returnOnRisk}x</div>
+                    <div style={{ fontSize: '8px', color: '#666' }}>Risk/Reward</div>
+                  </div>
+                  <div style={{ textAlign: 'center', padding: '8px', background: '#141418', borderRadius: '4px' }}>
+                    <div style={{ fontSize: '16px', fontWeight: 600, color: consistencyScore >= 60 ? '#22c55e' : consistencyScore >= 40 ? '#f59e0b' : '#ef4444' }}>{consistencyScore}%</div>
+                    <div style={{ fontSize: '8px', color: '#666' }}>Consistency</div>
+                  </div>
                 </div>
               </div>
-              <div style={{ flex: 1, background: 'linear-gradient(145deg, #0d0d12 0%, #0a0a0e 100%)', border: '1px solid #1a1a22', borderRadius: '10px', padding: '18px' }}>
-                <div style={{ fontSize: '13px', color: '#888', textTransform: 'uppercase', marginBottom: '14px', fontWeight: 600, letterSpacing: '0.5px' }}>Account Progress</div>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px' }}>
-                  {[
-                    { l: 'Starting', v: '$' + startingBalance.toLocaleString(), c: '#888', sub: 'initial' },
-                    { l: 'Current', v: '$' + Math.round(currentBalance).toLocaleString(), c: currentBalance >= startingBalance ? '#22c55e' : '#ef4444', sub: 'balance' },
-                    { l: 'Growth', v: ((currentBalance / startingBalance - 1) * 100).toFixed(1) + '%', c: currentBalance >= startingBalance ? '#22c55e' : '#ef4444', sub: 'all time' },
-                    { l: 'Monthly', v: monthlyGrowth + '%', c: parseFloat(monthlyGrowth) >= 0 ? '#22c55e' : '#ef4444', sub: 'avg/month' },
-                  ].map((item, i) => (
-                    <div key={i} style={{ padding: '14px 12px', background: 'linear-gradient(180deg, #0d0d12 0%, #0a0a0e 100%)', borderRadius: '8px', border: '1px solid #1a1a22', textAlign: 'center' }}>
-                      <div style={{ fontSize: '11px', color: '#666', marginBottom: '6px', textTransform: 'uppercase' }}>{item.l}</div>
-                      <div style={{ fontSize: '22px', fontWeight: 700, color: item.c, marginBottom: '2px' }}>{item.v}</div>
-                      <div style={{ fontSize: '9px', color: '#555' }}>{item.sub}</div>
-                    </div>
-                  ))}
+
+              {/* Account Progress */}
+              <div style={{ flex: 1, background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '12px' }}>
+                <div style={{ fontSize: '10px', color: '#666', textTransform: 'uppercase', marginBottom: '10px', letterSpacing: '0.5px' }}>Account Progress</div>
+                {/* Highlight box */}
+                <div style={{ textAlign: 'center', padding: '10px', background: currentBalance >= startingBalance ? 'rgba(34,197,94,0.1)' : 'rgba(239,68,68,0.1)', borderRadius: '6px', marginBottom: '10px' }}>
+                  <div style={{ fontSize: '26px', fontWeight: 700, color: currentBalance >= startingBalance ? '#22c55e' : '#ef4444' }}>${Math.round(currentBalance).toLocaleString()}</div>
+                  <div style={{ fontSize: '9px', color: '#888' }}>Current Balance</div>
+                </div>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '6px' }}>
+                  <div style={{ textAlign: 'center', padding: '8px', background: '#141418', borderRadius: '4px' }}>
+                    <div style={{ fontSize: '16px', fontWeight: 600, color: '#888' }}>${startingBalance.toLocaleString()}</div>
+                    <div style={{ fontSize: '8px', color: '#666' }}>Starting</div>
+                  </div>
+                  <div style={{ textAlign: 'center', padding: '8px', background: '#141418', borderRadius: '4px' }}>
+                    <div style={{ fontSize: '16px', fontWeight: 600, color: currentBalance >= startingBalance ? '#22c55e' : '#ef4444' }}>{((currentBalance / startingBalance - 1) * 100).toFixed(1)}%</div>
+                    <div style={{ fontSize: '8px', color: '#666' }}>Growth</div>
+                  </div>
+                  <div style={{ textAlign: 'center', padding: '8px', background: '#141418', borderRadius: '4px' }}>
+                    <div style={{ fontSize: '16px', fontWeight: 600, color: parseFloat(monthlyGrowth) >= 0 ? '#22c55e' : '#ef4444' }}>{monthlyGrowth}%</div>
+                    <div style={{ fontSize: '8px', color: '#666' }}>Monthly</div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Performance */}
+              <div style={{ flex: 1, background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '12px' }}>
+                <div style={{ fontSize: '10px', color: '#666', textTransform: 'uppercase', marginBottom: '10px', letterSpacing: '0.5px' }}>Performance</div>
+                {/* Highlight box */}
+                <div style={{ textAlign: 'center', padding: '10px', background: totalPnl >= 0 ? 'rgba(34,197,94,0.1)' : 'rgba(239,68,68,0.1)', borderRadius: '6px', marginBottom: '10px' }}>
+                  <div style={{ fontSize: '26px', fontWeight: 700, color: totalPnl >= 0 ? '#22c55e' : '#ef4444' }}>{totalPnl >= 0 ? '+' : ''}${Math.abs(Math.round(totalPnl)).toLocaleString()}</div>
+                  <div style={{ fontSize: '9px', color: '#888' }}>Net P&L</div>
+                </div>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px' }}>
+                  <div style={{ flex: 1, textAlign: 'center', padding: '8px', background: 'rgba(34,197,94,0.1)', borderRadius: '4px', border: '1px solid rgba(34,197,94,0.2)' }}>
+                    <div style={{ fontSize: '16px', fontWeight: 700, color: '#22c55e' }}>+${avgWin}</div>
+                    <div style={{ fontSize: '8px', color: '#888' }}>Avg Win</div>
+                  </div>
+                  <div style={{ flex: 1, textAlign: 'center', padding: '8px', background: 'rgba(239,68,68,0.1)', borderRadius: '4px', border: '1px solid rgba(239,68,68,0.2)' }}>
+                    <div style={{ fontSize: '16px', fontWeight: 700, color: '#ef4444' }}>-${avgLoss}</div>
+                    <div style={{ fontSize: '8px', color: '#888' }}>Avg Loss</div>
+                  </div>
                 </div>
               </div>
             </div>
 
-            {/* ROW 6: Additional Statistics */}
-            <div style={{ display: 'flex', gap: '16px', marginBottom: '16px', position: 'relative', zIndex: 2 }}>
-              {/* Time-based Stats */}
-              <div style={{ flex: 1, background: 'linear-gradient(145deg, #0d0d12 0%, #0a0a0e 100%)', border: '1px solid #1a1a22', borderRadius: '10px', padding: '18px' }}>
-                <div style={{ fontSize: '13px', color: '#888', textTransform: 'uppercase', marginBottom: '14px', fontWeight: 600, letterSpacing: '0.5px' }}>Time Analysis</div>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px' }}>
-                  {(() => {
-                    // Calculate time-based stats
-                    const byHour = {}
-                    const byDayOfWeek = { 0: { w: 0, l: 0 }, 1: { w: 0, l: 0 }, 2: { w: 0, l: 0 }, 3: { w: 0, l: 0 }, 4: { w: 0, l: 0 }, 5: { w: 0, l: 0 }, 6: { w: 0, l: 0 } }
-                    const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
-                    trades.forEach(t => {
-                      const d = new Date(t.date)
-                      const dow = d.getDay()
-                      if (t.outcome === 'win') byDayOfWeek[dow].w++
-                      else if (t.outcome === 'loss') byDayOfWeek[dow].l++
-                    })
-                    let bestDay = null, bestDayWr = 0, worstDay = null, worstDayWr = 100
-                    Object.entries(byDayOfWeek).forEach(([d, data]) => {
-                      if (data.w + data.l > 0) {
-                        const wr = Math.round((data.w / (data.w + data.l)) * 100)
-                        if (wr > bestDayWr) { bestDayWr = wr; bestDay = dayNames[d] }
-                        if (wr < worstDayWr) { worstDayWr = wr; worstDay = dayNames[d] }
-                      }
-                    })
-                    const avgHoldTime = trades.length > 0 ? 'N/A' : 'N/A' // Would need entry/exit times
-                    const tradesThisWeek = trades.filter(t => {
-                      const d = new Date(t.date)
-                      const now = new Date()
-                      const weekAgo = new Date(now.setDate(now.getDate() - 7))
-                      return d >= weekAgo
-                    }).length
-                    return [
-                      { l: 'Best Day', v: bestDay || '-', c: '#22c55e', sub: bestDay ? `${bestDayWr}% WR` : '' },
-                      { l: 'Worst Day', v: worstDay || '-', c: '#ef4444', sub: worstDay ? `${worstDayWr}% WR` : '' },
-                      { l: 'This Week', v: tradesThisWeek, c: '#3b82f6', sub: 'trades' },
-                      { l: 'Avg/Day', v: avgTradesPerDay, c: '#fff', sub: 'trades' },
-                    ]
-                  })().map((item, i) => (
-                    <div key={i} style={{ padding: '14px 12px', background: 'linear-gradient(180deg, #0d0d12 0%, #0a0a0e 100%)', borderRadius: '8px', border: '1px solid #1a1a22', textAlign: 'center' }}>
-                      <div style={{ fontSize: '11px', color: '#666', marginBottom: '6px', textTransform: 'uppercase' }}>{item.l}</div>
-                      <div style={{ fontSize: '22px', fontWeight: 700, color: item.c, marginBottom: '2px' }}>{item.v}</div>
-                      <div style={{ fontSize: '9px', color: '#555' }}>{item.sub}</div>
-                    </div>
-                  ))}
+            {/* ROW 6: Time Analysis + Streaks */}
+            <div style={{ display: 'flex', gap: '12px', marginBottom: '12px', position: 'relative', zIndex: 2 }}>
+              {/* Time Analysis */}
+              <div style={{ flex: 1, background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '12px' }}>
+                <div style={{ fontSize: '10px', color: '#666', textTransform: 'uppercase', marginBottom: '10px', letterSpacing: '0.5px' }}>Time Analysis</div>
+                {(() => {
+                  const byDayOfWeek = { 0: { w: 0, l: 0 }, 1: { w: 0, l: 0 }, 2: { w: 0, l: 0 }, 3: { w: 0, l: 0 }, 4: { w: 0, l: 0 }, 5: { w: 0, l: 0 }, 6: { w: 0, l: 0 } }
+                  const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
+                  trades.forEach(t => {
+                    const d = new Date(t.date)
+                    const dow = d.getDay()
+                    if (t.outcome === 'win') byDayOfWeek[dow].w++
+                    else if (t.outcome === 'loss') byDayOfWeek[dow].l++
+                  })
+                  let bestDay = null, bestDayWr = 0, worstDay = null, worstDayWr = 100
+                  Object.entries(byDayOfWeek).forEach(([d, data]) => {
+                    if (data.w + data.l > 0) {
+                      const wr = Math.round((data.w / (data.w + data.l)) * 100)
+                      if (wr > bestDayWr) { bestDayWr = wr; bestDay = dayNames[d] }
+                      if (wr < worstDayWr) { worstDayWr = wr; worstDay = dayNames[d] }
+                    }
+                  })
+                  const tradesThisWeek = trades.filter(t => {
+                    const d = new Date(t.date)
+                    const now = new Date()
+                    const weekAgo = new Date(now.setDate(now.getDate() - 7))
+                    return d >= weekAgo
+                  }).length
+                  return (
+                    <>
+                      <div style={{ display: 'flex', gap: '6px', marginBottom: '8px' }}>
+                        <div style={{ flex: 1, textAlign: 'center', padding: '8px', background: 'rgba(34,197,94,0.1)', borderRadius: '4px', border: '1px solid rgba(34,197,94,0.2)' }}>
+                          <div style={{ fontSize: '18px', fontWeight: 700, color: '#22c55e' }}>{bestDay || '-'}</div>
+                          <div style={{ fontSize: '8px', color: '#888' }}>Best Day {bestDay ? `(${bestDayWr}%)` : ''}</div>
+                        </div>
+                        <div style={{ flex: 1, textAlign: 'center', padding: '8px', background: 'rgba(239,68,68,0.1)', borderRadius: '4px', border: '1px solid rgba(239,68,68,0.2)' }}>
+                          <div style={{ fontSize: '18px', fontWeight: 700, color: '#ef4444' }}>{worstDay || '-'}</div>
+                          <div style={{ fontSize: '8px', color: '#888' }}>Worst Day {worstDay ? `(${worstDayWr}%)` : ''}</div>
+                        </div>
+                      </div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', padding: '4px 0', borderTop: '1px solid #1a1a22' }}>
+                        <span style={{ fontSize: '10px', color: '#666' }}>This Week</span>
+                        <span style={{ fontSize: '11px', fontWeight: 600, color: '#3b82f6' }}>{tradesThisWeek} trades</span>
+                      </div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', padding: '4px 0' }}>
+                        <span style={{ fontSize: '10px', color: '#666' }}>Avg/Day</span>
+                        <span style={{ fontSize: '11px', fontWeight: 600, color: '#fff' }}>{avgTradesPerDay} trades</span>
+                      </div>
+                    </>
+                  )
+                })()}
+              </div>
+
+              {/* Streaks */}
+              <div style={{ flex: 1, background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '12px' }}>
+                <div style={{ fontSize: '10px', color: '#666', textTransform: 'uppercase', marginBottom: '10px', letterSpacing: '0.5px' }}>Streaks</div>
+                <div style={{ textAlign: 'center', padding: '10px', background: streaks.cs >= 0 ? 'rgba(34,197,94,0.1)' : 'rgba(239,68,68,0.1)', borderRadius: '6px', marginBottom: '10px' }}>
+                  <div style={{ fontSize: '26px', fontWeight: 700, color: streaks.cs >= 0 ? '#22c55e' : '#ef4444' }}>{streaks.cs >= 0 ? '+' : ''}{streaks.cs}</div>
+                  <div style={{ fontSize: '9px', color: '#888' }}>Current Streak</div>
+                </div>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px' }}>
+                  <div style={{ textAlign: 'center', padding: '8px', background: '#141418', borderRadius: '4px' }}>
+                    <div style={{ fontSize: '16px', fontWeight: 600, color: '#22c55e' }}>{streaks.mw}</div>
+                    <div style={{ fontSize: '8px', color: '#666' }}>Max Win</div>
+                  </div>
+                  <div style={{ textAlign: 'center', padding: '8px', background: '#141418', borderRadius: '4px' }}>
+                    <div style={{ fontSize: '16px', fontWeight: 600, color: '#ef4444' }}>{streaks.ml}</div>
+                    <div style={{ fontSize: '8px', color: '#666' }}>Max Loss</div>
+                  </div>
                 </div>
               </div>
-              {/* Performance Summary */}
-              <div style={{ flex: 1, background: 'linear-gradient(145deg, #0d0d12 0%, #0a0a0e 100%)', border: '1px solid #1a1a22', borderRadius: '10px', padding: '18px' }}>
-                <div style={{ fontSize: '13px', color: '#888', textTransform: 'uppercase', marginBottom: '14px', fontWeight: 600, letterSpacing: '0.5px' }}>Performance Summary</div>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px' }}>
-                  {[
-                    { l: 'Total Trades', v: trades.length, c: '#fff', sub: `${wins}W / ${losses}L` },
-                    { l: 'Net P&L', v: (totalPnl >= 0 ? '+' : '') + '$' + Math.round(totalPnl).toLocaleString(), c: totalPnl >= 0 ? '#22c55e' : '#ef4444', sub: 'all time' },
-                    { l: 'Avg Win', v: '+$' + avgWin, c: '#22c55e', sub: 'per trade' },
-                    { l: 'Avg Loss', v: '-$' + avgLoss, c: '#ef4444', sub: 'per trade' },
-                  ].map((item, i) => (
-                    <div key={i} style={{ padding: '14px 12px', background: 'linear-gradient(180deg, #0d0d12 0%, #0a0a0e 100%)', borderRadius: '8px', border: '1px solid #1a1a22', textAlign: 'center' }}>
-                      <div style={{ fontSize: '11px', color: '#666', marginBottom: '6px', textTransform: 'uppercase' }}>{item.l}</div>
-                      <div style={{ fontSize: '22px', fontWeight: 700, color: item.c, marginBottom: '2px' }}>{item.v}</div>
-                      <div style={{ fontSize: '9px', color: '#555' }}>{item.sub}</div>
-                    </div>
-                  ))}
+
+              {/* Trades Overview */}
+              <div style={{ flex: 1, background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '12px' }}>
+                <div style={{ fontSize: '10px', color: '#666', textTransform: 'uppercase', marginBottom: '10px', letterSpacing: '0.5px' }}>Trades Overview</div>
+                <div style={{ textAlign: 'center', padding: '10px', background: '#141418', borderRadius: '6px', marginBottom: '10px' }}>
+                  <div style={{ fontSize: '26px', fontWeight: 700, color: '#fff' }}>{trades.length}</div>
+                  <div style={{ fontSize: '9px', color: '#888' }}>Total Trades</div>
+                </div>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px' }}>
+                  <div style={{ textAlign: 'center', padding: '8px', background: 'rgba(34,197,94,0.1)', borderRadius: '4px', border: '1px solid rgba(34,197,94,0.2)' }}>
+                    <div style={{ fontSize: '16px', fontWeight: 600, color: '#22c55e' }}>{wins}</div>
+                    <div style={{ fontSize: '8px', color: '#888' }}>Wins</div>
+                  </div>
+                  <div style={{ textAlign: 'center', padding: '8px', background: 'rgba(239,68,68,0.1)', borderRadius: '4px', border: '1px solid rgba(239,68,68,0.2)' }}>
+                    <div style={{ fontSize: '16px', fontWeight: 600, color: '#ef4444' }}>{losses}</div>
+                    <div style={{ fontSize: '8px', color: '#888' }}>Losses</div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -2401,34 +2473,54 @@ export default function AccountPage() {
                           </svg>
                           {/* Line labels at end of each line - with collision detection */}
                           {equityCurveGroupBy !== 'total' && (() => {
-                            const minSpacing = 18
+                            const minYSpacing = 16 // Minimum Y pixels between labels
 
+                            // Get label data with positions
                             const labels = lineData.map((line, idx) => {
                               const pts = line.chartPoints
                               if (pts.length < 2) return null
-                              return { line, idx, pts, yPos: pts[pts.length - 1].y, ptIndex: pts.length - 1 }
+                              return { line, idx, pts, yPos: pts[pts.length - 1].y, xPos: pts[pts.length - 1].x, ptIndex: pts.length - 1 }
                             }).filter(Boolean)
 
+                            // Sort by Y position (top to bottom)
                             labels.sort((a, b) => a.yPos - b.yPos)
 
-                            for (let i = 1; i < labels.length; i++) {
-                              const prev = labels[i - 1]
-                              const curr = labels[i]
-                              const yDiff = (curr.yPos - prev.yPos) / svgH * 100
+                            // Check all labels against each other and move back along line if overlapping
+                            const placedLabels = []
+                            for (const label of labels) {
+                              let ptIndex = label.ptIndex
+                              let attempts = 0
+                              const maxAttempts = Math.min(25, label.pts.length - 2)
 
-                              if (yDiff < (minSpacing / svgH * 100) * 5) {
-                                let newPtIndex = curr.ptIndex
-                                while (newPtIndex > 1) {
-                                  newPtIndex--
-                                  const newY = curr.pts[newPtIndex].y
-                                  const newYDiff = Math.abs(newY - prev.yPos) / svgH * 100
-                                  if (newYDiff >= (minSpacing / svgH * 100) * 5) {
-                                    curr.ptIndex = newPtIndex
-                                    curr.yPos = newY
+                              while (attempts < maxAttempts) {
+                                const testY = label.pts[ptIndex].y
+                                const testX = label.pts[ptIndex].x
+
+                                // Check against all placed labels
+                                let hasCollision = false
+                                for (const placed of placedLabels) {
+                                  const yDiff = Math.abs(testY - placed.yPos)
+                                  const xDiff = Math.abs(testX - placed.xPos)
+                                  // Collision if both X and Y are close
+                                  if (yDiff < minYSpacing && xDiff < 60) {
+                                    hasCollision = true
                                     break
                                   }
                                 }
+
+                                if (!hasCollision) {
+                                  label.ptIndex = ptIndex
+                                  label.yPos = testY
+                                  label.xPos = testX
+                                  break
+                                }
+
+                                ptIndex--
+                                if (ptIndex < 1) break
+                                attempts++
                               }
+
+                              placedLabels.push(label)
                             }
 
                             return labels.map(({ line, idx, pts, ptIndex }) => {
@@ -2437,7 +2529,7 @@ export default function AccountPage() {
                               const dx = pt.x - prevPt.x
                               const dy = pt.y - prevPt.y
                               const angle = Math.atan2(dy, dx) * (180 / Math.PI)
-                              const clampedAngle = Math.max(-35, Math.min(35, angle))
+                              const clampedAngle = Math.max(-30, Math.min(30, angle))
                               const yPct = (pt.y / svgH) * 100
                               const xPct = (pt.x / svgW) * 100
                               const isAtEnd = ptIndex === pts.length - 1
