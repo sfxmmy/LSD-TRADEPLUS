@@ -1069,14 +1069,13 @@ export default function AccountPage() {
                                         )
                                       })()}
                                     </svg>
-                                    {/* Line labels at end of each line */}
+                                    {/* Line labels at end of each line - no border, gradient text matching line */}
                                     {equityCurveGroupBy !== 'total' && lineData.map((line, idx) => {
                                       const lastPt = line.chartPoints[line.chartPoints.length - 1]
                                       if (!lastPt) return null
-                                      const xPct = (lastPt.x / svgW) * 100
                                       const yPct = (lastPt.y / svgH) * 100
                                       return (
-                                        <div key={`label${idx}`} style={{ position: 'absolute', right: '2px', top: `${yPct}%`, transform: 'translateY(-50%)', fontSize: '8px', fontWeight: 600, color: line.color, background: 'rgba(13,13,18,0.85)', padding: '1px 4px', borderRadius: '2px', whiteSpace: 'nowrap', pointerEvents: 'none' }}>
+                                        <div key={`label${idx}`} style={{ position: 'absolute', right: '4px', top: `${yPct}%`, transform: 'translateY(-50%)', fontSize: '9px', fontWeight: 700, color: line.color, textShadow: `0 0 8px ${line.color}, 0 0 16px ${line.color}`, whiteSpace: 'nowrap', pointerEvents: 'none', letterSpacing: '0.5px' }}>
                                           {line.name}
                                         </div>
                                       )
@@ -1090,8 +1089,8 @@ export default function AccountPage() {
                                         {hoverPoint.symbol && <div style={{ color: hoverPoint.pnl >= 0 ? '#22c55e' : '#ef4444' }}>{hoverPoint.symbol}: {hoverPoint.pnl >= 0 ? '+' : ''}${hoverPoint.pnl?.toFixed(0)}</div>}
                                       </div>
                                     )}
-                                    {/* Legend for total mode only */}
-                                    {equityCurveGroupBy === 'total' && (
+                                    {/* Legend */}
+                                    {equityCurveGroupBy === 'total' ? (
                                       <div style={{ position: 'absolute', bottom: '4px', left: '4px', display: 'flex', alignItems: 'center', gap: '8px', background: 'rgba(13,13,18,0.9)', padding: '3px 6px', borderRadius: '3px', fontSize: '9px' }}>
                                         <div style={{ display: 'flex', alignItems: 'center', gap: '3px' }}>
                                           <div style={{ width: '10px', height: '2px', background: '#22c55e' }} />
@@ -1103,6 +1102,15 @@ export default function AccountPage() {
                                             <span style={{ color: '#888' }}>Below</span>
                                           </div>
                                         )}
+                                      </div>
+                                    ) : (
+                                      <div style={{ position: 'absolute', top: '4px', right: '4px', display: 'flex', flexWrap: 'wrap', gap: '6px', background: 'rgba(13,13,18,0.9)', padding: '4px 8px', borderRadius: '4px', fontSize: '8px', maxWidth: '180px' }}>
+                                        {lineData.map((line, idx) => (
+                                          <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '3px' }}>
+                                            <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: line.color, boxShadow: `0 0 4px ${line.color}` }} />
+                                            <span style={{ color: '#aaa' }}>{line.name}</span>
+                                          </div>
+                                        ))}
                                       </div>
                                     )}
                                   </div>
@@ -1536,54 +1544,77 @@ export default function AccountPage() {
                 </div>
               </div>
 
-              {/* Trade Analysis - narrower with green border */}
-              <div style={{ flex: 1, background: '#0d0d12', border: '2px solid #22c55e', borderRadius: '8px', padding: '12px' }}>
-                <div style={{ fontSize: '11px', color: '#888', textTransform: 'uppercase', marginBottom: '10px' }}>Trade Analysis</div>
-                <div style={{ display: 'flex', gap: '8px', marginBottom: '10px' }}>
-                  <select value={analysisGroupBy} onChange={e => setAnalysisGroupBy(e.target.value)} style={{ flex: 1, padding: '8px', background: '#141418', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '6px', color: '#fff', fontSize: '12px', boxShadow: '0 0 4px rgba(255,255,255,0.1)' }}>
-                    <option value="direction">Direction</option>
-                    <option value="confidence">Confidence</option>
-                    <option value="session">Session</option>
-                    <option value="timeframe">Timeframe</option>
-                    {getCustomSelectInputs().filter(i => !['direction', 'session', 'confidence', 'timeframe'].includes(i.id)).map(inp => (
-                      <option key={inp.id} value={inp.id}>{inp.label}</option>
-                    ))}
-                  </select>
-                  <select value={analysisMetric} onChange={e => setAnalysisMetric(e.target.value)} style={{ flex: 1, padding: '8px', background: '#141418', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '6px', color: '#fff', fontSize: '12px', boxShadow: '0 0 4px rgba(255,255,255,0.1)' }}>
-                    <option value="avgpnl">Avg PnL</option>
-                    <option value="winrate">Winrate</option>
-                    <option value="pnl">Total PnL</option>
-                    <option value="count">Count</option>
-                  </select>
-                </div>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                  {(() => {
-                    const groups = {}
-                    trades.forEach(t => {
-                      let key
-                      if (analysisGroupBy === 'direction') key = t.direction?.toUpperCase()
-                      else key = getExtraData(t)[analysisGroupBy]
-                      if (!key) return
-                      if (!groups[key]) groups[key] = { w: 0, l: 0, pnl: 0, count: 0 }
-                      groups[key].count++
-                      groups[key].pnl += parseFloat(t.pnl) || 0
-                      if (t.outcome === 'win') groups[key].w++
-                      else if (t.outcome === 'loss') groups[key].l++
-                    })
-                    return Object.entries(groups).slice(0, 4).map(([name, data]) => {
-                      let val, disp
-                      if (analysisMetric === 'avgpnl') { val = data.count > 0 ? data.pnl / data.count : 0; disp = (val >= 0 ? '+' : '') + '$' + Math.round(val) + '/trade' }
-                      else if (analysisMetric === 'winrate') { val = (data.w + data.l) > 0 ? (data.w / (data.w + data.l)) * 100 : 0; disp = Math.round(val) + '%' }
-                      else if (analysisMetric === 'pnl') { val = data.pnl; disp = (val >= 0 ? '+' : '') + '$' + Math.round(val) }
-                      else { val = data.count; disp = data.count + ' trades' }
-                      return (
-                        <div key={name} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '6px 10px', background: '#0a0a0e', borderRadius: '4px' }}>
-                          <span style={{ fontSize: '13px', color: '#fff', fontWeight: 500 }}>{name}:</span>
-                          <span style={{ fontSize: '14px', fontWeight: 700, color: val >= 0 ? '#22c55e' : '#ef4444' }}>{disp}</span>
-                        </div>
-                      )
-                    })
-                  })()}
+              {/* Trade Analysis - with green glow effect */}
+              <div style={{ flex: 1, position: 'relative', zIndex: 2 }}>
+                <div style={{ position: 'absolute', inset: '-20px', background: 'radial-gradient(ellipse at center, rgba(34,197,94,0.15) 0%, rgba(34,197,94,0.05) 40%, transparent 70%)', borderRadius: '30px', pointerEvents: 'none', zIndex: -1 }} />
+                <div style={{ background: '#0d0d12', border: '2px solid #22c55e', borderRadius: '8px', padding: '12px', boxShadow: '0 0 20px rgba(34,197,94,0.3), 0 0 40px rgba(34,197,94,0.15), inset 0 0 20px rgba(34,197,94,0.05)' }}>
+                  <div style={{ fontSize: '11px', color: '#22c55e', textTransform: 'uppercase', marginBottom: '10px', fontWeight: 600, textShadow: '0 0 10px rgba(34,197,94,0.5)' }}>Trade Analysis</div>
+                  <div style={{ display: 'flex', gap: '6px', marginBottom: '8px' }}>
+                    <select value={analysisGroupBy} onChange={e => setAnalysisGroupBy(e.target.value)} style={{ flex: 1, padding: '6px', background: '#141418', border: '1px solid rgba(34,197,94,0.3)', borderRadius: '4px', color: '#fff', fontSize: '11px' }}>
+                      <option value="direction">Direction</option>
+                      <option value="symbol">Pair</option>
+                      <option value="confidence">Confidence</option>
+                      <option value="session">Session</option>
+                      <option value="timeframe">Timeframe</option>
+                      <option value="outcome">Outcome</option>
+                      {getCustomSelectInputs().filter(i => !['direction', 'session', 'confidence', 'timeframe', 'outcome', 'symbol'].includes(i.id)).map(inp => (
+                        <option key={inp.id} value={inp.id}>{inp.label}</option>
+                      ))}
+                    </select>
+                    <select value={analysisMetric} onChange={e => setAnalysisMetric(e.target.value)} style={{ flex: 1, padding: '6px', background: '#141418', border: '1px solid rgba(34,197,94,0.3)', borderRadius: '4px', color: '#fff', fontSize: '11px' }}>
+                      <option value="avgpnl">Avg PnL</option>
+                      <option value="winrate">Winrate</option>
+                      <option value="pnl">Total PnL</option>
+                      <option value="count">Trade Count</option>
+                      <option value="avgrr">Avg RR</option>
+                      <option value="maxwin">Biggest Win</option>
+                      <option value="maxloss">Biggest Loss</option>
+                      <option value="profitfactor">Profit Factor</option>
+                    </select>
+                  </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                    {(() => {
+                      const groups = {}
+                      trades.forEach(t => {
+                        let key
+                        if (analysisGroupBy === 'direction') key = t.direction?.toUpperCase()
+                        else if (analysisGroupBy === 'symbol') key = t.symbol
+                        else if (analysisGroupBy === 'outcome') key = t.outcome?.toUpperCase()
+                        else key = getExtraData(t)[analysisGroupBy]
+                        if (!key) return
+                        if (!groups[key]) groups[key] = { w: 0, l: 0, pnl: 0, count: 0, rr: 0, maxWin: -Infinity, maxLoss: Infinity }
+                        groups[key].count++
+                        const pnl = parseFloat(t.pnl) || 0
+                        groups[key].pnl += pnl
+                        groups[key].rr += parseFloat(t.rr) || 0
+                        if (pnl > groups[key].maxWin) groups[key].maxWin = pnl
+                        if (pnl < groups[key].maxLoss) groups[key].maxLoss = pnl
+                        if (t.outcome === 'win') groups[key].w++
+                        else if (t.outcome === 'loss') groups[key].l++
+                      })
+                      return Object.entries(groups).slice(0, 5).map(([name, data]) => {
+                        let val, disp
+                        const avgWin = data.w > 0 ? data.pnl > 0 ? data.pnl / data.w : 0 : 0
+                        const avgLoss = data.l > 0 ? Math.abs(data.pnl < 0 ? data.pnl / data.l : 0) : 0
+                        if (analysisMetric === 'avgpnl') { val = data.count > 0 ? data.pnl / data.count : 0; disp = (val >= 0 ? '+' : '') + '$' + Math.round(val) }
+                        else if (analysisMetric === 'winrate') { val = (data.w + data.l) > 0 ? (data.w / (data.w + data.l)) * 100 : 0; disp = Math.round(val) + '%' }
+                        else if (analysisMetric === 'pnl') { val = data.pnl; disp = (val >= 0 ? '+' : '') + '$' + Math.round(val) }
+                        else if (analysisMetric === 'count') { val = data.count; disp = data.count + ' trades' }
+                        else if (analysisMetric === 'avgrr') { val = data.count > 0 ? data.rr / data.count : 0; disp = val.toFixed(1) + 'R' }
+                        else if (analysisMetric === 'maxwin') { val = data.maxWin === -Infinity ? 0 : data.maxWin; disp = '+$' + Math.round(val) }
+                        else if (analysisMetric === 'maxloss') { val = data.maxLoss === Infinity ? 0 : data.maxLoss; disp = '$' + Math.round(val) }
+                        else if (analysisMetric === 'profitfactor') { val = avgLoss > 0 ? (avgWin * data.w) / (avgLoss * data.l) : data.w > 0 ? 999 : 0; disp = val.toFixed(2) }
+                        else { val = data.count; disp = data.count.toString() }
+                        const isPositive = analysisMetric === 'maxloss' ? val < 0 : val >= 0
+                        return (
+                          <div key={name} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '5px 8px', background: 'rgba(34,197,94,0.05)', borderRadius: '4px', border: '1px solid rgba(34,197,94,0.1)' }}>
+                            <span style={{ fontSize: '12px', color: '#fff', fontWeight: 500 }}>{name}</span>
+                            <span style={{ fontSize: '13px', fontWeight: 700, color: isPositive ? '#22c55e' : '#ef4444' }}>{disp}</span>
+                          </div>
+                        )
+                      })
+                    })()}
+                  </div>
                 </div>
               </div>
 
@@ -2346,48 +2377,61 @@ export default function AccountPage() {
                 )
               })()}
               </div>
-              {/* Stats Sidebar */}
-              <div style={{ width: '220px', background: '#0a0a0e', borderRadius: '8px', border: '1px solid #1a1a22', padding: '8px', flexShrink: 0 }}>
-                <div style={{ fontSize: '9px', color: '#888', textTransform: 'uppercase', marginBottom: '4px', fontWeight: 600 }}>Statistics</div>
+              {/* Stats Sidebar - Larger, white text, improved UI */}
+              <div style={{ width: '280px', background: '#0a0a0e', borderRadius: '12px', border: '1px solid #1a1a22', padding: '16px', flexShrink: 0, display: 'flex', flexDirection: 'column' }}>
+                <div style={{ fontSize: '13px', color: '#fff', textTransform: 'uppercase', marginBottom: '12px', fontWeight: 700, letterSpacing: '1px', borderBottom: '1px solid #1a1a22', paddingBottom: '8px' }}>Statistics</div>
                 {(() => {
-                  // Calculate stats based on selected lines/data - same for both charts
+                  // Calculate stats based on selected lines/data
                   let filteredTrades = []
                   if (enlargedChart === 'equity') {
                     if (equityCurveGroupBy === 'total') {
                       filteredTrades = trades
                     } else {
-                      const selectedKeys = Object.keys(selectedCurveLines).filter(k => selectedCurveLines[k] !== false)
-                      if (selectedKeys.length > 0) {
+                      // Get visible line names from lineData that are actually shown
+                      const visibleLineNames = Object.keys(selectedCurveLines).length > 0
+                        ? Object.keys(selectedCurveLines).filter(k => selectedCurveLines[k] !== false)
+                        : []
+                      if (visibleLineNames.length > 0) {
                         filteredTrades = trades.filter(t => {
-                          const key = equityCurveGroupBy === 'symbol' ? t.symbol : equityCurveGroupBy === 'direction' ? t.direction : (JSON.parse(t.extra_data || '{}')[equityCurveGroupBy] || 'Unknown')
-                          return selectedKeys.includes(key)
+                          let key
+                          if (equityCurveGroupBy === 'symbol') key = t.symbol
+                          else if (equityCurveGroupBy === 'direction') key = t.direction
+                          else key = (JSON.parse(t.extra_data || '{}')[equityCurveGroupBy] || 'Unknown')
+                          return visibleLineNames.includes(key)
                         })
+                      } else {
+                        filteredTrades = trades
                       }
                     }
                   } else if (enlargedChart === 'bar') {
                     filteredTrades = trades
+                  } else {
+                    filteredTrades = trades
                   }
 
-                  const wins = filteredTrades.filter(t => parseFloat(t.pnl) > 0)
-                  const losses = filteredTrades.filter(t => parseFloat(t.pnl) < 0)
+                  const wins = filteredTrades.filter(t => t.outcome === 'win')
+                  const losses = filteredTrades.filter(t => t.outcome === 'loss')
                   const totalPnl = filteredTrades.reduce((s, t) => s + (parseFloat(t.pnl) || 0), 0)
-                  const winrate = filteredTrades.length > 0 ? ((wins.length / filteredTrades.length) * 100).toFixed(1) : '0'
+                  const winrate = filteredTrades.length > 0 ? ((wins.length / filteredTrades.length) * 100).toFixed(0) : '0'
                   const avgWin = wins.length > 0 ? wins.reduce((s, t) => s + parseFloat(t.pnl), 0) / wins.length : 0
                   const avgLoss = losses.length > 0 ? Math.abs(losses.reduce((s, t) => s + parseFloat(t.pnl), 0) / losses.length) : 0
-                  const profitFactor = avgLoss > 0 ? ((avgWin * wins.length) / (avgLoss * losses.length)).toFixed(2) : wins.length > 0 ? '∞' : '0'
+                  const profitFactor = avgLoss > 0 && losses.length > 0 ? ((avgWin * wins.length) / (avgLoss * losses.length)).toFixed(2) : wins.length > 0 ? '∞' : '0'
                   const biggestWin = wins.length > 0 ? Math.max(...wins.map(t => parseFloat(t.pnl))) : 0
                   const biggestLoss = losses.length > 0 ? Math.min(...losses.map(t => parseFloat(t.pnl))) : 0
                   const avgPnl = filteredTrades.length > 0 ? totalPnl / filteredTrades.length : 0
                   const expectancy = filteredTrades.length > 0 ? (parseFloat(winrate) / 100 * avgWin - (1 - parseFloat(winrate) / 100) * avgLoss).toFixed(0) : 0
-                  const avgRR = avgLoss > 0 ? (avgWin / avgLoss).toFixed(2) : avgWin > 0 ? '∞' : '0'
+                  const avgRR = avgLoss > 0 ? (avgWin / avgLoss).toFixed(1) : avgWin > 0 ? '∞' : '0'
                   const breakeven = filteredTrades.filter(t => parseFloat(t.pnl) === 0).length
+
                   // Calculate streak
+                  const sortedTrades = [...filteredTrades].sort((a, b) => new Date(a.date) - new Date(b.date))
                   let currentStreak = 0, maxWinStreak = 0, maxLossStreak = 0, tempStreak = 0
-                  filteredTrades.forEach(t => {
-                    if (parseFloat(t.pnl) > 0) { tempStreak = tempStreak > 0 ? tempStreak + 1 : 1; maxWinStreak = Math.max(maxWinStreak, tempStreak) }
-                    else if (parseFloat(t.pnl) < 0) { tempStreak = tempStreak < 0 ? tempStreak - 1 : -1; maxLossStreak = Math.max(maxLossStreak, Math.abs(tempStreak)) }
+                  sortedTrades.forEach(t => {
+                    if (t.outcome === 'win') { tempStreak = tempStreak > 0 ? tempStreak + 1 : 1; maxWinStreak = Math.max(maxWinStreak, tempStreak) }
+                    else if (t.outcome === 'loss') { tempStreak = tempStreak < 0 ? tempStreak - 1 : -1; maxLossStreak = Math.max(maxLossStreak, Math.abs(tempStreak)) }
                     currentStreak = tempStreak
                   })
+
                   // Daily streak calculation
                   const dailyPnlByDate = {}
                   filteredTrades.forEach(t => { dailyPnlByDate[t.date] = (dailyPnlByDate[t.date] || 0) + (parseFloat(t.pnl) || 0) })
@@ -2404,30 +2448,30 @@ export default function AccountPage() {
                   const totalDays = sortedDates.length
 
                   const stats = [
-                    { label: 'Total P&L', value: `${totalPnl >= 0 ? '+' : ''}$${Math.round(totalPnl).toLocaleString()}`, color: totalPnl >= 0 ? '#22c55e' : '#ef4444' },
-                    { label: 'Trades', value: `${filteredTrades.length} (${wins.length}W/${losses.length}L${breakeven > 0 ? `/${breakeven}BE` : ''})` },
+                    { label: 'Total P&L', value: `${totalPnl >= 0 ? '+' : ''}$${Math.round(totalPnl).toLocaleString()}`, color: totalPnl >= 0 ? '#22c55e' : '#ef4444', big: true },
+                    { label: 'Trades', value: `${filteredTrades.length} (${wins.length}W/${losses.length}L)`, color: '#fff' },
                     { label: 'Winrate', value: `${winrate}%`, color: parseFloat(winrate) >= 50 ? '#22c55e' : '#ef4444' },
                     { label: 'Profit Factor', value: profitFactor, color: parseFloat(profitFactor) >= 1 ? '#22c55e' : '#ef4444' },
                     { label: 'Avg RR', value: `${avgRR}R`, color: parseFloat(avgRR) >= 1 ? '#22c55e' : '#ef4444' },
                     { label: 'Avg Win', value: `+$${Math.round(avgWin).toLocaleString()}`, color: '#22c55e' },
                     { label: 'Avg Loss', value: `-$${Math.round(avgLoss).toLocaleString()}`, color: '#ef4444' },
                     { label: 'Avg Trade', value: `${avgPnl >= 0 ? '+' : ''}$${Math.round(avgPnl).toLocaleString()}`, color: avgPnl >= 0 ? '#22c55e' : '#ef4444' },
-                    { label: 'Expectancy', value: `$${expectancy}`, color: parseFloat(expectancy) >= 0 ? '#22c55e' : '#ef4444' },
+                    { label: 'Expectancy', value: `${expectancy >= 0 ? '+' : ''}$${expectancy}`, color: parseFloat(expectancy) >= 0 ? '#22c55e' : '#ef4444' },
                     { label: 'Best Trade', value: `+$${Math.round(biggestWin).toLocaleString()}`, color: '#22c55e' },
                     { label: 'Worst Trade', value: `$${Math.round(biggestLoss).toLocaleString()}`, color: '#ef4444' },
                     { label: 'Trade Streak', value: currentStreak >= 0 ? `+${currentStreak}` : `${currentStreak}`, color: currentStreak >= 0 ? '#22c55e' : '#ef4444' },
-                    { label: 'Best Trade Streak', value: `+${maxWinStreak}W / -${maxLossStreak}L` },
+                    { label: 'Best Trade Streak', value: `+${maxWinStreak}W / -${maxLossStreak}L`, color: '#fff' },
                     { label: 'Days Traded', value: `${totalDays} (${greenDays}G/${redDays}R)`, color: greenDays >= redDays ? '#22c55e' : '#ef4444' },
                     { label: 'Day Streak', value: currentDayStreak >= 0 ? `+${currentDayStreak}` : `${currentDayStreak}`, color: currentDayStreak >= 0 ? '#22c55e' : '#ef4444' },
-                    { label: 'Best Day Streak', value: `+${maxDayWinStreak}G / -${maxDayLossStreak}R` },
+                    { label: 'Best Day Streak', value: `+${maxDayWinStreak}G / -${maxDayLossStreak}R`, color: '#fff' },
                   ]
 
                   return (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', flex: 1, overflowY: 'auto' }}>
                       {stats.map((stat, i) => (
-                        <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '4px 5px', background: '#0d0d12', borderRadius: '2px' }}>
-                          <span style={{ fontSize: '8px', color: '#666' }}>{stat.label}</span>
-                          <span style={{ fontSize: '9px', fontWeight: 600, color: stat.color || '#fff' }}>{stat.value}</span>
+                        <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: stat.big ? '10px 12px' : '6px 10px', background: stat.big ? 'linear-gradient(135deg, #0d0d12 0%, #141418 100%)' : '#0d0d12', borderRadius: '6px', border: stat.big ? '1px solid #1a1a22' : 'none' }}>
+                          <span style={{ fontSize: stat.big ? '12px' : '11px', color: '#fff', fontWeight: stat.big ? 600 : 500 }}>{stat.label}</span>
+                          <span style={{ fontSize: stat.big ? '16px' : '13px', fontWeight: 700, color: stat.color }}>{stat.value}</span>
                         </div>
                       ))}
                     </div>
