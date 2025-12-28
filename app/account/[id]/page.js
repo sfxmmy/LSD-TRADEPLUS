@@ -1081,25 +1081,75 @@ export default function AccountPage() {
                                         )
                                       })()}
                                     </svg>
-                                    {/* Line labels at end of each line - rotated to match line angle, positioned above */}
-                                    {equityCurveGroupBy !== 'total' && lineData.map((line, idx) => {
-                                      const pts = line.chartPoints
-                                      if (pts.length < 2) return null
-                                      const lastPt = pts[pts.length - 1]
-                                      const prevPt = pts[pts.length - 2]
-                                      // Calculate angle from last segment (in degrees)
-                                      const dx = lastPt.x - prevPt.x
-                                      const dy = lastPt.y - prevPt.y
-                                      const angle = Math.atan2(dy, dx) * (180 / Math.PI)
-                                      // Clamp angle for readability
-                                      const clampedAngle = Math.max(-45, Math.min(45, angle))
-                                      const yPct = (lastPt.y / svgH) * 100
-                                      return (
-                                        <div key={`label${idx}`} style={{ position: 'absolute', right: '4px', top: `${yPct}%`, transform: `translateY(-100%) rotate(${clampedAngle}deg)`, transformOrigin: 'right bottom', fontSize: '9px', fontWeight: 600, color: line.color, whiteSpace: 'nowrap', pointerEvents: 'none', marginTop: '-2px' }}>
-                                          {line.name}
-                                        </div>
-                                      )
-                                    })}
+                                    {/* Line labels at end of each line - with collision detection */}
+                                    {equityCurveGroupBy !== 'total' && (() => {
+                                      // Calculate initial label positions and check for overlaps
+                                      const labelHeight = 12 // Approximate label height in pixels
+                                      const minSpacing = 14 // Minimum pixels between labels
+
+                                      // Get label data with Y positions
+                                      const labels = lineData.map((line, idx) => {
+                                        const pts = line.chartPoints
+                                        if (pts.length < 2) return null
+                                        return { line, idx, pts, yPos: pts[pts.length - 1].y, ptIndex: pts.length - 1 }
+                                      }).filter(Boolean)
+
+                                      // Sort by Y position
+                                      labels.sort((a, b) => a.yPos - b.yPos)
+
+                                      // Adjust overlapping labels by moving them back along their line
+                                      for (let i = 1; i < labels.length; i++) {
+                                        const prev = labels[i - 1]
+                                        const curr = labels[i]
+                                        const yDiff = (curr.yPos - prev.yPos) / svgH * 100 // as percentage
+
+                                        if (yDiff < (minSpacing / svgH * 100) * 5) { // If too close
+                                          // Move current label back along its line until clear
+                                          let newPtIndex = curr.ptIndex
+                                          while (newPtIndex > 1) {
+                                            newPtIndex--
+                                            const newY = curr.pts[newPtIndex].y
+                                            const newYDiff = Math.abs(newY - prev.yPos) / svgH * 100
+                                            if (newYDiff >= (minSpacing / svgH * 100) * 5) {
+                                              curr.ptIndex = newPtIndex
+                                              curr.yPos = newY
+                                              break
+                                            }
+                                          }
+                                        }
+                                      }
+
+                                      return labels.map(({ line, idx, pts, ptIndex }) => {
+                                        const pt = pts[ptIndex]
+                                        const prevPt = pts[Math.max(0, ptIndex - 1)]
+                                        const dx = pt.x - prevPt.x
+                                        const dy = pt.y - prevPt.y
+                                        const angle = Math.atan2(dy, dx) * (180 / Math.PI)
+                                        const clampedAngle = Math.max(-35, Math.min(35, angle))
+                                        const yPct = (pt.y / svgH) * 100
+                                        const xPct = (pt.x / svgW) * 100
+                                        const isAtEnd = ptIndex === pts.length - 1
+
+                                        return (
+                                          <div key={`label${idx}`} style={{
+                                            position: 'absolute',
+                                            right: isAtEnd ? '4px' : 'auto',
+                                            left: isAtEnd ? 'auto' : `${xPct}%`,
+                                            top: `${yPct}%`,
+                                            transform: `translateY(-100%) ${isAtEnd ? '' : 'translateX(-50%)'} rotate(${clampedAngle}deg)`,
+                                            transformOrigin: isAtEnd ? 'right bottom' : 'center bottom',
+                                            fontSize: '9px',
+                                            fontWeight: 600,
+                                            color: line.color,
+                                            whiteSpace: 'nowrap',
+                                            pointerEvents: 'none',
+                                            marginTop: '-2px'
+                                          }}>
+                                            {line.name}
+                                          </div>
+                                        )
+                                      })
+                                    })()}
                                     {hoverPoint && <div style={{ position: 'absolute', left: `${hoverPoint.xPct}%`, top: `${hoverPoint.yPct}%`, transform: 'translate(-50%, -50%)', width: '10px', height: '10px', borderRadius: '50%', background: equityCurveGroupBy === 'total' ? (hoverPoint.balance >= startingBalance ? '#22c55e' : '#ef4444') : (hoverPoint.lineColor || '#22c55e'), border: '2px solid #fff', pointerEvents: 'none', zIndex: 10 }} />}
                                     {hoverPoint && (
                                       <div style={{ position: 'absolute', left: `${hoverPoint.xPct}%`, top: `${hoverPoint.yPct}%`, transform: `translate(${hoverPoint.xPct > 80 ? 'calc(-100% - 15px)' : '15px'}, ${hoverPoint.yPct < 20 ? '0%' : hoverPoint.yPct > 80 ? '-100%' : '-50%'})`, background: '#1a1a22', border: '1px solid #2a2a35', borderRadius: '6px', padding: '8px 12px', fontSize: '11px', whiteSpace: 'nowrap', zIndex: 10, pointerEvents: 'none' }}>
@@ -1307,7 +1357,7 @@ export default function AccountPage() {
             </div>
 
             {/* ROW 3: Net Daily PnL + Right Column (Average Rating + PnL by Day + Streaks) */}
-            <div style={{ display: 'flex', gap: '16px', marginBottom: '16px' }}>
+            <div style={{ display: 'flex', gap: '16px', marginBottom: '16px', position: 'relative', zIndex: 2 }}>
               {/* Net Daily PnL - bars fill full width */}
               <div style={{ flex: 1, background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '16px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
@@ -1663,36 +1713,105 @@ export default function AccountPage() {
               </div>
             </div>
 
-            {/* ROW 5: Risk + Progress - 4 items each */}
-            <div style={{ display: 'flex', gap: '16px' }}>
-              <div style={{ flex: 1, background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '16px' }}>
-                <div style={{ fontSize: '13px', color: '#888', textTransform: 'uppercase', marginBottom: '12px' }}>Risk Management</div>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '10px' }}>
+            {/* ROW 5: Risk + Progress - enhanced */}
+            <div style={{ display: 'flex', gap: '16px', marginBottom: '16px', position: 'relative', zIndex: 2 }}>
+              <div style={{ flex: 1, background: 'linear-gradient(145deg, #0d0d12 0%, #0a0a0e 100%)', border: '1px solid #1a1a22', borderRadius: '10px', padding: '18px' }}>
+                <div style={{ fontSize: '13px', color: '#888', textTransform: 'uppercase', marginBottom: '14px', fontWeight: 600, letterSpacing: '0.5px' }}>Risk Management</div>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px' }}>
                   {[
-                    { l: 'Avg RR', v: avgRR + 'R', c: '#fff' },
-                    { l: 'Risk/Reward', v: returnOnRisk + 'x', c: '#22c55e' },
-                    { l: 'Profit Factor', v: profitFactor, c: '#fff' },
-                    { l: 'Consistency', v: consistencyScore + '%', c: consistencyScore >= 50 ? '#22c55e' : '#ef4444' },
+                    { l: 'Avg RR', v: avgRR + 'R', c: parseFloat(avgRR) >= 1.5 ? '#22c55e' : '#fff', sub: 'risk/reward' },
+                    { l: 'Risk/Reward', v: returnOnRisk + 'x', c: '#22c55e', sub: 'return' },
+                    { l: 'Profit Factor', v: profitFactor, c: parseFloat(profitFactor) >= 1.5 ? '#22c55e' : parseFloat(profitFactor) >= 1 ? '#f59e0b' : '#ef4444', sub: 'gross P/L' },
+                    { l: 'Consistency', v: consistencyScore + '%', c: consistencyScore >= 60 ? '#22c55e' : consistencyScore >= 40 ? '#f59e0b' : '#ef4444', sub: 'green days' },
                   ].map((item, i) => (
-                    <div key={i} style={{ padding: '12px', background: '#0a0a0e', borderRadius: '6px', border: '1px solid #1a1a22', textAlign: 'center' }}>
-                      <div style={{ fontSize: '13px', color: '#888', marginBottom: '6px' }}>{item.l}</div>
-                      <div style={{ fontSize: '20px', fontWeight: 700, color: item.c }}>{item.v}</div>
+                    <div key={i} style={{ padding: '14px 12px', background: 'linear-gradient(180deg, #0d0d12 0%, #0a0a0e 100%)', borderRadius: '8px', border: '1px solid #1a1a22', textAlign: 'center' }}>
+                      <div style={{ fontSize: '11px', color: '#666', marginBottom: '6px', textTransform: 'uppercase' }}>{item.l}</div>
+                      <div style={{ fontSize: '22px', fontWeight: 700, color: item.c, marginBottom: '2px' }}>{item.v}</div>
+                      <div style={{ fontSize: '9px', color: '#555' }}>{item.sub}</div>
                     </div>
                   ))}
                 </div>
               </div>
-              <div style={{ flex: 1, background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '16px' }}>
-                <div style={{ fontSize: '13px', color: '#888', textTransform: 'uppercase', marginBottom: '12px' }}>Account Progress</div>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '10px' }}>
+              <div style={{ flex: 1, background: 'linear-gradient(145deg, #0d0d12 0%, #0a0a0e 100%)', border: '1px solid #1a1a22', borderRadius: '10px', padding: '18px' }}>
+                <div style={{ fontSize: '13px', color: '#888', textTransform: 'uppercase', marginBottom: '14px', fontWeight: 600, letterSpacing: '0.5px' }}>Account Progress</div>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px' }}>
                   {[
-                    { l: 'Starting', v: '$' + startingBalance.toLocaleString(), c: '#888' },
-                    { l: 'Current', v: '$' + currentBalance.toLocaleString(), c: '#22c55e' },
-                    { l: 'Growth', v: ((currentBalance / startingBalance - 1) * 100).toFixed(1) + '%', c: currentBalance >= startingBalance ? '#22c55e' : '#ef4444' },
-                    { l: 'Monthly', v: monthlyGrowth + '%', c: parseFloat(monthlyGrowth) >= 0 ? '#22c55e' : '#ef4444' },
+                    { l: 'Starting', v: '$' + startingBalance.toLocaleString(), c: '#888', sub: 'initial' },
+                    { l: 'Current', v: '$' + Math.round(currentBalance).toLocaleString(), c: currentBalance >= startingBalance ? '#22c55e' : '#ef4444', sub: 'balance' },
+                    { l: 'Growth', v: ((currentBalance / startingBalance - 1) * 100).toFixed(1) + '%', c: currentBalance >= startingBalance ? '#22c55e' : '#ef4444', sub: 'all time' },
+                    { l: 'Monthly', v: monthlyGrowth + '%', c: parseFloat(monthlyGrowth) >= 0 ? '#22c55e' : '#ef4444', sub: 'avg/month' },
                   ].map((item, i) => (
-                    <div key={i} style={{ padding: '12px', background: '#0a0a0e', borderRadius: '6px', border: '1px solid #1a1a22', textAlign: 'center' }}>
-                      <div style={{ fontSize: '13px', color: '#888', marginBottom: '6px' }}>{item.l}</div>
-                      <div style={{ fontSize: '20px', fontWeight: 700, color: item.c }}>{item.v}</div>
+                    <div key={i} style={{ padding: '14px 12px', background: 'linear-gradient(180deg, #0d0d12 0%, #0a0a0e 100%)', borderRadius: '8px', border: '1px solid #1a1a22', textAlign: 'center' }}>
+                      <div style={{ fontSize: '11px', color: '#666', marginBottom: '6px', textTransform: 'uppercase' }}>{item.l}</div>
+                      <div style={{ fontSize: '22px', fontWeight: 700, color: item.c, marginBottom: '2px' }}>{item.v}</div>
+                      <div style={{ fontSize: '9px', color: '#555' }}>{item.sub}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* ROW 6: Additional Statistics */}
+            <div style={{ display: 'flex', gap: '16px', marginBottom: '16px', position: 'relative', zIndex: 2 }}>
+              {/* Time-based Stats */}
+              <div style={{ flex: 1, background: 'linear-gradient(145deg, #0d0d12 0%, #0a0a0e 100%)', border: '1px solid #1a1a22', borderRadius: '10px', padding: '18px' }}>
+                <div style={{ fontSize: '13px', color: '#888', textTransform: 'uppercase', marginBottom: '14px', fontWeight: 600, letterSpacing: '0.5px' }}>Time Analysis</div>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px' }}>
+                  {(() => {
+                    // Calculate time-based stats
+                    const byHour = {}
+                    const byDayOfWeek = { 0: { w: 0, l: 0 }, 1: { w: 0, l: 0 }, 2: { w: 0, l: 0 }, 3: { w: 0, l: 0 }, 4: { w: 0, l: 0 }, 5: { w: 0, l: 0 }, 6: { w: 0, l: 0 } }
+                    const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
+                    trades.forEach(t => {
+                      const d = new Date(t.date)
+                      const dow = d.getDay()
+                      if (t.outcome === 'win') byDayOfWeek[dow].w++
+                      else if (t.outcome === 'loss') byDayOfWeek[dow].l++
+                    })
+                    let bestDay = null, bestDayWr = 0, worstDay = null, worstDayWr = 100
+                    Object.entries(byDayOfWeek).forEach(([d, data]) => {
+                      if (data.w + data.l > 0) {
+                        const wr = Math.round((data.w / (data.w + data.l)) * 100)
+                        if (wr > bestDayWr) { bestDayWr = wr; bestDay = dayNames[d] }
+                        if (wr < worstDayWr) { worstDayWr = wr; worstDay = dayNames[d] }
+                      }
+                    })
+                    const avgHoldTime = trades.length > 0 ? 'N/A' : 'N/A' // Would need entry/exit times
+                    const tradesThisWeek = trades.filter(t => {
+                      const d = new Date(t.date)
+                      const now = new Date()
+                      const weekAgo = new Date(now.setDate(now.getDate() - 7))
+                      return d >= weekAgo
+                    }).length
+                    return [
+                      { l: 'Best Day', v: bestDay || '-', c: '#22c55e', sub: bestDay ? `${bestDayWr}% WR` : '' },
+                      { l: 'Worst Day', v: worstDay || '-', c: '#ef4444', sub: worstDay ? `${worstDayWr}% WR` : '' },
+                      { l: 'This Week', v: tradesThisWeek, c: '#3b82f6', sub: 'trades' },
+                      { l: 'Avg/Day', v: avgTradesPerDay, c: '#fff', sub: 'trades' },
+                    ]
+                  })().map((item, i) => (
+                    <div key={i} style={{ padding: '14px 12px', background: 'linear-gradient(180deg, #0d0d12 0%, #0a0a0e 100%)', borderRadius: '8px', border: '1px solid #1a1a22', textAlign: 'center' }}>
+                      <div style={{ fontSize: '11px', color: '#666', marginBottom: '6px', textTransform: 'uppercase' }}>{item.l}</div>
+                      <div style={{ fontSize: '22px', fontWeight: 700, color: item.c, marginBottom: '2px' }}>{item.v}</div>
+                      <div style={{ fontSize: '9px', color: '#555' }}>{item.sub}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              {/* Performance Summary */}
+              <div style={{ flex: 1, background: 'linear-gradient(145deg, #0d0d12 0%, #0a0a0e 100%)', border: '1px solid #1a1a22', borderRadius: '10px', padding: '18px' }}>
+                <div style={{ fontSize: '13px', color: '#888', textTransform: 'uppercase', marginBottom: '14px', fontWeight: 600, letterSpacing: '0.5px' }}>Performance Summary</div>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px' }}>
+                  {[
+                    { l: 'Total Trades', v: trades.length, c: '#fff', sub: `${wins}W / ${losses}L` },
+                    { l: 'Net P&L', v: (totalPnl >= 0 ? '+' : '') + '$' + Math.round(totalPnl).toLocaleString(), c: totalPnl >= 0 ? '#22c55e' : '#ef4444', sub: 'all time' },
+                    { l: 'Avg Win', v: '+$' + avgWin, c: '#22c55e', sub: 'per trade' },
+                    { l: 'Avg Loss', v: '-$' + avgLoss, c: '#ef4444', sub: 'per trade' },
+                  ].map((item, i) => (
+                    <div key={i} style={{ padding: '14px 12px', background: 'linear-gradient(180deg, #0d0d12 0%, #0a0a0e 100%)', borderRadius: '8px', border: '1px solid #1a1a22', textAlign: 'center' }}>
+                      <div style={{ fontSize: '11px', color: '#666', marginBottom: '6px', textTransform: 'uppercase' }}>{item.l}</div>
+                      <div style={{ fontSize: '22px', fontWeight: 700, color: item.c, marginBottom: '2px' }}>{item.v}</div>
+                      <div style={{ fontSize: '9px', color: '#555' }}>{item.sub}</div>
                     </div>
                   ))}
                 </div>
@@ -2280,25 +2399,69 @@ export default function AccountPage() {
                               )
                             })()}
                           </svg>
-                          {/* Line labels at end of each line - rotated to match line angle, positioned above */}
-                          {equityCurveGroupBy !== 'total' && lineData.map((line, idx) => {
-                            const pts = line.chartPoints
-                            if (pts.length < 2) return null
-                            const lastPt = pts[pts.length - 1]
-                            const prevPt = pts[pts.length - 2]
-                            // Calculate angle from last segment (in degrees)
-                            const dx = lastPt.x - prevPt.x
-                            const dy = lastPt.y - prevPt.y
-                            const angle = Math.atan2(dy, dx) * (180 / Math.PI)
-                            // Clamp angle for readability
-                            const clampedAngle = Math.max(-45, Math.min(45, angle))
-                            const yPct = (lastPt.y / svgH) * 100
-                            return (
-                              <div key={`labelEnl${idx}`} style={{ position: 'absolute', right: '8px', top: `${yPct}%`, transform: `translateY(-100%) rotate(${clampedAngle}deg)`, transformOrigin: 'right bottom', fontSize: '11px', fontWeight: 600, color: line.color, whiteSpace: 'nowrap', pointerEvents: 'none', marginTop: '-4px' }}>
-                                {line.name}
-                              </div>
-                            )
-                          })}
+                          {/* Line labels at end of each line - with collision detection */}
+                          {equityCurveGroupBy !== 'total' && (() => {
+                            const minSpacing = 18
+
+                            const labels = lineData.map((line, idx) => {
+                              const pts = line.chartPoints
+                              if (pts.length < 2) return null
+                              return { line, idx, pts, yPos: pts[pts.length - 1].y, ptIndex: pts.length - 1 }
+                            }).filter(Boolean)
+
+                            labels.sort((a, b) => a.yPos - b.yPos)
+
+                            for (let i = 1; i < labels.length; i++) {
+                              const prev = labels[i - 1]
+                              const curr = labels[i]
+                              const yDiff = (curr.yPos - prev.yPos) / svgH * 100
+
+                              if (yDiff < (minSpacing / svgH * 100) * 5) {
+                                let newPtIndex = curr.ptIndex
+                                while (newPtIndex > 1) {
+                                  newPtIndex--
+                                  const newY = curr.pts[newPtIndex].y
+                                  const newYDiff = Math.abs(newY - prev.yPos) / svgH * 100
+                                  if (newYDiff >= (minSpacing / svgH * 100) * 5) {
+                                    curr.ptIndex = newPtIndex
+                                    curr.yPos = newY
+                                    break
+                                  }
+                                }
+                              }
+                            }
+
+                            return labels.map(({ line, idx, pts, ptIndex }) => {
+                              const pt = pts[ptIndex]
+                              const prevPt = pts[Math.max(0, ptIndex - 1)]
+                              const dx = pt.x - prevPt.x
+                              const dy = pt.y - prevPt.y
+                              const angle = Math.atan2(dy, dx) * (180 / Math.PI)
+                              const clampedAngle = Math.max(-35, Math.min(35, angle))
+                              const yPct = (pt.y / svgH) * 100
+                              const xPct = (pt.x / svgW) * 100
+                              const isAtEnd = ptIndex === pts.length - 1
+
+                              return (
+                                <div key={`labelEnl${idx}`} style={{
+                                  position: 'absolute',
+                                  right: isAtEnd ? '8px' : 'auto',
+                                  left: isAtEnd ? 'auto' : `${xPct}%`,
+                                  top: `${yPct}%`,
+                                  transform: `translateY(-100%) ${isAtEnd ? '' : 'translateX(-50%)'} rotate(${clampedAngle}deg)`,
+                                  transformOrigin: isAtEnd ? 'right bottom' : 'center bottom',
+                                  fontSize: '11px',
+                                  fontWeight: 600,
+                                  color: line.color,
+                                  whiteSpace: 'nowrap',
+                                  pointerEvents: 'none',
+                                  marginTop: '-4px'
+                                }}>
+                                  {line.name}
+                                </div>
+                              )
+                            })
+                          })()}
                           {/* Legend - top left for multi-line */}
                           {equityCurveGroupBy !== 'total' && (
                             <div style={{ position: 'absolute', top: '8px', left: '8px', display: 'flex', flexDirection: 'column', gap: '4px', background: 'rgba(13,13,18,0.9)', padding: '8px 10px', borderRadius: '6px', fontSize: '10px' }}>
