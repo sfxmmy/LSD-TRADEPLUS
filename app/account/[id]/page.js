@@ -2101,7 +2101,8 @@ export default function AccountPage() {
               )
             })()}
           </div>
-        )}
+          )
+        })()}
 
         {/* NOTES TAB */}
         {activeTab === 'notes' && (

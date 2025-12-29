@@ -10,7 +10,13 @@
       "Bash(git push:*)",
       "Bash(npx eslint:*)",
       "Bash(node -e:*)",
-      "Bash(npx next lint --file app/dashboard/page.js)"
+      "Bash(npx next lint --file app/dashboard/page.js)",
+      "Bash(npx next lint:*)",
+      "Bash(npx acorn:*)",
+      "Bash(npm run build:*)",
+      "Bash(node -c:*)",
+      "Bash(head:*)",
+      "Bash(timeout 15 npm run dev:*)"
     ]
   }
 }
