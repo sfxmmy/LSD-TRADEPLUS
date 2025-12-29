@@ -423,13 +423,11 @@ export default function DashboardPage() {
         </div>
       </header>
 
-      <div style={{ display: 'flex', gap: '20px', maxWidth: '1600px', margin: '0 auto', padding: isMobile ? '16px' : '24px 40px' }}>
+      <div style={{ display: 'flex', gap: '12px', maxWidth: '1600px', margin: '0 auto', padding: isMobile ? '16px' : '24px 24px' }}>
         {/* Fixed Left Sidebar - Journal a Trade */}
         {!isMobile && accounts.length > 0 && (
           <div style={{ width: '260px', flexShrink: 0, position: 'sticky', top: '20px', height: 'fit-content' }}>
-            {/* Outer glow layer */}
-            <div style={{ position: 'absolute', inset: '-20px', background: 'radial-gradient(ellipse at center, rgba(34,197,94,0.15) 0%, rgba(34,197,94,0.05) 50%, transparent 70%)', borderRadius: '30px', pointerEvents: 'none', filter: 'blur(8px)' }} />
-            <div style={{ position: 'relative', background: 'linear-gradient(145deg, #0d0d12 0%, #0a0a0e 100%)', border: '1px solid rgba(34,197,94,0.4)', borderRadius: '8px', padding: '14px', boxShadow: '0 0 20px rgba(34,197,94,0.2), inset 0 1px 0 rgba(34,197,94,0.1)' }}>
+            <div style={{ background: 'linear-gradient(145deg, #0d0d12 0%, #0a0a0e 100%)', border: '1px solid rgba(34,197,94,0.4)', borderRadius: '8px', padding: '14px', boxShadow: 'inset 0 0 20px rgba(34,197,94,0.15), inset 0 1px 0 rgba(34,197,94,0.1)' }}>
               {/* Title + View Toggle */}
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
                 <div style={{ fontSize: '11px', color: '#22c55e', textTransform: 'uppercase', letterSpacing: '0.5px', fontWeight: 700, textShadow: '0 0 8px rgba(34,197,94,0.4)' }}>Journal a Trade</div>
@@ -554,7 +552,7 @@ export default function DashboardPage() {
               {/* Notes */}
               <div style={{ display: 'flex', alignItems: 'flex-start', marginBottom: '8px' }}>
                 <span style={{ fontSize: '11px', color: '#888', width: '60px', flexShrink: 0, paddingTop: '6px' }}>Notes</span>
-                <textarea value={quickTradeNotes} onChange={e => setQuickTradeNotes(e.target.value)} placeholder="..." style={{ flex: 1, padding: '6px 8px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '4px', color: '#fff', fontSize: '12px', boxSizing: 'border-box', resize: 'none', height: '50px' }} />
+                <textarea value={quickTradeNotes} onChange={e => setQuickTradeNotes(e.target.value)} placeholder="..." style={{ flex: 1, padding: '6px 8px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '4px', color: '#fff', fontSize: '12px', boxSizing: 'border-box', resize: 'none', height: '36px' }} />
               </div>
 
               {/* Custom Inputs for selected journal */}
@@ -573,11 +571,11 @@ export default function DashboardPage() {
               ))}
 
               {/* Buttons Row */}
-              <div style={{ display: 'flex', gap: '8px', marginTop: '12px' }}>
-                <button onClick={submitQuickTrade} disabled={submittingTrade || !quickTradeSymbol.trim() || !quickTradePnl} style={{ flex: 1, padding: '10px', background: (submittingTrade || !quickTradeSymbol.trim() || !quickTradePnl) ? '#1a1a22' : '#22c55e', border: 'none', borderRadius: '4px', color: (submittingTrade || !quickTradeSymbol.trim() || !quickTradePnl) ? '#666' : '#fff', fontWeight: 600, fontSize: '12px', cursor: (submittingTrade || !quickTradeSymbol.trim() || !quickTradePnl) ? 'not-allowed' : 'pointer' }}>
+              <div style={{ display: 'flex', gap: '8px', marginTop: '10px' }}>
+                <button onClick={submitQuickTrade} disabled={submittingTrade || !quickTradeSymbol.trim() || !quickTradePnl} style={{ flex: 1, padding: '7px', background: (submittingTrade || !quickTradeSymbol.trim() || !quickTradePnl) ? '#1a1a22' : '#22c55e', border: 'none', borderRadius: '4px', color: (submittingTrade || !quickTradeSymbol.trim() || !quickTradePnl) ? '#666' : '#fff', fontWeight: 600, fontSize: '12px', cursor: (submittingTrade || !quickTradeSymbol.trim() || !quickTradePnl) ? 'not-allowed' : 'pointer' }}>
                   {submittingTrade ? '...' : '+ Add'}
                 </button>
-                <button onClick={() => setShowAddInputModal(true)} style={{ padding: '10px 12px', background: '#8b5cf6', border: 'none', borderRadius: '4px', color: '#fff', fontWeight: 600, fontSize: '11px', cursor: 'pointer' }}>+ Input</button>
+                <button onClick={() => setShowAddInputModal(true)} style={{ padding: '7px 10px', background: '#8b5cf6', border: 'none', borderRadius: '4px', color: '#fff', fontWeight: 600, fontSize: '11px', cursor: 'pointer' }}>+ Input</button>
               </div>
             </div>
           </div>
