@@ -2030,8 +2030,11 @@ export default function AccountPage() {
       {/* MODALS */}
       {showAddTrade && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.9)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100 }} onClick={() => setShowAddTrade(false)}>
-          <div style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '28px', width: '560px', maxHeight: '85vh', overflowY: 'auto' }} onClick={e => e.stopPropagation()}>
-            <h2 style={{ fontSize: '20px', fontWeight: 600, marginBottom: '20px', color: '#fff' }}>Log New Trade</h2>
+          <div style={{ position: 'relative' }} onClick={e => e.stopPropagation()}>
+            {/* Outer glow layer */}
+            <div style={{ position: 'absolute', inset: '-30px', background: 'radial-gradient(ellipse at center, rgba(34,197,94,0.2) 0%, rgba(34,197,94,0.08) 40%, transparent 70%)', borderRadius: '40px', pointerEvents: 'none', filter: 'blur(10px)' }} />
+            <div style={{ position: 'relative', background: 'linear-gradient(145deg, #0d0d12 0%, #0a0a0e 100%)', border: '1px solid rgba(34,197,94,0.4)', borderRadius: '10px', padding: '28px', width: '560px', maxHeight: '85vh', overflowY: 'auto', boxShadow: '0 0 25px rgba(34,197,94,0.25), inset 0 1px 0 rgba(34,197,94,0.15)' }}>
+            <h2 style={{ fontSize: '14px', fontWeight: 700, marginBottom: '20px', color: '#22c55e', textTransform: 'uppercase', letterSpacing: '1px', textShadow: '0 0 10px rgba(34,197,94,0.5)' }}>Log New Trade</h2>
             
             {/* Fixed inputs row */}
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px', marginBottom: '16px' }}>
@@ -2120,6 +2123,7 @@ export default function AccountPage() {
             <div style={{ display: 'flex', gap: '12px' }}>
               <button onClick={addTrade} disabled={saving || !tradeForm.symbol || !tradeForm.pnl} style={{ flex: 1, padding: '14px', background: '#22c55e', border: 'none', borderRadius: '8px', color: '#fff', fontWeight: 600, fontSize: '14px', cursor: 'pointer', opacity: (saving || !tradeForm.symbol || !tradeForm.pnl) ? 0.5 : 1 }}>{saving ? 'Saving...' : 'Save Trade'}</button>
               <button onClick={() => setShowAddTrade(false)} style={{ flex: 1, padding: '14px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '8px', color: '#999', fontWeight: 600, fontSize: '14px', cursor: 'pointer' }}>Cancel</button>
+            </div>
             </div>
           </div>
         </div>

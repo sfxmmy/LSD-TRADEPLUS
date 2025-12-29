@@ -427,10 +427,12 @@ export default function DashboardPage() {
         {/* Fixed Left Sidebar - Journal a Trade */}
         {!isMobile && accounts.length > 0 && (
           <div style={{ width: '260px', flexShrink: 0, position: 'sticky', top: '20px', height: 'fit-content' }}>
-            <div style={{ background: 'rgba(139,92,246,0.06)', border: '1px solid rgba(139,92,246,0.15)', borderRadius: '8px', padding: '14px' }}>
+            {/* Outer glow layer */}
+            <div style={{ position: 'absolute', inset: '-20px', background: 'radial-gradient(ellipse at center, rgba(34,197,94,0.15) 0%, rgba(34,197,94,0.05) 50%, transparent 70%)', borderRadius: '30px', pointerEvents: 'none', filter: 'blur(8px)' }} />
+            <div style={{ position: 'relative', background: 'linear-gradient(145deg, #0d0d12 0%, #0a0a0e 100%)', border: '1px solid rgba(34,197,94,0.4)', borderRadius: '8px', padding: '14px', boxShadow: '0 0 20px rgba(34,197,94,0.2), inset 0 1px 0 rgba(34,197,94,0.1)' }}>
               {/* Title + View Toggle */}
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
-                <div style={{ fontSize: '11px', color: '#fff', textTransform: 'uppercase', letterSpacing: '0.5px', fontWeight: 700 }}>Journal a Trade</div>
+                <div style={{ fontSize: '11px', color: '#22c55e', textTransform: 'uppercase', letterSpacing: '0.5px', fontWeight: 700, textShadow: '0 0 8px rgba(34,197,94,0.4)' }}>Journal a Trade</div>
                 <div style={{ display: 'flex', background: 'rgba(10,10,15,0.6)', borderRadius: '4px', overflow: 'hidden' }}>
                   <button onClick={() => setViewMode('cards')} style={{ padding: '5px 8px', background: viewMode === 'cards' ? '#22c55e' : 'transparent', border: 'none', color: viewMode === 'cards' ? '#fff' : '#666', cursor: 'pointer', display: 'flex', alignItems: 'center' }}>
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="7" height="7" /><rect x="14" y="3" width="7" height="7" /><rect x="3" y="14" width="7" height="7" /><rect x="14" y="14" width="7" height="7" /></svg>
@@ -444,7 +446,7 @@ export default function DashboardPage() {
               {/* Journal Select - Important */}
               <div style={{ display: 'flex', alignItems: 'center', marginBottom: '8px' }}>
                 <span style={{ fontSize: '11px', color: '#a78bfa', width: '60px', flexShrink: 0 }}>Journal</span>
-                <select value={quickTradeAccount} onChange={e => setQuickTradeAccount(e.target.value)} style={{ flex: 1, padding: '6px 8px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '4px', color: '#fff', fontSize: '12px' }}>
+                <select value={quickTradeAccount} onChange={e => setQuickTradeAccount(e.target.value)} style={{ flex: 1, padding: '6px 8px', background: 'rgba(139,92,246,0.1)', border: '1px solid rgba(139,92,246,0.3)', borderRadius: '4px', color: '#fff', fontSize: '12px' }}>
                   {accounts.map(acc => <option key={acc.id} value={acc.id}>{acc.name}</option>)}
                 </select>
               </div>
