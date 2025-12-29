@@ -48,14 +48,35 @@ export default function DashboardPage() {
 
   useEffect(() => { loadData() }, [])
 
+  // Check if user has valid subscription (including grace period)
+  function hasValidSubscription(profile) {
+    if (!profile) return false
+    const { subscription_status, subscription_end, plan } = profile
+
+    // Active subscription
+    if (subscription_status === 'active') return true
+
+    // Lifetime plan
+    if (plan === 'lifetime') return true
+
+    // Grace period: 7 days after cancellation/expiry
+    if (['cancelled', 'expired', 'past_due'].includes(subscription_status) && subscription_end) {
+      const endDate = new Date(subscription_end)
+      const gracePeriodEnd = new Date(endDate.getTime() + 7 * 24 * 60 * 60 * 1000)
+      if (new Date() < gracePeriodEnd) return true
+    }
+
+    return false
+  }
+
   async function loadData() {
     const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY)
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) { window.location.href = '/login'; return }
-    const isAdmin = user.email === 'ssiagos@hotmail.com'
+    const isAdmin = user.email === process.env.NEXT_PUBLIC_ADMIN_EMAIL || user.email === 'ssiagos@hotmail.com'
     if (!isAdmin) {
-      const { data: profile } = await supabase.from('profiles').select('subscription_status').eq('id', user.id).single()
-      if (!profile || profile.subscription_status !== 'active') { window.location.href = '/pricing'; return }
+      const { data: profile } = await supabase.from('profiles').select('subscription_status, subscription_end, plan').eq('id', user.id).single()
+      if (!hasValidSubscription(profile)) { window.location.href = '/pricing'; return }
     }
     setUser(user)
     const { data: accountsData } = await supabase.from('accounts').select('*').eq('user_id', user.id).order('created_at', { ascending: true })
@@ -406,11 +427,11 @@ export default function DashboardPage() {
         {/* Fixed Left Sidebar - Journal a Trade */}
         {!isMobile && accounts.length > 0 && (
           <div style={{ width: '260px', flexShrink: 0, position: 'sticky', top: '20px', height: 'fit-content' }}>
-            <div style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '14px' }}>
+            <div style={{ background: 'rgba(139,92,246,0.06)', border: '1px solid rgba(139,92,246,0.15)', borderRadius: '8px', padding: '14px' }}>
               {/* Title + View Toggle */}
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px', padding: '8px 10px', background: 'rgba(139,92,246,0.08)', border: '1px solid rgba(139,92,246,0.25)', borderRadius: '6px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
                 <div style={{ fontSize: '11px', color: '#fff', textTransform: 'uppercase', letterSpacing: '0.5px', fontWeight: 700 }}>Journal a Trade</div>
-                <div style={{ display: 'flex', background: '#0a0a0f', borderRadius: '4px', overflow: 'hidden', border: '1px solid #2a2a35' }}>
+                <div style={{ display: 'flex', background: 'rgba(10,10,15,0.6)', borderRadius: '4px', overflow: 'hidden' }}>
                   <button onClick={() => setViewMode('cards')} style={{ padding: '5px 8px', background: viewMode === 'cards' ? '#22c55e' : 'transparent', border: 'none', color: viewMode === 'cards' ? '#fff' : '#666', cursor: 'pointer', display: 'flex', alignItems: 'center' }}>
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="7" height="7" /><rect x="14" y="3" width="7" height="7" /><rect x="3" y="14" width="7" height="7" /><rect x="14" y="14" width="7" height="7" /></svg>
                   </button>
@@ -421,8 +442,8 @@ export default function DashboardPage() {
               </div>
 
               {/* Journal Select - Important */}
-              <div style={{ display: 'flex', alignItems: 'center', marginBottom: '8px', padding: '6px 8px', background: 'rgba(99,102,241,0.06)', border: '1px solid rgba(99,102,241,0.2)', borderRadius: '5px' }}>
-                <span style={{ fontSize: '11px', color: '#22c55e', width: '52px', flexShrink: 0 }}>Journal</span>
+              <div style={{ display: 'flex', alignItems: 'center', marginBottom: '8px' }}>
+                <span style={{ fontSize: '11px', color: '#a78bfa', width: '60px', flexShrink: 0 }}>Journal</span>
                 <select value={quickTradeAccount} onChange={e => setQuickTradeAccount(e.target.value)} style={{ flex: 1, padding: '6px 8px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '4px', color: '#fff', fontSize: '12px' }}>
                   {accounts.map(acc => <option key={acc.id} value={acc.id}>{acc.name}</option>)}
                 </select>

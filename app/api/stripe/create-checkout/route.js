@@ -35,11 +35,11 @@ export async function POST(request) {
 
     const { data: profile } = await serviceSupabase
       .from('profiles')
-      .select('stripe_customer_id')
+      .select('customer_id')
       .eq('id', user.id)
       .single()
 
-    let customerId = profile?.stripe_customer_id
+    let customerId = profile?.customer_id
 
     if (!customerId) {
       const customer = await stripe.customers.create({
@@ -47,10 +47,10 @@ export async function POST(request) {
         metadata: { supabase_user_id: user.id }
       })
       customerId = customer.id
-      
+
       await serviceSupabase
         .from('profiles')
-        .update({ stripe_customer_id: customerId })
+        .update({ customer_id: customerId })
         .eq('id', user.id)
     }
 

@@ -13,6 +13,19 @@ export default function PricingPage() {
     checkAuth()
   }, [])
 
+  // Check if user has valid subscription (including grace period)
+  function hasValidSubscription(profile) {
+    if (!profile) return false
+    const { subscription_status, subscription_end, plan } = profile
+    if (subscription_status === 'active') return true
+    if (plan === 'lifetime') return true
+    if (['cancelled', 'expired', 'past_due'].includes(subscription_status) && subscription_end) {
+      const gracePeriodEnd = new Date(new Date(subscription_end).getTime() + 7 * 24 * 60 * 60 * 1000)
+      if (new Date() < gracePeriodEnd) return true
+    }
+    return false
+  }
+
   async function checkAuth() {
     try {
       const supabase = createClient(
@@ -23,15 +36,16 @@ export default function PricingPage() {
       setUser(user)
 
       if (user) {
-        if (user.email === 'ssiagos@hotmail.com') {
+        const isAdmin = user.email === process.env.NEXT_PUBLIC_ADMIN_EMAIL || user.email === 'ssiagos@hotmail.com'
+        if (isAdmin) {
           setHasAccess(true)
         } else {
           const { data: profile } = await supabase
             .from('profiles')
-            .select('subscription_status')
+            .select('subscription_status, subscription_end, plan')
             .eq('id', user.id)
             .single()
-          setHasAccess(profile?.subscription_status === 'active')
+          setHasAccess(hasValidSubscription(profile))
         }
       }
     } catch (err) {
