@@ -2036,100 +2036,91 @@ export default function AccountPage() {
       {/* MODALS */}
       {showAddTrade && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.9)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100 }} onClick={() => setShowAddTrade(false)}>
-          <div style={{ position: 'relative' }} onClick={e => e.stopPropagation()}>
-            {/* Outer glow layer */}
-            <div style={{ position: 'absolute', inset: '-30px', background: 'radial-gradient(ellipse at center, rgba(34,197,94,0.2) 0%, rgba(34,197,94,0.08) 40%, transparent 70%)', borderRadius: '40px', pointerEvents: 'none', filter: 'blur(10px)' }} />
-            <div style={{ position: 'relative', background: 'linear-gradient(145deg, #0d0d12 0%, #0a0a0e 100%)', border: '1px solid rgba(34,197,94,0.4)', borderRadius: '10px', padding: '28px', width: '560px', maxHeight: '85vh', overflowY: 'auto', boxShadow: '0 0 25px rgba(34,197,94,0.25), inset 0 1px 0 rgba(34,197,94,0.15)' }}>
-            <h2 style={{ fontSize: '14px', fontWeight: 700, marginBottom: '20px', color: '#22c55e', textTransform: 'uppercase', letterSpacing: '1px', textShadow: '0 0 10px rgba(34,197,94,0.5)' }}>Log New Trade</h2>
-            
-            {/* Fixed inputs row */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px', marginBottom: '16px' }}>
-              {fixedInputs.map(input => (
-                <div key={input.id}>
-                  <label style={{ display: 'block', fontSize: '11px', color: '#999', marginBottom: '6px', textTransform: 'uppercase' }}>{input.label} {input.required && <span style={{ color: '#ef4444' }}>*</span>}</label>
-                  {input.type === 'select' ? (
-                    <select value={tradeForm[input.id] || ''} onChange={e => setTradeForm({...tradeForm, [input.id]: e.target.value})} style={{ width: '100%', padding: '10px', background: '#141418', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '6px', color: '#fff', fontSize: '14px', boxSizing: 'border-box', boxShadow: '0 0 4px rgba(255,255,255,0.1)' }}>
-                      {input.options?.map(o => <option key={o} value={o.toLowerCase()}>{o}</option>)}
-                    </select>
-                  ) : (
-                    <input type={input.type} value={tradeForm[input.id] || ''} onChange={e => setTradeForm({...tradeForm, [input.id]: e.target.value})} step={input.type === 'number' ? '0.01' : undefined} style={{ width: '100%', padding: '10px', background: '#141418', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '6px', color: '#fff', fontSize: '14px', boxSizing: 'border-box', boxShadow: '0 0 4px rgba(255,255,255,0.1)' }} />
-                  )}
-                </div>
-              ))}
+          <div style={{ background: 'linear-gradient(145deg, #0d0d12 0%, #0a0a0e 100%)', border: '1px solid rgba(139,92,246,0.4)', borderRadius: '8px', padding: '16px', width: '280px', maxHeight: '85vh', overflowY: 'auto', boxShadow: 'inset 0 0 20px rgba(139,92,246,0.15), inset 0 1px 0 rgba(139,92,246,0.1)' }} onClick={e => e.stopPropagation()}>
+            <div style={{ fontSize: '11px', color: '#fff', textTransform: 'uppercase', letterSpacing: '0.5px', fontWeight: 700, marginBottom: '12px' }}>Log New Trade</div>
+
+            {/* Symbol */}
+            <div style={{ display: 'flex', alignItems: 'center', marginBottom: '6px' }}>
+              <span style={{ fontSize: '10px', color: '#888', width: '60px', flexShrink: 0 }}>Symbol</span>
+              <input type="text" value={tradeForm.symbol || ''} onChange={e => setTradeForm({...tradeForm, symbol: e.target.value})} placeholder="XAUUSD" style={{ flex: 1, padding: '5px 6px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '4px', color: '#fff', fontSize: '11px', boxSizing: 'border-box' }} />
             </div>
 
-            {/* Custom inputs section */}
-            {customInputs.length > 0 && (
-              <>
-                <div style={{ fontSize: '11px', color: '#999', marginBottom: '10px', textTransform: 'uppercase' }}>Additional Fields</div>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '12px', marginBottom: '16px' }}>
-                  {customInputs.map(input => (
-                    <div key={input.id} style={{ gridColumn: input.type === 'textarea' ? 'span 2' : 'span 1' }}>
-                      <label style={{ display: 'block', fontSize: '11px', color: '#999', marginBottom: '6px', textTransform: 'uppercase' }}>{input.label}</label>
-                      {input.type === 'select' ? (
-                        <select value={tradeForm[input.id] || ''} onChange={e => setTradeForm({...tradeForm, [input.id]: e.target.value})} style={{ width: '100%', padding: '10px', background: '#141418', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '6px', color: '#fff', fontSize: '14px', boxSizing: 'border-box', boxShadow: '0 0 4px rgba(255,255,255,0.1)' }}>
-                          {input.options?.map(o => <option key={o} value={o.toLowerCase()}>{o}</option>)}
-                        </select>
-                      ) : input.type === 'textarea' ? (
-                        <textarea value={tradeForm[input.id] || ''} onChange={e => setTradeForm({...tradeForm, [input.id]: e.target.value})} rows={3} style={{ width: '100%', padding: '10px', background: '#141418', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '6px', color: '#fff', fontSize: '14px', resize: 'none', boxSizing: 'border-box', boxShadow: '0 0 4px rgba(255,255,255,0.1)' }} />
-                      ) : input.type === 'rating' ? (
-                        <div style={{ display: 'flex', gap: '6px' }}>{[1,2,3,4,5].map(i => <button key={i} type="button" onClick={() => setTradeForm({...tradeForm, [input.id]: String(i)})} style={{ width: '40px', height: '40px', background: '#141418', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '6px', cursor: 'pointer', fontSize: '20px', color: i <= parseInt(tradeForm[input.id] || 0) ? '#22c55e' : '#555', boxShadow: '0 0 8px rgba(255,255,255,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>★</button>)}</div>
-                      ) : input.type === 'file' ? (
-                        <div 
-                          style={{ 
-                            width: '100%', padding: '20px', background: '#0a0a0e', border: '2px dashed #2a2a35', borderRadius: '8px', 
-                            textAlign: 'center', cursor: 'pointer', position: 'relative', boxSizing: 'border-box',
-                            ...(tradeForm[input.id] ? { borderColor: '#22c55e', borderStyle: 'solid' } : {})
-                          }}
-                          onDragOver={e => { e.preventDefault(); e.currentTarget.style.borderColor = '#22c55e' }}
-                          onDragLeave={e => { e.currentTarget.style.borderColor = tradeForm[input.id] ? '#22c55e' : '#2a2a35' }}
-                          onDrop={e => {
-                            e.preventDefault()
-                            e.currentTarget.style.borderColor = '#22c55e'
-                            const file = e.dataTransfer.files[0]
-                            if (file && file.type.startsWith('image/')) {
-                              const reader = new FileReader()
-                              reader.onloadend = () => setTradeForm({...tradeForm, [input.id]: reader.result})
-                              reader.readAsDataURL(file)
-                            }
-                          }}
-                          onClick={() => document.getElementById('image-upload-input').click()}
-                        >
-                          <input id="image-upload-input" type="file" accept="image/*" onChange={e => {
-                            const file = e.target.files[0]
-                            if (file) {
-                              const reader = new FileReader()
-                              reader.onloadend = () => setTradeForm({...tradeForm, [input.id]: reader.result})
-                              reader.readAsDataURL(file)
-                            }
-                          }} style={{ display: 'none' }} />
-                          {tradeForm[input.id] ? (
-                            <div>
-                              <img src={tradeForm[input.id]} alt="Preview" style={{ maxWidth: '100%', maxHeight: '100px', borderRadius: '4px', marginBottom: '8px' }} />
-                              <div style={{ color: '#22c55e', fontSize: '12px' }}>✓ Image uploaded</div>
-                              <button type="button" onClick={e => { e.stopPropagation(); setTradeForm({...tradeForm, [input.id]: ''}) }} style={{ marginTop: '8px', padding: '4px 12px', background: '#1a1a22', border: '1px solid #2a2a35', borderRadius: '4px', color: '#999', fontSize: '11px', cursor: 'pointer' }}>Remove</button>
-                            </div>
-                          ) : (
-                            <div>
-                              <div style={{ fontSize: '24px', marginBottom: '8px' }}>📷</div>
-                              <div style={{ color: '#999', fontSize: '13px' }}>Drop image here or click to upload</div>
-                              <div style={{ color: '#999', fontSize: '11px', marginTop: '4px' }}>PNG, JPG up to 5MB</div>
-                            </div>
-                          )}
-                        </div>
-                      ) : (
-                        <input type={input.type} value={tradeForm[input.id] || ''} onChange={e => setTradeForm({...tradeForm, [input.id]: e.target.value})} style={{ width: '100%', padding: '10px', background: '#0a0a0e', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '14px', boxSizing: 'border-box' }} />
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </>
-            )}
-
-            <div style={{ display: 'flex', gap: '12px' }}>
-              <button onClick={addTrade} disabled={saving || !tradeForm.symbol || !tradeForm.pnl} style={{ flex: 1, padding: '14px', background: '#22c55e', border: 'none', borderRadius: '8px', color: '#fff', fontWeight: 600, fontSize: '14px', cursor: 'pointer', opacity: (saving || !tradeForm.symbol || !tradeForm.pnl) ? 0.5 : 1 }}>{saving ? 'Saving...' : 'Save Trade'}</button>
-              <button onClick={() => setShowAddTrade(false)} style={{ flex: 1, padding: '14px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '8px', color: '#999', fontWeight: 600, fontSize: '14px', cursor: 'pointer' }}>Cancel</button>
+            {/* Outcome */}
+            <div style={{ display: 'flex', alignItems: 'center', marginBottom: '6px' }}>
+              <span style={{ fontSize: '10px', color: '#888', width: '60px', flexShrink: 0 }}>Outcome</span>
+              <select value={tradeForm.outcome || 'win'} onChange={e => setTradeForm({...tradeForm, outcome: e.target.value})} style={{ flex: 1, padding: '5px 6px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '4px', color: '#fff', fontSize: '11px' }}>
+                <option value="win">Win</option>
+                <option value="loss">Loss</option>
+                <option value="be">BE</option>
+              </select>
             </div>
+
+            {/* PnL */}
+            <div style={{ display: 'flex', alignItems: 'center', marginBottom: '6px' }}>
+              <span style={{ fontSize: '10px', color: '#888', width: '60px', flexShrink: 0 }}>P&L ($)</span>
+              <input type="number" value={tradeForm.pnl || ''} onChange={e => setTradeForm({...tradeForm, pnl: e.target.value})} placeholder="0" style={{ flex: 1, padding: '5px 6px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '4px', color: '#fff', fontSize: '11px', boxSizing: 'border-box' }} />
+            </div>
+
+            {/* % Risked */}
+            <div style={{ display: 'flex', alignItems: 'center', marginBottom: '6px' }}>
+              <span style={{ fontSize: '10px', color: '#888', width: '60px', flexShrink: 0 }}>% Risk</span>
+              <input type="number" value={tradeForm.riskPercent || ''} onChange={e => setTradeForm({...tradeForm, riskPercent: e.target.value})} placeholder="1" style={{ flex: 1, padding: '5px 6px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '4px', color: '#fff', fontSize: '11px', boxSizing: 'border-box' }} />
+            </div>
+
+            {/* RR */}
+            <div style={{ display: 'flex', alignItems: 'center', marginBottom: '6px' }}>
+              <span style={{ fontSize: '10px', color: '#888', width: '60px', flexShrink: 0 }}>RR</span>
+              <input type="text" value={tradeForm.rr || ''} onChange={e => setTradeForm({...tradeForm, rr: e.target.value})} placeholder="2.5" style={{ flex: 1, padding: '5px 6px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '4px', color: '#fff', fontSize: '11px', boxSizing: 'border-box' }} />
+            </div>
+
+            {/* Date */}
+            <div style={{ display: 'flex', alignItems: 'center', marginBottom: '6px' }}>
+              <span style={{ fontSize: '10px', color: '#888', width: '60px', flexShrink: 0 }}>Date</span>
+              <input type="date" value={tradeForm.date || ''} onChange={e => setTradeForm({...tradeForm, date: e.target.value})} style={{ flex: 1, padding: '5px 6px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '4px', color: '#fff', fontSize: '11px', boxSizing: 'border-box' }} />
+            </div>
+
+            {/* Custom inputs - render dynamically */}
+            {customInputs.filter(i => !['symbol', 'outcome', 'pnl', 'riskPercent', 'rr', 'date'].includes(i.id)).map(input => (
+              <div key={input.id} style={{ display: 'flex', alignItems: input.type === 'textarea' || input.type === 'file' ? 'flex-start' : 'center', marginBottom: '6px' }}>
+                <span style={{ fontSize: '10px', color: '#888', width: '60px', flexShrink: 0, paddingTop: input.type === 'textarea' ? '5px' : 0 }}>{input.label.slice(0, 8)}</span>
+                {input.type === 'select' ? (
+                  <select value={tradeForm[input.id] || ''} onChange={e => setTradeForm({...tradeForm, [input.id]: e.target.value})} style={{ flex: 1, padding: '5px 6px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '4px', color: '#fff', fontSize: '11px' }}>
+                    <option value="">-</option>
+                    {input.options?.map(o => <option key={o} value={o.toLowerCase()}>{o}</option>)}
+                  </select>
+                ) : input.type === 'textarea' ? (
+                  <input type="text" value={tradeForm[input.id] || ''} onChange={e => setTradeForm({...tradeForm, [input.id]: e.target.value})} placeholder="..." style={{ flex: 1, padding: '5px 6px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '4px', color: '#fff', fontSize: '11px', boxSizing: 'border-box' }} />
+                ) : input.type === 'rating' ? (
+                  <div style={{ flex: 1, display: 'flex', gap: '2px' }}>{[1,2,3,4,5].map(i => <button key={i} type="button" onClick={() => setTradeForm({...tradeForm, [input.id]: String(i)})} style={{ padding: '4px 6px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '3px', cursor: 'pointer', fontSize: '12px', color: i <= parseInt(tradeForm[input.id] || 0) ? '#22c55e' : '#444' }}>★</button>)}</div>
+                ) : input.type === 'file' ? (
+                  <div style={{ flex: 1 }}>
+                    <input id="modal-image-upload" type="file" accept="image/*" onChange={e => {
+                      const file = e.target.files[0]
+                      if (file) {
+                        const reader = new FileReader()
+                        reader.onloadend = () => setTradeForm({...tradeForm, [input.id]: reader.result})
+                        reader.readAsDataURL(file)
+                      }
+                    }} style={{ display: 'none' }} />
+                    {tradeForm[input.id] ? (
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        <span style={{ color: '#22c55e', fontSize: '10px' }}>✓ Uploaded</span>
+                        <button type="button" onClick={() => setTradeForm({...tradeForm, [input.id]: ''})} style={{ padding: '2px 6px', background: '#1a1a22', border: 'none', borderRadius: '3px', color: '#999', fontSize: '9px', cursor: 'pointer' }}>×</button>
+                      </div>
+                    ) : (
+                      <button type="button" onClick={() => document.getElementById('modal-image-upload').click()} style={{ padding: '5px 8px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '4px', color: '#666', fontSize: '10px', cursor: 'pointer' }}>+ Image</button>
+                    )}
+                  </div>
+                ) : (
+                  <input type={input.type} value={tradeForm[input.id] || ''} onChange={e => setTradeForm({...tradeForm, [input.id]: e.target.value})} style={{ flex: 1, padding: '5px 6px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '4px', color: '#fff', fontSize: '11px', boxSizing: 'border-box' }} />
+                )}
+              </div>
+            ))}
+
+            {/* Buttons */}
+            <div style={{ display: 'flex', gap: '6px', marginTop: '10px' }}>
+              <button onClick={addTrade} disabled={saving || !tradeForm.symbol || !tradeForm.pnl} style={{ flex: 1, padding: '8px', background: (saving || !tradeForm.symbol || !tradeForm.pnl) ? '#1a1a22' : '#22c55e', border: 'none', borderRadius: '4px', color: (saving || !tradeForm.symbol || !tradeForm.pnl) ? '#666' : '#fff', fontWeight: 600, fontSize: '11px', cursor: (saving || !tradeForm.symbol || !tradeForm.pnl) ? 'not-allowed' : 'pointer' }}>{saving ? '...' : 'Save'}</button>
+              <button onClick={() => setShowAddTrade(false)} style={{ flex: 1, padding: '8px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '4px', color: '#999', fontWeight: 600, fontSize: '11px', cursor: 'pointer' }}>Cancel</button>
             </div>
           </div>
         </div>
