@@ -68,7 +68,7 @@ export default function PricingPage() {
     <div style={{ minHeight: '100vh', background: '#0a0a0f' }}>
       <header style={{ padding: '20px 48px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #1a1a22' }}>
         <a href="/" style={{ fontSize: '22px', fontWeight: 700 }}>
-          <span style={{ color: '#22c55e' }}>LSD</span><span style={{ color: '#fff' }}>TRADE+</span>
+          <span style={{ color: '#22c55e' }}>LSD</span><span style={{ color: '#fff' }}>TRADE</span><span style={{ color: '#22c55e' }}>+</span>
         </a>
         <div>
           {!loading && hasAccess ? (

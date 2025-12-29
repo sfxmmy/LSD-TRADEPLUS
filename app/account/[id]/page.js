@@ -240,8 +240,8 @@ export default function AccountPage() {
   if (loading) return (
     <div style={{ minHeight: '100vh', background: '#0a0a0f', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
       <div style={{ textAlign: 'center' }}>
-        <div style={{ fontSize: '32px', fontWeight: 700, marginBottom: '16px' }}><span style={{ color: '#22c55e' }}>LSD</span><span style={{ color: '#fff' }}>TRADE+</span></div>
-        <div style={{ color: '#888' }}>Loading...</div>
+        <div style={{ fontSize: '32px', fontWeight: 700, marginBottom: '16px' }}><span style={{ color: '#22c55e' }}>LSD</span><span style={{ color: '#fff' }}>TRADE</span><span style={{ color: '#22c55e' }}>+</span></div>
+        <div style={{ color: '#bbb' }}>Loading...</div>
       </div>
     </div>
   )
@@ -400,7 +400,7 @@ export default function AccountPage() {
         boxShadow: '0 4px 12px rgba(0,0,0,0.5)',
         transition: 'left 0.1s ease, top 0.1s ease'
       }}>
-        <div style={{ color: '#888', marginBottom: '4px' }}>{data.date}</div>
+        <div style={{ color: '#bbb', marginBottom: '4px' }}>{data.date}</div>
         <div style={{ fontWeight: 700, fontSize: '16px', color: '#fff' }}>${data.value?.toLocaleString()}</div>
         {data.extra && <div style={{ color: data.extra.color || '#22c55e', marginTop: '4px' }}>{data.extra.text}</div>}
       </div>
@@ -498,7 +498,7 @@ export default function AccountPage() {
           ))}
         </div>
         <div style={{ marginTop: 'auto', padding: '14px', background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px' }}>
-          <div style={{ fontSize: '11px', color: '#666', lineHeight: '1.5' }}>{tabDescriptions[activeTab]}</div>
+          <div style={{ fontSize: '11px', color: '#999', lineHeight: '1.5' }}>{tabDescriptions[activeTab]}</div>
         </div>
       </div>
       )}
@@ -510,7 +510,7 @@ export default function AccountPage() {
         {activeTab === 'trades' && (
           <div style={{ position: 'relative', height: 'calc(100vh - 124px)' }}>
             {trades.length === 0 ? (
-              <div style={{ padding: isMobile ? '40px 20px' : '60px', textAlign: 'center', color: '#888', fontSize: '15px' }}>No trades yet. Click "+ LOG NEW TRADE" to add your first trade.</div>
+              <div style={{ padding: isMobile ? '40px 20px' : '60px', textAlign: 'center', color: '#bbb', fontSize: '15px' }}>No trades yet. Click "+ LOG NEW TRADE" to add your first trade.</div>
             ) : (
               <>
               <div
@@ -531,7 +531,7 @@ export default function AccountPage() {
                   <thead style={{ position: 'sticky', top: 0, zIndex: 10, background: '#0a0a0f' }}>
                     <tr>
                       {['Symbol', 'W/L', 'PnL', '%', 'RR', ...customInputs.map(i => i.label), 'Date', ''].map((h, i) => (
-                        <th key={i} style={{ padding: isMobile ? '10px 8px' : '14px 12px', textAlign: 'center', color: '#888', fontSize: isMobile ? '11px' : '12px', fontWeight: 600, textTransform: 'uppercase', borderBottom: '1px solid #1a1a22', background: '#0a0a0f' }}>{h}</th>
+                        <th key={i} style={{ padding: isMobile ? '10px 8px' : '14px 12px', textAlign: 'center', color: '#bbb', fontSize: isMobile ? '11px' : '12px', fontWeight: 600, textTransform: 'uppercase', borderBottom: '1px solid #1a1a22', background: '#0a0a0f' }}>{h}</th>
                       ))}
                     </tr>
                   </thead>
@@ -563,7 +563,7 @@ export default function AccountPage() {
                                 </button>
                               ) : inp.id === 'notes' ? (
                                 noteContent ? (
-                                  <div onClick={() => setShowExpandedNote(noteContent)} style={{ cursor: 'pointer', color: '#888', fontSize: '12px', maxWidth: '160px', margin: '0 auto', lineHeight: '1.4', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', textAlign: 'left' }}>{noteContent}</div>
+                                  <div onClick={() => setShowExpandedNote(noteContent)} style={{ cursor: 'pointer', color: '#bbb', fontSize: '12px', maxWidth: '160px', margin: '0 auto', lineHeight: '1.4', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', textAlign: 'left' }}>{noteContent}</div>
                                 ) : <span style={{ color: '#444' }}>-</span>
                               ) : (
                                 <span style={{ color: inp.id === 'confidence' && extra[inp.id] === 'High' ? '#22c55e' : inp.id === 'confidence' && extra[inp.id] === 'Low' ? '#ef4444' : inp.id === 'direction' ? (trade.direction === 'long' ? '#22c55e' : '#ef4444') : '#fff' }}>
@@ -574,7 +574,7 @@ export default function AccountPage() {
                           ))}
                           <td style={{ padding: '14px 12px', textAlign: 'center', fontSize: '14px', color: '#fff' }}>{new Date(trade.date).toLocaleDateString()}</td>
                           <td style={{ padding: '14px 12px', textAlign: 'center' }}>
-                            <button onClick={() => setDeleteConfirmId(trade.id)} style={{ background: 'transparent', border: 'none', color: '#666', cursor: 'pointer', fontSize: '18px' }}>×</button>
+                            <button onClick={() => setDeleteConfirmId(trade.id)} style={{ background: 'transparent', border: 'none', color: '#999', cursor: 'pointer', fontSize: '18px' }}>×</button>
                           </td>
                         </tr>
                       )
@@ -609,7 +609,7 @@ export default function AccountPage() {
           <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.8)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }} onClick={() => { setDeleteConfirmId(null); setDeleteConfirmText('') }}>
             <div style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '12px', padding: '24px', width: '90%', maxWidth: '400px' }} onClick={e => e.stopPropagation()}>
               <h3 style={{ fontSize: '18px', marginBottom: '12px', color: '#fff' }}>Delete Trade?</h3>
-              <p style={{ color: '#888', fontSize: '14px', marginBottom: '16px' }}>This action cannot be undone. Type <span style={{ color: '#ef4444', fontWeight: 600 }}>delete</span> to confirm.</p>
+              <p style={{ color: '#bbb', fontSize: '14px', marginBottom: '16px' }}>This action cannot be undone. Type <span style={{ color: '#ef4444', fontWeight: 600 }}>delete</span> to confirm.</p>
               <input 
                 type="text" 
                 value={deleteConfirmText} 
@@ -618,7 +618,7 @@ export default function AccountPage() {
                 style={{ width: '100%', padding: '12px', background: '#0a0a0e', border: '1px solid #2a2a35', borderRadius: '8px', color: '#fff', fontSize: '14px', marginBottom: '16px' }}
               />
               <div style={{ display: 'flex', gap: '12px' }}>
-                <button onClick={() => { setDeleteConfirmId(null); setDeleteConfirmText('') }} style={{ flex: 1, padding: '12px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '8px', color: '#888', cursor: 'pointer' }}>Cancel</button>
+                <button onClick={() => { setDeleteConfirmId(null); setDeleteConfirmText('') }} style={{ flex: 1, padding: '12px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '8px', color: '#bbb', cursor: 'pointer' }}>Cancel</button>
                 <button 
                   onClick={() => { if (deleteConfirmText.toLowerCase() === 'delete') { deleteTrade(deleteConfirmId); setDeleteConfirmId(null); setDeleteConfirmText('') } }}
                   style={{ flex: 1, padding: '12px', background: deleteConfirmText.toLowerCase() === 'delete' ? '#ef4444' : '#333', border: 'none', borderRadius: '8px', color: '#fff', cursor: deleteConfirmText.toLowerCase() === 'delete' ? 'pointer' : 'not-allowed', fontWeight: 600 }}
@@ -790,9 +790,9 @@ export default function AccountPage() {
                         {/* Header row with title, stats, controls and enlarge button */}
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px', flexWrap: 'wrap', gap: '8px' }}>
                           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                            <span style={{ fontSize: '12px', color: '#888', textTransform: 'uppercase' }}>Equity Curve</span>
-                            <span style={{ fontSize: '11px', color: '#666' }}>Start: <span style={{ color: '#fff' }}>${displayStart.toLocaleString()}</span></span>
-                            <span style={{ fontSize: '11px', color: '#666' }}>Current: <span style={{ color: displayCurrent >= displayStart ? '#22c55e' : '#ef4444' }}>${Math.round(displayCurrent).toLocaleString()}</span></span>
+                            <span style={{ fontSize: '12px', color: '#bbb', textTransform: 'uppercase' }}>Equity Curve</span>
+                            <span style={{ fontSize: '11px', color: '#999' }}>Start: <span style={{ color: '#fff' }}>${displayStart.toLocaleString()}</span></span>
+                            <span style={{ fontSize: '11px', color: '#999' }}>Current: <span style={{ color: displayCurrent >= displayStart ? '#22c55e' : '#ef4444' }}>${Math.round(displayCurrent).toLocaleString()}</span></span>
                           </div>
                           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                             <select value={equityCurveGroupBy} onChange={e => { setEquityCurveGroupBy(e.target.value); setSelectedCurveLines({}) }} style={{ padding: '4px 8px', background: '#141418', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '4px', color: '#fff', fontSize: '11px', boxShadow: '0 0 4px rgba(255,255,255,0.1)' }}>
@@ -815,7 +815,7 @@ export default function AccountPage() {
                                 {showLinesDropdown && (
                                   <div style={{ position: 'absolute', top: '100%', right: 0, zIndex: 100, background: '#141418', border: '1px solid #2a2a35', borderRadius: '4px', padding: '8px', marginTop: '4px', minWidth: '160px', maxHeight: '200px', overflowY: 'auto' }}>
                                     {lines.map((line, idx) => (
-                                      <label key={idx} style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11px', color: '#888', cursor: 'pointer', padding: '4px 6px', borderRadius: '4px', background: selectedCurveLines[line.name] !== false ? 'rgba(34, 197, 94, 0.1)' : 'transparent' }}>
+                                      <label key={idx} style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11px', color: '#bbb', cursor: 'pointer', padding: '4px 6px', borderRadius: '4px', background: selectedCurveLines[line.name] !== false ? 'rgba(34, 197, 94, 0.1)' : 'transparent' }}>
                                         <input type="checkbox" checked={selectedCurveLines[line.name] !== false} onChange={e => setSelectedCurveLines(prev => ({ ...prev, [line.name]: e.target.checked }))} style={{ width: '12px', height: '12px', accentColor: line.color }} />
                                         <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: line.color }} />
                                         <span style={{ color: selectedCurveLines[line.name] !== false ? '#fff' : '#888' }}>{line.name}</span>
@@ -823,19 +823,19 @@ export default function AccountPage() {
                                     ))}
                                     <div style={{ borderTop: '1px solid #2a2a35', marginTop: '6px', paddingTop: '6px', display: 'flex', gap: '6px' }}>
                                       <button onClick={() => setSelectedCurveLines(lines.reduce((acc, l) => ({ ...acc, [l.name]: true }), {}))} style={{ flex: 1, padding: '3px 6px', background: '#22c55e', border: 'none', borderRadius: '4px', color: '#fff', fontSize: '10px', cursor: 'pointer' }}>All</button>
-                                      <button onClick={() => setSelectedCurveLines(lines.reduce((acc, l) => ({ ...acc, [l.name]: false }), {}))} style={{ flex: 1, padding: '3px 6px', background: '#1a1a22', border: '1px solid #2a2a35', borderRadius: '4px', color: '#888', fontSize: '10px', cursor: 'pointer' }}>None</button>
+                                      <button onClick={() => setSelectedCurveLines(lines.reduce((acc, l) => ({ ...acc, [l.name]: false }), {}))} style={{ flex: 1, padding: '3px 6px', background: '#1a1a22', border: '1px solid #2a2a35', borderRadius: '4px', color: '#bbb', fontSize: '10px', cursor: 'pointer' }}>None</button>
                                     </div>
                                   </div>
                                 )}
                               </div>
                             )}
-                            <button onClick={() => setEnlargedChart(enlargedChart === 'equity' ? null : 'equity')} style={{ background: '#1a1a22', border: '1px solid #2a2a35', borderRadius: '4px', padding: '4px 8px', color: '#888', fontSize: '10px', cursor: 'pointer' }}>⛶</button>
+                            <button onClick={() => setEnlargedChart(enlargedChart === 'equity' ? null : 'equity')} style={{ background: '#1a1a22', border: '1px solid #2a2a35', borderRadius: '4px', padding: '4px 8px', color: '#bbb', fontSize: '10px', cursor: 'pointer' }}>⛶</button>
                           </div>
                         </div>
                         {/* Graph area - full width now */}
                         <div style={{ flex: 1, position: 'relative', display: 'flex', minHeight: '90px' }}>
                           {sorted.length < 2 ? (
-                            <div style={{ height: '100%', width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#666' }}>Need 2+ trades</div>
+                            <div style={{ height: '100%', width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#999' }}>Need 2+ trades</div>
                           ) : (() => {
                             const allBalances = visibleLines.flatMap(l => l.points.map(p => p.balance))
                             const maxBal = Math.max(...allBalances)
@@ -949,7 +949,7 @@ export default function AccountPage() {
                             return (
                               <>
                                 <div style={{ width: '24px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', flexShrink: 0, paddingRight: '2px', paddingBottom: '22px' }}>
-                                  {yLabels.map((v, i) => <span key={i} style={{ fontSize: '8px', color: '#888', lineHeight: 1, textAlign: 'right' }}>{equityCurveGroupBy === 'total' ? `$${(v/1000).toFixed(v >= 1000 ? 0 : 1)}k` : `$${v}`}</span>)}
+                                  {yLabels.map((v, i) => <span key={i} style={{ fontSize: '8px', color: '#bbb', lineHeight: 1, textAlign: 'right' }}>{equityCurveGroupBy === 'total' ? `$${(v/1000).toFixed(v >= 1000 ? 0 : 1)}k` : `$${v}`}</span>)}
                                 </div>
                                 <div style={{ flex: 1, display: 'flex', flexDirection: 'column', position: 'relative' }}>
                                   <div style={{ flex: 1, position: 'relative', borderLeft: '1px solid #333', borderBottom: hasNegative ? 'none' : '1px solid #333' }}>
@@ -964,7 +964,7 @@ export default function AccountPage() {
                                     {/* Starting balance dotted line */}
                                     {startLineY !== null && (
                                       <div style={{ position: 'absolute', left: 0, right: 0, top: `${startLineY}%`, borderTop: '1px dashed #666', zIndex: 1 }}>
-                                        <span style={{ position: 'absolute', right: '4px', top: '-10px', fontSize: '8px', color: '#888' }}>Start</span>
+                                        <span style={{ position: 'absolute', right: '4px', top: '-10px', fontSize: '8px', color: '#bbb' }}>Start</span>
                                       </div>
                                     )}
                                     <svg style={{ position: 'absolute', inset: 0, width: '100%', height: '100%' }} viewBox={`0 0 ${svgW} ${svgH}`} preserveAspectRatio="none"
@@ -1168,7 +1168,7 @@ export default function AccountPage() {
                                     {hoverPoint && (
                                       <div style={{ position: 'absolute', left: `${hoverPoint.xPct}%`, top: `${hoverPoint.yPct}%`, transform: `translate(${hoverPoint.xPct > 80 ? 'calc(-100% - 15px)' : '15px'}, ${hoverPoint.yPct < 20 ? '0%' : hoverPoint.yPct > 80 ? '-100%' : '-50%'})`, background: '#1a1a22', border: '1px solid #2a2a35', borderRadius: '6px', padding: '8px 12px', fontSize: '11px', whiteSpace: 'nowrap', zIndex: 10, pointerEvents: 'none' }}>
                                         {hoverPoint.lineName && equityCurveGroupBy !== 'total' && <div style={{ color: hoverPoint.lineColor, fontWeight: 600, marginBottom: '2px' }}>{hoverPoint.lineName}</div>}
-                                        <div style={{ color: '#888' }}>{hoverPoint.date ? new Date(hoverPoint.date).toLocaleDateString() : 'Start'}</div>
+                                        <div style={{ color: '#bbb' }}>{hoverPoint.date ? new Date(hoverPoint.date).toLocaleDateString() : 'Start'}</div>
                                         <div style={{ fontWeight: 600, fontSize: '14px', color: '#fff' }}>${hoverPoint.balance?.toLocaleString()}</div>
                                         {hoverPoint.symbol && <div style={{ color: hoverPoint.pnl >= 0 ? '#22c55e' : '#ef4444' }}>{hoverPoint.symbol}: {hoverPoint.pnl >= 0 ? '+' : ''}${hoverPoint.pnl?.toFixed(0)}</div>}
                                       </div>
@@ -1178,12 +1178,12 @@ export default function AccountPage() {
                                       <div style={{ position: 'absolute', bottom: '4px', left: '4px', display: 'flex', alignItems: 'center', gap: '8px', background: 'rgba(13,13,18,0.9)', padding: '3px 6px', borderRadius: '3px', fontSize: '9px' }}>
                                         <div style={{ display: 'flex', alignItems: 'center', gap: '3px' }}>
                                           <div style={{ width: '10px', height: '2px', background: '#22c55e' }} />
-                                          <span style={{ color: '#888' }}>Above</span>
+                                          <span style={{ color: '#bbb' }}>Above</span>
                                         </div>
                                         {belowStart && (
                                           <div style={{ display: 'flex', alignItems: 'center', gap: '3px' }}>
                                             <div style={{ width: '10px', height: '2px', background: '#ef4444' }} />
-                                            <span style={{ color: '#888' }}>Below</span>
+                                            <span style={{ color: '#bbb' }}>Below</span>
                                           </div>
                                         )}
                                       </div>
@@ -1203,7 +1203,7 @@ export default function AccountPage() {
                                     {xLabels.map((l, i) => (
                                       <div key={i} style={{ position: 'absolute', left: `${l.pct}%`, transform: 'translateX(-50%)', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                                         <div style={{ width: '1px', height: '6px', background: '#444' }} />
-                                        <span style={{ fontSize: '9px', color: '#888', marginTop: '2px' }}>{l.label}</span>
+                                        <span style={{ fontSize: '9px', color: '#bbb', marginTop: '2px' }}>{l.label}</span>
                                       </div>
                                     ))}
                                   </div>
@@ -1248,7 +1248,7 @@ export default function AccountPage() {
                       return { name, val, disp }
                     }).sort((a, b) => b.val - a.val).slice(0, 8)
                     
-                    if (entries.length === 0) return <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#666' }}>No data</div>
+                    if (entries.length === 0) return <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#999' }}>No data</div>
                     
                     const maxVal = barGraphMetric === 'winrate' ? 100 : Math.max(...entries.map(e => Math.abs(e.val)), 1)
                     const getNiceMax = (v) => {
@@ -1275,7 +1275,7 @@ export default function AccountPage() {
                       <>
                         {/* Header row with title, controls and enlarge */}
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px', flexWrap: 'wrap', gap: '8px' }}>
-                          <span style={{ fontSize: '12px', color: '#888', textTransform: 'uppercase' }}>Performance by {graphGroupBy === 'symbol' ? 'Pair' : graphGroupBy}</span>
+                          <span style={{ fontSize: '12px', color: '#bbb', textTransform: 'uppercase' }}>Performance by {graphGroupBy === 'symbol' ? 'Pair' : graphGroupBy}</span>
                           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                             <select value={barGraphMetric} onChange={e => setBarGraphMetric(e.target.value)} style={{ padding: '4px 8px', background: '#141418', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '4px', color: '#fff', fontSize: '11px', boxShadow: '0 0 4px rgba(255,255,255,0.1)' }}>
                               <option value="winrate">Winrate</option>
@@ -1290,13 +1290,13 @@ export default function AccountPage() {
                               <option value="confidence">Confidence</option>
                               <option value="timeframe">Timeframe</option>
                             </select>
-                            <button onClick={() => setEnlargedChart(enlargedChart === 'bar' ? null : 'bar')} style={{ background: '#1a1a22', border: '1px solid #2a2a35', borderRadius: '4px', padding: '4px 8px', color: '#888', fontSize: '10px', cursor: 'pointer' }}>⛶</button>
+                            <button onClick={() => setEnlargedChart(enlargedChart === 'bar' ? null : 'bar')} style={{ background: '#1a1a22', border: '1px solid #2a2a35', borderRadius: '4px', padding: '4px 8px', color: '#bbb', fontSize: '10px', cursor: 'pointer' }}>⛶</button>
                           </div>
                         </div>
                         {/* Graph - full width */}
                         <div style={{ flex: 1, display: 'flex', minHeight: '90px' }}>
                           <div style={{ width: '24px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', flexShrink: 0, paddingRight: '2px', paddingBottom: '28px' }}>
-                            {yLabels.map((v, i) => <span key={i} style={{ fontSize: '8px', color: '#888', lineHeight: 1, textAlign: 'right' }}>{v}</span>)}
+                            {yLabels.map((v, i) => <span key={i} style={{ fontSize: '8px', color: '#bbb', lineHeight: 1, textAlign: 'right' }}>{v}</span>)}
                           </div>
                           <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
                             <div style={{ flex: 1, position: 'relative', borderLeft: '1px solid #333', borderBottom: '1px solid #333' }}>
@@ -1351,7 +1351,7 @@ export default function AccountPage() {
             {/* ROW 2: Direction + Sentiment bars */}
             <div style={{ display: 'flex', gap: '16px', marginBottom: '16px' }}>
               <div style={{ flex: 1, background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '12px 16px', display: 'flex', alignItems: 'center', gap: '16px' }}>
-                <span style={{ fontSize: '12px', color: '#888', textTransform: 'uppercase' }}>Direction</span>
+                <span style={{ fontSize: '12px', color: '#bbb', textTransform: 'uppercase' }}>Direction</span>
                 <span style={{ fontSize: '13px', color: '#22c55e', fontWeight: 700 }}>{longPct}% Long</span>
                 <div style={{ flex: 1, height: '10px', borderRadius: '5px', overflow: 'hidden', display: 'flex' }}>
                   <div style={{ width: `${longPct}%`, background: '#22c55e' }} />
@@ -1360,7 +1360,7 @@ export default function AccountPage() {
                 <span style={{ fontSize: '13px', color: '#ef4444', fontWeight: 700 }}>{100 - longPct}% Short</span>
               </div>
               <div style={{ flex: 1, background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '12px 16px', display: 'flex', alignItems: 'center', gap: '16px' }}>
-                <span style={{ fontSize: '12px', color: '#888', textTransform: 'uppercase' }}>Sentiment</span>
+                <span style={{ fontSize: '12px', color: '#bbb', textTransform: 'uppercase' }}>Sentiment</span>
                 <span style={{ fontSize: '13px', color: '#22c55e', fontWeight: 700 }}>{winrate}% Bullish</span>
                 <div style={{ flex: 1, height: '10px', borderRadius: '5px', overflow: 'hidden', display: 'flex' }}>
                   <div style={{ width: `${winrate}%`, background: '#22c55e' }} />
@@ -1375,15 +1375,15 @@ export default function AccountPage() {
               {/* Net Daily PnL - bars fill full width */}
               <div style={{ flex: 1, background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '16px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-                  <span style={{ fontSize: '13px', color: '#888', textTransform: 'uppercase' }}>Net Daily PnL</span>
-                  <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '10px', color: '#888', cursor: 'pointer', background: includeDaysNotTraded ? '#22c55e' : '#1a1a22', padding: '4px 10px', borderRadius: '4px', border: '1px solid #2a2a35' }}>
+                  <span style={{ fontSize: '13px', color: '#bbb', textTransform: 'uppercase' }}>Net Daily PnL</span>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '10px', color: '#bbb', cursor: 'pointer', background: includeDaysNotTraded ? '#22c55e' : '#1a1a22', padding: '4px 10px', borderRadius: '4px', border: '1px solid #2a2a35' }}>
                     <span style={{ color: includeDaysNotTraded ? '#fff' : '#888' }}>{includeDaysNotTraded ? '✓' : ''}</span>
                     <input type="checkbox" checked={includeDaysNotTraded} onChange={e => setIncludeDaysNotTraded(e.target.checked)} style={{ display: 'none' }} />
                     <span style={{ color: includeDaysNotTraded ? '#fff' : '#888' }}>Include non-trading days</span>
                   </label>
                 </div>
                 <div style={{ height: '200px', display: 'flex' }}>
-                  {dailyPnL.length === 0 ? <div style={{ height: '100%', width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#666' }}>No data</div> : (() => {
+                  {dailyPnL.length === 0 ? <div style={{ height: '100%', width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#999' }}>No data</div> : (() => {
                     let displayData = dailyPnL
                     if (includeDaysNotTraded && dailyPnL.length > 1) {
                       const sorted = [...dailyPnL].sort((a, b) => new Date(a.date) - new Date(b.date))
@@ -1427,7 +1427,7 @@ export default function AccountPage() {
                     return (
                       <>
                         <div style={{ width: '28px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', flexShrink: 0, paddingRight: '2px', paddingBottom: '18px' }}>
-                          {yLabels.map((v, i) => <span key={i} style={{ fontSize: '8px', color: '#888', textAlign: 'right' }}>{i === yLabels.length - 1 ? '$0' : `$${v}`}</span>)}
+                          {yLabels.map((v, i) => <span key={i} style={{ fontSize: '8px', color: '#bbb', textAlign: 'right' }}>{i === yLabels.length - 1 ? '$0' : `$${v}`}</span>)}
                         </div>
                         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', position: 'relative' }}>
                           <div style={{ flex: 1, position: 'relative', borderLeft: '1px solid #333', borderBottom: '1px solid #333' }}>
@@ -1452,7 +1452,7 @@ export default function AccountPage() {
                                         <>
                                           <div style={{ position: 'absolute', bottom: hasData ? '4px' : '-2px', left: '50%', transform: 'translateX(-50%)', width: '8px', height: '8px', borderRadius: '50%', background: '#22c55e', border: '2px solid #fff', zIndex: 5 }} />
                                           <div style={{ position: 'absolute', bottom: '0px', left: 'calc(50% + 10px)', background: '#1a1a22', border: '1px solid #2a2a35', borderRadius: '6px', padding: '6px 10px', fontSize: '11px', whiteSpace: 'nowrap', zIndex: 10, pointerEvents: 'none' }}>
-                                            <div style={{ color: '#888' }}>{new Date(d.date).toLocaleDateString()}</div>
+                                            <div style={{ color: '#bbb' }}>{new Date(d.date).toLocaleDateString()}</div>
                                             <div style={{ fontWeight: 600, color: hasData ? (isPositive ? '#22c55e' : '#ef4444') : '#666' }}>{hasData ? ((isPositive ? '+' : '-') + '$' + Math.abs(d.pnl).toFixed(0)) : 'No trades'}</div>
                                           </div>
                                         </>
@@ -1468,7 +1468,7 @@ export default function AccountPage() {
                             {xLabels.map((l, i) => (
                               <div key={i} style={{ position: 'absolute', left: `${l.pct}%`, transform: 'translateX(-50%)', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                                 <div style={{ width: '1px', height: '6px', background: '#444' }} />
-                                <span style={{ fontSize: '9px', color: '#888', marginTop: '2px' }}>{l.label}</span>
+                                <span style={{ fontSize: '9px', color: '#bbb', marginTop: '2px' }}>{l.label}</span>
                               </div>
                             ))}
                           </div>
@@ -1485,7 +1485,7 @@ export default function AccountPage() {
                 <div style={{ display: 'flex', gap: '8px', flex: 1 }}>
                   {/* Average Rating - title on left side */}
                   <div style={{ flex: 1, background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '14px', display: 'flex', flexDirection: 'column' }}>
-                    <div style={{ fontSize: '11px', color: '#888', textTransform: 'uppercase', marginBottom: '8px' }}>Average Rating</div>
+                    <div style={{ fontSize: '11px', color: '#bbb', textTransform: 'uppercase', marginBottom: '8px' }}>Average Rating</div>
                     <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
                       <div style={{ display: 'flex', gap: '4px', marginBottom: '4px' }}>
                         {[1,2,3,4,5].map(i => <span key={i} style={{ color: i <= Math.round(parseFloat(avgRating)) ? '#22c55e' : '#2a2a35', fontSize: '28px' }}>★</span>)}
@@ -1496,7 +1496,7 @@ export default function AccountPage() {
 
                   {/* PnL by Day - bars proportionate to PnL */}
                   <div style={{ flex: 1, background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '14px', display: 'flex', flexDirection: 'column' }}>
-                    <div style={{ fontSize: '11px', color: '#888', textTransform: 'uppercase', marginBottom: '10px' }}>PnL by Day</div>
+                    <div style={{ fontSize: '11px', color: '#bbb', textTransform: 'uppercase', marginBottom: '10px' }}>PnL by Day</div>
                     {(() => {
                       const dayNames = ['M', 'T', 'W', 'T', 'F']
                       const dayPnL = [0, 0, 0, 0, 0]
@@ -1522,7 +1522,7 @@ export default function AccountPage() {
                           </div>
                           <div style={{ display: 'flex', gap: '4px' }}>
                             {dayNames.map((name, i) => (
-                              <div key={i} style={{ flex: 1, textAlign: 'center', fontSize: '11px', fontWeight: 600, color: '#888' }}>{name}</div>
+                              <div key={i} style={{ flex: 1, textAlign: 'center', fontSize: '11px', fontWeight: 600, color: '#bbb' }}>{name}</div>
                             ))}
                           </div>
                         </div>
@@ -1533,7 +1533,7 @@ export default function AccountPage() {
 
                 {/* Streaks & Consistency - taller */}
                 <div style={{ flex: 1, background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '14px', display: 'flex', flexDirection: 'column' }}>
-                  <div style={{ fontSize: '11px', color: '#888', textTransform: 'uppercase', marginBottom: '12px' }}>Streaks & Consistency</div>
+                  <div style={{ fontSize: '11px', color: '#bbb', textTransform: 'uppercase', marginBottom: '12px' }}>Streaks & Consistency</div>
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px', flex: 1 }}>
                     {[
                       { l: 'Max Wins', v: streaks.mw, c: '#22c55e' },
@@ -1542,7 +1542,7 @@ export default function AccountPage() {
                       { l: 'Trades/Day', v: avgTradesPerDay, c: '#fff' },
                     ].map((item, i) => (
                       <div key={i} style={{ padding: '10px', background: '#0a0a0e', borderRadius: '6px', border: '1px solid #1a1a22', textAlign: 'center', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-                        <div style={{ fontSize: '10px', color: '#888', marginBottom: '4px' }}>{item.l}</div>
+                        <div style={{ fontSize: '10px', color: '#bbb', marginBottom: '4px' }}>{item.l}</div>
                         <div style={{ fontSize: '18px', fontWeight: 700, color: item.c }}>{item.v}</div>
                       </div>
                     ))}
@@ -1565,14 +1565,14 @@ export default function AccountPage() {
                     { l: 'Best RR', v: mostProfitableRR },
                   ].map((item, i) => (
                     <div key={i} style={{ display: 'flex', justifyContent: 'space-between', padding: '4px 0', borderBottom: i < 5 ? '1px solid #1a1a22' : 'none' }}>
-                      <span style={{ fontSize: '12px', color: '#888' }}>{item.l}</span>
+                      <span style={{ fontSize: '12px', color: '#bbb' }}>{item.l}</span>
                       <span style={{ fontSize: '12px', fontWeight: 600, color: '#fff' }}>{item.v}</span>
                     </div>
                   ))}
                 </div>
                 <div style={{ width: '1px', background: '#1a1a22', margin: '0 10px' }} />
                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', minWidth: '110px' }}>
-                  <div style={{ fontSize: '10px', color: '#888', textTransform: 'uppercase', marginBottom: '6px', fontWeight: 600 }}>Pair Analysis</div>
+                  <div style={{ fontSize: '10px', color: '#bbb', textTransform: 'uppercase', marginBottom: '6px', fontWeight: 600 }}>Pair Analysis</div>
                   <select value={pairAnalysisType} onChange={e => setPairAnalysisType(e.target.value)} style={{ fontSize: '9px', color: '#ccc', marginBottom: '6px', background: '#141418', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '4px', padding: '4px 8px', cursor: 'pointer', boxShadow: '0 0 6px rgba(255,255,255,0.1)' }}>
                     <option value="best">Best Pair</option>
                     <option value="worst">Worst Pair</option>
@@ -1585,7 +1585,7 @@ export default function AccountPage() {
                     if (pairAnalysisType === 'best') selected = Object.entries(ps).sort((a, b) => b[1].pnl - a[1].pnl)[0]
                     else if (pairAnalysisType === 'worst') selected = Object.entries(ps).sort((a, b) => a[1].pnl - b[1].pnl)[0]
                     else selected = Object.entries(ps).sort((a, b) => b[1].count - a[1].count)[0]
-                    if (!selected) return <div style={{ color: '#666' }}>No data</div>
+                    if (!selected) return <div style={{ color: '#999' }}>No data</div>
                     const wr = selected[1].w + selected[1].l > 0 ? Math.round((selected[1].w / (selected[1].w + selected[1].l)) * 100) : 0
                     const size = 70, stroke = 7, r = (size - stroke) / 2, c = 2 * Math.PI * r
                     return (
@@ -1612,7 +1612,7 @@ export default function AccountPage() {
 
               {/* Performance - compact */}
               <div style={{ width: '280px', background: 'linear-gradient(145deg, #0d0d12 0%, #0a0a0e 100%)', border: '1px solid rgba(34,197,94,0.2)', borderRadius: '8px', padding: '12px', position: 'relative', zIndex: 2, boxShadow: '0 4px 20px rgba(0,0,0,0.4), 0 0 30px rgba(34,197,94,0.08)' }}>
-                <div style={{ fontSize: '11px', color: '#888', textTransform: 'uppercase', marginBottom: '10px' }}>Performance</div>
+                <div style={{ fontSize: '11px', color: '#bbb', textTransform: 'uppercase', marginBottom: '10px' }}>Performance</div>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px' }}>
                   {[
                     { l: 'Best Day', v: bestDay ? `+$${Math.round(bestDay.pnl)}` : '-', c: '#22c55e' },
@@ -1621,7 +1621,7 @@ export default function AccountPage() {
                     { l: 'Biggest Loss', v: `$${biggestLoss}`, c: '#ef4444' },
                   ].map((item, i) => (
                     <div key={i} style={{ padding: '8px', background: '#0a0a0e', borderRadius: '4px', border: '1px solid #1a1a22', textAlign: 'center' }}>
-                      <div style={{ fontSize: '10px', color: '#888', marginBottom: '3px' }}>{item.l}</div>
+                      <div style={{ fontSize: '10px', color: '#bbb', marginBottom: '3px' }}>{item.l}</div>
                       <div style={{ fontSize: '16px', fontWeight: 700, color: item.c }}>{item.v}</div>
                     </div>
                   ))}
@@ -1635,7 +1635,7 @@ export default function AccountPage() {
                 <div style={{ position: 'relative', background: 'linear-gradient(145deg, #0d0d12 0%, #0a0a0e 100%)', border: '2px solid #22c55e', borderRadius: '10px', padding: '14px', boxShadow: '0 0 25px rgba(34,197,94,0.3), inset 0 1px 0 rgba(34,197,94,0.2)' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
                     <div style={{ fontSize: '12px', color: '#22c55e', textTransform: 'uppercase', fontWeight: 700, textShadow: '0 0 10px rgba(34,197,94,0.5)', letterSpacing: '1px' }}>Trade Analysis</div>
-                    <div style={{ fontSize: '9px', color: '#666' }}>{trades.length} trades</div>
+                    <div style={{ fontSize: '9px', color: '#999' }}>{trades.length} trades</div>
                   </div>
                   <div style={{ display: 'flex', gap: '6px', marginBottom: '10px' }}>
                     <select value={analysisGroupBy} onChange={e => setAnalysisGroupBy(e.target.value)} style={{ flex: 1, padding: '7px 10px', background: 'linear-gradient(180deg, #1a1a22 0%, #141418 100%)', border: '1px solid rgba(34,197,94,0.4)', borderRadius: '6px', color: '#fff', fontSize: '11px', cursor: 'pointer' }}>
@@ -1681,7 +1681,7 @@ export default function AccountPage() {
                         else if (t.outcome === 'loss') groups[key].l++
                       })
                       const entries = Object.entries(groups).slice(0, 4)
-                      if (entries.length === 0) return <div style={{ color: '#666', textAlign: 'center', padding: '20px' }}>No data</div>
+                      if (entries.length === 0) return <div style={{ color: '#999', textAlign: 'center', padding: '20px' }}>No data</div>
                       return entries.map(([name, data]) => {
                         let val, disp
                         const avgWin = data.w > 0 ? data.pnl > 0 ? data.pnl / data.w : 0 : 0
@@ -1701,7 +1701,7 @@ export default function AccountPage() {
                           <div key={name} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 10px', background: 'linear-gradient(90deg, rgba(34,197,94,0.08) 0%, rgba(34,197,94,0.02) 100%)', borderRadius: '6px', border: '1px solid rgba(34,197,94,0.15)' }}>
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
                               <span style={{ fontSize: '13px', color: '#fff', fontWeight: 600 }}>{name}</span>
-                              <span style={{ fontSize: '9px', color: '#666' }}>{data.count} trades • {wr}% WR</span>
+                              <span style={{ fontSize: '9px', color: '#999' }}>{data.count} trades • {wr}% WR</span>
                             </div>
                             <span style={{ fontSize: '15px', fontWeight: 700, color: isPositive ? '#22c55e' : '#ef4444' }}>{disp}</span>
                           </div>
@@ -1715,14 +1715,14 @@ export default function AccountPage() {
               {/* Expectancy widgets - compact */}
               <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', width: '110px', position: 'relative', zIndex: 2 }}>
                 <div style={{ flex: 1, background: 'linear-gradient(145deg, #0d0d12 0%, #0a0a0e 100%)', border: '1px solid rgba(34,197,94,0.2)', borderRadius: '8px', padding: '8px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 20px rgba(0,0,0,0.4), 0 0 30px rgba(34,197,94,0.08)' }}>
-                  <div style={{ fontSize: '9px', color: '#888', textTransform: 'uppercase', marginBottom: '2px' }}>Avg Loss Exp.</div>
+                  <div style={{ fontSize: '9px', color: '#bbb', textTransform: 'uppercase', marginBottom: '2px' }}>Avg Loss Exp.</div>
                   <div style={{ fontSize: '18px', fontWeight: 700, color: '#ef4444' }}>-${avgLoss}</div>
-                  <div style={{ fontSize: '8px', color: '#666' }}>per trade</div>
+                  <div style={{ fontSize: '8px', color: '#999' }}>per trade</div>
                 </div>
                 <div style={{ flex: 1, background: 'linear-gradient(145deg, #0d0d12 0%, #0a0a0e 100%)', border: '1px solid rgba(34,197,94,0.2)', borderRadius: '8px', padding: '8px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 20px rgba(0,0,0,0.4), 0 0 30px rgba(34,197,94,0.08)' }}>
-                  <div style={{ fontSize: '9px', color: '#888', textTransform: 'uppercase', marginBottom: '2px' }}>Expectancy</div>
+                  <div style={{ fontSize: '9px', color: '#bbb', textTransform: 'uppercase', marginBottom: '2px' }}>Expectancy</div>
                   <div style={{ fontSize: '18px', fontWeight: 700, color: parseFloat(expectancy) >= 0 ? '#22c55e' : '#ef4444' }}>${expectancy}</div>
-                  <div style={{ fontSize: '8px', color: '#666' }}>per trade</div>
+                  <div style={{ fontSize: '8px', color: '#999' }}>per trade</div>
                 </div>
               </div>
             </div>
@@ -1821,7 +1821,7 @@ export default function AccountPage() {
                   <div style={{ background: 'linear-gradient(145deg, #0d0d14 0%, #0a0a10 100%)', border: '1px solid #8b5cf6', borderRadius: '8px', padding: '16px 18px', boxShadow: '0 0 25px rgba(139,92,246,0.2), inset 0 1px 0 rgba(139,92,246,0.15)' }}>
                     <div style={{ fontSize: '13px', color: '#8b5cf6', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '10px', borderBottom: '1px solid rgba(139,92,246,0.2)', paddingBottom: '8px', fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                       <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><span>✨</span> AI Insight</span>
-                      <span style={{ fontSize: '10px', color: '#888', fontWeight: 400 }}>{new Date().toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}</span>
+                      <span style={{ fontSize: '10px', color: '#bbb', fontWeight: 400 }}>{new Date().toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}</span>
                     </div>
                     <div style={{ fontSize: '14px', color: '#eee', lineHeight: 1.7, fontWeight: 500 }}>
                       {(() => {
@@ -1951,7 +1951,7 @@ export default function AccountPage() {
 
                     return (
                       <div key={input.id} style={{ flex: '1 1 280px', maxWidth: '350px', background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '14px' }}>
-                        <div style={{ fontSize: '11px', color: '#888', textTransform: 'uppercase', marginBottom: '12px' }}>By {input.label}</div>
+                        <div style={{ fontSize: '11px', color: '#bbb', textTransform: 'uppercase', marginBottom: '12px' }}>By {input.label}</div>
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                           {entries.map(([val, data], idx) => {
                             const wr = data.wins + data.losses > 0 ? Math.round((data.wins / (data.wins + data.losses)) * 100) : 0
@@ -1962,7 +1962,7 @@ export default function AccountPage() {
                                 <div style={{ flex: 1, height: '18px', background: '#1a1a22', borderRadius: '3px', position: 'relative', overflow: 'hidden' }}>
                                   <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: `${barWidth}%`, background: data.pnl >= 0 ? '#22c55e' : '#ef4444', opacity: 0.3, borderRadius: '3px' }} />
                                   <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 6px', fontSize: '9px' }}>
-                                    <span style={{ color: '#888' }}>{data.count} trades</span>
+                                    <span style={{ color: '#bbb' }}>{data.count} trades</span>
                                     <span style={{ color: wr >= 50 ? '#22c55e' : '#ef4444' }}>{wr}% WR</span>
                                   </div>
                                 </div>
@@ -1991,7 +1991,7 @@ export default function AccountPage() {
 
             <div style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '20px', marginBottom: '16px' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-                <span style={{ fontSize: '13px', color: '#888', textTransform: 'uppercase' }}>Write {notesSubTab} Note</span>
+                <span style={{ fontSize: '13px', color: '#bbb', textTransform: 'uppercase' }}>Write {notesSubTab} Note</span>
                 <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
                   {notesSubTab === 'custom' && <input type="text" placeholder="Note title..." value={customNoteTitle} onChange={e => setCustomNoteTitle(e.target.value)} style={{ padding: '8px 12px', background: '#0a0a0e', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '13px', width: '160px' }} />}
                   <input type="date" value={noteDate} onChange={e => setNoteDate(e.target.value)} style={{ padding: '8px 12px', background: '#0a0a0e', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '13px' }} />
@@ -2004,27 +2004,27 @@ export default function AccountPage() {
             </div>
 
             <div style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '20px' }}>
-              <span style={{ fontSize: '13px', color: '#888', textTransform: 'uppercase' }}>{notesSubTab} Notes</span>
+              <span style={{ fontSize: '13px', color: '#bbb', textTransform: 'uppercase' }}>{notesSubTab} Notes</span>
               <div style={{ marginTop: '14px', display: 'flex', flexDirection: 'column', gap: '10px', maxHeight: '500px', overflowY: 'auto' }}>
                 {notesSubTab === 'custom' ? (
-                  (notes.custom || []).length === 0 ? <div style={{ padding: '40px', textAlign: 'center', color: '#666' }}>No custom notes yet.</div> : (notes.custom || []).map((note, idx) => (
+                  (notes.custom || []).length === 0 ? <div style={{ padding: '40px', textAlign: 'center', color: '#999' }}>No custom notes yet.</div> : (notes.custom || []).map((note, idx) => (
                     <div key={idx} style={{ padding: '16px', background: '#0a0a0e', borderRadius: '8px', border: '1px solid #1a1a22' }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
                         <span style={{ fontSize: '14px', color: '#22c55e', fontWeight: 600 }}>{note.title}</span>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                          <span style={{ fontSize: '12px', color: '#666' }}>{new Date(note.date).toLocaleDateString()}</span>
-                          <button onClick={() => deleteNote('custom', idx)} style={{ background: 'transparent', border: 'none', color: '#666', cursor: 'pointer', fontSize: '16px' }}>×</button>
+                          <span style={{ fontSize: '12px', color: '#999' }}>{new Date(note.date).toLocaleDateString()}</span>
+                          <button onClick={() => deleteNote('custom', idx)} style={{ background: 'transparent', border: 'none', color: '#999', cursor: 'pointer', fontSize: '16px' }}>×</button>
                         </div>
                       </div>
                       <div style={{ fontSize: '14px', color: '#fff', lineHeight: '1.6', whiteSpace: 'pre-wrap' }}>{note.text}</div>
                     </div>
                   ))
                 ) : (
-                  Object.keys(notes[notesSubTab] || {}).length === 0 ? <div style={{ padding: '40px', textAlign: 'center', color: '#666' }}>No {notesSubTab} notes yet.</div> : Object.entries(notes[notesSubTab] || {}).sort((a, b) => new Date(b[0]) - new Date(a[0])).map(([date, text]) => (
+                  Object.keys(notes[notesSubTab] || {}).length === 0 ? <div style={{ padding: '40px', textAlign: 'center', color: '#999' }}>No {notesSubTab} notes yet.</div> : Object.entries(notes[notesSubTab] || {}).sort((a, b) => new Date(b[0]) - new Date(a[0])).map(([date, text]) => (
                     <div key={date} style={{ padding: '16px', background: '#0a0a0e', borderRadius: '8px', border: '1px solid #1a1a22' }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
                         <span style={{ fontSize: '14px', color: '#22c55e', fontWeight: 600 }}>{new Date(date).toLocaleDateString('en-GB', { weekday: 'short', day: '2-digit', month: 'short', year: 'numeric' })}</span>
-                        <button onClick={() => deleteNote(notesSubTab, date)} style={{ background: 'transparent', border: 'none', color: '#666', cursor: 'pointer', fontSize: '16px' }}>×</button>
+                        <button onClick={() => deleteNote(notesSubTab, date)} style={{ background: 'transparent', border: 'none', color: '#999', cursor: 'pointer', fontSize: '16px' }}>×</button>
                       </div>
                       <div style={{ fontSize: '14px', color: '#fff', lineHeight: '1.6', whiteSpace: 'pre-wrap' }}>{text}</div>
                     </div>
@@ -2046,7 +2046,7 @@ export default function AccountPage() {
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px', marginBottom: '16px' }}>
               {fixedInputs.map(input => (
                 <div key={input.id}>
-                  <label style={{ display: 'block', fontSize: '11px', color: '#888', marginBottom: '6px', textTransform: 'uppercase' }}>{input.label} {input.required && <span style={{ color: '#ef4444' }}>*</span>}</label>
+                  <label style={{ display: 'block', fontSize: '11px', color: '#bbb', marginBottom: '6px', textTransform: 'uppercase' }}>{input.label} {input.required && <span style={{ color: '#ef4444' }}>*</span>}</label>
                   {input.type === 'select' ? (
                     <select value={tradeForm[input.id] || ''} onChange={e => setTradeForm({...tradeForm, [input.id]: e.target.value})} style={{ width: '100%', padding: '10px', background: '#141418', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '6px', color: '#fff', fontSize: '14px', boxSizing: 'border-box', boxShadow: '0 0 4px rgba(255,255,255,0.1)' }}>
                       {input.options?.map(o => <option key={o} value={o.toLowerCase()}>{o}</option>)}
@@ -2061,11 +2061,11 @@ export default function AccountPage() {
             {/* Custom inputs section */}
             {customInputs.length > 0 && (
               <>
-                <div style={{ fontSize: '11px', color: '#666', marginBottom: '10px', textTransform: 'uppercase' }}>Additional Fields</div>
+                <div style={{ fontSize: '11px', color: '#999', marginBottom: '10px', textTransform: 'uppercase' }}>Additional Fields</div>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '12px', marginBottom: '16px' }}>
                   {customInputs.map(input => (
                     <div key={input.id} style={{ gridColumn: input.type === 'textarea' ? 'span 2' : 'span 1' }}>
-                      <label style={{ display: 'block', fontSize: '11px', color: '#888', marginBottom: '6px', textTransform: 'uppercase' }}>{input.label}</label>
+                      <label style={{ display: 'block', fontSize: '11px', color: '#bbb', marginBottom: '6px', textTransform: 'uppercase' }}>{input.label}</label>
                       {input.type === 'select' ? (
                         <select value={tradeForm[input.id] || ''} onChange={e => setTradeForm({...tradeForm, [input.id]: e.target.value})} style={{ width: '100%', padding: '10px', background: '#141418', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '6px', color: '#fff', fontSize: '14px', boxSizing: 'border-box', boxShadow: '0 0 4px rgba(255,255,255,0.1)' }}>
                           {input.options?.map(o => <option key={o} value={o.toLowerCase()}>{o}</option>)}
@@ -2107,13 +2107,13 @@ export default function AccountPage() {
                             <div>
                               <img src={tradeForm[input.id]} alt="Preview" style={{ maxWidth: '100%', maxHeight: '100px', borderRadius: '4px', marginBottom: '8px' }} />
                               <div style={{ color: '#22c55e', fontSize: '12px' }}>✓ Image uploaded</div>
-                              <button type="button" onClick={e => { e.stopPropagation(); setTradeForm({...tradeForm, [input.id]: ''}) }} style={{ marginTop: '8px', padding: '4px 12px', background: '#1a1a22', border: '1px solid #2a2a35', borderRadius: '4px', color: '#888', fontSize: '11px', cursor: 'pointer' }}>Remove</button>
+                              <button type="button" onClick={e => { e.stopPropagation(); setTradeForm({...tradeForm, [input.id]: ''}) }} style={{ marginTop: '8px', padding: '4px 12px', background: '#1a1a22', border: '1px solid #2a2a35', borderRadius: '4px', color: '#bbb', fontSize: '11px', cursor: 'pointer' }}>Remove</button>
                             </div>
                           ) : (
                             <div>
                               <div style={{ fontSize: '24px', marginBottom: '8px' }}>📷</div>
-                              <div style={{ color: '#888', fontSize: '13px' }}>Drop image here or click to upload</div>
-                              <div style={{ color: '#666', fontSize: '11px', marginTop: '4px' }}>PNG, JPG up to 5MB</div>
+                              <div style={{ color: '#bbb', fontSize: '13px' }}>Drop image here or click to upload</div>
+                              <div style={{ color: '#999', fontSize: '11px', marginTop: '4px' }}>PNG, JPG up to 5MB</div>
                             </div>
                           )}
                         </div>
@@ -2128,7 +2128,7 @@ export default function AccountPage() {
 
             <div style={{ display: 'flex', gap: '12px' }}>
               <button onClick={addTrade} disabled={saving || !tradeForm.symbol || !tradeForm.pnl} style={{ flex: 1, padding: '14px', background: '#22c55e', border: 'none', borderRadius: '8px', color: '#fff', fontWeight: 600, fontSize: '14px', cursor: 'pointer', opacity: (saving || !tradeForm.symbol || !tradeForm.pnl) ? 0.5 : 1 }}>{saving ? 'Saving...' : 'Save Trade'}</button>
-              <button onClick={() => setShowAddTrade(false)} style={{ flex: 1, padding: '14px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '8px', color: '#888', fontWeight: 600, fontSize: '14px', cursor: 'pointer' }}>Cancel</button>
+              <button onClick={() => setShowAddTrade(false)} style={{ flex: 1, padding: '14px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '8px', color: '#bbb', fontWeight: 600, fontSize: '14px', cursor: 'pointer' }}>Cancel</button>
             </div>
           </div>
         </div>
@@ -2143,19 +2143,19 @@ export default function AccountPage() {
                 <div key={input.id} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '12px', background: input.fixed ? '#141418' : '#0a0a0e', borderRadius: '6px', opacity: input.fixed ? 0.7 : 1 }}>
                   <input type="checkbox" checked={input.enabled} onChange={e => !input.fixed && updateInput(i, 'enabled', e.target.checked)} disabled={input.fixed} style={{ width: '18px', height: '18px', accentColor: '#22c55e' }} />
                   <input type="text" value={input.label} onChange={e => updateInput(i, 'label', e.target.value)} disabled={input.fixed} style={{ flex: 1, padding: '8px 12px', background: '#141418', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '6px', color: '#fff', fontSize: '13px', boxShadow: '0 0 4px rgba(255,255,255,0.1)' }} />
-                  <select value={input.type} onChange={e => updateInput(i, 'type', e.target.value)} disabled={input.fixed} style={{ padding: '8px', background: '#141418', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '6px', color: '#888', fontSize: '12px', boxShadow: '0 0 4px rgba(255,255,255,0.1)' }}>
+                  <select value={input.type} onChange={e => updateInput(i, 'type', e.target.value)} disabled={input.fixed} style={{ padding: '8px', background: '#141418', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '6px', color: '#bbb', fontSize: '12px', boxShadow: '0 0 4px rgba(255,255,255,0.1)' }}>
                     {['text', 'number', 'date', 'select', 'textarea', 'rating', 'file'].map(t => <option key={t} value={t}>{t}</option>)}
                   </select>
                   {input.type === 'select' && !input.fixed && <button onClick={() => openOptionsEditor(i)} style={{ padding: '6px 12px', background: '#22c55e', border: 'none', borderRadius: '6px', color: '#fff', fontSize: '11px', cursor: 'pointer' }}>Opts</button>}
                   {!input.fixed && <button onClick={() => deleteInput(i)} style={{ background: 'transparent', border: 'none', color: '#ef4444', cursor: 'pointer', fontSize: '18px' }}>×</button>}
-                  {input.fixed && <span style={{ fontSize: '10px', color: '#666', padding: '4px 8px', background: '#1a1a22', borderRadius: '4px' }}>Fixed</span>}
+                  {input.fixed && <span style={{ fontSize: '10px', color: '#999', padding: '4px 8px', background: '#1a1a22', borderRadius: '4px' }}>Fixed</span>}
                 </div>
               ))}
             </div>
-            <button onClick={addNewInput} style={{ width: '100%', padding: '12px', background: 'transparent', border: '1px dashed #2a2a35', borderRadius: '8px', color: '#888', fontSize: '13px', cursor: 'pointer', marginBottom: '20px' }}>+ Add New Field</button>
+            <button onClick={addNewInput} style={{ width: '100%', padding: '12px', background: 'transparent', border: '1px dashed #2a2a35', borderRadius: '8px', color: '#bbb', fontSize: '13px', cursor: 'pointer', marginBottom: '20px' }}>+ Add New Field</button>
             <div style={{ display: 'flex', gap: '12px' }}>
               <button onClick={saveInputs} style={{ flex: 1, padding: '14px', background: '#22c55e', border: 'none', borderRadius: '8px', color: '#fff', fontWeight: 600, fontSize: '14px', cursor: 'pointer' }}>Save</button>
-              <button onClick={() => setShowEditInputs(false)} style={{ flex: 1, padding: '14px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '8px', color: '#888', fontWeight: 600, fontSize: '14px', cursor: 'pointer' }}>Cancel</button>
+              <button onClick={() => setShowEditInputs(false)} style={{ flex: 1, padding: '14px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '8px', color: '#bbb', fontWeight: 600, fontSize: '14px', cursor: 'pointer' }}>Cancel</button>
             </div>
           </div>
         </div>
@@ -2165,11 +2165,11 @@ export default function AccountPage() {
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.9)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 102 }} onClick={() => setEditingOptions(null)}>
           <div style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '28px', width: '360px' }} onClick={e => e.stopPropagation()}>
             <h2 style={{ fontSize: '20px', fontWeight: 600, marginBottom: '16px', color: '#fff' }}>Edit Options</h2>
-            <p style={{ fontSize: '13px', color: '#888', marginBottom: '16px' }}>One option per line</p>
+            <p style={{ fontSize: '13px', color: '#bbb', marginBottom: '16px' }}>One option per line</p>
             <textarea value={optionsText} onChange={e => setOptionsText(e.target.value)} rows={8} style={{ width: '100%', padding: '12px', background: '#0a0a0e', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '14px', resize: 'none', boxSizing: 'border-box', marginBottom: '16px' }} />
             <div style={{ display: 'flex', gap: '12px' }}>
               <button onClick={saveOptions} style={{ flex: 1, padding: '14px', background: '#22c55e', border: 'none', borderRadius: '8px', color: '#fff', fontWeight: 600, cursor: 'pointer' }}>Save</button>
-              <button onClick={() => setEditingOptions(null)} style={{ flex: 1, padding: '14px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '8px', color: '#888', fontWeight: 600, cursor: 'pointer' }}>Cancel</button>
+              <button onClick={() => setEditingOptions(null)} style={{ flex: 1, padding: '14px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '8px', color: '#bbb', fontWeight: 600, cursor: 'pointer' }}>Cancel</button>
             </div>
           </div>
         </div>
@@ -2180,7 +2180,7 @@ export default function AccountPage() {
           <div style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '28px', width: '520px' }} onClick={e => e.stopPropagation()}>
             <h2 style={{ fontSize: '20px', fontWeight: 600, marginBottom: '16px', color: '#fff' }}>Notes</h2>
             <div style={{ background: '#0a0a0e', borderRadius: '6px', padding: '16px', maxHeight: '320px', overflowY: 'auto', fontSize: '14px', color: '#fff', lineHeight: '1.7' }}>{showExpandedNote}</div>
-            <button onClick={() => setShowExpandedNote(null)} style={{ marginTop: '16px', width: '100%', padding: '14px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '8px', color: '#888', fontWeight: 600, cursor: 'pointer' }}>Close</button>
+            <button onClick={() => setShowExpandedNote(null)} style={{ marginTop: '16px', width: '100%', padding: '14px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '8px', color: '#bbb', fontWeight: 600, cursor: 'pointer' }}>Close</button>
           </div>
         </div>
       )}
@@ -2189,7 +2189,7 @@ export default function AccountPage() {
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.95)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100 }} onClick={() => setShowExpandedImage(null)}>
           <div style={{ position: 'relative', maxWidth: '90vw', maxHeight: '90vh' }}>
             <img src={showExpandedImage} alt="Trade" style={{ maxWidth: '100%', maxHeight: '85vh', borderRadius: '8px' }} />
-            <button onClick={() => setShowExpandedImage(null)} style={{ position: 'absolute', top: '-50px', right: '0', background: 'transparent', border: 'none', color: '#888', fontSize: '32px', cursor: 'pointer' }}>×</button>
+            <button onClick={() => setShowExpandedImage(null)} style={{ position: 'absolute', top: '-50px', right: '0', background: 'transparent', border: 'none', color: '#bbb', fontSize: '32px', cursor: 'pointer' }}>×</button>
           </div>
         </div>
       )}
@@ -2203,8 +2203,8 @@ export default function AccountPage() {
                 <span style={{ fontSize: '18px', fontWeight: 600, color: '#fff' }}>{enlargedChart === 'equity' ? 'Equity Curve' : enlargedChart === 'bar' ? 'Performance by ' + (graphGroupBy === 'symbol' ? 'Pair' : graphGroupBy) : 'Net Daily PnL'}</span>
                 {enlargedChart === 'equity' && (
                   <>
-                    <span style={{ fontSize: '12px', color: '#666' }}>Start: <span style={{ color: '#fff' }}>${startingBalance.toLocaleString()}</span></span>
-                    <span style={{ fontSize: '12px', color: '#666' }}>Current: <span style={{ color: currentBalance >= startingBalance ? '#22c55e' : '#ef4444' }}>${Math.round(currentBalance).toLocaleString()}</span></span>
+                    <span style={{ fontSize: '12px', color: '#999' }}>Start: <span style={{ color: '#fff' }}>${startingBalance.toLocaleString()}</span></span>
+                    <span style={{ fontSize: '12px', color: '#999' }}>Current: <span style={{ color: currentBalance >= startingBalance ? '#22c55e' : '#ef4444' }}>${Math.round(currentBalance).toLocaleString()}</span></span>
                     <select value={equityCurveGroupBy} onChange={e => { setEquityCurveGroupBy(e.target.value); setSelectedCurveLines({}) }} style={{ padding: '4px 8px', background: '#141418', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '4px', color: '#fff', fontSize: '11px', boxShadow: '0 0 4px rgba(255,255,255,0.1)' }}>
                       <option value="total">Total PnL</option>
                       <option value="symbol">By Pair</option>
@@ -2221,7 +2221,7 @@ export default function AccountPage() {
                       style={{
                         display: 'flex', alignItems: 'center', gap: '6px',
                         padding: '6px 12px', background: '#1a1a22', border: '1px solid #2a2a35',
-                        borderRadius: '4px', color: '#888', fontSize: '11px', cursor: 'pointer'
+                        borderRadius: '4px', color: '#bbb', fontSize: '11px', cursor: 'pointer'
                       }}
                     >
                       <span>Lines</span>
@@ -2247,7 +2247,7 @@ export default function AccountPage() {
                               {lineNames.map((name, idx) => (
                                 <label key={idx} style={{
                                   display: 'flex', alignItems: 'center', gap: '8px',
-                                  fontSize: '11px', color: '#888', cursor: 'pointer',
+                                  fontSize: '11px', color: '#bbb', cursor: 'pointer',
                                   padding: '6px 8px', borderRadius: '4px',
                                   background: selectedCurveLines[name] !== false ? 'rgba(34, 197, 94, 0.1)' : 'transparent'
                                 }}>
@@ -2268,7 +2268,7 @@ export default function AccountPage() {
                                 >All</button>
                                 <button
                                   onClick={() => setSelectedCurveLines(lineNames.reduce((acc, n) => ({ ...acc, [n]: false }), {}))}
-                                  style={{ flex: 1, padding: '4px 8px', background: '#1a1a22', border: '1px solid #2a2a35', borderRadius: '4px', color: '#888', fontSize: '10px', cursor: 'pointer' }}
+                                  style={{ flex: 1, padding: '4px 8px', background: '#1a1a22', border: '1px solid #2a2a35', borderRadius: '4px', color: '#bbb', fontSize: '10px', cursor: 'pointer' }}
                                 >None</button>
                               </div>
                             </>
@@ -2295,13 +2295,13 @@ export default function AccountPage() {
                   </>
                 )}
               </div>
-              <button onClick={() => setEnlargedChart(null)} style={{ background: 'transparent', border: 'none', color: '#888', fontSize: '28px', cursor: 'pointer' }}>×</button>
+              <button onClick={() => setEnlargedChart(null)} style={{ background: 'transparent', border: 'none', color: '#bbb', fontSize: '28px', cursor: 'pointer' }}>×</button>
             </div>
             <div style={{ height: 'calc(100% - 60px)', display: 'flex', gap: '16px' }}>
               <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0 }}>
               {enlargedChart === 'equity' && (() => {
                 const sorted = trades.length >= 2 ? [...trades].sort((a, b) => new Date(a.date) - new Date(b.date)) : []
-                if (sorted.length < 2) return <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#666' }}>Need 2+ trades</div>
+                if (sorted.length < 2) return <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#999' }}>Need 2+ trades</div>
 
                 const lineColors = ['#22c55e', '#3b82f6', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#14b8a6', '#f97316', '#06b6d4']
                 let lines = []
@@ -2403,7 +2403,7 @@ export default function AccountPage() {
                   <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
                     <div style={{ flex: 1, display: 'flex' }}>
                       <div style={{ width: '40px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', flexShrink: 0, paddingBottom: '20px', paddingRight: '4px' }}>
-                        {yLabels.map((v, i) => <span key={i} style={{ fontSize: '10px', color: '#888', textAlign: 'right' }}>{equityCurveGroupBy === 'total' ? `$${(v/1000).toFixed(v >= 1000 ? 0 : 1)}k` : `$${v}`}</span>)}
+                        {yLabels.map((v, i) => <span key={i} style={{ fontSize: '10px', color: '#bbb', textAlign: 'right' }}>{equityCurveGroupBy === 'total' ? `$${(v/1000).toFixed(v >= 1000 ? 0 : 1)}k` : `$${v}`}</span>)}
                       </div>
                       <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
                         <div style={{ flex: 1, position: 'relative', borderLeft: '1px solid #333', borderBottom: hasNegative ? 'none' : '1px solid #333' }}>
@@ -2411,7 +2411,7 @@ export default function AccountPage() {
                           <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', pointerEvents: 'none' }}>
                             {yLabels.map((_, i) => <div key={i} style={{ borderTop: '1px solid #1a1a22' }} />)}
                           </div>
-                          {zeroY !== null && <div style={{ position: 'absolute', left: 0, right: 0, top: `${zeroY}%`, borderTop: '2px solid #666', zIndex: 1 }}><span style={{ position: 'absolute', left: '-60px', top: '-8px', fontSize: '11px', color: '#888' }}>$0</span></div>}
+                          {zeroY !== null && <div style={{ position: 'absolute', left: 0, right: 0, top: `${zeroY}%`, borderTop: '2px solid #666', zIndex: 1 }}><span style={{ position: 'absolute', left: '-60px', top: '-8px', fontSize: '11px', color: '#bbb' }}>$0</span></div>}
                           <svg style={{ position: 'absolute', inset: 0, width: '100%', height: '100%' }} viewBox={`0 0 ${svgW} ${svgH}`} preserveAspectRatio="none"
                             onMouseMove={e => {
                               const rect = e.currentTarget.getBoundingClientRect()
@@ -2607,7 +2607,7 @@ export default function AccountPage() {
                           {hoverPoint && (
                             <div style={{ position: 'absolute', left: `${hoverPoint.xPct}%`, top: `${hoverPoint.yPct}%`, transform: `translate(${hoverPoint.xPct > 80 ? 'calc(-100% - 15px)' : '15px'}, ${hoverPoint.yPct < 20 ? '0%' : hoverPoint.yPct > 80 ? '-100%' : '-50%'})`, background: '#1a1a22', border: '1px solid #2a2a35', borderRadius: '6px', padding: '10px 14px', fontSize: '12px', whiteSpace: 'nowrap', zIndex: 10, pointerEvents: 'none' }}>
                               {hoverPoint.lineName && equityCurveGroupBy !== 'total' && <div style={{ color: hoverPoint.lineColor, fontWeight: 600, marginBottom: '4px' }}>{hoverPoint.lineName}</div>}
-                              <div style={{ color: '#888' }}>{hoverPoint.date ? new Date(hoverPoint.date).toLocaleDateString() : 'Start'}</div>
+                              <div style={{ color: '#bbb' }}>{hoverPoint.date ? new Date(hoverPoint.date).toLocaleDateString() : 'Start'}</div>
                               <div style={{ fontWeight: 600, fontSize: '16px', color: '#fff' }}>${hoverPoint.balance?.toLocaleString()}</div>
                               {hoverPoint.symbol && <div style={{ color: hoverPoint.pnl >= 0 ? '#22c55e' : '#ef4444' }}>{hoverPoint.symbol}: {hoverPoint.pnl >= 0 ? '+' : ''}${hoverPoint.pnl?.toFixed(0)}</div>}
                             </div>
@@ -2618,7 +2618,7 @@ export default function AccountPage() {
                           {xLabels.map((l, i) => (
                             <div key={i} style={{ position: 'absolute', left: `${l.pct}%`, transform: 'translateX(-50%)', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                               <div style={{ width: '1px', height: '8px', background: '#444' }} />
-                              <span style={{ fontSize: '10px', color: '#888', marginTop: '2px' }}>{l.label}</span>
+                              <span style={{ fontSize: '10px', color: '#bbb', marginTop: '2px' }}>{l.label}</span>
                             </div>
                           ))}
                         </div>
@@ -2627,11 +2627,11 @@ export default function AccountPage() {
                           <div style={{ display: 'flex', justifyContent: 'center', gap: '12px', padding: '8px 0', flexWrap: 'wrap' }}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                               <div style={{ width: '16px', height: '3px', background: '#22c55e' }} />
-                              <span style={{ fontSize: '10px', color: '#888' }}>Above Start</span>
+                              <span style={{ fontSize: '10px', color: '#bbb' }}>Above Start</span>
                             </div>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                               <div style={{ width: '16px', height: '3px', background: '#ef4444' }} />
-                              <span style={{ fontSize: '10px', color: '#888' }}>Below Start</span>
+                              <span style={{ fontSize: '10px', color: '#bbb' }}>Below Start</span>
                             </div>
                           </div>
                         )}
@@ -2662,7 +2662,7 @@ export default function AccountPage() {
                   return { name, val, disp }
                 }).sort((a, b) => b.val - a.val).slice(0, 12)
                 
-                if (entries.length === 0) return <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#666' }}>No data</div>
+                if (entries.length === 0) return <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#999' }}>No data</div>
 
                 const maxVal = barGraphMetric === 'winrate' ? 100 : Math.max(...entries.map(e => Math.abs(e.val)), 1)
                 const niceMax = barGraphMetric === 'winrate' ? 100 : Math.ceil(maxVal / 100) * 100 || 100
@@ -2681,7 +2681,7 @@ export default function AccountPage() {
                   <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
                     <div style={{ flex: 1, display: 'flex' }}>
                       <div style={{ width: '40px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', flexShrink: 0, paddingBottom: '30px', paddingRight: '4px' }}>
-                        {yLabelsBar.map((v, i) => <span key={i} style={{ fontSize: '10px', color: '#888', textAlign: 'right' }}>{v}</span>)}
+                        {yLabelsBar.map((v, i) => <span key={i} style={{ fontSize: '10px', color: '#bbb', textAlign: 'right' }}>{v}</span>)}
                       </div>
                       <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
                         <div style={{ flex: 1, position: 'relative', borderLeft: '1px solid #333', borderBottom: '1px solid #333' }}>
@@ -2720,7 +2720,7 @@ export default function AccountPage() {
                         {/* X-axis labels */}
                         <div style={{ height: '30px', display: 'flex', gap: '12px', padding: '8px 20px 0' }}>
                           {entries.map((item, i) => (
-                            <div key={i} style={{ flex: 1, textAlign: 'center', fontSize: '12px', color: '#888' }}>{item.name}</div>
+                            <div key={i} style={{ flex: 1, textAlign: 'center', fontSize: '12px', color: '#bbb' }}>{item.name}</div>
                           ))}
                         </div>
                       </div>

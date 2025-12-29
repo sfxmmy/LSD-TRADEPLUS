@@ -42,8 +42,7 @@ export default function HomePage() {
       {/* Header */}
       <header style={{ padding: '16px 40px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #1a1a22' }}>
         <a href="/" style={{ fontSize: '28px', fontWeight: 700 }}>
-          <span style={{ color: '#22c55e' }}>LSD</span>
-          <span style={{ color: '#fff' }}>TRADE+</span>
+          <span style={{ color: '#22c55e' }}>LSD</span><span style={{ color: '#fff' }}>TRADE</span><span style={{ color: '#22c55e' }}>+</span>
         </a>
         <div style={{ display: 'flex', gap: '12px' }}>
           <a href="/pricing" style={{ padding: '12px 24px', background: '#22c55e', borderRadius: '6px', color: '#fff', fontWeight: 600, fontSize: '14px' }}>
