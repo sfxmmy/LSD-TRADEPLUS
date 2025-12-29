@@ -131,13 +131,14 @@ export default function DashboardPage() {
     setSubmittingTrade(true)
     const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY)
 
-    // Build extra_data with all fields
+    // Build extra_data with all fields including rating
     const extraData = {
       ...quickTradeExtraData,
       riskPercent: quickTradeRiskPercent || '',
       confidence: quickTradeConfidence || '',
       timeframe: quickTradeTimeframe || '',
       session: quickTradeSession || '',
+      rating: quickTradeRating || '',
     }
 
     const { data, error } = await supabase.from('trades').insert({
@@ -148,7 +149,6 @@ export default function DashboardPage() {
       rr: quickTradeRR || null,
       date: quickTradeDate,
       direction: quickTradeDirection,
-      rating: quickTradeRating ? parseInt(quickTradeRating) : null,
       notes: quickTradeNotes || null,
       extra_data: JSON.stringify(extraData)
     }).select().single()
@@ -509,17 +509,46 @@ export default function DashboardPage() {
                 </select>
               </div>
 
-              {/* Rating */}
+              {/* Rating - Interactive stars with half-star support */}
               <div style={{ display: 'flex', alignItems: 'center', marginBottom: '6px' }}>
                 <span style={{ fontSize: '10px', color: '#888', width: '52px', flexShrink: 0 }}>Rating</span>
-                <select value={quickTradeRating} onChange={e => setQuickTradeRating(e.target.value)} style={{ flex: 1, padding: '4px 6px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '4px', color: '#fff', fontSize: '11px' }}>
-                  <option value="">-</option>
-                  <option value="1">★</option>
-                  <option value="2">★★</option>
-                  <option value="3">★★★</option>
-                  <option value="4">★★★★</option>
-                  <option value="5">★★★★★</option>
-                </select>
+                <div
+                  style={{ flex: 1, display: 'flex', gap: '1px', cursor: 'pointer', padding: '2px 0' }}
+                  onMouseLeave={() => {}}
+                >
+                  {[1, 2, 3, 4, 5].map(star => {
+                    const currentRating = parseFloat(quickTradeRating) || 0
+                    const isFullStar = currentRating >= star
+                    const isHalfStar = currentRating >= star - 0.5 && currentRating < star
+                    return (
+                      <div
+                        key={star}
+                        style={{ position: 'relative', width: '16px', height: '16px', cursor: 'pointer' }}
+                        onClick={(e) => {
+                          const rect = e.currentTarget.getBoundingClientRect()
+                          const clickX = e.clientX - rect.left
+                          const isLeftHalf = clickX < rect.width / 2
+                          const newRating = isLeftHalf ? star - 0.5 : star
+                          setQuickTradeRating(String(newRating))
+                        }}
+                      >
+                        {/* Background star */}
+                        <span style={{ position: 'absolute', color: '#2a2a35', fontSize: '16px', lineHeight: 1 }}>★</span>
+                        {/* Half star */}
+                        {isHalfStar && (
+                          <span style={{ position: 'absolute', color: '#22c55e', fontSize: '16px', lineHeight: 1, width: '8px', overflow: 'hidden' }}>★</span>
+                        )}
+                        {/* Full star */}
+                        {isFullStar && (
+                          <span style={{ position: 'absolute', color: '#22c55e', fontSize: '16px', lineHeight: 1 }}>★</span>
+                        )}
+                      </div>
+                    )
+                  })}
+                  {quickTradeRating && (
+                    <span style={{ fontSize: '10px', color: '#666', marginLeft: '4px' }}>{quickTradeRating}</span>
+                  )}
+                </div>
               </div>
 
               {/* TF */}
