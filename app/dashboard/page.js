@@ -701,47 +701,105 @@ export default function DashboardPage() {
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#22c55e" strokeWidth="2"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg>
                   <span style={{ fontSize: '12px', color: '#fff', fontWeight: 600, letterSpacing: '0.5px' }}>ALL STATS</span>
                 </div>
-                <button onClick={() => setShowCumulativeStats(!showCumulativeStats)} style={{ padding: '4px 8px', background: showCumulativeStats ? 'rgba(34,197,94,0.1)' : 'transparent', border: '1px solid #1a1a22', borderRadius: '4px', color: showCumulativeStats ? '#22c55e' : '#666', fontSize: '10px', cursor: 'pointer' }}>
-                  {showCumulativeStats ? 'Hide' : 'Show'}
-                </button>
               </div>
 
               {(() => {
                 const stats = getCumulativeStats()
+                const allTrades = getAllTrades()
                 const selectedCount = Object.values(selectedTrades).filter(Boolean).length
-                return showCumulativeStats ? (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                    {[
-                      { label: 'Total Balance', value: `$${stats.currentBalance.toLocaleString()}`, color: stats.currentBalance >= stats.totalStartingBalance ? '#22c55e' : '#ef4444' },
-                      { label: 'Total PnL', value: `${stats.totalPnl >= 0 ? '+' : ''}$${stats.totalPnl.toLocaleString()}`, color: stats.totalPnl >= 0 ? '#22c55e' : '#ef4444' },
-                      { label: 'Trades', value: stats.totalTrades, color: '#fff' },
-                      { label: 'Winrate', value: `${stats.winrate}%`, color: stats.winrate >= 50 ? '#22c55e' : '#ef4444' },
-                      { label: 'W/L', value: `${stats.wins}/${stats.losses}`, color: '#fff' },
-                      { label: 'Profit Factor', value: stats.profitFactor, color: parseFloat(stats.profitFactor) >= 1 ? '#22c55e' : '#ef4444' },
-                      { label: 'Avg RR', value: `${stats.avgRR}R`, color: '#fff' },
-                    ].map((stat, i) => (
-                      <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 10px', background: '#0a0a0f', borderRadius: '6px', border: '1px solid #1a1a22' }}>
-                        <span style={{ fontSize: '11px', color: '#666' }}>{stat.label}</span>
-                        <span style={{ fontSize: '13px', fontWeight: 600, color: stat.color }}>{stat.value}</span>
+
+                // Build cumulative PnL data for mini chart
+                let cumPnl = 0
+                const pnlPoints = allTrades.slice().sort((a, b) => new Date(a.date) - new Date(b.date)).map(t => {
+                  cumPnl += parseFloat(t.pnl) || 0
+                  return cumPnl
+                })
+                const maxPnl = Math.max(...pnlPoints, 0)
+                const minPnl = Math.min(...pnlPoints, 0)
+                const pnlRange = maxPnl - minPnl || 1
+
+                return (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                    {/* Mini PnL Chart */}
+                    {pnlPoints.length > 1 && (
+                      <div style={{ background: '#0a0a0f', borderRadius: '8px', border: '1px solid #1a1a22', padding: '10px', marginBottom: '4px' }}>
+                        <div style={{ fontSize: '9px', color: '#666', marginBottom: '6px', textTransform: 'uppercase' }}>Cumulative P&L</div>
+                        <div style={{ height: '50px', position: 'relative' }}>
+                          <svg width="100%" height="100%" viewBox={`0 0 ${pnlPoints.length - 1} 50`} preserveAspectRatio="none">
+                            {/* Zero line */}
+                            {minPnl < 0 && maxPnl > 0 && (
+                              <line x1="0" y1={50 - ((0 - minPnl) / pnlRange) * 50} x2={pnlPoints.length - 1} y2={50 - ((0 - minPnl) / pnlRange) * 50} stroke="#333" strokeWidth="1" strokeDasharray="2,2" />
+                            )}
+                            {/* PnL line */}
+                            <polyline
+                              fill="none"
+                              stroke={cumPnl >= 0 ? '#22c55e' : '#ef4444'}
+                              strokeWidth="2"
+                              points={pnlPoints.map((p, i) => `${i},${50 - ((p - minPnl) / pnlRange) * 50}`).join(' ')}
+                            />
+                          </svg>
+                          <div style={{ position: 'absolute', right: 0, top: 0, fontSize: '11px', fontWeight: 600, color: cumPnl >= 0 ? '#22c55e' : '#ef4444' }}>
+                            {cumPnl >= 0 ? '+' : ''}${cumPnl.toLocaleString()}
+                          </div>
+                        </div>
                       </div>
-                    ))}
+                    )}
+
+                    {/* Stats Grid */}
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px' }}>
+                      <div style={{ padding: '8px', background: '#0a0a0f', borderRadius: '6px', border: '1px solid #1a1a22' }}>
+                        <div style={{ fontSize: '9px', color: '#666', marginBottom: '2px' }}>BALANCE</div>
+                        <div style={{ fontSize: '13px', fontWeight: 700, color: stats.currentBalance >= stats.totalStartingBalance ? '#22c55e' : '#ef4444' }}>${stats.currentBalance.toLocaleString()}</div>
+                      </div>
+                      <div style={{ padding: '8px', background: '#0a0a0f', borderRadius: '6px', border: '1px solid #1a1a22' }}>
+                        <div style={{ fontSize: '9px', color: '#666', marginBottom: '2px' }}>TOTAL P&L</div>
+                        <div style={{ fontSize: '13px', fontWeight: 700, color: stats.totalPnl >= 0 ? '#22c55e' : '#ef4444' }}>{stats.totalPnl >= 0 ? '+' : ''}${stats.totalPnl.toLocaleString()}</div>
+                      </div>
+                      <div style={{ padding: '8px', background: '#0a0a0f', borderRadius: '6px', border: '1px solid #1a1a22' }}>
+                        <div style={{ fontSize: '9px', color: '#666', marginBottom: '2px' }}>WINRATE</div>
+                        <div style={{ fontSize: '13px', fontWeight: 700, color: stats.winrate >= 50 ? '#22c55e' : '#ef4444' }}>{stats.winrate}%</div>
+                      </div>
+                      <div style={{ padding: '8px', background: '#0a0a0f', borderRadius: '6px', border: '1px solid #1a1a22' }}>
+                        <div style={{ fontSize: '9px', color: '#666', marginBottom: '2px' }}>TRADES</div>
+                        <div style={{ fontSize: '13px', fontWeight: 700, color: '#fff' }}>{stats.totalTrades}</div>
+                      </div>
+                      <div style={{ padding: '8px', background: '#0a0a0f', borderRadius: '6px', border: '1px solid #1a1a22' }}>
+                        <div style={{ fontSize: '9px', color: '#666', marginBottom: '2px' }}>W/L</div>
+                        <div style={{ fontSize: '13px', fontWeight: 700, color: '#fff' }}>{stats.wins}/{stats.losses}</div>
+                      </div>
+                      <div style={{ padding: '8px', background: '#0a0a0f', borderRadius: '6px', border: '1px solid #1a1a22' }}>
+                        <div style={{ fontSize: '9px', color: '#666', marginBottom: '2px' }}>PROFIT FACTOR</div>
+                        <div style={{ fontSize: '13px', fontWeight: 700, color: parseFloat(stats.profitFactor) >= 1 ? '#22c55e' : '#ef4444' }}>{stats.profitFactor}</div>
+                      </div>
+                      <div style={{ padding: '8px', background: '#0a0a0f', borderRadius: '6px', border: '1px solid #1a1a22' }}>
+                        <div style={{ fontSize: '9px', color: '#666', marginBottom: '2px' }}>AVG RR</div>
+                        <div style={{ fontSize: '13px', fontWeight: 700, color: '#fff' }}>{stats.avgRR}R</div>
+                      </div>
+                      <div style={{ padding: '8px', background: '#0a0a0f', borderRadius: '6px', border: '1px solid #1a1a22' }}>
+                        <div style={{ fontSize: '9px', color: '#666', marginBottom: '2px' }}>AVG WIN</div>
+                        <div style={{ fontSize: '13px', fontWeight: 700, color: '#22c55e' }}>+${stats.avgWin}</div>
+                      </div>
+                      <div style={{ padding: '8px', background: '#0a0a0f', borderRadius: '6px', border: '1px solid #1a1a22' }}>
+                        <div style={{ fontSize: '9px', color: '#666', marginBottom: '2px' }}>AVG LOSS</div>
+                        <div style={{ fontSize: '13px', fontWeight: 700, color: '#ef4444' }}>-${stats.avgLoss}</div>
+                      </div>
+                      <div style={{ padding: '8px', background: '#0a0a0f', borderRadius: '6px', border: '1px solid #1a1a22' }}>
+                        <div style={{ fontSize: '9px', color: '#666', marginBottom: '2px' }}>GROSS PROFIT</div>
+                        <div style={{ fontSize: '13px', fontWeight: 700, color: '#22c55e' }}>+${stats.grossProfit.toLocaleString()}</div>
+                      </div>
+                      <div style={{ padding: '8px', background: '#0a0a0f', borderRadius: '6px', border: '1px solid #1a1a22' }}>
+                        <div style={{ fontSize: '9px', color: '#666', marginBottom: '2px' }}>GROSS LOSS</div>
+                        <div style={{ fontSize: '13px', fontWeight: 700, color: '#ef4444' }}>-${stats.grossLoss.toLocaleString()}</div>
+                      </div>
+                    </div>
+
+                    {/* Export Button */}
                     {selectedCount > 0 && (
-                      <button onClick={exportTradesToCSV} style={{ marginTop: '8px', padding: '10px', background: 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)', border: 'none', borderRadius: '6px', color: '#fff', fontSize: '12px', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
+                      <button onClick={exportTradesToCSV} style={{ marginTop: '4px', padding: '10px', background: 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)', border: 'none', borderRadius: '6px', color: '#fff', fontSize: '12px', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
                         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
                         Export {selectedCount} Trade{selectedCount > 1 ? 's' : ''}
                       </button>
                     )}
-                  </div>
-                ) : (
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px' }}>
-                    <div style={{ padding: '10px', background: '#0a0a0f', borderRadius: '6px', border: '1px solid #1a1a22', textAlign: 'center' }}>
-                      <div style={{ fontSize: '9px', color: '#666', marginBottom: '2px' }}>BALANCE</div>
-                      <div style={{ fontSize: '14px', fontWeight: 700, color: stats.currentBalance >= stats.totalStartingBalance ? '#22c55e' : '#ef4444' }}>${stats.currentBalance.toLocaleString()}</div>
-                    </div>
-                    <div style={{ padding: '10px', background: '#0a0a0f', borderRadius: '6px', border: '1px solid #1a1a22', textAlign: 'center' }}>
-                      <div style={{ fontSize: '9px', color: '#666', marginBottom: '2px' }}>WINRATE</div>
-                      <div style={{ fontSize: '14px', fontWeight: 700, color: stats.winrate >= 50 ? '#22c55e' : '#ef4444' }}>{stats.winrate}%</div>
-                    </div>
                   </div>
                 )
               })()}

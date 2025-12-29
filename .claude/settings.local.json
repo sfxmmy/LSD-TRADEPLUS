@@ -7,7 +7,10 @@
       "Bash(git commit:*)",
       "Bash(git push)",
       "Bash(wc:*)",
-      "Bash(git push:*)"
+      "Bash(git push:*)",
+      "Bash(npx eslint:*)",
+      "Bash(node -e:*)",
+      "Bash(npx next lint --file app/dashboard/page.js)"
     ]
   }
 }

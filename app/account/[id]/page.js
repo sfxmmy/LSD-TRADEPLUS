@@ -65,6 +65,8 @@ export default function AccountPage() {
   const [showMobileMenu, setShowMobileMenu] = useState(false)
   const [deleteConfirmId, setDeleteConfirmId] = useState(null)
   const [deleteConfirmText, setDeleteConfirmText] = useState('')
+  const [showCumulativeStats, setShowCumulativeStats] = useState(false)
+  const [allAccountsTrades, setAllAccountsTrades] = useState({})
 
   const tradesScrollRef = useRef(null)
   const fixedScrollRef = useRef(null)
@@ -126,6 +128,15 @@ export default function AccountPage() {
     setAccount(accountData)
     const { data: allAccountsData } = await supabase.from('accounts').select('*').eq('user_id', user.id).order('created_at', { ascending: true })
     setAllAccounts(allAccountsData || [])
+    // Load trades from all accounts for cumulative stats
+    if (allAccountsData?.length) {
+      const tradesMap = {}
+      for (const acc of allAccountsData) {
+        const { data: accTrades } = await supabase.from('trades').select('*').eq('account_id', acc.id).order('date', { ascending: true })
+        tradesMap[acc.id] = accTrades || []
+      }
+      setAllAccountsTrades(tradesMap)
+    }
     if (accountData.custom_inputs) { 
       try { 
         const parsed = JSON.parse(accountData.custom_inputs)
@@ -424,7 +435,7 @@ export default function AccountPage() {
       <Tooltip data={tooltip} />
 
       {/* FIXED HEADER */}
-      <header style={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 50, padding: isMobile ? '10px 16px' : '12px 32px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #1a1a22', background: '#0a0a0f' }}>
+      <header style={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 50, padding: isMobile ? '10px 16px' : '12px 32px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #2a2a35', background: '#0a0a0f' }}>
         <a href="/" style={{ fontSize: isMobile ? '20px' : '28px', fontWeight: 700, textDecoration: 'none', letterSpacing: '-0.5px' }}><span style={{ color: '#22c55e' }}>LSD</span><span style={{ color: '#fff' }}>TRADE</span><span style={{ color: '#22c55e' }}>+</span></a>
         {!isMobile && (
           <div style={{ position: 'relative', paddingBottom: '8px' }}>
@@ -508,24 +519,24 @@ export default function AccountPage() {
         {/* Spacer */}
         <div style={{ flex: 1 }} />
         {/* Journals List - at bottom */}
-        <div style={{ marginBottom: '8px', padding: '8px', background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', maxHeight: '160px', overflowY: 'auto' }}>
+        <div style={{ marginBottom: '8px', padding: '10px', background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', maxHeight: '160px', overflowY: 'auto' }}>
           {allAccounts.map((acc) => (
             <a
               key={acc.id}
               href={`/account/${acc.id}`}
               style={{
                 display: 'flex',
-                justifyContent: 'space-between',
                 alignItems: 'center',
-                padding: '6px 8px',
-                marginBottom: '3px',
-                background: acc.id === accountId ? 'rgba(34,197,94,0.15)' : 'transparent',
-                border: acc.id === accountId ? '1px solid #22c55e' : '1px solid #1a1a22',
+                gap: '8px',
+                padding: '8px 6px',
+                marginBottom: '2px',
+                background: 'transparent',
                 borderRadius: '4px',
                 textDecoration: 'none'
               }}
             >
-              <span style={{ fontSize: '11px', fontWeight: 600, color: acc.id === accountId ? '#22c55e' : '#888' }}>{acc.name}</span>
+              <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: acc.id === accountId ? '#22c55e' : '#444', flexShrink: 0 }} />
+              <span style={{ fontSize: '11px', fontWeight: 500, color: acc.id === accountId ? '#fff' : '#888', flex: 1 }}>{acc.name}</span>
               <span style={{ fontSize: '10px', color: acc.id === accountId ? '#22c55e' : '#666' }}>${(acc.starting_balance || 0).toLocaleString()}</span>
             </a>
           ))}
