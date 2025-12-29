@@ -482,7 +482,7 @@ export default function AccountPage() {
 
       {/* FIXED SIDEBAR - desktop only, starts under header */}
       {!isMobile && (
-        <div style={{ position: 'fixed', top: '57px', left: 0, bottom: 0, width: '180px', padding: '16px 12px', background: '#0a0a0f', zIndex: 45, display: 'flex', flexDirection: 'column', paddingTop: '72px', borderRight: '1px solid #1a1a22' }}>
+        <div style={{ position: 'fixed', top: '57px', left: 0, bottom: 0, width: '180px', padding: '16px 12px', background: '#0a0a0f', zIndex: 45, display: 'flex', flexDirection: 'column', paddingTop: '72px' }}>
         <div>
           {['trades', 'statistics', 'notes'].map((tab) => (
             <button
@@ -503,27 +503,30 @@ export default function AccountPage() {
         {/* Spacer */}
         <div style={{ flex: 1 }} />
         {/* Journals List - at bottom */}
-        <div style={{ maxHeight: '180px', overflowY: 'auto', marginBottom: '8px' }}>
-          {allAccounts.map((acc) => (
-            <a
-              key={acc.id}
-              href={`/account/${acc.id}`}
-              style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                padding: '8px 10px',
-                marginBottom: '4px',
-                background: acc.id === accountId ? 'rgba(34,197,94,0.1)' : '#0d0d12',
-                border: acc.id === accountId ? '1px solid #22c55e' : '1px solid #1a1a22',
-                borderRadius: '6px',
-                textDecoration: 'none'
-              }}
-            >
-              <span style={{ fontSize: '11px', fontWeight: 600, color: acc.id === accountId ? '#22c55e' : '#888' }}>{acc.name}</span>
-              <span style={{ fontSize: '11px', color: acc.id === accountId ? '#22c55e' : '#666' }}>${(acc.starting_balance || 0).toLocaleString()}</span>
-            </a>
-          ))}
+        <div style={{ marginBottom: '8px', padding: '8px', background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px' }}>
+          <div style={{ fontSize: '10px', color: '#666', textTransform: 'uppercase', marginBottom: '6px', fontWeight: 600 }}>Journals</div>
+          <div style={{ maxHeight: '140px', overflowY: 'auto' }}>
+            {allAccounts.map((acc) => (
+              <a
+                key={acc.id}
+                href={`/account/${acc.id}`}
+                style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  padding: '6px 8px',
+                  marginBottom: '3px',
+                  background: acc.id === accountId ? 'rgba(34,197,94,0.15)' : 'transparent',
+                  border: acc.id === accountId ? '1px solid #22c55e' : '1px solid transparent',
+                  borderRadius: '4px',
+                  textDecoration: 'none'
+                }}
+              >
+                <span style={{ fontSize: '11px', fontWeight: 600, color: acc.id === accountId ? '#22c55e' : '#888' }}>{acc.name}</span>
+                <span style={{ fontSize: '10px', color: acc.id === accountId ? '#22c55e' : '#666' }}>${(acc.starting_balance || 0).toLocaleString()}</span>
+              </a>
+            ))}
+          </div>
         </div>
         <div style={{ padding: '10px 12px', background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '6px' }}>
           <div style={{ fontSize: '11px', color: '#888', lineHeight: '1.4' }}>{tabDescriptions[activeTab]}</div>
