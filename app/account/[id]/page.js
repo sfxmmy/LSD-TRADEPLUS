@@ -425,8 +425,13 @@ export default function AccountPage() {
 
       {/* FIXED HEADER */}
       <header style={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 50, padding: isMobile ? '10px 16px' : '12px 32px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #1a1a22', background: '#0a0a0f' }}>
-        <a href="/" style={{ fontSize: isMobile ? '20px' : '28px', fontWeight: 800, textDecoration: 'none', letterSpacing: '-0.5px' }}><span style={{ color: '#22c55e' }}>LSD</span><span style={{ color: '#fff' }}>TRADE</span><span style={{ color: '#22c55e' }}>+</span></a>
-        {!isMobile && <div style={{ fontSize: '32px', fontWeight: 700, color: '#fff' }}>{tabTitles[activeTab]}</div>}
+        <a href="/" style={{ fontSize: isMobile ? '20px' : '28px', fontWeight: 700, textDecoration: 'none', letterSpacing: '-0.5px' }}><span style={{ color: '#22c55e' }}>LSD</span><span style={{ color: '#fff' }}>TRADE</span><span style={{ color: '#22c55e' }}>+</span></a>
+        {!isMobile && (
+          <div style={{ position: 'relative', paddingBottom: '8px' }}>
+            <span style={{ fontSize: '32px', fontWeight: 700, color: '#fff' }}>{tabTitles[activeTab]}</span>
+            <div style={{ position: 'absolute', bottom: 0, left: '-120px', right: '-120px', height: '2px', background: 'linear-gradient(90deg, transparent 0%, #ef4444 20%, #ef4444 80%, transparent 100%)' }} />
+          </div>
+        )}
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           {isMobile && (
             <button onClick={() => setShowMobileMenu(!showMobileMenu)} style={{ padding: '8px 12px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '6px', color: '#fff', fontSize: '16px', cursor: 'pointer' }}>☰</button>
@@ -582,8 +587,19 @@ export default function AccountPage() {
                           {customInputs.map(inp => (
                             <td key={inp.id} style={{ padding: '14px 12px', textAlign: 'center', fontSize: '14px', color: '#fff', verticalAlign: 'middle' }}>
                               {inp.type === 'rating' ? (
-                                <div style={{ display: 'flex', justifyContent: 'center', gap: '2px' }}>
-                                  {[1,2,3,4,5].map(i => <span key={i} style={{ color: i <= parseInt(extra[inp.id] || 0) ? '#22c55e' : '#2a2a35', fontSize: '14px' }}>★</span>)}
+                                <div style={{ display: 'flex', justifyContent: 'center', gap: '1px' }}>
+                                  {[1,2,3,4,5].map(star => {
+                                    const rating = parseFloat(extra[inp.id] || 0)
+                                    const isFullStar = rating >= star
+                                    const isHalfStar = rating >= star - 0.5 && rating < star
+                                    return (
+                                      <div key={star} style={{ position: 'relative', width: '14px', height: '14px' }}>
+                                        <span style={{ position: 'absolute', color: '#2a2a35', fontSize: '14px', lineHeight: 1 }}>★</span>
+                                        {isHalfStar && <span style={{ position: 'absolute', color: '#22c55e', fontSize: '14px', lineHeight: 1, width: '7px', overflow: 'hidden' }}>★</span>}
+                                        {isFullStar && <span style={{ position: 'absolute', color: '#22c55e', fontSize: '14px', lineHeight: 1 }}>★</span>}
+                                      </div>
+                                    )
+                                  })}
                                 </div>
                               ) : inp.id === 'image' && extra[inp.id] ? (
                                 <button onClick={() => setShowExpandedImage(extra[inp.id])} style={{ width: '36px', height: '36px', background: '#1a1a22', borderRadius: '6px', border: '1px solid #2a2a35', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto', overflow: 'hidden' }}>
@@ -1481,8 +1497,19 @@ export default function AccountPage() {
                   <div style={{ flex: 1, background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '14px', display: 'flex', flexDirection: 'column' }}>
                     <div style={{ fontSize: '11px', color: '#999', textTransform: 'uppercase', marginBottom: '8px' }}>Average Rating</div>
                     <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-                      <div style={{ display: 'flex', gap: '4px', marginBottom: '4px' }}>
-                        {[1,2,3,4,5].map(i => <span key={i} style={{ color: i <= Math.round(parseFloat(avgRating)) ? '#22c55e' : '#2a2a35', fontSize: '28px' }}>★</span>)}
+                      <div style={{ display: 'flex', gap: '2px', marginBottom: '4px' }}>
+                        {[1,2,3,4,5].map(star => {
+                          const rating = parseFloat(avgRating)
+                          const isFullStar = rating >= star
+                          const isHalfStar = rating >= star - 0.5 && rating < star
+                          return (
+                            <div key={star} style={{ position: 'relative', width: '28px', height: '28px' }}>
+                              <span style={{ position: 'absolute', color: '#2a2a35', fontSize: '28px', lineHeight: 1 }}>★</span>
+                              {isHalfStar && <span style={{ position: 'absolute', color: '#22c55e', fontSize: '28px', lineHeight: 1, width: '14px', overflow: 'hidden' }}>★</span>}
+                              {isFullStar && <span style={{ position: 'absolute', color: '#22c55e', fontSize: '28px', lineHeight: 1 }}>★</span>}
+                            </div>
+                          )
+                        })}
                       </div>
                       <div style={{ fontSize: '28px', fontWeight: 700, color: '#fff' }}>{avgRating}</div>
                     </div>
@@ -2088,7 +2115,31 @@ export default function AccountPage() {
                 ) : input.type === 'textarea' ? (
                   <input type="text" value={tradeForm[input.id] || ''} onChange={e => setTradeForm({...tradeForm, [input.id]: e.target.value})} placeholder="..." style={{ flex: 1, padding: '5px 6px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '4px', color: '#fff', fontSize: '11px', boxSizing: 'border-box' }} />
                 ) : input.type === 'rating' ? (
-                  <div style={{ flex: 1, display: 'flex', gap: '2px' }}>{[1,2,3,4,5].map(i => <button key={i} type="button" onClick={() => setTradeForm({...tradeForm, [input.id]: String(i)})} style={{ padding: '4px 6px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '3px', cursor: 'pointer', fontSize: '12px', color: i <= parseInt(tradeForm[input.id] || 0) ? '#22c55e' : '#444' }}>★</button>)}</div>
+                  <div style={{ flex: 1, display: 'flex', gap: '1px', alignItems: 'center' }}>
+                    {[1, 2, 3, 4, 5].map(star => {
+                      const currentRating = parseFloat(tradeForm[input.id] || 0)
+                      const isFullStar = currentRating >= star
+                      const isHalfStar = currentRating >= star - 0.5 && currentRating < star
+                      return (
+                        <div
+                          key={star}
+                          style={{ position: 'relative', width: '16px', height: '16px', cursor: 'pointer' }}
+                          onClick={(e) => {
+                            const rect = e.currentTarget.getBoundingClientRect()
+                            const clickX = e.clientX - rect.left
+                            const isLeftHalf = clickX < rect.width / 2
+                            const newRating = isLeftHalf ? star - 0.5 : star
+                            setTradeForm({...tradeForm, [input.id]: String(newRating)})
+                          }}
+                        >
+                          <span style={{ position: 'absolute', color: '#2a2a35', fontSize: '16px', lineHeight: 1 }}>★</span>
+                          {isHalfStar && <span style={{ position: 'absolute', color: '#22c55e', fontSize: '16px', lineHeight: 1, width: '8px', overflow: 'hidden' }}>★</span>}
+                          {isFullStar && <span style={{ position: 'absolute', color: '#22c55e', fontSize: '16px', lineHeight: 1 }}>★</span>}
+                        </div>
+                      )
+                    })}
+                    {tradeForm[input.id] && <span style={{ fontSize: '10px', color: '#666', marginLeft: '4px' }}>{tradeForm[input.id]}</span>}
+                  </div>
                 ) : input.type === 'file' ? (
                   <div style={{ flex: 1 }}>
                     <input id="modal-image-upload" type="file" accept="image/*" onChange={e => {

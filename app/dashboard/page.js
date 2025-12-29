@@ -38,6 +38,10 @@ export default function DashboardPage() {
   const [newInputLabel, setNewInputLabel] = useState('')
   const [newInputOptions, setNewInputOptions] = useState('')
   const [savingInput, setSavingInput] = useState(false)
+  // Cumulative stats and export state
+  const [showCumulativeStats, setShowCumulativeStats] = useState(false)
+  const [selectedTrades, setSelectedTrades] = useState({})
+  const [selectAllTrades, setSelectAllTrades] = useState(false)
 
   useEffect(() => {
     const checkMobile = () => setIsMobile(window.innerWidth < 768)
@@ -213,6 +217,82 @@ export default function DashboardPage() {
       setQuickTradeAccount(accounts[0].id)
     }
   }, [accounts])
+
+  // Get all trades across all accounts
+  function getAllTrades() {
+    const all = []
+    accounts.forEach(acc => {
+      const accTrades = trades[acc.id] || []
+      accTrades.forEach(t => all.push({ ...t, accountName: acc.name, accountId: acc.id }))
+    })
+    return all.sort((a, b) => new Date(b.date) - new Date(a.date))
+  }
+
+  // Calculate cumulative stats across all accounts
+  function getCumulativeStats() {
+    const allTrades = getAllTrades()
+    const totalTrades = allTrades.length
+    const wins = allTrades.filter(t => t.outcome === 'win').length
+    const losses = allTrades.filter(t => t.outcome === 'loss').length
+    const totalPnl = allTrades.reduce((sum, t) => sum + (parseFloat(t.pnl) || 0), 0)
+    const winrate = (wins + losses) > 0 ? Math.round((wins / (wins + losses)) * 100) : 0
+    const avgRR = totalTrades > 0 ? (allTrades.reduce((sum, t) => sum + (parseFloat(t.rr) || 0), 0) / totalTrades).toFixed(1) : '0'
+    const grossProfit = allTrades.filter(t => parseFloat(t.pnl) > 0).reduce((sum, t) => sum + parseFloat(t.pnl), 0)
+    const grossLoss = Math.abs(allTrades.filter(t => parseFloat(t.pnl) < 0).reduce((sum, t) => sum + parseFloat(t.pnl), 0))
+    const profitFactor = grossLoss > 0 ? (grossProfit / grossLoss).toFixed(2) : grossProfit > 0 ? '∞' : '0'
+    const totalStartingBalance = accounts.reduce((sum, acc) => sum + (parseFloat(acc.starting_balance) || 0), 0)
+    const currentBalance = totalStartingBalance + totalPnl
+    const avgWin = wins > 0 ? (grossProfit / wins).toFixed(0) : 0
+    const avgLoss = losses > 0 ? (grossLoss / losses).toFixed(0) : 0
+    return { totalTrades, wins, losses, totalPnl, winrate, avgRR, profitFactor, totalStartingBalance, currentBalance, avgWin, avgLoss, grossProfit, grossLoss }
+  }
+
+  // Toggle trade selection
+  function toggleTradeSelection(tradeId) {
+    setSelectedTrades(prev => ({ ...prev, [tradeId]: !prev[tradeId] }))
+  }
+
+  // Toggle all trades selection
+  function toggleSelectAllTrades() {
+    const allTrades = getAllTrades()
+    if (selectAllTrades) {
+      setSelectedTrades({})
+    } else {
+      const allSelected = {}
+      allTrades.forEach(t => { allSelected[t.id] = true })
+      setSelectedTrades(allSelected)
+    }
+    setSelectAllTrades(!selectAllTrades)
+  }
+
+  // Export selected trades to CSV
+  function exportTradesToCSV() {
+    const allTrades = getAllTrades()
+    const selectedList = allTrades.filter(t => selectedTrades[t.id])
+    if (selectedList.length === 0) {
+      alert('No trades selected for export')
+      return
+    }
+    const headers = ['Date', 'Account', 'Symbol', 'Direction', 'Outcome', 'PnL', 'RR', 'Notes']
+    const rows = selectedList.map(t => [
+      t.date,
+      t.accountName,
+      t.symbol,
+      t.direction,
+      t.outcome,
+      t.pnl,
+      t.rr || '',
+      (t.notes || '').replace(/,/g, ';')
+    ])
+    const csv = [headers.join(','), ...rows.map(r => r.join(','))].join('\n')
+    const blob = new Blob([csv], { type: 'text/csv' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `trades_export_${new Date().toISOString().split('T')[0]}.csv`
+    a.click()
+    URL.revokeObjectURL(url)
+  }
 
   function EquityCurve({ accountTrades, startingBalance }) {
     const [hoverPoint, setHoverPoint] = useState(null)
@@ -427,15 +507,15 @@ export default function DashboardPage() {
         {/* Fixed Left Sidebar - Journal a Trade */}
         {!isMobile && accounts.length > 0 && (
           <div style={{ width: '240px', flexShrink: 0, position: 'sticky', top: '20px', height: 'fit-content' }}>
-            <div style={{ background: 'linear-gradient(145deg, #0d0d12 0%, #0a0a0e 100%)', border: '1px solid rgba(139,92,246,0.4)', borderRadius: '8px', padding: '12px', boxShadow: 'inset 0 0 20px rgba(139,92,246,0.15), inset 0 1px 0 rgba(139,92,246,0.1)' }}>
+            <div style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '12px' }}>
               {/* Title + View Toggle */}
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
-                <div style={{ fontSize: '10px', color: '#fff', textTransform: 'uppercase', letterSpacing: '0.5px', fontWeight: 700 }}>Journal a Trade</div>
-                <div style={{ display: 'flex', background: 'rgba(10,10,15,0.6)', borderRadius: '4px', overflow: 'hidden' }}>
-                  <button onClick={() => setViewMode('cards')} style={{ padding: '4px 6px', background: viewMode === 'cards' ? '#8b5cf6' : 'transparent', border: 'none', color: viewMode === 'cards' ? '#fff' : '#666', cursor: 'pointer', display: 'flex', alignItems: 'center' }}>
+                <div style={{ fontSize: '10px', color: '#999', textTransform: 'uppercase', letterSpacing: '0.5px', fontWeight: 500 }}>Journal a Trade</div>
+                <div style={{ display: 'flex', background: '#0a0a0f', borderRadius: '4px', overflow: 'hidden', border: '1px solid #1a1a22' }}>
+                  <button onClick={() => setViewMode('cards')} style={{ padding: '4px 6px', background: viewMode === 'cards' ? '#22c55e' : 'transparent', border: 'none', color: viewMode === 'cards' ? '#fff' : '#666', cursor: 'pointer', display: 'flex', alignItems: 'center' }}>
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="7" height="7" /><rect x="14" y="3" width="7" height="7" /><rect x="3" y="14" width="7" height="7" /><rect x="14" y="14" width="7" height="7" /></svg>
                   </button>
-                  <button onClick={() => setViewMode('list')} style={{ padding: '4px 6px', background: viewMode === 'list' ? '#8b5cf6' : 'transparent', border: 'none', color: viewMode === 'list' ? '#fff' : '#666', cursor: 'pointer', display: 'flex', alignItems: 'center' }}>
+                  <button onClick={() => setViewMode('list')} style={{ padding: '4px 6px', background: viewMode === 'list' ? '#22c55e' : 'transparent', border: 'none', color: viewMode === 'list' ? '#fff' : '#666', cursor: 'pointer', display: 'flex', alignItems: 'center' }}>
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="8" y1="6" x2="21" y2="6" /><line x1="8" y1="12" x2="21" y2="12" /><line x1="8" y1="18" x2="21" y2="18" /><line x1="3" y1="6" x2="3.01" y2="6" /><line x1="3" y1="12" x2="3.01" y2="12" /><line x1="3" y1="18" x2="3.01" y2="18" /></svg>
                   </button>
                 </div>
@@ -443,8 +523,8 @@ export default function DashboardPage() {
 
               {/* Journal Select */}
               <div style={{ display: 'flex', alignItems: 'center', marginBottom: '6px' }}>
-                <span style={{ fontSize: '10px', color: '#a78bfa', width: '52px', flexShrink: 0 }}>Journal</span>
-                <select value={quickTradeAccount} onChange={e => setQuickTradeAccount(e.target.value)} style={{ flex: 1, padding: '4px 6px', background: 'rgba(139,92,246,0.1)', border: '1px solid rgba(139,92,246,0.3)', borderRadius: '4px', color: '#fff', fontSize: '11px' }}>
+                <span style={{ fontSize: '10px', color: '#22c55e', width: '52px', flexShrink: 0, fontWeight: 500 }}>Journal</span>
+                <select value={quickTradeAccount} onChange={e => setQuickTradeAccount(e.target.value)} style={{ flex: 1, padding: '4px 6px', background: '#0a0a0f', border: '1px solid #22c55e', borderRadius: '4px', color: '#fff', fontSize: '11px', fontWeight: 400 }}>
                   {accounts.map(acc => <option key={acc.id} value={acc.id}>{acc.name}</option>)}
                 </select>
               </div>
@@ -599,10 +679,10 @@ export default function DashboardPage() {
 
               {/* Buttons Row */}
               <div style={{ display: 'flex', gap: '6px', marginTop: '8px' }}>
-                <button onClick={submitQuickTrade} disabled={submittingTrade || !quickTradeSymbol.trim() || !quickTradePnl} style={{ flex: 1, padding: '6px', background: (submittingTrade || !quickTradeSymbol.trim() || !quickTradePnl) ? '#1a1a22' : '#22c55e', border: 'none', borderRadius: '4px', color: (submittingTrade || !quickTradeSymbol.trim() || !quickTradePnl) ? '#666' : '#fff', fontWeight: 600, fontSize: '11px', cursor: (submittingTrade || !quickTradeSymbol.trim() || !quickTradePnl) ? 'not-allowed' : 'pointer' }}>
+                <button onClick={submitQuickTrade} disabled={submittingTrade || !quickTradeSymbol.trim() || !quickTradePnl} style={{ flex: 1, padding: '6px', background: (submittingTrade || !quickTradeSymbol.trim() || !quickTradePnl) ? '#1a1a22' : '#22c55e', border: 'none', borderRadius: '4px', color: (submittingTrade || !quickTradeSymbol.trim() || !quickTradePnl) ? '#666' : '#fff', fontWeight: 500, fontSize: '11px', cursor: (submittingTrade || !quickTradeSymbol.trim() || !quickTradePnl) ? 'not-allowed' : 'pointer' }}>
                   {submittingTrade ? '...' : '+ Add'}
                 </button>
-                <button onClick={() => setShowAddInputModal(true)} style={{ padding: '6px 8px', background: '#8b5cf6', border: 'none', borderRadius: '4px', color: '#fff', fontWeight: 600, fontSize: '10px', cursor: 'pointer' }}>+ Input</button>
+                <button onClick={() => setShowAddInputModal(true)} style={{ padding: '6px 8px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '4px', color: '#999', fontWeight: 500, fontSize: '10px', cursor: 'pointer' }}>+ Input</button>
               </div>
             </div>
           </div>
@@ -618,6 +698,58 @@ export default function DashboardPage() {
           </div>
         ) : (
           <>
+          {/* Cumulative Stats Section */}
+          {(() => {
+            const stats = getCumulativeStats()
+            const selectedCount = Object.values(selectedTrades).filter(Boolean).length
+            return (
+              <div style={{ marginBottom: '20px' }}>
+                {/* Toggle Button */}
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: showCumulativeStats ? '12px' : 0 }}>
+                  <button onClick={() => setShowCumulativeStats(!showCumulativeStats)} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 16px', background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', color: '#fff', fontSize: '13px', cursor: 'pointer', fontWeight: 500 }}>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={showCumulativeStats ? '#22c55e' : '#999'} strokeWidth="2"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg>
+                    {showCumulativeStats ? 'Hide' : 'View'} All Stats
+                  </button>
+                  <div style={{ display: 'flex', gap: '8px' }}>
+                    {selectedCount > 0 && (
+                      <button onClick={exportTradesToCSV} style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '10px 16px', background: '#22c55e', border: 'none', borderRadius: '8px', color: '#fff', fontSize: '13px', cursor: 'pointer', fontWeight: 500 }}>
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                        Export {selectedCount} Trade{selectedCount > 1 ? 's' : ''}
+                      </button>
+                    )}
+                  </div>
+                </div>
+
+                {/* Stats Panel */}
+                {showCumulativeStats && (
+                  <div style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '10px', padding: '20px' }}>
+                    <div style={{ fontSize: '11px', color: '#999', textTransform: 'uppercase', marginBottom: '16px', letterSpacing: '0.5px' }}>All Accounts Combined</div>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))', gap: '12px' }}>
+                      {[
+                        { label: 'Total Balance', value: `$${stats.currentBalance.toLocaleString()}`, color: stats.currentBalance >= stats.totalStartingBalance ? '#22c55e' : '#ef4444' },
+                        { label: 'Total PnL', value: `${stats.totalPnl >= 0 ? '+' : ''}$${stats.totalPnl.toLocaleString()}`, color: stats.totalPnl >= 0 ? '#22c55e' : '#ef4444' },
+                        { label: 'Total Trades', value: stats.totalTrades, color: '#fff' },
+                        { label: 'Winrate', value: `${stats.winrate}%`, color: stats.winrate >= 50 ? '#22c55e' : '#ef4444' },
+                        { label: 'Wins/Losses', value: `${stats.wins}/${stats.losses}`, color: '#fff' },
+                        { label: 'Profit Factor', value: stats.profitFactor, color: parseFloat(stats.profitFactor) >= 1 ? '#22c55e' : '#ef4444' },
+                        { label: 'Avg RR', value: `${stats.avgRR}R`, color: '#fff' },
+                        { label: 'Avg Win', value: `+$${stats.avgWin}`, color: '#22c55e' },
+                        { label: 'Avg Loss', value: `-$${stats.avgLoss}`, color: '#ef4444' },
+                        { label: 'Gross Profit', value: `+$${stats.grossProfit.toLocaleString()}`, color: '#22c55e' },
+                        { label: 'Gross Loss', value: `-$${stats.grossLoss.toLocaleString()}`, color: '#ef4444' },
+                      ].map((stat, i) => (
+                        <div key={i} style={{ background: '#0a0a0f', borderRadius: '6px', padding: '12px', border: '1px solid #1a1a22' }}>
+                          <div style={{ fontSize: '10px', color: '#666', marginBottom: '4px', textTransform: 'uppercase' }}>{stat.label}</div>
+                          <div style={{ fontSize: '16px', fontWeight: 600, color: stat.color }}>{stat.value}</div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )
+          })()}
+
           {/* List View */}
           {viewMode === 'list' ? (
             <div style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '10px', overflow: 'hidden' }}>
@@ -738,6 +870,9 @@ export default function DashboardPage() {
                         <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: isMobile ? '600px' : 'auto' }}>
                           <thead style={{ position: 'sticky', top: 0, background: '#0d0d12' }}>
                             <tr>
+                              <th style={{ padding: '10px', textAlign: 'center', width: '30px' }}>
+                                <input type="checkbox" checked={selectAllTrades} onChange={toggleSelectAllTrades} style={{ width: '14px', height: '14px', accentColor: '#22c55e', cursor: 'pointer' }} />
+                              </th>
                               {['Symbol', 'W/L', 'PnL', 'RR', '%', 'Emotion', 'Rating', 'Image', 'Placed', 'Date'].map((h, i) => (
                                 <th key={i} style={{ padding: '10px', textAlign: 'center', color: '#999', fontSize: '11px', fontWeight: 600, textTransform: 'uppercase' }}>{h}</th>
                               ))}
@@ -747,7 +882,10 @@ export default function DashboardPage() {
                             {recentTrades.map((trade, idx) => {
                               const extra = getExtraData(trade)
                               return (
-                                <tr key={trade.id} style={{ borderBottom: '1px solid #1a1a22' }}>
+                                <tr key={trade.id} style={{ borderBottom: '1px solid #1a1a22', background: selectedTrades[trade.id] ? 'rgba(34,197,94,0.05)' : 'transparent' }}>
+                                  <td style={{ padding: '12px', textAlign: 'center' }}>
+                                    <input type="checkbox" checked={!!selectedTrades[trade.id]} onChange={() => toggleTradeSelection(trade.id)} style={{ width: '14px', height: '14px', accentColor: '#22c55e', cursor: 'pointer' }} />
+                                  </td>
                                   <td style={{ padding: '12px', fontWeight: 600, fontSize: '14px', textAlign: 'center' }}>{trade.symbol}</td>
                                   <td style={{ padding: '12px', textAlign: 'center' }}>
                                     <span style={{ padding: '5px 12px', borderRadius: '4px', fontSize: '12px', fontWeight: 600, background: trade.outcome === 'win' ? 'rgba(34,197,94,0.15)' : trade.outcome === 'loss' ? 'rgba(239,68,68,0.15)' : 'rgba(255,255,255,0.1)', color: trade.outcome === 'win' ? '#22c55e' : trade.outcome === 'loss' ? '#ef4444' : '#888' }}>
@@ -763,7 +901,20 @@ export default function DashboardPage() {
                                     ) : <span style={{ fontSize: '14px', color: '#444' }}>-</span>}
                                   </td>
                                   <td style={{ padding: '12px', textAlign: 'center' }}>
-                                    <div style={{ display: 'flex', justifyContent: 'center', gap: '2px' }}>{[1,2,3,4,5].map(i => <span key={i} style={{ color: i <= parseInt(extra.rating || 0) ? '#22c55e' : '#2a2a35', fontSize: '14px' }}>★</span>)}</div>
+                                    <div style={{ display: 'flex', justifyContent: 'center', gap: '1px' }}>
+                                      {[1,2,3,4,5].map(star => {
+                                        const rating = parseFloat(extra.rating || 0)
+                                        const isFullStar = rating >= star
+                                        const isHalfStar = rating >= star - 0.5 && rating < star
+                                        return (
+                                          <div key={star} style={{ position: 'relative', width: '14px', height: '14px' }}>
+                                            <span style={{ position: 'absolute', color: '#2a2a35', fontSize: '14px', lineHeight: 1 }}>★</span>
+                                            {isHalfStar && <span style={{ position: 'absolute', color: '#22c55e', fontSize: '14px', lineHeight: 1, width: '7px', overflow: 'hidden' }}>★</span>}
+                                            {isFullStar && <span style={{ position: 'absolute', color: '#22c55e', fontSize: '14px', lineHeight: 1 }}>★</span>}
+                                          </div>
+                                        )
+                                      })}
+                                    </div>
                                   </td>
                                   <td style={{ padding: '12px', textAlign: 'center' }}>
                                     <div style={{ width: '24px', height: '24px', background: extra.image ? '#1a1a22' : '#141418', borderRadius: '4px', margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
