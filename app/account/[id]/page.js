@@ -501,29 +501,30 @@ export default function AccountPage() {
           ))}
         </div>
         {/* Journals List */}
-        <div style={{ marginTop: '16px', flex: 1, overflowY: 'auto' }}>
+        <div style={{ marginTop: '16px', maxHeight: '180px', overflowY: 'auto' }}>
           {allAccounts.map((acc) => (
             <a
               key={acc.id}
               href={`/account/${acc.id}`}
               style={{
-                display: 'block',
-                padding: '10px 12px',
-                marginBottom: '6px',
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                padding: '8px 10px',
+                marginBottom: '4px',
                 background: acc.id === accountId ? 'rgba(34,197,94,0.1)' : '#0d0d12',
                 border: acc.id === accountId ? '1px solid #22c55e' : '1px solid #1a1a22',
                 borderRadius: '6px',
-                textDecoration: 'none',
-                transition: 'all 0.15s'
+                textDecoration: 'none'
               }}
             >
-              <div style={{ fontSize: '12px', fontWeight: 600, color: acc.id === accountId ? '#22c55e' : '#888', marginBottom: '2px' }}>{acc.name}</div>
-              <div style={{ fontSize: '11px', color: acc.id === accountId ? '#22c55e' : '#666' }}>${(acc.starting_balance || 0).toLocaleString()}</div>
+              <span style={{ fontSize: '11px', fontWeight: 600, color: acc.id === accountId ? '#22c55e' : '#888' }}>{acc.name}</span>
+              <span style={{ fontSize: '11px', color: acc.id === accountId ? '#22c55e' : '#666' }}>${(acc.starting_balance || 0).toLocaleString()}</span>
             </a>
           ))}
         </div>
-        <div style={{ padding: '14px', background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px' }}>
-          <div style={{ fontSize: '11px', color: '#999', lineHeight: '1.5' }}>{tabDescriptions[activeTab]}</div>
+        <div style={{ marginTop: 'auto', padding: '8px 10px', background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '6px' }}>
+          <div style={{ fontSize: '10px', color: '#666', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{tabDescriptions[activeTab]}</div>
         </div>
       </div>
       )}
