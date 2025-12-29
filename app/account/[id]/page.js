@@ -251,6 +251,33 @@ export default function AccountPage() {
     return inputs.filter(i => i.type === 'select' && i.enabled && !['outcome'].includes(i.id))
   }
 
+  // Calculate cumulative stats across all accounts
+  function getCumulativeStats() {
+    const allTrades = []
+    allAccounts.forEach(acc => {
+      const accTrades = allAccountsTrades[acc.id] || []
+      accTrades.forEach(t => allTrades.push({ ...t, accountName: acc.name, startingBalance: acc.starting_balance }))
+    })
+    const totalTrades = allTrades.length
+    const cWins = allTrades.filter(t => t.outcome === 'win').length
+    const cLosses = allTrades.filter(t => t.outcome === 'loss').length
+    const cTotalPnl = allTrades.reduce((sum, t) => sum + (parseFloat(t.pnl) || 0), 0)
+    const cWinrate = (cWins + cLosses) > 0 ? Math.round((cWins / (cWins + cLosses)) * 100) : 0
+    const cAvgRR = totalTrades > 0 ? (allTrades.reduce((sum, t) => sum + (parseFloat(t.rr) || 0), 0) / totalTrades).toFixed(1) : '0'
+    const cGrossProfit = allTrades.filter(t => parseFloat(t.pnl) > 0).reduce((sum, t) => sum + parseFloat(t.pnl), 0)
+    const cGrossLoss = Math.abs(allTrades.filter(t => parseFloat(t.pnl) < 0).reduce((sum, t) => sum + parseFloat(t.pnl), 0))
+    const cProfitFactor = cGrossLoss > 0 ? (cGrossProfit / cGrossLoss).toFixed(2) : cGrossProfit > 0 ? '∞' : '0'
+    const totalStartingBalance = allAccounts.reduce((sum, acc) => sum + (parseFloat(acc.starting_balance) || 0), 0)
+    const cCurrentBalance = totalStartingBalance + cTotalPnl
+    const cAvgWin = cWins > 0 ? Math.round(cGrossProfit / cWins) : 0
+    const cAvgLoss = cLosses > 0 ? Math.round(cGrossLoss / cLosses) : 0
+    // Build cumulative PnL points for chart
+    const sortedTrades = allTrades.slice().sort((a, b) => new Date(a.date) - new Date(b.date))
+    let cumPnl = 0
+    const pnlPoints = sortedTrades.map(t => { cumPnl += parseFloat(t.pnl) || 0; return cumPnl })
+    return { totalTrades, wins: cWins, losses: cLosses, totalPnl: cTotalPnl, winrate: cWinrate, avgRR: cAvgRR, profitFactor: cProfitFactor, totalStartingBalance, currentBalance: cCurrentBalance, avgWin: cAvgWin, avgLoss: cAvgLoss, grossProfit: cGrossProfit, grossLoss: cGrossLoss, pnlPoints, allTrades: sortedTrades }
+  }
+
   if (loading) return (
     <div style={{ minHeight: '100vh', background: '#0a0a0f', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
       <div style={{ textAlign: 'center' }}>
@@ -689,6 +716,79 @@ export default function AccountPage() {
         {/* STATISTICS TAB */}
         {activeTab === 'statistics' && (
           <div style={{ padding: isMobile ? '0' : '16px 24px' }}>
+            {/* Data Source Toggle */}
+            {allAccounts.length > 1 && (
+              <div style={{ marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <span style={{ fontSize: '12px', color: '#666' }}>Show stats for:</span>
+                <div style={{ display: 'flex', background: '#0a0a0f', borderRadius: '6px', overflow: 'hidden', border: '1px solid #1a1a22' }}>
+                  <button onClick={() => setShowCumulativeStats(false)} style={{ padding: '8px 16px', background: !showCumulativeStats ? '#22c55e' : 'transparent', border: 'none', color: !showCumulativeStats ? '#fff' : '#666', fontSize: '12px', fontWeight: 600, cursor: 'pointer' }}>This Journal</button>
+                  <button onClick={() => setShowCumulativeStats(true)} style={{ padding: '8px 16px', background: showCumulativeStats ? '#22c55e' : 'transparent', border: 'none', color: showCumulativeStats ? '#fff' : '#666', fontSize: '12px', fontWeight: 600, cursor: 'pointer' }}>All Journals</button>
+                </div>
+              </div>
+            )}
+
+            {/* Cumulative Stats Panel - shown when All Journals selected */}
+            {showCumulativeStats && allAccounts.length > 1 && (() => {
+              const cumStats = getCumulativeStats()
+              const maxPnl = Math.max(...cumStats.pnlPoints, 0)
+              const minPnl = Math.min(...cumStats.pnlPoints, 0)
+              const pnlRange = maxPnl - minPnl || 1
+              return (
+                <div style={{ background: 'linear-gradient(135deg, #0d0d12 0%, #0f1a14 100%)', border: '1px solid rgba(34,197,94,0.3)', borderRadius: '12px', padding: '20px', marginBottom: '20px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '16px' }}>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#22c55e" strokeWidth="2"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg>
+                    <span style={{ fontSize: '14px', fontWeight: 600, color: '#fff' }}>All Journals Combined</span>
+                    <span style={{ fontSize: '11px', color: '#666', marginLeft: 'auto' }}>{allAccounts.length} journals</span>
+                  </div>
+
+                  {/* Mini PnL Chart */}
+                  {cumStats.pnlPoints.length > 1 && (
+                    <div style={{ background: '#0a0a0f', borderRadius: '8px', border: '1px solid #1a1a22', padding: '12px', marginBottom: '16px' }}>
+                      <div style={{ fontSize: '10px', color: '#666', marginBottom: '8px', textTransform: 'uppercase' }}>Cumulative P&L</div>
+                      <div style={{ height: '80px', position: 'relative' }}>
+                        <svg width="100%" height="100%" viewBox={`0 0 ${Math.max(cumStats.pnlPoints.length - 1, 1)} 80`} preserveAspectRatio="none">
+                          {minPnl < 0 && maxPnl > 0 && (
+                            <line x1="0" y1={80 - ((0 - minPnl) / pnlRange) * 80} x2={cumStats.pnlPoints.length - 1} y2={80 - ((0 - minPnl) / pnlRange) * 80} stroke="#333" strokeWidth="1" strokeDasharray="3,3" />
+                          )}
+                          <polyline
+                            fill="none"
+                            stroke={cumStats.totalPnl >= 0 ? '#22c55e' : '#ef4444'}
+                            strokeWidth="2"
+                            points={cumStats.pnlPoints.map((p, i) => `${i},${80 - ((p - minPnl) / pnlRange) * 80}`).join(' ')}
+                          />
+                        </svg>
+                        <div style={{ position: 'absolute', right: 0, top: 0, fontSize: '12px', fontWeight: 600, color: cumStats.totalPnl >= 0 ? '#22c55e' : '#ef4444' }}>
+                          {cumStats.totalPnl >= 0 ? '+' : ''}${cumStats.totalPnl.toLocaleString()}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Stats Grid */}
+                  <div style={{ display: 'grid', gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(6, 1fr)', gap: '10px' }}>
+                    {[
+                      { label: 'Total Balance', value: `$${cumStats.currentBalance.toLocaleString()}`, color: cumStats.currentBalance >= cumStats.totalStartingBalance ? '#22c55e' : '#ef4444' },
+                      { label: 'Total PnL', value: `${cumStats.totalPnl >= 0 ? '+' : ''}$${cumStats.totalPnl.toLocaleString()}`, color: cumStats.totalPnl >= 0 ? '#22c55e' : '#ef4444' },
+                      { label: 'Trades', value: cumStats.totalTrades, color: '#fff' },
+                      { label: 'Winrate', value: `${cumStats.winrate}%`, color: cumStats.winrate >= 50 ? '#22c55e' : '#ef4444' },
+                      { label: 'W/L', value: `${cumStats.wins}/${cumStats.losses}`, color: '#fff' },
+                      { label: 'Profit Factor', value: cumStats.profitFactor, color: parseFloat(cumStats.profitFactor) >= 1 ? '#22c55e' : '#ef4444' },
+                      { label: 'Avg RR', value: `${cumStats.avgRR}R`, color: '#fff' },
+                      { label: 'Avg Win', value: `+$${cumStats.avgWin}`, color: '#22c55e' },
+                      { label: 'Avg Loss', value: `-$${cumStats.avgLoss}`, color: '#ef4444' },
+                      { label: 'Gross Profit', value: `+$${cumStats.grossProfit.toLocaleString()}`, color: '#22c55e' },
+                      { label: 'Gross Loss', value: `-$${cumStats.grossLoss.toLocaleString()}`, color: '#ef4444' },
+                    ].map((stat, i) => (
+                      <div key={i} style={{ padding: '10px', background: '#0a0a0f', borderRadius: '6px', border: '1px solid #1a1a22' }}>
+                        <div style={{ fontSize: '9px', color: '#666', marginBottom: '3px', textTransform: 'uppercase' }}>{stat.label}</div>
+                        <div style={{ fontSize: '14px', fontWeight: 700, color: stat.color }}>{stat.value}</div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )
+            })()}
+
             {/* ROW 1: Stats + Graphs - both graphs same height, aligned with Total Trades bottom */}
             <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', gap: '16px', marginBottom: '16px' }}>
               {/* Stats Widget - Clean List */}
