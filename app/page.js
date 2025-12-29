@@ -65,7 +65,7 @@ export default function HomePage() {
         <div style={{ maxWidth: '800px', margin: '0 auto' }}>
           <h1 style={{ fontSize: '56px', fontWeight: 800, lineHeight: 1.1, marginBottom: '16px' }}>The Trading Journal</h1>
           <h2 style={{ fontSize: '56px', fontWeight: 800, color: '#22c55e', marginBottom: '24px' }}>Built for Serious Traders</h2>
-          <p style={{ fontSize: '20px', color: '#888', marginBottom: '40px', lineHeight: 1.6 }}>
+          <p style={{ fontSize: '20px', color: '#999', marginBottom: '40px', lineHeight: 1.6 }}>
             Track your trades, analyze your performance, and discover patterns that make you profitable.
           </p>
           <a href="/signup" style={{ display: 'inline-block', padding: '18px 40px', background: '#22c55e', borderRadius: '12px', color: '#fff', fontWeight: 700, fontSize: '18px' }}>
@@ -89,7 +89,7 @@ export default function HomePage() {
             ].map((f, i) => (
               <div key={i} style={{ background: '#14141a', border: '1px solid #222230', borderRadius: '16px', padding: '24px' }}>
                 <h3 style={{ fontSize: '18px', fontWeight: 600, marginBottom: '10px' }}>{f.title}</h3>
-                <p style={{ fontSize: '14px', color: '#888', lineHeight: 1.6 }}>{f.desc}</p>
+                <p style={{ fontSize: '14px', color: '#999', lineHeight: 1.6 }}>{f.desc}</p>
               </div>
             ))}
           </div>
@@ -103,9 +103,9 @@ export default function HomePage() {
           <div style={{ background: 'linear-gradient(135deg, #14141a 0%, #1a2a1a 100%)', border: '2px solid #22c55e', borderRadius: '16px', padding: '32px' }}>
             <div style={{ fontSize: '14px', color: '#22c55e', textTransform: 'uppercase', marginBottom: '8px' }}>Full Access</div>
             <div style={{ fontSize: '48px', fontWeight: 700, marginBottom: '8px' }}>
-              £9<span style={{ fontSize: '18px', color: '#666' }}>/mo</span>
+              £9<span style={{ fontSize: '18px', color: '#999' }}>/mo</span>
             </div>
-            <p style={{ color: '#888', fontSize: '14px', marginBottom: '24px' }}>Everything included. Cancel anytime.</p>
+            <p style={{ color: '#999', fontSize: '14px', marginBottom: '24px' }}>Everything included. Cancel anytime.</p>
             <a href="/signup" style={{ display: 'block', padding: '16px', background: '#22c55e', borderRadius: '10px', color: '#fff', fontWeight: 700, fontSize: '16px' }}>
               Subscribe Now
             </a>

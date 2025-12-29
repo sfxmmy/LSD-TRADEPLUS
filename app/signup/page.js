@@ -95,7 +95,7 @@ export default function SignupPage() {
           <div style={{ background: '#14141a', border: '1px solid #222230', borderRadius: '20px', padding: '40px', width: '400px', textAlign: 'center' }}>
             <div style={{ fontSize: '48px', marginBottom: '16px' }}>✉️</div>
             <h2 style={{ fontSize: '24px', fontWeight: 700, marginBottom: '12px' }}>Check your email</h2>
-            <p style={{ color: '#888', fontSize: '14px', marginBottom: '24px' }}>
+            <p style={{ color: '#999', fontSize: '14px', marginBottom: '24px' }}>
               We sent a confirmation link to <strong style={{ color: '#fff' }}>{email}</strong>
             </p>
             <a href="/login" style={{ display: 'inline-block', padding: '12px 24px', background: '#22c55e', borderRadius: '8px', color: '#fff', fontWeight: 600, textDecoration: 'none' }}>
@@ -119,7 +119,7 @@ export default function SignupPage() {
         <div style={{ background: '#14141a', border: '1px solid #222230', borderRadius: '20px', padding: '40px', width: '400px' }}>
           <div style={{ textAlign: 'center', marginBottom: '32px' }}>
             <h1 style={{ fontSize: '24px', fontWeight: 700, marginBottom: '8px' }}>Create Account</h1>
-            <p style={{ color: '#888', fontSize: '14px' }}>Start your trading journal today</p>
+            <p style={{ color: '#999', fontSize: '14px' }}>Start your trading journal today</p>
           </div>
 
           {error && (
@@ -157,21 +157,21 @@ export default function SignupPage() {
           {/* Divider */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '20px' }}>
             <div style={{ flex: 1, height: '1px', background: '#222230' }} />
-            <span style={{ color: '#666', fontSize: '13px' }}>or</span>
+            <span style={{ color: '#999', fontSize: '13px' }}>or</span>
             <div style={{ flex: 1, height: '1px', background: '#222230' }} />
           </div>
 
           <form onSubmit={handleSignup}>
             <div style={{ marginBottom: '16px' }}>
-              <label style={{ display: 'block', fontSize: '12px', color: '#888', marginBottom: '6px', textTransform: 'uppercase' }}>Email</label>
+              <label style={{ display: 'block', fontSize: '12px', color: '#999', marginBottom: '6px', textTransform: 'uppercase' }}>Email</label>
               <input type="email" value={email} onChange={e => setEmail(e.target.value)} required placeholder="your@email.com" style={{ width: '100%', padding: '14px', background: '#0a0a0f', border: '1px solid #222230', borderRadius: '10px', color: '#fff', fontSize: '15px', boxSizing: 'border-box' }} />
             </div>
             <div style={{ marginBottom: '16px' }}>
-              <label style={{ display: 'block', fontSize: '12px', color: '#888', marginBottom: '6px', textTransform: 'uppercase' }}>Password</label>
+              <label style={{ display: 'block', fontSize: '12px', color: '#999', marginBottom: '6px', textTransform: 'uppercase' }}>Password</label>
               <input type="password" value={password} onChange={e => setPassword(e.target.value)} required placeholder="••••••••" style={{ width: '100%', padding: '14px', background: '#0a0a0f', border: '1px solid #222230', borderRadius: '10px', color: '#fff', fontSize: '15px', boxSizing: 'border-box' }} />
             </div>
             <div style={{ marginBottom: '24px' }}>
-              <label style={{ display: 'block', fontSize: '12px', color: '#888', marginBottom: '6px', textTransform: 'uppercase' }}>Confirm Password</label>
+              <label style={{ display: 'block', fontSize: '12px', color: '#999', marginBottom: '6px', textTransform: 'uppercase' }}>Confirm Password</label>
               <input type="password" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} required placeholder="••••••••" style={{ width: '100%', padding: '14px', background: '#0a0a0f', border: '1px solid #222230', borderRadius: '10px', color: '#fff', fontSize: '15px', boxSizing: 'border-box' }} />
             </div>
             <button type="submit" disabled={loading} style={{ width: '100%', padding: '14px', background: loading ? '#166534' : '#22c55e', border: 'none', borderRadius: '10px', color: '#fff', fontWeight: 600, fontSize: '16px', cursor: loading ? 'not-allowed' : 'pointer' }}>
@@ -179,7 +179,7 @@ export default function SignupPage() {
             </button>
           </form>
 
-          <p style={{ marginTop: '24px', textAlign: 'center', fontSize: '14px', color: '#888' }}>
+          <p style={{ marginTop: '24px', textAlign: 'center', fontSize: '14px', color: '#999' }}>
             Already have an account? <a href="/login" style={{ color: '#22c55e', textDecoration: 'none' }}>Sign in</a>
           </p>
         </div>

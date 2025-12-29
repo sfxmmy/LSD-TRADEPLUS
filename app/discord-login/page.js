@@ -53,7 +53,7 @@ export default function DiscordLoginPage() {
           </div>
 
           <h1 style={{ fontSize: '24px', fontWeight: 700, marginBottom: '8px' }}>VIP Discord Login</h1>
-          <p style={{ color: '#888', fontSize: '14px', marginBottom: '24px' }}>Free access for LSDTRADE+ Discord members</p>
+          <p style={{ color: '#999', fontSize: '14px', marginBottom: '24px' }}>Free access for LSDTRADE+ Discord members</p>
 
           {error && (
             <div style={{ background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.3)', borderRadius: '10px', padding: '12px', marginBottom: '20px', color: '#ef4444', fontSize: '14px' }}>{error}</div>
@@ -67,8 +67,8 @@ export default function DiscordLoginPage() {
           </button>
 
           <div style={{ marginTop: '24px', padding: '16px', background: '#0a0a0f', borderRadius: '10px' }}>
-            <p style={{ color: '#666', fontSize: '13px', lineHeight: 1.6 }}>
-              <strong style={{ color: '#888' }}>Note:</strong> You must be a member of the LSDTRADE+ Discord server. Not a member? <a href="/signup" style={{ color: '#22c55e' }}>Sign up</a> for a paid account.
+            <p style={{ color: '#999', fontSize: '13px', lineHeight: 1.6 }}>
+              <strong style={{ color: '#999' }}>Note:</strong> You must be a member of the LSDTRADE+ Discord server. Not a member? <a href="/signup" style={{ color: '#22c55e' }}>Sign up</a> for a paid account.
             </p>
           </div>
         </div>

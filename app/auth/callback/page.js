@@ -70,7 +70,7 @@ export default function AuthCallbackPage() {
         <div style={{ fontSize: '32px', marginBottom: '16px', fontWeight: 700 }}>
           <span style={{ color: '#22c55e' }}>LSD</span><span style={{ color: '#fff' }}>TRADE</span><span style={{ color: '#22c55e' }}>+</span>
         </div>
-        <div style={{ color: '#888', fontSize: '16px' }}>Completing sign in...</div>
+        <div style={{ color: '#999', fontSize: '16px' }}>Completing sign in...</div>
         <div style={{ marginTop: '20px' }}>
           <div style={{ width: '40px', height: '40px', border: '3px solid #1a1a22', borderTopColor: '#22c55e', borderRadius: '50%', animation: 'spin 1s linear infinite', margin: '0 auto' }} />
         </div>

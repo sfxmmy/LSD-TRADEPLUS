@@ -82,18 +82,18 @@ export default function PricingPage() {
       <section style={{ padding: '60px 48px' }}>
         <div style={{ maxWidth: '500px', margin: '0 auto', textAlign: 'center' }}>
           <h1 style={{ fontSize: '40px', fontWeight: 700, marginBottom: '16px' }}>Get Full Access</h1>
-          <p style={{ color: '#888', fontSize: '18px', marginBottom: '48px' }}>Everything you need to track your trading</p>
+          <p style={{ color: '#999', fontSize: '18px', marginBottom: '48px' }}>Everything you need to track your trading</p>
 
           <div style={{ background: 'linear-gradient(135deg, #14141a 0%, #1a2a1a 100%)', border: '2px solid #22c55e', borderRadius: '20px', padding: '40px', textAlign: 'left', position: 'relative' }}>
             <div style={{ position: 'absolute', top: '-14px', right: '24px', background: '#22c55e', color: '#000', fontSize: '12px', fontWeight: 700, padding: '6px 16px', borderRadius: '20px' }}>FULL ACCESS</div>
 
             <div style={{ fontSize: '14px', color: '#22c55e', textTransform: 'uppercase', marginBottom: '8px' }}>Pro Membership</div>
-            <div style={{ fontSize: '52px', fontWeight: 700, marginBottom: '8px' }}>£9<span style={{ fontSize: '20px', color: '#666' }}>/month</span></div>
-            <div style={{ color: '#666', marginBottom: '32px' }}>Cancel anytime</div>
+            <div style={{ fontSize: '52px', fontWeight: 700, marginBottom: '8px' }}>£9<span style={{ fontSize: '20px', color: '#999' }}>/month</span></div>
+            <div style={{ color: '#999', marginBottom: '32px' }}>Cancel anytime</div>
 
             <ul style={{ listStyle: 'none', padding: 0, display: 'flex', flexDirection: 'column', gap: '16px', marginBottom: '40px' }}>
               {['Unlimited Journals', 'Unlimited Trades', 'Advanced Statistics', 'Trade Screenshots', 'Equity Curves', 'Cloud Storage'].map((f, i) => (
-                <li key={i} style={{ display: 'flex', alignItems: 'center', gap: '12px', color: '#bbb', fontSize: '15px' }}>
+                <li key={i} style={{ display: 'flex', alignItems: 'center', gap: '12px', color: '#999', fontSize: '15px' }}>
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#22c55e" strokeWidth="3"><polyline points="20 6 9 17 4 12" /></svg>
                   {f}
                 </li>
@@ -114,7 +114,7 @@ export default function PricingPage() {
             )}
 
             {!user && (
-              <p style={{ textAlign: 'center', marginTop: '16px', fontSize: '13px', color: '#666' }}>
+              <p style={{ textAlign: 'center', marginTop: '16px', fontSize: '13px', color: '#999' }}>
                 Already have an account? <a href="/login" style={{ color: '#22c55e' }}>Sign in</a>
               </p>
             )}

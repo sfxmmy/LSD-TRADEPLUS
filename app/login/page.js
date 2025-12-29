@@ -80,7 +80,7 @@ export default function LoginPage() {
         <div style={{ background: '#14141a', border: '1px solid #222230', borderRadius: '20px', padding: '40px', width: '400px' }}>
           <div style={{ textAlign: 'center', marginBottom: '32px' }}>
             <h1 style={{ fontSize: '24px', fontWeight: 700, marginBottom: '8px' }}>Welcome Back</h1>
-            <p style={{ color: '#888', fontSize: '14px' }}>Sign in to your account</p>
+            <p style={{ color: '#999', fontSize: '14px' }}>Sign in to your account</p>
           </div>
 
           {error && (
@@ -118,13 +118,13 @@ export default function LoginPage() {
           {/* Divider */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '20px' }}>
             <div style={{ flex: 1, height: '1px', background: '#222230' }} />
-            <span style={{ color: '#666', fontSize: '13px' }}>or</span>
+            <span style={{ color: '#999', fontSize: '13px' }}>or</span>
             <div style={{ flex: 1, height: '1px', background: '#222230' }} />
           </div>
 
           <form onSubmit={handleLogin}>
             <div style={{ marginBottom: '16px' }}>
-              <label style={{ display: 'block', fontSize: '12px', color: '#888', marginBottom: '6px', textTransform: 'uppercase' }}>Email</label>
+              <label style={{ display: 'block', fontSize: '12px', color: '#999', marginBottom: '6px', textTransform: 'uppercase' }}>Email</label>
               <input
                 type="email"
                 value={email}
@@ -135,7 +135,7 @@ export default function LoginPage() {
               />
             </div>
             <div style={{ marginBottom: '24px' }}>
-              <label style={{ display: 'block', fontSize: '12px', color: '#888', marginBottom: '6px', textTransform: 'uppercase' }}>Password</label>
+              <label style={{ display: 'block', fontSize: '12px', color: '#999', marginBottom: '6px', textTransform: 'uppercase' }}>Password</label>
               <input
                 type="password"
                 value={password}
@@ -154,7 +154,7 @@ export default function LoginPage() {
             </button>
           </form>
 
-          <p style={{ marginTop: '24px', textAlign: 'center', fontSize: '14px', color: '#888' }}>
+          <p style={{ marginTop: '24px', textAlign: 'center', fontSize: '14px', color: '#999' }}>
             Don't have an account? <a href="/signup" style={{ color: '#22c55e', textDecoration: 'none' }}>Sign up</a>
           </p>
         </div>
