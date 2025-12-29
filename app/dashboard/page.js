@@ -26,6 +26,7 @@ export default function DashboardPage() {
   const [quickTradeRR, setQuickTradeRR] = useState('')
   const [quickTradeDate, setQuickTradeDate] = useState(new Date().toISOString().split('T')[0])
   const [quickTradeDirection, setQuickTradeDirection] = useState('long')
+  const [quickTradeRating, setQuickTradeRating] = useState('')
   const [submittingTrade, setSubmittingTrade] = useState(false)
   const [quickTradeExtraData, setQuickTradeExtraData] = useState({})
 
@@ -107,6 +108,7 @@ export default function DashboardPage() {
       rr: quickTradeRR || null,
       date: quickTradeDate,
       direction: quickTradeDirection,
+      rating: quickTradeRating ? parseInt(quickTradeRating) : null,
       extra_data: JSON.stringify(quickTradeExtraData)
     }).select().single()
     if (error) { alert('Error: ' + error.message); setSubmittingTrade(false); return }
@@ -119,6 +121,7 @@ export default function DashboardPage() {
     setQuickTradeSymbol('')
     setQuickTradePnl('')
     setQuickTradeRR('')
+    setQuickTradeRating('')
     setQuickTradeExtraData({})
     setSubmittingTrade(false)
   }
@@ -353,80 +356,105 @@ export default function DashboardPage() {
       <div style={{ display: 'flex', gap: '20px', maxWidth: '1600px', margin: '0 auto', padding: isMobile ? '16px' : '24px 40px' }}>
         {/* Fixed Left Sidebar - Quick Trade Entry */}
         {!isMobile && accounts.length > 0 && (
-          <div style={{ width: '240px', flexShrink: 0, position: 'sticky', top: '20px', height: 'fit-content' }}>
+          <div style={{ width: '260px', flexShrink: 0, position: 'sticky', top: '20px', height: 'fit-content' }}>
             <div style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '10px', padding: '16px' }}>
               <div style={{ fontSize: '12px', color: '#888', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '14px', fontWeight: 600 }}>Journal a Trade</div>
 
               {/* Journal Select */}
               <div style={{ marginBottom: '10px' }}>
-                <select value={quickTradeAccount} onChange={e => setQuickTradeAccount(e.target.value)} style={{ width: '100%', padding: '10px 12px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '13px' }}>
+                <div style={{ fontSize: '10px', color: '#666', marginBottom: '4px' }}>Journal</div>
+                <select value={quickTradeAccount} onChange={e => setQuickTradeAccount(e.target.value)} style={{ width: '100%', padding: '8px 10px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '4px', color: '#fff', fontSize: '12px' }}>
                   {accounts.map(acc => <option key={acc.id} value={acc.id}>{acc.name}</option>)}
                 </select>
               </div>
 
               {/* Symbol */}
               <div style={{ marginBottom: '10px' }}>
-                <input type="text" value={quickTradeSymbol} onChange={e => setQuickTradeSymbol(e.target.value)} placeholder="Symbol (e.g. XAUUSD)" style={{ width: '100%', padding: '10px 12px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '13px', boxSizing: 'border-box' }} />
+                <div style={{ fontSize: '10px', color: '#666', marginBottom: '4px' }}>Symbol</div>
+                <input type="text" value={quickTradeSymbol} onChange={e => setQuickTradeSymbol(e.target.value)} placeholder="e.g. XAUUSD" style={{ width: '100%', padding: '8px 10px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '4px', color: '#fff', fontSize: '12px', boxSizing: 'border-box' }} />
               </div>
 
-              {/* Direction Dropdown */}
+              {/* Direction */}
               <div style={{ marginBottom: '10px' }}>
-                <select value={quickTradeDirection} onChange={e => setQuickTradeDirection(e.target.value)} style={{ width: '100%', padding: '10px 12px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '13px' }}>
+                <div style={{ fontSize: '10px', color: '#666', marginBottom: '4px' }}>Direction</div>
+                <select value={quickTradeDirection} onChange={e => setQuickTradeDirection(e.target.value)} style={{ width: '100%', padding: '8px 10px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '4px', color: '#fff', fontSize: '12px' }}>
                   <option value="long">Long</option>
                   <option value="short">Short</option>
                 </select>
               </div>
 
-              {/* Outcome Dropdown */}
+              {/* Outcome */}
               <div style={{ marginBottom: '10px' }}>
-                <select value={quickTradeOutcome} onChange={e => setQuickTradeOutcome(e.target.value)} style={{ width: '100%', padding: '10px 12px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '13px' }}>
+                <div style={{ fontSize: '10px', color: '#666', marginBottom: '4px' }}>Outcome</div>
+                <select value={quickTradeOutcome} onChange={e => setQuickTradeOutcome(e.target.value)} style={{ width: '100%', padding: '8px 10px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '4px', color: '#fff', fontSize: '12px' }}>
                   <option value="win">Win</option>
                   <option value="loss">Loss</option>
                   <option value="be">Break Even</option>
                 </select>
               </div>
 
-              {/* PnL and RR */}
-              <div style={{ display: 'flex', gap: '8px', marginBottom: '10px' }}>
-                <input type="number" value={quickTradePnl} onChange={e => setQuickTradePnl(e.target.value)} placeholder="P&L ($)" style={{ flex: 1, padding: '10px 12px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '13px', boxSizing: 'border-box' }} />
-                <input type="text" value={quickTradeRR} onChange={e => setQuickTradeRR(e.target.value)} placeholder="RR" style={{ width: '60px', padding: '10px 12px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '13px', boxSizing: 'border-box' }} />
+              {/* PnL */}
+              <div style={{ marginBottom: '10px' }}>
+                <div style={{ fontSize: '10px', color: '#666', marginBottom: '4px' }}>P&L ($)</div>
+                <input type="number" value={quickTradePnl} onChange={e => setQuickTradePnl(e.target.value)} placeholder="0.00" style={{ width: '100%', padding: '8px 10px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '4px', color: '#fff', fontSize: '12px', boxSizing: 'border-box' }} />
+              </div>
+
+              {/* RR */}
+              <div style={{ marginBottom: '10px' }}>
+                <div style={{ fontSize: '10px', color: '#666', marginBottom: '4px' }}>Risk/Reward</div>
+                <input type="text" value={quickTradeRR} onChange={e => setQuickTradeRR(e.target.value)} placeholder="e.g. 2.5" style={{ width: '100%', padding: '8px 10px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '4px', color: '#fff', fontSize: '12px', boxSizing: 'border-box' }} />
               </div>
 
               {/* Date */}
               <div style={{ marginBottom: '10px' }}>
-                <input type="date" value={quickTradeDate} onChange={e => setQuickTradeDate(e.target.value)} style={{ width: '100%', padding: '10px 12px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '13px', boxSizing: 'border-box' }} />
+                <div style={{ fontSize: '10px', color: '#666', marginBottom: '4px' }}>Date</div>
+                <input type="date" value={quickTradeDate} onChange={e => setQuickTradeDate(e.target.value)} style={{ width: '100%', padding: '8px 10px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '4px', color: '#fff', fontSize: '12px', boxSizing: 'border-box' }} />
+              </div>
+
+              {/* Rating */}
+              <div style={{ marginBottom: '10px' }}>
+                <div style={{ fontSize: '10px', color: '#666', marginBottom: '4px' }}>Rating</div>
+                <select value={quickTradeRating} onChange={e => setQuickTradeRating(e.target.value)} style={{ width: '100%', padding: '8px 10px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '4px', color: '#fff', fontSize: '12px' }}>
+                  <option value="">Select Rating</option>
+                  <option value="1">★ (1)</option>
+                  <option value="2">★★ (2)</option>
+                  <option value="3">★★★ (3)</option>
+                  <option value="4">★★★★ (4)</option>
+                  <option value="5">★★★★★ (5)</option>
+                </select>
               </div>
 
               {/* Custom Inputs for selected journal */}
               {getSelectedAccountCustomInputs().map(input => (
                 <div key={input.id} style={{ marginBottom: '10px' }}>
+                  <div style={{ fontSize: '10px', color: '#666', marginBottom: '4px' }}>{input.label || input.id}</div>
                   <select
                     value={quickTradeExtraData[input.id] || ''}
                     onChange={e => setQuickTradeExtraData(prev => ({ ...prev, [input.id]: e.target.value }))}
-                    style={{ width: '100%', padding: '10px 12px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '13px' }}
+                    style={{ width: '100%', padding: '8px 10px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '4px', color: '#fff', fontSize: '12px' }}
                   >
-                    <option value="">{input.label || input.id}</option>
+                    <option value="">Select {input.label || input.id}</option>
                     {(input.options || []).map(opt => <option key={opt} value={opt}>{opt}</option>)}
                   </select>
                 </div>
               ))}
 
-              {/* Add Input Link */}
-              <a href={`/account/${quickTradeAccount}?tab=settings`} style={{ display: 'block', marginBottom: '14px', fontSize: '11px', color: '#22c55e', textDecoration: 'none', textAlign: 'center' }}>+ Add Custom Input</a>
-
-              {/* Submit */}
-              <button onClick={submitQuickTrade} disabled={submittingTrade || !quickTradeSymbol.trim() || !quickTradePnl} style={{ width: '100%', padding: '12px', background: (submittingTrade || !quickTradeSymbol.trim() || !quickTradePnl) ? '#1a1a22' : '#22c55e', border: 'none', borderRadius: '6px', color: (submittingTrade || !quickTradeSymbol.trim() || !quickTradePnl) ? '#666' : '#fff', fontWeight: 600, fontSize: '13px', cursor: (submittingTrade || !quickTradeSymbol.trim() || !quickTradePnl) ? 'not-allowed' : 'pointer', marginBottom: '16px' }}>
-                {submittingTrade ? 'Adding...' : '+ Add Trade'}
-              </button>
+              {/* Buttons Row */}
+              <div style={{ display: 'flex', gap: '8px', marginBottom: '12px' }}>
+                <button onClick={submitQuickTrade} disabled={submittingTrade || !quickTradeSymbol.trim() || !quickTradePnl} style={{ flex: 1, padding: '10px', background: (submittingTrade || !quickTradeSymbol.trim() || !quickTradePnl) ? '#1a1a22' : '#22c55e', border: 'none', borderRadius: '4px', color: (submittingTrade || !quickTradeSymbol.trim() || !quickTradePnl) ? '#666' : '#fff', fontWeight: 600, fontSize: '12px', cursor: (submittingTrade || !quickTradeSymbol.trim() || !quickTradePnl) ? 'not-allowed' : 'pointer' }}>
+                  {submittingTrade ? 'Adding...' : '+ Add Trade'}
+                </button>
+                <a href={`/account/${quickTradeAccount}?tab=settings`} style={{ padding: '10px 12px', background: '#8b5cf6', borderRadius: '4px', color: '#fff', fontWeight: 600, fontSize: '11px', textDecoration: 'none', display: 'flex', alignItems: 'center', whiteSpace: 'nowrap' }}>+ Input</a>
+              </div>
 
               {/* View Toggle */}
-              <div style={{ display: 'flex', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px', overflow: 'hidden' }}>
-                <button onClick={() => setViewMode('cards')} style={{ flex: 1, padding: '8px', background: viewMode === 'cards' ? '#22c55e' : 'transparent', border: 'none', color: viewMode === 'cards' ? '#fff' : '#888', fontSize: '11px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}>
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="7" height="7" /><rect x="14" y="3" width="7" height="7" /><rect x="3" y="14" width="7" height="7" /><rect x="14" y="14" width="7" height="7" /></svg>
+              <div style={{ display: 'flex', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '4px', overflow: 'hidden' }}>
+                <button onClick={() => setViewMode('cards')} style={{ flex: 1, padding: '6px', background: viewMode === 'cards' ? '#22c55e' : 'transparent', border: 'none', color: viewMode === 'cards' ? '#fff' : '#888', fontSize: '10px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}>
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="7" height="7" /><rect x="14" y="3" width="7" height="7" /><rect x="3" y="14" width="7" height="7" /><rect x="14" y="14" width="7" height="7" /></svg>
                   Cards
                 </button>
-                <button onClick={() => setViewMode('list')} style={{ flex: 1, padding: '8px', background: viewMode === 'list' ? '#22c55e' : 'transparent', border: 'none', color: viewMode === 'list' ? '#fff' : '#888', fontSize: '11px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}>
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="8" y1="6" x2="21" y2="6" /><line x1="8" y1="12" x2="21" y2="12" /><line x1="8" y1="18" x2="21" y2="18" /><line x1="3" y1="6" x2="3.01" y2="6" /><line x1="3" y1="12" x2="3.01" y2="12" /><line x1="3" y1="18" x2="3.01" y2="18" /></svg>
+                <button onClick={() => setViewMode('list')} style={{ flex: 1, padding: '6px', background: viewMode === 'list' ? '#22c55e' : 'transparent', border: 'none', color: viewMode === 'list' ? '#fff' : '#888', fontSize: '10px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}>
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="8" y1="6" x2="21" y2="6" /><line x1="8" y1="12" x2="21" y2="12" /><line x1="8" y1="18" x2="21" y2="18" /><line x1="3" y1="6" x2="3.01" y2="6" /><line x1="3" y1="12" x2="3.01" y2="12" /><line x1="3" y1="18" x2="3.01" y2="18" /></svg>
                   List
                 </button>
               </div>
