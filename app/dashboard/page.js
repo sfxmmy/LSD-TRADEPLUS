@@ -1024,6 +1024,27 @@ export default function DashboardPage() {
                         </table>
                       </div>
                     )}
+                    {/* Load More Button */}
+                    {hasMoreTrades(account.id) && (
+                      <button
+                        onClick={() => loadMoreTrades(account.id)}
+                        disabled={loadingMore}
+                        style={{
+                          width: '100%',
+                          padding: '10px',
+                          marginTop: '8px',
+                          background: 'transparent',
+                          border: '1px solid #2a2a35',
+                          borderRadius: '6px',
+                          color: '#999',
+                          fontSize: '13px',
+                          cursor: loadingMore ? 'not-allowed' : 'pointer',
+                          opacity: loadingMore ? 0.6 : 1
+                        }}
+                      >
+                        {loadingMore ? 'Loading...' : `Load More Trades (${accTrades.length} of ${tradeCounts[account.id] || 0})`}
+                      </button>
+                    )}
                   </div>
 
                   {/* Buttons */}
@@ -1149,6 +1170,194 @@ export default function DashboardPage() {
               </div>
             </div>
           </div>
+        )}
+
+        {/* Mobile Trade Entry Modal */}
+        {showMobileTradeModal && (
+          <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.95)', display: 'flex', flexDirection: 'column', zIndex: 100 }}>
+            {/* Header */}
+            <div style={{ padding: '16px 20px', borderBottom: '1px solid #1a1a22', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <h2 style={{ fontSize: '18px', fontWeight: 600, color: '#fff', margin: 0 }}>Log Trade</h2>
+              <button onClick={() => setShowMobileTradeModal(false)} style={{ background: 'transparent', border: 'none', color: '#999', padding: '8px', cursor: 'pointer' }}>
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+              </button>
+            </div>
+
+            {/* Scrollable Form */}
+            <div style={{ flex: 1, overflow: 'auto', padding: '20px' }}>
+              {/* Journal Select */}
+              <div style={{ marginBottom: '16px' }}>
+                <label style={{ display: 'block', fontSize: '11px', color: '#666', marginBottom: '6px', textTransform: 'uppercase' }}>Journal</label>
+                <select value={quickTradeAccount} onChange={e => setQuickTradeAccount(e.target.value)} style={{ width: '100%', padding: '14px', background: 'linear-gradient(135deg, rgba(34,197,94,0.1) 0%, rgba(34,197,94,0.05) 100%)', border: '1px solid rgba(34,197,94,0.3)', borderRadius: '8px', color: '#22c55e', fontSize: '15px', fontWeight: 600 }}>
+                  {accounts.map(acc => <option key={acc.id} value={acc.id}>{acc.name}</option>)}
+                </select>
+              </div>
+
+              {/* Symbol & PnL Row */}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '16px' }}>
+                <div>
+                  <label style={{ display: 'block', fontSize: '11px', color: '#666', marginBottom: '6px', textTransform: 'uppercase' }}>Symbol</label>
+                  <input type="text" value={quickTradeSymbol} onChange={e => setQuickTradeSymbol(e.target.value)} placeholder="XAUUSD" style={{ width: '100%', padding: '14px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '8px', color: '#fff', fontSize: '15px', boxSizing: 'border-box' }} />
+                </div>
+                <div>
+                  <label style={{ display: 'block', fontSize: '11px', color: '#666', marginBottom: '6px', textTransform: 'uppercase' }}>P&L ($)</label>
+                  <input type="number" value={quickTradePnl} onChange={e => setQuickTradePnl(e.target.value)} placeholder="0" style={{ width: '100%', padding: '14px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '8px', color: '#fff', fontSize: '15px', boxSizing: 'border-box' }} />
+                </div>
+              </div>
+
+              {/* Direction */}
+              <div style={{ marginBottom: '16px' }}>
+                <label style={{ display: 'block', fontSize: '11px', color: '#666', marginBottom: '8px', textTransform: 'uppercase' }}>Direction</label>
+                <div style={{ display: 'flex', gap: '8px' }}>
+                  <button onClick={() => setQuickTradeDirection('long')} style={{ flex: 1, padding: '14px', background: quickTradeDirection === 'long' ? 'rgba(34,197,94,0.2)' : '#0a0a0f', border: `2px solid ${quickTradeDirection === 'long' ? '#22c55e' : '#1a1a22'}`, borderRadius: '8px', color: quickTradeDirection === 'long' ? '#22c55e' : '#666', fontSize: '15px', fontWeight: 600, cursor: 'pointer' }}>LONG</button>
+                  <button onClick={() => setQuickTradeDirection('short')} style={{ flex: 1, padding: '14px', background: quickTradeDirection === 'short' ? 'rgba(239,68,68,0.2)' : '#0a0a0f', border: `2px solid ${quickTradeDirection === 'short' ? '#ef4444' : '#1a1a22'}`, borderRadius: '8px', color: quickTradeDirection === 'short' ? '#ef4444' : '#666', fontSize: '15px', fontWeight: 600, cursor: 'pointer' }}>SHORT</button>
+                </div>
+              </div>
+
+              {/* Outcome */}
+              <div style={{ marginBottom: '16px' }}>
+                <label style={{ display: 'block', fontSize: '11px', color: '#666', marginBottom: '8px', textTransform: 'uppercase' }}>Outcome</label>
+                <div style={{ display: 'flex', gap: '8px' }}>
+                  <button onClick={() => setQuickTradeOutcome('win')} style={{ flex: 1, padding: '14px', background: quickTradeOutcome === 'win' ? 'rgba(34,197,94,0.2)' : '#0a0a0f', border: `2px solid ${quickTradeOutcome === 'win' ? '#22c55e' : '#1a1a22'}`, borderRadius: '8px', color: quickTradeOutcome === 'win' ? '#22c55e' : '#666', fontSize: '15px', fontWeight: 600, cursor: 'pointer' }}>WIN</button>
+                  <button onClick={() => setQuickTradeOutcome('loss')} style={{ flex: 1, padding: '14px', background: quickTradeOutcome === 'loss' ? 'rgba(239,68,68,0.2)' : '#0a0a0f', border: `2px solid ${quickTradeOutcome === 'loss' ? '#ef4444' : '#1a1a22'}`, borderRadius: '8px', color: quickTradeOutcome === 'loss' ? '#ef4444' : '#666', fontSize: '15px', fontWeight: 600, cursor: 'pointer' }}>LOSS</button>
+                  <button onClick={() => setQuickTradeOutcome('be')} style={{ flex: 1, padding: '14px', background: quickTradeOutcome === 'be' ? 'rgba(255,255,255,0.1)' : '#0a0a0f', border: `2px solid ${quickTradeOutcome === 'be' ? '#888' : '#1a1a22'}`, borderRadius: '8px', color: quickTradeOutcome === 'be' ? '#888' : '#666', fontSize: '15px', fontWeight: 600, cursor: 'pointer' }}>BE</button>
+                </div>
+              </div>
+
+              {/* RR & Risk Row */}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '16px' }}>
+                <div>
+                  <label style={{ display: 'block', fontSize: '11px', color: '#666', marginBottom: '6px', textTransform: 'uppercase' }}>RR</label>
+                  <input type="text" value={quickTradeRR} onChange={e => setQuickTradeRR(e.target.value)} placeholder="2.5" style={{ width: '100%', padding: '14px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '8px', color: '#fff', fontSize: '15px', boxSizing: 'border-box' }} />
+                </div>
+                <div>
+                  <label style={{ display: 'block', fontSize: '11px', color: '#666', marginBottom: '6px', textTransform: 'uppercase' }}>% Risk</label>
+                  <input type="number" value={quickTradeRiskPercent} onChange={e => setQuickTradeRiskPercent(e.target.value)} placeholder="1" style={{ width: '100%', padding: '14px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '8px', color: '#fff', fontSize: '15px', boxSizing: 'border-box' }} />
+                </div>
+              </div>
+
+              {/* Date */}
+              <div style={{ marginBottom: '16px' }}>
+                <label style={{ display: 'block', fontSize: '11px', color: '#666', marginBottom: '6px', textTransform: 'uppercase' }}>Date</label>
+                <input type="date" value={quickTradeDate} onChange={e => setQuickTradeDate(e.target.value)} max={new Date().toISOString().split('T')[0]} style={{ width: '100%', padding: '14px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '8px', color: '#fff', fontSize: '15px', boxSizing: 'border-box' }} />
+              </div>
+
+              {/* Optional Fields - Collapsible Style */}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '16px' }}>
+                <div>
+                  <label style={{ display: 'block', fontSize: '11px', color: '#666', marginBottom: '6px', textTransform: 'uppercase' }}>Confidence</label>
+                  <select value={quickTradeConfidence} onChange={e => setQuickTradeConfidence(e.target.value)} style={{ width: '100%', padding: '14px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '8px', color: '#fff', fontSize: '15px' }}>
+                    <option value="">-</option>
+                    <option value="High">High</option>
+                    <option value="Medium">Medium</option>
+                    <option value="Low">Low</option>
+                  </select>
+                </div>
+                <div>
+                  <label style={{ display: 'block', fontSize: '11px', color: '#666', marginBottom: '6px', textTransform: 'uppercase' }}>Timeframe</label>
+                  <select value={quickTradeTimeframe} onChange={e => setQuickTradeTimeframe(e.target.value)} style={{ width: '100%', padding: '14px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '8px', color: '#fff', fontSize: '15px' }}>
+                    <option value="">-</option>
+                    <option value="1m">1m</option>
+                    <option value="5m">5m</option>
+                    <option value="15m">15m</option>
+                    <option value="1H">1H</option>
+                    <option value="4H">4H</option>
+                    <option value="Daily">Daily</option>
+                  </select>
+                </div>
+                <div>
+                  <label style={{ display: 'block', fontSize: '11px', color: '#666', marginBottom: '6px', textTransform: 'uppercase' }}>Session</label>
+                  <select value={quickTradeSession} onChange={e => setQuickTradeSession(e.target.value)} style={{ width: '100%', padding: '14px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '8px', color: '#fff', fontSize: '15px' }}>
+                    <option value="">-</option>
+                    <option value="London">London</option>
+                    <option value="New York">New York</option>
+                    <option value="Asian">Asian</option>
+                  </select>
+                </div>
+                <div>
+                  <label style={{ display: 'block', fontSize: '11px', color: '#666', marginBottom: '6px', textTransform: 'uppercase' }}>Rating</label>
+                  <select value={quickTradeRating} onChange={e => setQuickTradeRating(e.target.value)} style={{ width: '100%', padding: '14px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '8px', color: '#fff', fontSize: '15px' }}>
+                    <option value="">-</option>
+                    <option value="1">1 Star</option>
+                    <option value="2">2 Stars</option>
+                    <option value="3">3 Stars</option>
+                    <option value="4">4 Stars</option>
+                    <option value="5">5 Stars</option>
+                  </select>
+                </div>
+              </div>
+
+              {/* Notes */}
+              <div style={{ marginBottom: '16px' }}>
+                <label style={{ display: 'block', fontSize: '11px', color: '#666', marginBottom: '6px', textTransform: 'uppercase' }}>Notes</label>
+                <textarea value={quickTradeNotes} onChange={e => setQuickTradeNotes(e.target.value)} placeholder="Trade notes..." rows={3} style={{ width: '100%', padding: '14px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '8px', color: '#fff', fontSize: '15px', resize: 'none', boxSizing: 'border-box' }} />
+              </div>
+
+              {/* Custom Inputs */}
+              {getSelectedAccountCustomInputs().length > 0 && (
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '16px' }}>
+                  {getSelectedAccountCustomInputs().map(input => (
+                    <div key={input.id}>
+                      <label style={{ display: 'block', fontSize: '11px', color: '#666', marginBottom: '6px', textTransform: 'uppercase', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{input.label || input.id}</label>
+                      <select value={quickTradeExtraData[input.id] || ''} onChange={e => setQuickTradeExtraData(prev => ({ ...prev, [input.id]: e.target.value }))} style={{ width: '100%', padding: '14px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '8px', color: '#fff', fontSize: '15px' }}>
+                        <option value="">-</option>
+                        {(input.options || []).map(opt => <option key={opt} value={opt}>{opt}</option>)}
+                      </select>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Fixed Bottom Button */}
+            <div style={{ padding: '16px 20px', borderTop: '1px solid #1a1a22', background: '#0a0a0f' }}>
+              <button
+                onClick={() => { submitQuickTrade(); setShowMobileTradeModal(false); }}
+                disabled={submittingTrade || !quickTradeSymbol.trim() || !quickTradePnl}
+                style={{
+                  width: '100%',
+                  padding: '16px',
+                  background: (submittingTrade || !quickTradeSymbol.trim() || !quickTradePnl) ? '#1a1a22' : 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)',
+                  border: 'none',
+                  borderRadius: '12px',
+                  color: (submittingTrade || !quickTradeSymbol.trim() || !quickTradePnl) ? '#666' : '#fff',
+                  fontWeight: 700,
+                  fontSize: '16px',
+                  cursor: (submittingTrade || !quickTradeSymbol.trim() || !quickTradePnl) ? 'not-allowed' : 'pointer'
+                }}
+              >
+                {submittingTrade ? 'Adding Trade...' : 'Log Trade'}
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Mobile Floating Action Button */}
+        {isMobile && accounts.length > 0 && !showMobileTradeModal && (
+          <button
+            onClick={() => setShowMobileTradeModal(true)}
+            style={{
+              position: 'fixed',
+              bottom: '24px',
+              right: '24px',
+              width: '60px',
+              height: '60px',
+              borderRadius: '50%',
+              background: 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)',
+              border: 'none',
+              boxShadow: '0 4px 20px rgba(34, 197, 94, 0.4)',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              zIndex: 50
+            }}
+          >
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round">
+              <line x1="12" y1="5" x2="12" y2="19"/>
+              <line x1="5" y1="12" x2="19" y2="12"/>
+            </svg>
+          </button>
         )}
       </div>
     </div>

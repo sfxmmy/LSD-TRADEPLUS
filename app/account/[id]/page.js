@@ -741,6 +741,43 @@ export default function AccountPage() {
           const displayGrossProfit = cumStats ? cumStats.grossProfit : grossProfit
           const displayGrossLoss = cumStats ? cumStats.grossLoss : grossLoss
 
+          // Recalculate derived stats based on displayTrades
+          const displayLongTrades = displayTrades.filter(t => t.direction === 'long')
+          const displayShortTrades = displayTrades.filter(t => t.direction === 'short')
+          const displayLongWins = displayLongTrades.filter(t => t.outcome === 'win').length
+          const displayShortWins = displayShortTrades.filter(t => t.outcome === 'win').length
+          const displayLongWinrate = displayLongTrades.length > 0 ? Math.round((displayLongWins / displayLongTrades.length) * 100) : 0
+          const displayShortWinrate = displayShortTrades.length > 0 ? Math.round((displayShortWins / displayShortTrades.length) * 100) : 0
+          const displayLongPct = Math.round((displayLongTrades.length / (displayTrades.length || 1)) * 100)
+
+          // Streaks for displayTrades
+          const displayStreaks = (() => {
+            const sorted = [...displayTrades].sort((a, b) => new Date(a.date) - new Date(b.date))
+            let cs = 0, mw = 0, ml = 0, ts = 0, lo = null
+            sorted.forEach(t => { if (t.outcome === 'win') { ts = lo === 'win' ? ts + 1 : 1; mw = Math.max(mw, ts); lo = 'win' } else if (t.outcome === 'loss') { ts = lo === 'loss' ? ts + 1 : 1; ml = Math.max(ml, ts); lo = 'loss' } })
+            let i = sorted.length - 1
+            if (i >= 0) { const last = sorted[i].outcome; while (i >= 0 && sorted[i].outcome === last) { cs++; i-- }; if (last === 'loss') cs = -cs }
+            return { cs, mw, ml }
+          })()
+
+          // Daily PnL for displayTrades
+          const displayDailyPnL = (() => {
+            const byDay = {}
+            displayTrades.forEach(t => { byDay[t.date] = (byDay[t.date] || 0) + (parseFloat(t.pnl) || 0) })
+            return Object.entries(byDay).sort((a, b) => new Date(a[0]) - new Date(b[0])).map(([date, pnl]) => ({ date, pnl }))
+          })()
+
+          // Day winrate for displayTrades
+          const displayGreenDays = displayDailyPnL.filter(d => d.pnl > 0).length
+          const displayRedDays = displayDailyPnL.filter(d => d.pnl < 0).length
+          const displayDayWinrate = (displayGreenDays + displayRedDays) > 0 ? Math.round((displayGreenDays / (displayGreenDays + displayRedDays)) * 100) : 0
+
+          // Consistency score for displayTrades
+          const displayConsistencyScore = displayDailyPnL.length > 0 ? Math.round((displayGreenDays / displayDailyPnL.length) * 100) : 0
+
+          // Average rating for displayTrades
+          const displayAvgRating = displayTrades.length > 0 ? (displayTrades.reduce((s, t) => s + (parseInt(getExtraData(t).rating) || 0), 0) / displayTrades.length).toFixed(1) : '0'
+
           return (
           <div style={{ padding: isMobile ? '0' : '16px 24px' }}>
             {/* ROW 1: Stats + Graphs - both graphs same height, aligned with Total Trades bottom */}
@@ -782,27 +819,27 @@ export default function AccountPage() {
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', padding: '5px 0', borderBottom: '1px solid #1a1a22' }}>
                   <span style={{ fontSize: '12px', color: '#888' }}>Long WR</span>
-                  <span style={{ fontSize: '13px', fontWeight: 700, color: longWinrate >= 50 ? '#22c55e' : '#ef4444' }}>{longWinrate}%</span>
+                  <span style={{ fontSize: '13px', fontWeight: 700, color: displayLongWinrate >= 50 ? '#22c55e' : '#ef4444' }}>{displayLongWinrate}%</span>
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', padding: '5px 0', borderBottom: '1px solid #1a1a22' }}>
                   <span style={{ fontSize: '12px', color: '#888' }}>Short WR</span>
-                  <span style={{ fontSize: '13px', fontWeight: 700, color: shortWinrate >= 50 ? '#22c55e' : '#ef4444' }}>{shortWinrate}%</span>
+                  <span style={{ fontSize: '13px', fontWeight: 700, color: displayShortWinrate >= 50 ? '#22c55e' : '#ef4444' }}>{displayShortWinrate}%</span>
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', padding: '5px 0', borderBottom: '1px solid #1a1a22' }}>
                   <span style={{ fontSize: '12px', color: '#888' }}>Day WR</span>
-                  <span style={{ fontSize: '13px', fontWeight: 700, color: dayWinrate >= 50 ? '#22c55e' : '#ef4444' }}>{dayWinrate}%</span>
+                  <span style={{ fontSize: '13px', fontWeight: 700, color: displayDayWinrate >= 50 ? '#22c55e' : '#ef4444' }}>{displayDayWinrate}%</span>
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', padding: '5px 0', borderBottom: '1px solid #1a1a22' }}>
                   <span style={{ fontSize: '12px', color: '#888' }}>Consistency</span>
-                  <span style={{ fontSize: '13px', fontWeight: 700, color: consistencyScore >= 50 ? '#22c55e' : '#ef4444' }}>{consistencyScore}%</span>
+                  <span style={{ fontSize: '13px', fontWeight: 700, color: displayConsistencyScore >= 50 ? '#22c55e' : '#ef4444' }}>{displayConsistencyScore}%</span>
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', padding: '5px 0', borderBottom: '1px solid #1a1a22' }}>
                   <span style={{ fontSize: '12px', color: '#888' }}>Win Streak</span>
-                  <span style={{ fontSize: '13px', fontWeight: 700, color: '#22c55e' }}>{streaks.mw}</span>
+                  <span style={{ fontSize: '13px', fontWeight: 700, color: '#22c55e' }}>{displayStreaks.mw}</span>
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', padding: '5px 0' }}>
                   <span style={{ fontSize: '12px', color: '#888' }}>Loss Streak</span>
-                  <span style={{ fontSize: '13px', fontWeight: 700, color: '#ef4444' }}>{streaks.ml}</span>
+                  <span style={{ fontSize: '13px', fontWeight: 700, color: '#ef4444' }}>{displayStreaks.ml}</span>
                 </div>
               </div>
 
@@ -812,17 +849,16 @@ export default function AccountPage() {
                 <div style={{ flex: 1, background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '10px', display: 'flex', flexDirection: 'column', position: 'relative', minHeight: isMobile ? '80px' : '100px' }}>
                   {(() => {
                     // Calculate visible lines first so we can compute dynamic Start/Current
-                    const tradesToUse = showCumulativeStats && allAccounts.length > 1 ? displayTrades : trades
-                    const sorted = tradesToUse.length >= 2 ? [...tradesToUse].sort((a, b) => new Date(a.date) - new Date(b.date)) : []
+                    const sorted = displayTrades.length >= 2 ? [...displayTrades].sort((a, b) => new Date(a.date) - new Date(b.date)) : []
                     const lineColors = ['#22c55e', '#3b82f6', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#14b8a6', '#f97316', '#06b6d4']
-                    
+
                     let lines = []
-                    let displayStart = startingBalance
-                    let displayCurrent = currentBalance
+                    let chartStart = displayStartingBalance
+                    let chartCurrent = displayCurrentBalance
                     
                     if (sorted.length >= 2) {
                       if (equityCurveGroupBy === 'total') {
-                        let cum = startingBalance
+                        let cum = displayStartingBalance
                         const points = [{ balance: cum, date: null, pnl: 0 }]
                         sorted.forEach(t => { cum += parseFloat(t.pnl) || 0; points.push({ balance: cum, date: t.date, pnl: parseFloat(t.pnl) || 0, symbol: t.symbol }) })
                         lines = [{ name: 'Total', points, color: '#22c55e' }]
@@ -836,7 +872,7 @@ export default function AccountPage() {
                           if (!groups[key]) groups[key] = []
                           groups[key].push(t)
                         })
-                        
+
                         const groupNames = Object.keys(groups).slice(0, 9)
                         groupNames.forEach((name, idx) => {
                           let cum = 0
@@ -849,26 +885,26 @@ export default function AccountPage() {
                         })
                       }
                     }
-                    
+
                     const visibleLines = equityCurveGroupBy === 'total' ? lines : lines.filter(l => selectedCurveLines[l.name] !== false)
-                    
+
                     // Calculate dynamic Start/Current based on visible lines
                     if (equityCurveGroupBy !== 'total' && visibleLines.length > 0) {
-                      displayStart = 0
-                      displayCurrent = visibleLines.reduce((sum, line) => {
+                      chartStart = 0
+                      chartCurrent = visibleLines.reduce((sum, line) => {
                         const lastPt = line.points[line.points.length - 1]
                         return sum + (lastPt?.balance || 0)
                       }, 0)
                     }
-                    
+
                     return (
                       <>
                         {/* Header row with title, stats, controls and enlarge button */}
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px', flexWrap: 'wrap', gap: '8px' }}>
                           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                             <span style={{ fontSize: '12px', color: '#999', textTransform: 'uppercase' }}>Equity Curve</span>
-                            <span style={{ fontSize: '11px', color: '#999' }}>Start: <span style={{ color: '#fff' }}>${displayStart.toLocaleString()}</span></span>
-                            <span style={{ fontSize: '11px', color: '#999' }}>Current: <span style={{ color: displayCurrent >= displayStart ? '#22c55e' : '#ef4444' }}>${Math.round(displayCurrent).toLocaleString()}</span></span>
+                            <span style={{ fontSize: '11px', color: '#999' }}>Start: <span style={{ color: '#fff' }}>${chartStart.toLocaleString()}</span></span>
+                            <span style={{ fontSize: '11px', color: '#999' }}>Current: <span style={{ color: chartCurrent >= chartStart ? '#22c55e' : '#ef4444' }}>${Math.round(chartCurrent).toLocaleString()}</span></span>
                           </div>
                           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                             <select value={equityCurveGroupBy} onChange={e => { setEquityCurveGroupBy(e.target.value); setSelectedCurveLines({}) }} style={{ padding: '4px 8px', background: '#141418', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '4px', color: '#fff', fontSize: '11px', boxShadow: '0 0 4px rgba(255,255,255,0.1)' }}>
@@ -914,8 +950,8 @@ export default function AccountPage() {
                             <div style={{ height: '100%', width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#999' }}>Need 2+ trades</div>
                           ) : (() => {
                             const allBalances = visibleLines.flatMap(l => l.points.map(p => p.balance))
-                            const maxBal = Math.max(...allBalances)
-                            const minBal = Math.min(...allBalances)
+                            const maxBal = allBalances.length > 0 ? Math.max(...allBalances) : startingBalance
+                            const minBal = allBalances.length > 0 ? Math.min(...allBalances) : startingBalance
                             const range = maxBal - minBal || 1000
                             
                             // More labels when enlarged
@@ -938,15 +974,15 @@ export default function AccountPage() {
                             for (let v = yMax; v >= yMin; v -= yStep) yLabels.push(v)
                             
                             const hasNegative = minBal < 0
-                            const belowStart = equityCurveGroupBy === 'total' && minBal < startingBalance
+                            const belowStart = equityCurveGroupBy === 'total' && minBal < displayStartingBalance
                             const zeroY = hasNegative ? ((yMax - 0) / yRange) * 100 : null
                             // Starting balance line - always show if within range
-                            const startLineY = equityCurveGroupBy === 'total' && !hasNegative && startingBalance >= yMin && startingBalance <= yMax ? ((yMax - startingBalance) / yRange) * 100 : null
-                            
+                            const startLineY = equityCurveGroupBy === 'total' && !hasNegative && displayStartingBalance >= yMin && displayStartingBalance <= yMax ? ((yMax - displayStartingBalance) / yRange) * 100 : null
+
                             const svgW = 100, svgH = 100
-                            
+
                             // Calculate starting balance Y position in SVG coordinates
-                            const startY = svgH - ((startingBalance - yMin) / yRange) * svgH
+                            const startY = svgH - ((displayStartingBalance - yMin) / yRange) * svgH
 
                             const lineData = visibleLines.map(line => {
                               const chartPoints = line.points.map((p, i) => ({
@@ -964,7 +1000,7 @@ export default function AccountPage() {
                                 const greenSegments = [], redSegments = []
                                 for (let i = 0; i < chartPoints.length - 1; i++) {
                                   const p1 = chartPoints[i], p2 = chartPoints[i + 1]
-                                  const above1 = p1.balance >= startingBalance, above2 = p2.balance >= startingBalance
+                                  const above1 = p1.balance >= displayStartingBalance, above2 = p2.balance >= displayStartingBalance
 
                                   if (above1 === above2) {
                                     // Both points same side - add to appropriate array
@@ -972,7 +1008,7 @@ export default function AccountPage() {
                                     arr.push({ x1: p1.x, y1: p1.y, x2: p2.x, y2: p2.y })
                                   } else {
                                     // Crossing - find intersection point
-                                    const t = (startingBalance - p1.balance) / (p2.balance - p1.balance)
+                                    const t = (displayStartingBalance - p1.balance) / (p2.balance - p1.balance)
                                     const ix = p1.x + t * (p2.x - p1.x), iy = startY
                                     if (above1) {
                                       greenSegments.push({ x1: p1.x, y1: p1.y, x2: ix, y2: iy })
@@ -1114,8 +1150,8 @@ export default function AccountPage() {
                                                 const pts = line.chartPoints
                                                 const nextLine = sortedLines[sortIdx + 1]
                                                 // Generate X sample points across the full width
-                                                const xMin = Math.min(...pts.map(p => p.x))
-                                                const xMax = Math.max(...pts.map(p => p.x))
+                                                const xMin = pts.length > 0 ? Math.min(...pts.map(p => p.x)) : 0
+                                                const xMax = pts.length > 0 ? Math.max(...pts.map(p => p.x)) : 100
                                                 const numSamples = 50
                                                 const xSamples = []
                                                 for (let i = 0; i <= numSamples; i++) {
@@ -1240,7 +1276,7 @@ export default function AccountPage() {
                                         )
                                       })
                                     })()}
-                                    {hoverPoint && <div style={{ position: 'absolute', left: `${hoverPoint.xPct}%`, top: `${hoverPoint.yPct}%`, transform: 'translate(-50%, -50%)', width: '10px', height: '10px', borderRadius: '50%', background: equityCurveGroupBy === 'total' ? (hoverPoint.balance >= startingBalance ? '#22c55e' : '#ef4444') : (hoverPoint.lineColor || '#22c55e'), border: '2px solid #fff', pointerEvents: 'none', zIndex: 10 }} />}
+                                    {hoverPoint && <div style={{ position: 'absolute', left: `${hoverPoint.xPct}%`, top: `${hoverPoint.yPct}%`, transform: 'translate(-50%, -50%)', width: '10px', height: '10px', borderRadius: '50%', background: equityCurveGroupBy === 'total' ? (hoverPoint.balance >= displayStartingBalance ? '#22c55e' : '#ef4444') : (hoverPoint.lineColor || '#22c55e'), border: '2px solid #fff', pointerEvents: 'none', zIndex: 10 }} />}
                                     {hoverPoint && (
                                       <div style={{ position: 'absolute', left: `${hoverPoint.xPct}%`, top: `${hoverPoint.yPct}%`, transform: `translate(${hoverPoint.xPct > 80 ? 'calc(-100% - 15px)' : '15px'}, ${hoverPoint.yPct < 20 ? '0%' : hoverPoint.yPct > 80 ? '-100%' : '-50%'})`, background: '#1a1a22', border: '1px solid #2a2a35', borderRadius: '6px', padding: '8px 12px', fontSize: '11px', whiteSpace: 'nowrap', zIndex: 10, pointerEvents: 'none' }}>
                                         {hoverPoint.lineName && equityCurveGroupBy !== 'total' && <div style={{ color: hoverPoint.lineColor, fontWeight: 600, marginBottom: '2px' }}>{hoverPoint.lineName}</div>}
@@ -1298,7 +1334,7 @@ export default function AccountPage() {
                   {(() => {
                     const groupedData = {}
                     const customSelects = getCustomSelectInputs()
-                    trades.forEach(t => {
+                    displayTrades.forEach(t => {
                       let key
                       if (graphGroupBy === 'symbol') key = t.symbol
                       else if (['direction', 'session', 'confidence', 'timeframe'].includes(graphGroupBy)) {
@@ -1428,21 +1464,21 @@ export default function AccountPage() {
             <div style={{ display: 'flex', gap: '16px', marginBottom: '16px' }}>
               <div style={{ flex: 1, background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '12px 16px', display: 'flex', alignItems: 'center', gap: '16px' }}>
                 <span style={{ fontSize: '12px', color: '#999', textTransform: 'uppercase' }}>Direction</span>
-                <span style={{ fontSize: '13px', color: '#22c55e', fontWeight: 700 }}>{longPct}% Long</span>
+                <span style={{ fontSize: '13px', color: '#22c55e', fontWeight: 700 }}>{displayLongPct}% Long</span>
                 <div style={{ flex: 1, height: '10px', borderRadius: '5px', overflow: 'hidden', display: 'flex' }}>
-                  <div style={{ width: `${longPct}%`, background: '#22c55e' }} />
-                  <div style={{ width: `${100 - longPct}%`, background: '#ef4444' }} />
+                  <div style={{ width: `${displayLongPct}%`, background: '#22c55e' }} />
+                  <div style={{ width: `${100 - displayLongPct}%`, background: '#ef4444' }} />
                 </div>
-                <span style={{ fontSize: '13px', color: '#ef4444', fontWeight: 700 }}>{100 - longPct}% Short</span>
+                <span style={{ fontSize: '13px', color: '#ef4444', fontWeight: 700 }}>{100 - displayLongPct}% Short</span>
               </div>
               <div style={{ flex: 1, background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '12px 16px', display: 'flex', alignItems: 'center', gap: '16px' }}>
                 <span style={{ fontSize: '12px', color: '#999', textTransform: 'uppercase' }}>Sentiment</span>
-                <span style={{ fontSize: '13px', color: '#22c55e', fontWeight: 700 }}>{winrate}% Bullish</span>
+                <span style={{ fontSize: '13px', color: '#22c55e', fontWeight: 700 }}>{displayWinrate}% Bullish</span>
                 <div style={{ flex: 1, height: '10px', borderRadius: '5px', overflow: 'hidden', display: 'flex' }}>
-                  <div style={{ width: `${winrate}%`, background: '#22c55e' }} />
-                  <div style={{ width: `${100 - winrate}%`, background: '#ef4444' }} />
+                  <div style={{ width: `${displayWinrate}%`, background: '#22c55e' }} />
+                  <div style={{ width: `${100 - displayWinrate}%`, background: '#ef4444' }} />
                 </div>
-                <span style={{ fontSize: '13px', color: '#ef4444', fontWeight: 700 }}>{100 - winrate}% Bearish</span>
+                <span style={{ fontSize: '13px', color: '#ef4444', fontWeight: 700 }}>{100 - displayWinrate}% Bearish</span>
               </div>
             </div>
 
@@ -1459,14 +1495,14 @@ export default function AccountPage() {
                   </label>
                 </div>
                 <div style={{ height: '200px', display: 'flex' }}>
-                  {dailyPnL.length === 0 ? <div style={{ height: '100%', width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#999' }}>No data</div> : (() => {
-                    let displayData = dailyPnL
-                    if (includeDaysNotTraded && dailyPnL.length > 1) {
-                      const sorted = [...dailyPnL].sort((a, b) => new Date(a.date) - new Date(b.date))
+                  {displayDailyPnL.length === 0 ? <div style={{ height: '100%', width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#999' }}>No data</div> : (() => {
+                    let displayData = displayDailyPnL
+                    if (includeDaysNotTraded && displayDailyPnL.length > 1) {
+                      const sorted = [...displayDailyPnL].sort((a, b) => new Date(a.date) - new Date(b.date))
                       const startDate = new Date(sorted[0].date)
                       const endDate = new Date(sorted[sorted.length - 1].date)
                       const pnlByDate = {}
-                      dailyPnL.forEach(d => { pnlByDate[d.date] = d.pnl })
+                      displayDailyPnL.forEach(d => { pnlByDate[d.date] = d.pnl })
                       displayData = []
                       for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
                         const dateStr = d.toISOString().split('T')[0]
@@ -1565,7 +1601,7 @@ export default function AccountPage() {
                     <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
                       <div style={{ display: 'flex', gap: '2px', marginBottom: '4px' }}>
                         {[1,2,3,4,5].map(star => {
-                          const rating = parseFloat(avgRating)
+                          const rating = parseFloat(displayAvgRating)
                           const isFullStar = rating >= star
                           const isHalfStar = rating >= star - 0.5 && rating < star
                           return (
@@ -1577,7 +1613,7 @@ export default function AccountPage() {
                           )
                         })}
                       </div>
-                      <div style={{ fontSize: '28px', fontWeight: 700, color: '#fff' }}>{avgRating}</div>
+                      <div style={{ fontSize: '28px', fontWeight: 700, color: '#fff' }}>{displayAvgRating}</div>
                     </div>
                   </div>
 
@@ -1587,7 +1623,7 @@ export default function AccountPage() {
                     {(() => {
                       const dayNames = ['M', 'T', 'W', 'T', 'F']
                       const dayPnL = [0, 0, 0, 0, 0]
-                      trades.forEach(t => {
+                      displayTrades.forEach(t => {
                         const day = new Date(t.date).getDay()
                         if (day >= 1 && day <= 5) dayPnL[day - 1] += parseFloat(t.pnl) || 0
                       })
@@ -1667,7 +1703,7 @@ export default function AccountPage() {
                   </select>
                   {(() => {
                     const ps = {}
-                    trades.forEach(t => { if (!ps[t.symbol]) ps[t.symbol] = { w: 0, l: 0, pnl: 0, count: 0 }; if (t.outcome === 'win') ps[t.symbol].w++; else if (t.outcome === 'loss') ps[t.symbol].l++; ps[t.symbol].pnl += parseFloat(t.pnl) || 0; ps[t.symbol].count++ })
+                    displayTrades.forEach(t => { if (!ps[t.symbol]) ps[t.symbol] = { w: 0, l: 0, pnl: 0, count: 0 }; if (t.outcome === 'win') ps[t.symbol].w++; else if (t.outcome === 'loss') ps[t.symbol].l++; ps[t.symbol].pnl += parseFloat(t.pnl) || 0; ps[t.symbol].count++ })
                     let selected
                     if (pairAnalysisType === 'best') selected = Object.entries(ps).sort((a, b) => b[1].pnl - a[1].pnl)[0]
                     else if (pairAnalysisType === 'worst') selected = Object.entries(ps).sort((a, b) => a[1].pnl - b[1].pnl)[0]
@@ -1722,7 +1758,7 @@ export default function AccountPage() {
                 <div style={{ position: 'relative', background: 'linear-gradient(145deg, #0d0d12 0%, #0a0a0e 100%)', border: '2px solid #22c55e', borderRadius: '10px', padding: '14px', boxShadow: '0 0 25px rgba(34,197,94,0.3), inset 0 1px 0 rgba(34,197,94,0.2)' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
                     <div style={{ fontSize: '12px', color: '#22c55e', textTransform: 'uppercase', fontWeight: 700, textShadow: '0 0 10px rgba(34,197,94,0.5)', letterSpacing: '1px' }}>Trade Analysis</div>
-                    <div style={{ fontSize: '9px', color: '#999' }}>{trades.length} trades</div>
+                    <div style={{ fontSize: '9px', color: '#999' }}>{displayTrades.length} trades</div>
                   </div>
                   <div style={{ display: 'flex', gap: '6px', marginBottom: '10px' }}>
                     <select value={analysisGroupBy} onChange={e => setAnalysisGroupBy(e.target.value)} style={{ flex: 1, padding: '7px 10px', background: 'linear-gradient(180deg, #1a1a22 0%, #141418 100%)', border: '1px solid rgba(34,197,94,0.4)', borderRadius: '6px', color: '#fff', fontSize: '11px', cursor: 'pointer' }}>
@@ -1750,7 +1786,7 @@ export default function AccountPage() {
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
                     {(() => {
                       const groups = {}
-                      trades.forEach(t => {
+                      displayTrades.forEach(t => {
                         let key
                         if (analysisGroupBy === 'direction') key = t.direction?.toUpperCase()
                         else if (analysisGroupBy === 'symbol') key = t.symbol
@@ -1816,22 +1852,22 @@ export default function AccountPage() {
 
             {/* ROW 5: Grouped stats sections */}
             {(() => {
-              const tradesThisWeek = trades.filter(t => {
+              const tradesThisWeek = displayTrades.filter(t => {
                 const d = new Date(t.date)
                 const now = new Date()
                 const weekAgo = new Date(now.setDate(now.getDate() - 7))
                 return d >= weekAgo
               }).length
-              const tradingDays = Object.keys(dailyPnL.reduce((acc, d) => { acc[d.date] = 1; return acc }, {})).length
-              const biggestWin = Math.max(...trades.filter(t => t.outcome === 'win').map(t => parseFloat(t.pnl) || 0), 0)
-              const biggestLoss = Math.min(...trades.filter(t => t.outcome === 'loss').map(t => parseFloat(t.pnl) || 0), 0)
-              const longTrades = trades.filter(t => t.direction === 'long')
-              const shortTrades = trades.filter(t => t.direction === 'short')
-              const longWins = longTrades.filter(t => t.outcome === 'win').length
-              const shortWins = shortTrades.filter(t => t.outcome === 'win').length
-              const longWr = longTrades.length > 0 ? Math.round((longWins / longTrades.length) * 100) : 0
-              const shortWr = shortTrades.length > 0 ? Math.round((shortWins / shortTrades.length) * 100) : 0
-              const growth = ((currentBalance / startingBalance - 1) * 100).toFixed(1)
+              const tradingDays = Object.keys(displayDailyPnL.reduce((acc, d) => { acc[d.date] = 1; return acc }, {})).length
+              const localBiggestWin = Math.max(...displayTrades.filter(t => t.outcome === 'win').map(t => parseFloat(t.pnl) || 0), 0)
+              const localBiggestLoss = Math.min(...displayTrades.filter(t => t.outcome === 'loss').map(t => parseFloat(t.pnl) || 0), 0)
+              const localLongTrades = displayTrades.filter(t => t.direction === 'long')
+              const localShortTrades = displayTrades.filter(t => t.direction === 'short')
+              const longWins = localLongTrades.filter(t => t.outcome === 'win').length
+              const shortWins = localShortTrades.filter(t => t.outcome === 'win').length
+              const longWr = localLongTrades.length > 0 ? Math.round((longWins / localLongTrades.length) * 100) : 0
+              const shortWr = localShortTrades.length > 0 ? Math.round((shortWins / localShortTrades.length) * 100) : 0
+              const growth = ((displayCurrentBalance / displayStartingBalance - 1) * 100).toFixed(1)
 
               const StatBox = ({ label, value, color }) => (
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '7px 0' }}>
@@ -1845,8 +1881,8 @@ export default function AccountPage() {
                   {/* Account Overview */}
                   <div style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '12px 14px' }}>
                     <div style={{ fontSize: '11px', color: '#aaa', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '8px', borderBottom: '1px solid #1a1a22', paddingBottom: '6px', fontWeight: 600 }}>Account</div>
-                    <StatBox label="Balance" value={'$' + Math.round(currentBalance).toLocaleString()} color={currentBalance >= startingBalance ? '#22c55e' : '#ef4444'} />
-                    <StatBox label="Net P&L" value={(totalPnl >= 0 ? '+' : '-') + '$' + Math.abs(Math.round(totalPnl)).toLocaleString()} color={totalPnl >= 0 ? '#22c55e' : '#ef4444'} />
+                    <StatBox label="Balance" value={'$' + Math.round(displayCurrentBalance).toLocaleString()} color={displayCurrentBalance >= displayStartingBalance ? '#22c55e' : '#ef4444'} />
+                    <StatBox label="Net P&L" value={(displayTotalPnl >= 0 ? '+' : '-') + '$' + Math.abs(Math.round(displayTotalPnl)).toLocaleString()} color={displayTotalPnl >= 0 ? '#22c55e' : '#ef4444'} />
                     <StatBox label="Growth" value={growth + '%'} color={parseFloat(growth) >= 0 ? '#22c55e' : '#ef4444'} />
                     <StatBox label="Monthly" value={monthlyGrowth + '%'} color={parseFloat(monthlyGrowth) >= 0 ? '#22c55e' : '#ef4444'} />
                   </div>
@@ -1854,54 +1890,54 @@ export default function AccountPage() {
                   {/* Performance */}
                   <div style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '12px 14px' }}>
                     <div style={{ fontSize: '11px', color: '#aaa', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '8px', borderBottom: '1px solid #1a1a22', paddingBottom: '6px', fontWeight: 600 }}>Performance</div>
-                    <StatBox label="Winrate" value={winrate + '%'} color={winrate >= 50 ? '#22c55e' : '#ef4444'} />
-                    <StatBox label="Wins / Losses" value={wins + ' / ' + losses} color="#fff" />
-                    <StatBox label="Profit Factor" value={profitFactor} color={parseFloat(profitFactor) >= 1.5 ? '#22c55e' : parseFloat(profitFactor) >= 1 ? '#f59e0b' : '#ef4444'} />
-                    <StatBox label="Expectancy" value={'$' + expectancy} color={parseFloat(expectancy) >= 0 ? '#22c55e' : '#ef4444'} />
+                    <StatBox label="Winrate" value={displayWinrate + '%'} color={displayWinrate >= 50 ? '#22c55e' : '#ef4444'} />
+                    <StatBox label="Wins / Losses" value={displayWins + ' / ' + displayLosses} color="#fff" />
+                    <StatBox label="Profit Factor" value={displayProfitFactor} color={parseFloat(displayProfitFactor) >= 1.5 ? '#22c55e' : parseFloat(displayProfitFactor) >= 1 ? '#f59e0b' : '#ef4444'} />
+                    <StatBox label="Expectancy" value={'$' + displayExpectancy} color={parseFloat(displayExpectancy) >= 0 ? '#22c55e' : '#ef4444'} />
                   </div>
 
                   {/* Trade Analysis */}
                   <div style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '12px 14px' }}>
                     <div style={{ fontSize: '11px', color: '#aaa', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '8px', borderBottom: '1px solid #1a1a22', paddingBottom: '6px', fontWeight: 600 }}>Trades</div>
-                    <StatBox label="Total" value={trades.length} color="#fff" />
+                    <StatBox label="Total" value={displayTrades.length} color="#fff" />
                     <StatBox label="Trading Days" value={tradingDays} color="#fff" />
-                    <StatBox label="Avg/Day" value={avgTradesPerDay} color="#fff" />
+                    <StatBox label="Avg/Day" value={(tradingDays > 0 ? (displayTrades.length / tradingDays).toFixed(1) : 0)} color="#fff" />
                     <StatBox label="This Week" value={tradesThisWeek} color="#3b82f6" />
                   </div>
 
                   {/* Risk & Reward */}
                   <div style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '12px 14px' }}>
                     <div style={{ fontSize: '11px', color: '#aaa', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '8px', borderBottom: '1px solid #1a1a22', paddingBottom: '6px', fontWeight: 600 }}>Risk & Reward</div>
-                    <StatBox label="Avg RR" value={avgRR + 'R'} color={parseFloat(avgRR) >= 1.5 ? '#22c55e' : '#fff'} />
-                    <StatBox label="Return/Risk" value={returnOnRisk + 'x'} color="#22c55e" />
-                    <StatBox label="Consistency" value={consistencyScore + '%'} color={consistencyScore >= 60 ? '#22c55e' : consistencyScore >= 40 ? '#f59e0b' : '#ef4444'} />
-                    <StatBox label="Streak" value={(streaks.cs >= 0 ? '+' : '') + streaks.cs} color={streaks.cs >= 0 ? '#22c55e' : '#ef4444'} />
+                    <StatBox label="Avg RR" value={displayAvgRR + 'R'} color={parseFloat(displayAvgRR) >= 1.5 ? '#22c55e' : '#fff'} />
+                    <StatBox label="Return/Risk" value={displayAvgRR + 'x'} color="#22c55e" />
+                    <StatBox label="Consistency" value={displayConsistencyScore + '%'} color={displayConsistencyScore >= 60 ? '#22c55e' : displayConsistencyScore >= 40 ? '#f59e0b' : '#ef4444'} />
+                    <StatBox label="Streak" value={(displayStreaks.cs >= 0 ? '+' : '') + displayStreaks.cs} color={displayStreaks.cs >= 0 ? '#22c55e' : '#ef4444'} />
                   </div>
 
                   {/* Win/Loss Analysis */}
                   <div style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '12px 14px' }}>
                     <div style={{ fontSize: '11px', color: '#aaa', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '8px', borderBottom: '1px solid #1a1a22', paddingBottom: '6px', fontWeight: 600 }}>Win/Loss</div>
-                    <StatBox label="Avg Win" value={'+$' + avgWin} color="#22c55e" />
-                    <StatBox label="Avg Loss" value={'-$' + avgLoss} color="#ef4444" />
-                    <StatBox label="Best Trade" value={'+$' + Math.round(biggestWin).toLocaleString()} color="#22c55e" />
-                    <StatBox label="Worst Trade" value={'-$' + Math.abs(Math.round(biggestLoss)).toLocaleString()} color="#ef4444" />
+                    <StatBox label="Avg Win" value={'+$' + displayAvgWin} color="#22c55e" />
+                    <StatBox label="Avg Loss" value={'-$' + displayAvgLoss} color="#ef4444" />
+                    <StatBox label="Best Trade" value={'+$' + Math.round(localBiggestWin).toLocaleString()} color="#22c55e" />
+                    <StatBox label="Worst Trade" value={'-$' + Math.abs(Math.round(localBiggestLoss)).toLocaleString()} color="#ef4444" />
                   </div>
 
                   {/* Direction */}
                   <div style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '12px 14px' }}>
                     <div style={{ fontSize: '11px', color: '#aaa', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '8px', borderBottom: '1px solid #1a1a22', paddingBottom: '6px', fontWeight: 600 }}>Direction</div>
                     <StatBox label="Long WR" value={longWr + '%'} color={longWr >= 50 ? '#22c55e' : '#ef4444'} />
-                    <StatBox label="Long Trades" value={longTrades.length} color="#fff" />
+                    <StatBox label="Long Trades" value={localLongTrades.length} color="#fff" />
                     <StatBox label="Short WR" value={shortWr + '%'} color={shortWr >= 50 ? '#22c55e' : '#ef4444'} />
-                    <StatBox label="Short Trades" value={shortTrades.length} color="#fff" />
+                    <StatBox label="Short Trades" value={localShortTrades.length} color="#fff" />
                   </div>
 
                   {/* Streaks */}
                   <div style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '12px 14px' }}>
                     <div style={{ fontSize: '11px', color: '#aaa', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '8px', borderBottom: '1px solid #1a1a22', paddingBottom: '6px', fontWeight: 600 }}>Streaks</div>
-                    <StatBox label="Current" value={(streaks.cs >= 0 ? '+' : '') + streaks.cs} color={streaks.cs >= 0 ? '#22c55e' : '#ef4444'} />
-                    <StatBox label="Best Win" value={'+' + streaks.mw} color="#22c55e" />
-                    <StatBox label="Worst Loss" value={'-' + Math.abs(streaks.ml)} color="#ef4444" />
+                    <StatBox label="Current" value={(displayStreaks.cs >= 0 ? '+' : '') + displayStreaks.cs} color={displayStreaks.cs >= 0 ? '#22c55e' : '#ef4444'} />
+                    <StatBox label="Best Win" value={'+' + displayStreaks.mw} color="#22c55e" />
+                    <StatBox label="Worst Loss" value={'-' + Math.abs(displayStreaks.ml)} color="#ef4444" />
                   </div>
 
                   {/* AI Insights - Daily rotating */}
@@ -2434,8 +2470,8 @@ export default function AccountPage() {
 
                 const visibleLines = equityCurveGroupBy === 'total' ? lines : lines.filter(l => selectedCurveLines[l.name] !== false)
                 const allBalances = visibleLines.flatMap(l => l.points.map(p => p.balance))
-                const maxBal = Math.max(...allBalances)
-                const minBal = Math.min(...allBalances)
+                const maxBal = allBalances.length > 0 ? Math.max(...allBalances) : startingBalance
+                const minBal = allBalances.length > 0 ? Math.min(...allBalances) : startingBalance
                 const range = maxBal - minBal || 1000
                 const yStep = Math.ceil(range / 10 / 100) * 100 || 100
                 const yMax = Math.ceil(maxBal / yStep) * yStep
@@ -2577,8 +2613,8 @@ export default function AccountPage() {
                                     {sortedLines.map((line, sortIdx) => {
                                       const pts = line.chartPoints
                                       const nextLine = sortedLines[sortIdx + 1]
-                                      const xMin = Math.min(...pts.map(p => p.x))
-                                      const xMax = Math.max(...pts.map(p => p.x))
+                                      const xMin = pts.length > 0 ? Math.min(...pts.map(p => p.x)) : 0
+                                      const xMax = pts.length > 0 ? Math.max(...pts.map(p => p.x)) : 100
                                       const numSamples = 50
                                       const xSamples = []
                                       for (let i = 0; i <= numSamples; i++) {
