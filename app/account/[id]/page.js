@@ -2168,115 +2168,121 @@ export default function AccountPage() {
       {/* MODALS */}
       {showAddTrade && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.9)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100 }} onClick={() => setShowAddTrade(false)}>
-          <div style={{ background: 'linear-gradient(145deg, #0d0d12 0%, #0a0a0e 100%)', border: '1px solid rgba(139,92,246,0.4)', borderRadius: '8px', padding: '16px', width: '280px', maxHeight: '85vh', overflowY: 'auto', boxShadow: 'inset 0 0 20px rgba(139,92,246,0.15), inset 0 1px 0 rgba(139,92,246,0.1)' }} onClick={e => e.stopPropagation()}>
-            <div style={{ fontSize: '11px', color: '#fff', textTransform: 'uppercase', letterSpacing: '0.5px', fontWeight: 700, marginBottom: '12px' }}>Log New Trade</div>
-
-            {/* Symbol */}
-            <div style={{ display: 'flex', alignItems: 'center', marginBottom: '6px' }}>
-              <span style={{ fontSize: '10px', color: '#888', width: '60px', flexShrink: 0 }}>Symbol</span>
-              <input type="text" value={tradeForm.symbol || ''} onChange={e => setTradeForm({...tradeForm, symbol: e.target.value})} placeholder="XAUUSD" style={{ flex: 1, padding: '5px 6px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '4px', color: '#fff', fontSize: '11px', boxSizing: 'border-box' }} />
+          <div style={{ background: 'linear-gradient(180deg, #0f0f14 0%, #0a0a0f 100%)', border: '1px solid #1a1a22', borderRadius: '12px', padding: '20px', width: '340px', maxHeight: '85vh', overflowY: 'auto' }} onClick={e => e.stopPropagation()}>
+            {/* Header */}
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px', paddingBottom: '12px', borderBottom: '1px solid #1a1a22' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#22c55e' }} />
+                <span style={{ fontSize: '13px', color: '#fff', fontWeight: 600, letterSpacing: '0.5px' }}>LOG TRADE</span>
+              </div>
             </div>
 
-            {/* Outcome */}
-            <div style={{ display: 'flex', alignItems: 'center', marginBottom: '6px' }}>
-              <span style={{ fontSize: '10px', color: '#888', width: '60px', flexShrink: 0 }}>Outcome</span>
-              <select value={tradeForm.outcome || 'win'} onChange={e => setTradeForm({...tradeForm, outcome: e.target.value})} style={{ flex: 1, padding: '5px 6px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '4px', color: '#fff', fontSize: '11px' }}>
-                <option value="win">Win</option>
-                <option value="loss">Loss</option>
-                <option value="be">BE</option>
-              </select>
+            {/* Core Fields Grid */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '12px' }}>
+              <div>
+                <label style={{ display: 'block', fontSize: '10px', color: '#666', marginBottom: '5px', textTransform: 'uppercase' }}>Symbol</label>
+                <input type="text" value={tradeForm.symbol || ''} onChange={e => setTradeForm({...tradeForm, symbol: e.target.value})} placeholder="XAUUSD" style={{ width: '100%', padding: '10px 12px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '13px', boxSizing: 'border-box' }} />
+              </div>
+              <div>
+                <label style={{ display: 'block', fontSize: '10px', color: '#666', marginBottom: '5px', textTransform: 'uppercase' }}>P&L ($)</label>
+                <input type="number" value={tradeForm.pnl || ''} onChange={e => setTradeForm({...tradeForm, pnl: e.target.value})} placeholder="0" style={{ width: '100%', padding: '10px 12px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '13px', boxSizing: 'border-box' }} />
+              </div>
             </div>
 
-            {/* PnL */}
-            <div style={{ display: 'flex', alignItems: 'center', marginBottom: '6px' }}>
-              <span style={{ fontSize: '10px', color: '#888', width: '60px', flexShrink: 0 }}>P&L ($)</span>
-              <input type="number" value={tradeForm.pnl || ''} onChange={e => setTradeForm({...tradeForm, pnl: e.target.value})} placeholder="0" style={{ flex: 1, padding: '5px 6px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '4px', color: '#fff', fontSize: '11px', boxSizing: 'border-box' }} />
+            {/* Direction + Outcome Row */}
+            <div style={{ display: 'flex', gap: '10px', marginBottom: '12px' }}>
+              <div style={{ flex: 1 }}>
+                <label style={{ display: 'block', fontSize: '10px', color: '#666', marginBottom: '5px', textTransform: 'uppercase' }}>Direction</label>
+                <div style={{ display: 'flex', borderRadius: '6px', overflow: 'hidden', border: '1px solid #1a1a22' }}>
+                  <button type="button" onClick={() => setTradeForm({...tradeForm, direction: 'long'})} style={{ flex: 1, padding: '9px', background: (tradeForm.direction || 'long') === 'long' ? 'rgba(34,197,94,0.2)' : '#0a0a0f', border: 'none', color: (tradeForm.direction || 'long') === 'long' ? '#22c55e' : '#666', fontSize: '12px', fontWeight: 600, cursor: 'pointer' }}>LONG</button>
+                  <button type="button" onClick={() => setTradeForm({...tradeForm, direction: 'short'})} style={{ flex: 1, padding: '9px', background: tradeForm.direction === 'short' ? 'rgba(239,68,68,0.2)' : '#0a0a0f', border: 'none', borderLeft: '1px solid #1a1a22', color: tradeForm.direction === 'short' ? '#ef4444' : '#666', fontSize: '12px', fontWeight: 600, cursor: 'pointer' }}>SHORT</button>
+                </div>
+              </div>
+              <div style={{ flex: 1 }}>
+                <label style={{ display: 'block', fontSize: '10px', color: '#666', marginBottom: '5px', textTransform: 'uppercase' }}>Outcome</label>
+                <div style={{ display: 'flex', borderRadius: '6px', overflow: 'hidden', border: '1px solid #1a1a22' }}>
+                  <button type="button" onClick={() => setTradeForm({...tradeForm, outcome: 'win'})} style={{ flex: 1, padding: '9px', background: (tradeForm.outcome || 'win') === 'win' ? 'rgba(34,197,94,0.2)' : '#0a0a0f', border: 'none', color: (tradeForm.outcome || 'win') === 'win' ? '#22c55e' : '#666', fontSize: '12px', fontWeight: 600, cursor: 'pointer' }}>W</button>
+                  <button type="button" onClick={() => setTradeForm({...tradeForm, outcome: 'loss'})} style={{ flex: 1, padding: '9px', background: tradeForm.outcome === 'loss' ? 'rgba(239,68,68,0.2)' : '#0a0a0f', border: 'none', borderLeft: '1px solid #1a1a22', color: tradeForm.outcome === 'loss' ? '#ef4444' : '#666', fontSize: '12px', fontWeight: 600, cursor: 'pointer' }}>L</button>
+                  <button type="button" onClick={() => setTradeForm({...tradeForm, outcome: 'be'})} style={{ flex: 1, padding: '9px', background: tradeForm.outcome === 'be' ? 'rgba(255,255,255,0.1)' : '#0a0a0f', border: 'none', borderLeft: '1px solid #1a1a22', color: tradeForm.outcome === 'be' ? '#888' : '#666', fontSize: '12px', fontWeight: 600, cursor: 'pointer' }}>BE</button>
+                </div>
+              </div>
             </div>
 
-            {/* % Risked */}
-            <div style={{ display: 'flex', alignItems: 'center', marginBottom: '6px' }}>
-              <span style={{ fontSize: '10px', color: '#888', width: '60px', flexShrink: 0 }}>% Risk</span>
-              <input type="number" value={tradeForm.riskPercent || ''} onChange={e => setTradeForm({...tradeForm, riskPercent: e.target.value})} placeholder="1" style={{ flex: 1, padding: '5px 6px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '4px', color: '#fff', fontSize: '11px', boxSizing: 'border-box' }} />
-            </div>
-
-            {/* RR */}
-            <div style={{ display: 'flex', alignItems: 'center', marginBottom: '6px' }}>
-              <span style={{ fontSize: '10px', color: '#888', width: '60px', flexShrink: 0 }}>RR</span>
-              <input type="text" value={tradeForm.rr || ''} onChange={e => setTradeForm({...tradeForm, rr: e.target.value})} placeholder="2.5" style={{ flex: 1, padding: '5px 6px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '4px', color: '#fff', fontSize: '11px', boxSizing: 'border-box' }} />
+            {/* Secondary Fields */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '12px' }}>
+              <div>
+                <label style={{ display: 'block', fontSize: '10px', color: '#666', marginBottom: '5px', textTransform: 'uppercase' }}>RR</label>
+                <input type="text" value={tradeForm.rr || ''} onChange={e => setTradeForm({...tradeForm, rr: e.target.value})} placeholder="2.5" style={{ width: '100%', padding: '10px 12px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '13px', boxSizing: 'border-box' }} />
+              </div>
+              <div>
+                <label style={{ display: 'block', fontSize: '10px', color: '#666', marginBottom: '5px', textTransform: 'uppercase' }}>% Risk</label>
+                <input type="number" value={tradeForm.riskPercent || ''} onChange={e => setTradeForm({...tradeForm, riskPercent: e.target.value})} placeholder="1" style={{ width: '100%', padding: '10px 12px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '13px', boxSizing: 'border-box' }} />
+              </div>
             </div>
 
             {/* Date */}
-            <div style={{ display: 'flex', alignItems: 'center', marginBottom: '6px' }}>
-              <span style={{ fontSize: '10px', color: '#888', width: '60px', flexShrink: 0 }}>Date</span>
-              <input type="date" value={tradeForm.date || ''} onChange={e => setTradeForm({...tradeForm, date: e.target.value})} style={{ flex: 1, padding: '5px 6px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '4px', color: '#fff', fontSize: '11px', boxSizing: 'border-box' }} />
+            <div style={{ marginBottom: '12px' }}>
+              <label style={{ display: 'block', fontSize: '10px', color: '#666', marginBottom: '5px', textTransform: 'uppercase' }}>Date</label>
+              <input type="date" value={tradeForm.date || ''} onChange={e => setTradeForm({...tradeForm, date: e.target.value})} style={{ width: '100%', padding: '10px 12px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '13px', boxSizing: 'border-box' }} />
             </div>
 
-            {/* Custom inputs - render dynamically */}
-            {customInputs.filter(i => !['symbol', 'outcome', 'pnl', 'riskPercent', 'rr', 'date'].includes(i.id)).map(input => (
-              <div key={input.id} style={{ display: 'flex', alignItems: input.type === 'textarea' || input.type === 'file' ? 'flex-start' : 'center', marginBottom: '6px' }}>
-                <span style={{ fontSize: '10px', color: '#888', width: '60px', flexShrink: 0, paddingTop: input.type === 'textarea' ? '5px' : 0 }}>{input.label.slice(0, 8)}</span>
-                {input.type === 'select' ? (
-                  <select value={tradeForm[input.id] || ''} onChange={e => setTradeForm({...tradeForm, [input.id]: e.target.value})} style={{ flex: 1, padding: '5px 6px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '4px', color: '#fff', fontSize: '11px' }}>
-                    <option value="">-</option>
-                    {input.options?.map(o => <option key={o} value={o.toLowerCase()}>{o}</option>)}
-                  </select>
-                ) : input.type === 'textarea' ? (
-                  <input type="text" value={tradeForm[input.id] || ''} onChange={e => setTradeForm({...tradeForm, [input.id]: e.target.value})} placeholder="..." style={{ flex: 1, padding: '5px 6px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '4px', color: '#fff', fontSize: '11px', boxSizing: 'border-box' }} />
-                ) : input.type === 'rating' ? (
-                  <div style={{ flex: 1, display: 'flex', gap: '1px', alignItems: 'center' }}>
-                    {[1, 2, 3, 4, 5].map(star => {
-                      const currentRating = parseFloat(tradeForm[input.id] || 0)
-                      const isFullStar = currentRating >= star
-                      const isHalfStar = currentRating >= star - 0.5 && currentRating < star
-                      return (
-                        <div
-                          key={star}
-                          style={{ position: 'relative', width: '16px', height: '16px', cursor: 'pointer' }}
-                          onClick={(e) => {
-                            const rect = e.currentTarget.getBoundingClientRect()
-                            const clickX = e.clientX - rect.left
-                            const isLeftHalf = clickX < rect.width / 2
-                            const newRating = isLeftHalf ? star - 0.5 : star
-                            setTradeForm({...tradeForm, [input.id]: String(newRating)})
-                          }}
-                        >
-                          <span style={{ position: 'absolute', color: '#2a2a35', fontSize: '16px', lineHeight: 1 }}>★</span>
-                          {isHalfStar && <span style={{ position: 'absolute', color: '#22c55e', fontSize: '16px', lineHeight: 1, width: '8px', overflow: 'hidden' }}>★</span>}
-                          {isFullStar && <span style={{ position: 'absolute', color: '#22c55e', fontSize: '16px', lineHeight: 1 }}>★</span>}
-                        </div>
-                      )
-                    })}
-                    {tradeForm[input.id] && <span style={{ fontSize: '10px', color: '#666', marginLeft: '4px' }}>{tradeForm[input.id]}</span>}
-                  </div>
-                ) : input.type === 'file' ? (
-                  <div style={{ flex: 1 }}>
-                    <input id="modal-image-upload" type="file" accept="image/*" onChange={e => {
-                      const file = e.target.files[0]
-                      if (file) {
-                        const reader = new FileReader()
-                        reader.onloadend = () => setTradeForm({...tradeForm, [input.id]: reader.result})
-                        reader.readAsDataURL(file)
-                      }
-                    }} style={{ display: 'none' }} />
-                    {tradeForm[input.id] ? (
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                        <span style={{ color: '#22c55e', fontSize: '10px' }}>✓ Uploaded</span>
-                        <button type="button" onClick={() => setTradeForm({...tradeForm, [input.id]: ''})} style={{ padding: '2px 6px', background: '#1a1a22', border: 'none', borderRadius: '3px', color: '#999', fontSize: '9px', cursor: 'pointer' }}>×</button>
+            {/* Custom inputs - render dynamically in grid */}
+            {customInputs.filter(i => !['symbol', 'outcome', 'pnl', 'riskPercent', 'rr', 'date', 'direction'].includes(i.id)).length > 0 && (
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '12px' }}>
+                {customInputs.filter(i => !['symbol', 'outcome', 'pnl', 'riskPercent', 'rr', 'date', 'direction'].includes(i.id)).map(input => (
+                  <div key={input.id} style={{ gridColumn: input.type === 'textarea' || input.type === 'file' ? 'span 2' : 'span 1' }}>
+                    <label style={{ display: 'block', fontSize: '10px', color: '#666', marginBottom: '5px', textTransform: 'uppercase' }}>{input.label}</label>
+                    {input.type === 'select' ? (
+                      <select value={tradeForm[input.id] || ''} onChange={e => setTradeForm({...tradeForm, [input.id]: e.target.value})} style={{ width: '100%', padding: '10px 12px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '13px' }}>
+                        <option value="">-</option>
+                        {input.options?.map(o => <option key={o} value={o.toLowerCase()}>{o}</option>)}
+                      </select>
+                    ) : input.type === 'textarea' ? (
+                      <input type="text" value={tradeForm[input.id] || ''} onChange={e => setTradeForm({...tradeForm, [input.id]: e.target.value})} placeholder="..." style={{ width: '100%', padding: '10px 12px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '13px', boxSizing: 'border-box' }} />
+                    ) : input.type === 'rating' ? (
+                      <div style={{ display: 'flex', gap: '3px', padding: '8px 12px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px', alignItems: 'center' }}>
+                        {[1, 2, 3, 4, 5].map(star => {
+                          const currentRating = parseFloat(tradeForm[input.id] || 0)
+                          const isFullStar = currentRating >= star
+                          const isHalfStar = currentRating >= star - 0.5 && currentRating < star
+                          return (
+                            <div key={star} style={{ position: 'relative', width: '20px', height: '20px', cursor: 'pointer' }} onClick={(e) => { const rect = e.currentTarget.getBoundingClientRect(); const clickX = e.clientX - rect.left; const isLeftHalf = clickX < rect.width / 2; setTradeForm({...tradeForm, [input.id]: String(isLeftHalf ? star - 0.5 : star)}) }}>
+                              <span style={{ position: 'absolute', color: '#2a2a35', fontSize: '20px', lineHeight: 1 }}>★</span>
+                              {isHalfStar && <span style={{ position: 'absolute', color: '#22c55e', fontSize: '20px', lineHeight: 1, width: '10px', overflow: 'hidden' }}>★</span>}
+                              {isFullStar && <span style={{ position: 'absolute', color: '#22c55e', fontSize: '20px', lineHeight: 1 }}>★</span>}
+                            </div>
+                          )
+                        })}
+                        {tradeForm[input.id] && <span style={{ fontSize: '11px', color: '#666', marginLeft: '6px' }}>{tradeForm[input.id]}</span>}
+                      </div>
+                    ) : input.type === 'file' ? (
+                      <div>
+                        <input id="modal-image-upload" type="file" accept="image/*" onChange={e => { const file = e.target.files[0]; if (file) { const reader = new FileReader(); reader.onloadend = () => setTradeForm({...tradeForm, [input.id]: reader.result}); reader.readAsDataURL(file) } }} style={{ display: 'none' }} />
+                        {tradeForm[input.id] ? (
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <span style={{ color: '#22c55e', fontSize: '12px' }}>✓ Uploaded</span>
+                            <button type="button" onClick={() => setTradeForm({...tradeForm, [input.id]: ''})} style={{ padding: '4px 8px', background: '#1a1a22', border: 'none', borderRadius: '4px', color: '#999', fontSize: '11px', cursor: 'pointer' }}>×</button>
+                          </div>
+                        ) : (
+                          <button type="button" onClick={() => document.getElementById('modal-image-upload').click()} style={{ padding: '10px 14px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px', color: '#666', fontSize: '12px', cursor: 'pointer' }}>+ Image</button>
+                        )}
                       </div>
                     ) : (
-                      <button type="button" onClick={() => document.getElementById('modal-image-upload').click()} style={{ padding: '5px 8px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '4px', color: '#666', fontSize: '10px', cursor: 'pointer' }}>+ Image</button>
+                      <input type={input.type} value={tradeForm[input.id] || ''} onChange={e => setTradeForm({...tradeForm, [input.id]: e.target.value})} style={{ width: '100%', padding: '10px 12px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '13px', boxSizing: 'border-box' }} />
                     )}
                   </div>
-                ) : (
-                  <input type={input.type} value={tradeForm[input.id] || ''} onChange={e => setTradeForm({...tradeForm, [input.id]: e.target.value})} style={{ flex: 1, padding: '5px 6px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '4px', color: '#fff', fontSize: '11px', boxSizing: 'border-box' }} />
-                )}
+                ))}
               </div>
-            ))}
+            )}
 
             {/* Buttons */}
-            <div style={{ display: 'flex', gap: '6px', marginTop: '10px' }}>
-              <button onClick={addTrade} disabled={saving || !tradeForm.symbol || !tradeForm.pnl} style={{ flex: 1, padding: '8px', background: (saving || !tradeForm.symbol || !tradeForm.pnl) ? '#1a1a22' : '#22c55e', border: 'none', borderRadius: '4px', color: (saving || !tradeForm.symbol || !tradeForm.pnl) ? '#666' : '#fff', fontWeight: 600, fontSize: '11px', cursor: (saving || !tradeForm.symbol || !tradeForm.pnl) ? 'not-allowed' : 'pointer' }}>{saving ? '...' : 'Save'}</button>
-              <button onClick={() => setShowAddTrade(false)} style={{ flex: 1, padding: '8px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '4px', color: '#999', fontWeight: 600, fontSize: '11px', cursor: 'pointer' }}>Cancel</button>
+            <div style={{ display: 'flex', gap: '10px', marginTop: '16px' }}>
+              <button onClick={addTrade} disabled={saving || !tradeForm.symbol || !tradeForm.pnl} style={{ flex: 1, padding: '12px', background: (saving || !tradeForm.symbol || !tradeForm.pnl) ? '#1a1a22' : 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)', border: 'none', borderRadius: '8px', color: (saving || !tradeForm.symbol || !tradeForm.pnl) ? '#666' : '#fff', fontWeight: 600, fontSize: '14px', cursor: (saving || !tradeForm.symbol || !tradeForm.pnl) ? 'not-allowed' : 'pointer' }}>{saving ? '...' : 'Log Trade'}</button>
+              <button onClick={() => { setShowAddTrade(false); setShowEditInputs(true) }} style={{ padding: '12px 16px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '8px', color: '#888', fontWeight: 600, fontSize: '13px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                Edit
+              </button>
+              <button onClick={() => setShowAddTrade(false)} style={{ padding: '12px 16px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '8px', color: '#888', fontWeight: 600, fontSize: '13px', cursor: 'pointer' }}>Cancel</button>
             </div>
           </div>
         </div>
