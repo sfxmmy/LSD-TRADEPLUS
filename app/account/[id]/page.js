@@ -461,7 +461,7 @@ export default function AccountPage() {
 
       {/* FIXED SUBHEADER - connected to sidebar with no gap */}
       {!isMobile && (
-        <div style={{ position: 'fixed', top: '57px', left: '180px', right: 0, zIndex: 40, padding: '14px 24px', background: '#0a0a0f', borderBottom: '1px solid #1a1a22', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div style={{ position: 'fixed', top: '57px', left: '180px', right: 0, zIndex: 40, padding: '14px 24px', background: '#0a0a0f', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <span style={{ fontSize: '26px', fontWeight: 700, color: '#fff' }}>{account?.name}</span>
           <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
             {activeTab === 'trades' && (
@@ -500,8 +500,10 @@ export default function AccountPage() {
             </button>
           ))}
         </div>
-        {/* Journals List */}
-        <div style={{ marginTop: '16px', maxHeight: '180px', overflowY: 'auto' }}>
+        {/* Spacer */}
+        <div style={{ flex: 1 }} />
+        {/* Journals List - at bottom */}
+        <div style={{ maxHeight: '180px', overflowY: 'auto', marginBottom: '8px' }}>
           {allAccounts.map((acc) => (
             <a
               key={acc.id}
@@ -523,8 +525,8 @@ export default function AccountPage() {
             </a>
           ))}
         </div>
-        <div style={{ marginTop: 'auto', padding: '8px 10px', background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '6px' }}>
-          <div style={{ fontSize: '10px', color: '#666', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{tabDescriptions[activeTab]}</div>
+        <div style={{ padding: '10px 12px', background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '6px' }}>
+          <div style={{ fontSize: '11px', color: '#888', lineHeight: '1.4' }}>{tabDescriptions[activeTab]}</div>
         </div>
       </div>
       )}
