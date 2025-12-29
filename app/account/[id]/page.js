@@ -27,6 +27,7 @@ export default function AccountPage() {
   
   const [user, setUser] = useState(null)
   const [account, setAccount] = useState(null)
+  const [allAccounts, setAllAccounts] = useState([])
   const [trades, setTrades] = useState([])
   const [notes, setNotes] = useState({ daily: {}, weekly: {}, custom: [] })
   const [loading, setLoading] = useState(true)
@@ -123,6 +124,8 @@ export default function AccountPage() {
     const { data: accountData } = await supabase.from('accounts').select('*').eq('id', accountId).eq('user_id', user.id).single()
     if (!accountData) { window.location.href = '/dashboard'; return }
     setAccount(accountData)
+    const { data: allAccountsData } = await supabase.from('accounts').select('*').eq('user_id', user.id).order('created_at', { ascending: true })
+    setAllAccounts(allAccountsData || [])
     if (accountData.custom_inputs) { 
       try { 
         const parsed = JSON.parse(accountData.custom_inputs)
@@ -482,14 +485,14 @@ export default function AccountPage() {
         <div style={{ position: 'fixed', top: '57px', left: 0, bottom: 0, width: '180px', padding: '16px 12px', background: '#0a0a0f', zIndex: 45, display: 'flex', flexDirection: 'column', paddingTop: '72px', borderRight: '1px solid #1a1a22' }}>
         <div>
           {['trades', 'statistics', 'notes'].map((tab) => (
-            <button 
-              key={tab} 
-              onClick={() => { setActiveTab(tab); if (tab === 'statistics') setHasNewInputs(false) }} 
-              style={{ 
+            <button
+              key={tab}
+              onClick={() => { setActiveTab(tab); if (tab === 'statistics') setHasNewInputs(false) }}
+              style={{
                 width: '100%', padding: '16px 20px', marginBottom: '8px',
-                background: activeTab === tab ? '#22c55e' : 'transparent', 
+                background: activeTab === tab ? '#22c55e' : 'transparent',
                 border: activeTab === tab ? 'none' : '1px solid #2a2a35',
-                borderRadius: '8px', color: activeTab === tab ? '#fff' : '#888', 
+                borderRadius: '8px', color: activeTab === tab ? '#fff' : '#888',
                 fontSize: '14px', fontWeight: 600, textTransform: 'uppercase', cursor: 'pointer', textAlign: 'center'
               }}
             >
@@ -497,7 +500,29 @@ export default function AccountPage() {
             </button>
           ))}
         </div>
-        <div style={{ marginTop: 'auto', padding: '14px', background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px' }}>
+        {/* Journals List */}
+        <div style={{ marginTop: '16px', flex: 1, overflowY: 'auto' }}>
+          {allAccounts.map((acc) => (
+            <a
+              key={acc.id}
+              href={`/account/${acc.id}`}
+              style={{
+                display: 'block',
+                padding: '10px 12px',
+                marginBottom: '6px',
+                background: acc.id === accountId ? 'rgba(34,197,94,0.1)' : '#0d0d12',
+                border: acc.id === accountId ? '1px solid #22c55e' : '1px solid #1a1a22',
+                borderRadius: '6px',
+                textDecoration: 'none',
+                transition: 'all 0.15s'
+              }}
+            >
+              <div style={{ fontSize: '12px', fontWeight: 600, color: acc.id === accountId ? '#22c55e' : '#888', marginBottom: '2px' }}>{acc.name}</div>
+              <div style={{ fontSize: '11px', color: acc.id === accountId ? '#22c55e' : '#666' }}>${(acc.starting_balance || 0).toLocaleString()}</div>
+            </a>
+          ))}
+        </div>
+        <div style={{ padding: '14px', background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px' }}>
           <div style={{ fontSize: '11px', color: '#999', lineHeight: '1.5' }}>{tabDescriptions[activeTab]}</div>
         </div>
       </div>
@@ -637,63 +662,63 @@ export default function AccountPage() {
             {/* ROW 1: Stats + Graphs - both graphs same height, aligned with Total Trades bottom */}
             <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', gap: '16px', marginBottom: '16px' }}>
               {/* Stats Widget - Clean List */}
-              <div style={{ width: isMobile ? '100%' : '200px', background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '14px' }}>
+              <div style={{ width: isMobile ? '100%' : '200px', background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '8px 10px' }}>
                 {/* Key Metrics List */}
-                <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid #1a1a22' }}>
-                  <span style={{ fontSize: '13px', color: '#888' }}>Total PnL</span>
-                  <span style={{ fontSize: '14px', fontWeight: 700, color: totalPnl >= 0 ? '#22c55e' : '#ef4444' }}>{totalPnl >= 0 ? '+' : ''}${Math.abs(totalPnl).toLocaleString()}</span>
+                <div style={{ display: 'flex', justifyContent: 'space-between', padding: '5px 0', borderBottom: '1px solid #1a1a22' }}>
+                  <span style={{ fontSize: '12px', color: '#888' }}>Total PnL</span>
+                  <span style={{ fontSize: '13px', fontWeight: 700, color: totalPnl >= 0 ? '#22c55e' : '#ef4444' }}>{totalPnl >= 0 ? '+' : ''}${Math.abs(totalPnl).toLocaleString()}</span>
                 </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid #1a1a22' }}>
-                  <span style={{ fontSize: '13px', color: '#888' }}>Total Trades</span>
-                  <span style={{ fontSize: '14px', fontWeight: 700, color: '#fff' }}>{trades.length}</span>
+                <div style={{ display: 'flex', justifyContent: 'space-between', padding: '5px 0', borderBottom: '1px solid #1a1a22' }}>
+                  <span style={{ fontSize: '12px', color: '#888' }}>Total Trades</span>
+                  <span style={{ fontSize: '13px', fontWeight: 700, color: '#fff' }}>{trades.length}</span>
                 </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid #1a1a22' }}>
-                  <span style={{ fontSize: '13px', color: '#888' }}>Winrate</span>
-                  <span style={{ fontSize: '14px', fontWeight: 700, color: winrate >= 50 ? '#22c55e' : '#ef4444' }}>{winrate}%</span>
+                <div style={{ display: 'flex', justifyContent: 'space-between', padding: '5px 0', borderBottom: '1px solid #1a1a22' }}>
+                  <span style={{ fontSize: '12px', color: '#888' }}>Winrate</span>
+                  <span style={{ fontSize: '13px', fontWeight: 700, color: winrate >= 50 ? '#22c55e' : '#ef4444' }}>{winrate}%</span>
                 </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid #1a1a22' }}>
-                  <span style={{ fontSize: '13px', color: '#888' }}>Profit Factor</span>
-                  <span style={{ fontSize: '14px', fontWeight: 700, color: parseFloat(profitFactor) >= 1 ? '#22c55e' : '#ef4444' }}>{profitFactor}</span>
+                <div style={{ display: 'flex', justifyContent: 'space-between', padding: '5px 0', borderBottom: '1px solid #1a1a22' }}>
+                  <span style={{ fontSize: '12px', color: '#888' }}>Profit Factor</span>
+                  <span style={{ fontSize: '13px', fontWeight: 700, color: parseFloat(profitFactor) >= 1 ? '#22c55e' : '#ef4444' }}>{profitFactor}</span>
                 </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid #1a1a22' }}>
-                  <span style={{ fontSize: '13px', color: '#888' }}>Avg RR</span>
-                  <span style={{ fontSize: '14px', fontWeight: 700, color: '#fff' }}>{returnOnRisk}</span>
+                <div style={{ display: 'flex', justifyContent: 'space-between', padding: '5px 0', borderBottom: '1px solid #1a1a22' }}>
+                  <span style={{ fontSize: '12px', color: '#888' }}>Avg RR</span>
+                  <span style={{ fontSize: '13px', fontWeight: 700, color: '#fff' }}>{returnOnRisk}</span>
                 </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid #1a1a22' }}>
-                  <span style={{ fontSize: '13px', color: '#888' }}>Expectancy</span>
-                  <span style={{ fontSize: '14px', fontWeight: 700, color: expectancy >= 0 ? '#22c55e' : '#ef4444' }}>${expectancy}</span>
+                <div style={{ display: 'flex', justifyContent: 'space-between', padding: '5px 0', borderBottom: '1px solid #1a1a22' }}>
+                  <span style={{ fontSize: '12px', color: '#888' }}>Expectancy</span>
+                  <span style={{ fontSize: '13px', fontWeight: 700, color: expectancy >= 0 ? '#22c55e' : '#ef4444' }}>${expectancy}</span>
                 </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid #1a1a22' }}>
-                  <span style={{ fontSize: '13px', color: '#888' }}>Avg Win</span>
-                  <span style={{ fontSize: '14px', fontWeight: 700, color: '#22c55e' }}>+${avgWin}</span>
+                <div style={{ display: 'flex', justifyContent: 'space-between', padding: '5px 0', borderBottom: '1px solid #1a1a22' }}>
+                  <span style={{ fontSize: '12px', color: '#888' }}>Avg Win</span>
+                  <span style={{ fontSize: '13px', fontWeight: 700, color: '#22c55e' }}>+${avgWin}</span>
                 </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid #1a1a22' }}>
-                  <span style={{ fontSize: '13px', color: '#888' }}>Avg Loss</span>
-                  <span style={{ fontSize: '14px', fontWeight: 700, color: '#ef4444' }}>-${avgLoss}</span>
+                <div style={{ display: 'flex', justifyContent: 'space-between', padding: '5px 0', borderBottom: '1px solid #1a1a22' }}>
+                  <span style={{ fontSize: '12px', color: '#888' }}>Avg Loss</span>
+                  <span style={{ fontSize: '13px', fontWeight: 700, color: '#ef4444' }}>-${avgLoss}</span>
                 </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid #1a1a22' }}>
-                  <span style={{ fontSize: '13px', color: '#888' }}>Long WR</span>
-                  <span style={{ fontSize: '14px', fontWeight: 700, color: longWinrate >= 50 ? '#22c55e' : '#ef4444' }}>{longWinrate}%</span>
+                <div style={{ display: 'flex', justifyContent: 'space-between', padding: '5px 0', borderBottom: '1px solid #1a1a22' }}>
+                  <span style={{ fontSize: '12px', color: '#888' }}>Long WR</span>
+                  <span style={{ fontSize: '13px', fontWeight: 700, color: longWinrate >= 50 ? '#22c55e' : '#ef4444' }}>{longWinrate}%</span>
                 </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid #1a1a22' }}>
-                  <span style={{ fontSize: '13px', color: '#888' }}>Short WR</span>
-                  <span style={{ fontSize: '14px', fontWeight: 700, color: shortWinrate >= 50 ? '#22c55e' : '#ef4444' }}>{shortWinrate}%</span>
+                <div style={{ display: 'flex', justifyContent: 'space-between', padding: '5px 0', borderBottom: '1px solid #1a1a22' }}>
+                  <span style={{ fontSize: '12px', color: '#888' }}>Short WR</span>
+                  <span style={{ fontSize: '13px', fontWeight: 700, color: shortWinrate >= 50 ? '#22c55e' : '#ef4444' }}>{shortWinrate}%</span>
                 </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid #1a1a22' }}>
-                  <span style={{ fontSize: '13px', color: '#888' }}>Day WR</span>
-                  <span style={{ fontSize: '14px', fontWeight: 700, color: dayWinrate >= 50 ? '#22c55e' : '#ef4444' }}>{dayWinrate}%</span>
+                <div style={{ display: 'flex', justifyContent: 'space-between', padding: '5px 0', borderBottom: '1px solid #1a1a22' }}>
+                  <span style={{ fontSize: '12px', color: '#888' }}>Day WR</span>
+                  <span style={{ fontSize: '13px', fontWeight: 700, color: dayWinrate >= 50 ? '#22c55e' : '#ef4444' }}>{dayWinrate}%</span>
                 </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid #1a1a22' }}>
-                  <span style={{ fontSize: '13px', color: '#888' }}>Consistency</span>
-                  <span style={{ fontSize: '14px', fontWeight: 700, color: consistencyScore >= 50 ? '#22c55e' : '#ef4444' }}>{consistencyScore}%</span>
+                <div style={{ display: 'flex', justifyContent: 'space-between', padding: '5px 0', borderBottom: '1px solid #1a1a22' }}>
+                  <span style={{ fontSize: '12px', color: '#888' }}>Consistency</span>
+                  <span style={{ fontSize: '13px', fontWeight: 700, color: consistencyScore >= 50 ? '#22c55e' : '#ef4444' }}>{consistencyScore}%</span>
                 </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid #1a1a22' }}>
-                  <span style={{ fontSize: '13px', color: '#888' }}>Win Streak</span>
-                  <span style={{ fontSize: '14px', fontWeight: 700, color: '#22c55e' }}>{streaks.mw}</span>
+                <div style={{ display: 'flex', justifyContent: 'space-between', padding: '5px 0', borderBottom: '1px solid #1a1a22' }}>
+                  <span style={{ fontSize: '12px', color: '#888' }}>Win Streak</span>
+                  <span style={{ fontSize: '13px', fontWeight: 700, color: '#22c55e' }}>{streaks.mw}</span>
                 </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0' }}>
-                  <span style={{ fontSize: '13px', color: '#888' }}>Loss Streak</span>
-                  <span style={{ fontSize: '14px', fontWeight: 700, color: '#ef4444' }}>{streaks.ml}</span>
+                <div style={{ display: 'flex', justifyContent: 'space-between', padding: '5px 0' }}>
+                  <span style={{ fontSize: '12px', color: '#888' }}>Loss Streak</span>
+                  <span style={{ fontSize: '13px', fontWeight: 700, color: '#ef4444' }}>{streaks.ml}</span>
                 </div>
               </div>
 
