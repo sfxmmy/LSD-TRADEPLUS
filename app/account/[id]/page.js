@@ -152,7 +152,9 @@ export default function AccountPage() {
   }
 
   async function addTrade() {
-    if (!tradeForm.symbol || !tradeForm.pnl) return
+    if (!tradeForm.symbol?.trim()) { alert('Please enter a symbol'); return }
+    if (!tradeForm.pnl || isNaN(parseFloat(tradeForm.pnl))) { alert('Please enter a valid PnL number'); return }
+    if (tradeForm.rr && isNaN(parseFloat(tradeForm.rr))) { alert('Please enter a valid RR number'); return }
     setSaving(true)
     const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY)
     
@@ -293,7 +295,7 @@ export default function AccountPage() {
   const winrate = (wins + losses) > 0 ? Math.round((wins / (wins + losses)) * 100) : 0
   const grossProfit = trades.filter(t => parseFloat(t.pnl) > 0).reduce((s, t) => s + parseFloat(t.pnl), 0)
   const grossLoss = Math.abs(trades.filter(t => parseFloat(t.pnl) < 0).reduce((s, t) => s + parseFloat(t.pnl), 0))
-  const profitFactor = grossLoss > 0 ? (grossProfit / grossLoss).toFixed(2) : grossProfit > 0 ? 'Inf' : '0'
+  const profitFactor = grossLoss > 0 ? (grossProfit / grossLoss).toFixed(2) : grossProfit > 0 ? '∞' : '-'
   const avgWin = wins > 0 ? Math.round(grossProfit / wins) : 0
   const avgLoss = losses > 0 ? Math.round(grossLoss / losses) : 0
   const startingBalance = parseFloat(account?.starting_balance) || 10000
@@ -328,9 +330,9 @@ export default function AccountPage() {
   const worstDay = (() => { const byDay = {}; trades.forEach(t => { byDay[t.date] = (byDay[t.date] || 0) + (parseFloat(t.pnl) || 0) }); const worst = Object.entries(byDay).sort((a, b) => a[1] - b[1])[0]; return worst ? { date: worst[0], pnl: worst[1] } : null })()
   const tradingDays = new Set(trades.map(t => t.date)).size
   const avgTradesPerDay = tradingDays > 0 ? (trades.length / tradingDays).toFixed(1) : 0
-  const biggestWin = Math.max(...trades.map(t => parseFloat(t.pnl) || 0), 0)
-  const biggestLoss = Math.min(...trades.map(t => parseFloat(t.pnl) || 0), 0)
-  const expectancy = trades.length > 0 ? ((winrate / 100) * avgWin - ((100 - winrate) / 100) * avgLoss).toFixed(0) : 0
+  const biggestWin = trades.filter(t => t.outcome === 'win').length > 0 ? Math.max(...trades.filter(t => t.outcome === 'win').map(t => parseFloat(t.pnl) || 0)) : 0
+  const biggestLoss = trades.filter(t => t.outcome === 'loss').length > 0 ? Math.min(...trades.filter(t => t.outcome === 'loss').map(t => parseFloat(t.pnl) || 0)) : 0
+  const expectancy = trades.length > 0 ? ((winrate / 100) * avgWin - ((100 - winrate) / 100) * avgLoss).toFixed(0) : '-'
   const lossExpectancy = trades.length > 0 ? (((100 - winrate) / 100) * avgLoss).toFixed(0) : 0
   const returnOnRisk = avgLoss > 0 ? (avgWin / avgLoss).toFixed(2) : '-'
 
@@ -462,7 +464,7 @@ export default function AccountPage() {
       <Tooltip data={tooltip} />
 
       {/* FIXED HEADER */}
-      <header style={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 50, padding: isMobile ? '10px 16px' : '12px 32px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #333', background: '#0a0a0f' }}>
+      <header style={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 50, padding: isMobile ? '10px 16px' : '12px 32px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#0a0a0f' }}>
         <a href="/" style={{ fontSize: isMobile ? '20px' : '28px', fontWeight: 700, textDecoration: 'none', letterSpacing: '-0.5px' }}><span style={{ color: '#22c55e' }}>LSD</span><span style={{ color: '#fff' }}>TRADE</span><span style={{ color: '#22c55e' }}>+</span></a>
         {!isMobile && (
           <div style={{ position: 'relative', paddingBottom: '8px' }}>
@@ -477,6 +479,9 @@ export default function AccountPage() {
           <a href="/dashboard" style={{ padding: isMobile ? '8px 12px' : '10px 20px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '8px', color: '#fff', fontSize: isMobile ? '12px' : '14px', textDecoration: 'none' }}>← Dashboard</a>
         </div>
       </header>
+
+      {/* Single full-width border line under header */}
+      {!isMobile && <div style={{ position: 'fixed', top: '57px', left: 0, right: 0, height: '1px', background: '#333', zIndex: 51 }} />}
 
       {/* Mobile Menu Overlay */}
       {isMobile && showMobileMenu && (
@@ -504,7 +509,7 @@ export default function AccountPage() {
 
       {/* FIXED SUBHEADER - connected to sidebar with no gap */}
       {!isMobile && (
-        <div style={{ position: 'fixed', top: '57px', left: '180px', right: 0, zIndex: 50, padding: '14px 24px 14px 25px', background: '#0a0a0f', borderTop: '1px solid #333', borderBottom: '1px solid #1a1a22', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div style={{ position: 'fixed', top: '58px', left: '180px', right: 0, zIndex: 50, padding: '14px 24px 14px 25px', background: '#0a0a0f', borderBottom: '1px solid #1a1a22', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
             <span style={{ fontSize: '26px', fontWeight: 700, color: '#fff' }}>{account?.name}</span>
             {/* Stats toggle - show next to journal name when on statistics tab and has multiple journals */}
@@ -534,7 +539,7 @@ export default function AccountPage() {
 
       {/* FIXED SIDEBAR - desktop only, starts under header */}
       {!isMobile && (
-        <div style={{ position: 'fixed', top: '57px', left: 0, bottom: 0, width: '180px', padding: '16px 12px', background: '#0a0a0f', zIndex: 45, display: 'flex', flexDirection: 'column', paddingTop: '72px', borderRight: '1px solid #1a1a22', borderTop: '1px solid #333' }}>
+        <div style={{ position: 'fixed', top: '58px', left: 0, bottom: 0, width: '180px', padding: '16px 12px', background: '#0a0a0f', zIndex: 45, display: 'flex', flexDirection: 'column', paddingTop: '72px', borderRight: '1px solid #1a1a22' }}>
         <div>
           {['trades', 'statistics', 'notes'].map((tab) => (
             <button
@@ -1844,7 +1849,7 @@ export default function AccountPage() {
                 </div>
                 <div style={{ flex: 1, background: 'linear-gradient(145deg, #0d0d12 0%, #0a0a0e 100%)', border: '1px solid rgba(34,197,94,0.2)', borderRadius: '8px', padding: '8px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 20px rgba(0,0,0,0.4), 0 0 30px rgba(34,197,94,0.08)' }}>
                   <div style={{ fontSize: '9px', color: '#999', textTransform: 'uppercase', marginBottom: '2px' }}>Expectancy</div>
-                  <div style={{ fontSize: '18px', fontWeight: 700, color: parseFloat(expectancy) >= 0 ? '#22c55e' : '#ef4444' }}>${expectancy}</div>
+                  <div style={{ fontSize: '18px', fontWeight: 700, color: expectancy === '-' ? '#666' : parseFloat(expectancy) >= 0 ? '#22c55e' : '#ef4444' }}>{expectancy === '-' ? '-' : `$${expectancy}`}</div>
                   <div style={{ fontSize: '8px', color: '#999' }}>per trade</div>
                 </div>
               </div>
@@ -2907,15 +2912,15 @@ export default function AccountPage() {
                   const wins = filteredTrades.filter(t => t.outcome === 'win')
                   const losses = filteredTrades.filter(t => t.outcome === 'loss')
                   const totalPnl = filteredTrades.reduce((s, t) => s + (parseFloat(t.pnl) || 0), 0)
-                  const winrate = filteredTrades.length > 0 ? ((wins.length / filteredTrades.length) * 100).toFixed(0) : '0'
+                  const winrate = filteredTrades.length > 0 ? ((wins.length / filteredTrades.length) * 100).toFixed(0) : '-'
                   const avgWin = wins.length > 0 ? wins.reduce((s, t) => s + parseFloat(t.pnl), 0) / wins.length : 0
                   const avgLoss = losses.length > 0 ? Math.abs(losses.reduce((s, t) => s + parseFloat(t.pnl), 0) / losses.length) : 0
-                  const profitFactor = avgLoss > 0 && losses.length > 0 ? ((avgWin * wins.length) / (avgLoss * losses.length)).toFixed(2) : wins.length > 0 ? '∞' : '0'
+                  const profitFactor = avgLoss > 0 && losses.length > 0 ? ((avgWin * wins.length) / (avgLoss * losses.length)).toFixed(2) : wins.length > 0 ? '∞' : '-'
                   const biggestWin = wins.length > 0 ? Math.max(...wins.map(t => parseFloat(t.pnl))) : 0
                   const biggestLoss = losses.length > 0 ? Math.min(...losses.map(t => parseFloat(t.pnl))) : 0
                   const avgPnl = filteredTrades.length > 0 ? totalPnl / filteredTrades.length : 0
-                  const expectancy = filteredTrades.length > 0 ? (parseFloat(winrate) / 100 * avgWin - (1 - parseFloat(winrate) / 100) * avgLoss).toFixed(0) : 0
-                  const avgRR = avgLoss > 0 ? (avgWin / avgLoss).toFixed(1) : avgWin > 0 ? '∞' : '0'
+                  const expectancy = filteredTrades.length > 0 ? (parseFloat(winrate) / 100 * avgWin - (1 - parseFloat(winrate) / 100) * avgLoss).toFixed(0) : '-'
+                  const avgRR = avgLoss > 0 ? (avgWin / avgLoss).toFixed(1) : avgWin > 0 ? '∞' : '-'
                   const breakeven = filteredTrades.filter(t => parseFloat(t.pnl) === 0).length
 
                   // Calculate streak
@@ -2945,13 +2950,13 @@ export default function AccountPage() {
                   const stats = [
                     { label: 'Total P&L', value: `${totalPnl >= 0 ? '+' : ''}$${Math.round(totalPnl).toLocaleString()}`, color: totalPnl >= 0 ? '#22c55e' : '#ef4444', big: true },
                     { label: 'Trades', value: `${filteredTrades.length} (${wins.length}W/${losses.length}L)`, color: '#fff' },
-                    { label: 'Winrate', value: `${winrate}%`, color: parseFloat(winrate) >= 50 ? '#22c55e' : '#ef4444' },
-                    { label: 'Profit Factor', value: profitFactor, color: parseFloat(profitFactor) >= 1 ? '#22c55e' : '#ef4444' },
-                    { label: 'Avg RR', value: `${avgRR}R`, color: parseFloat(avgRR) >= 1 ? '#22c55e' : '#ef4444' },
+                    { label: 'Winrate', value: `${winrate}%`, color: winrate === '-' ? '#666' : parseFloat(winrate) >= 50 ? '#22c55e' : '#ef4444' },
+                    { label: 'Profit Factor', value: profitFactor, color: profitFactor === '-' ? '#666' : profitFactor === '∞' ? '#22c55e' : parseFloat(profitFactor) >= 1 ? '#22c55e' : '#ef4444' },
+                    { label: 'Avg RR', value: `${avgRR}R`, color: avgRR === '-' ? '#666' : avgRR === '∞' ? '#22c55e' : parseFloat(avgRR) >= 1 ? '#22c55e' : '#ef4444' },
                     { label: 'Avg Win', value: `+$${Math.round(avgWin).toLocaleString()}`, color: '#22c55e' },
                     { label: 'Avg Loss', value: `-$${Math.round(avgLoss).toLocaleString()}`, color: '#ef4444' },
                     { label: 'Avg Trade', value: `${avgPnl >= 0 ? '+' : ''}$${Math.round(avgPnl).toLocaleString()}`, color: avgPnl >= 0 ? '#22c55e' : '#ef4444' },
-                    { label: 'Expectancy', value: `${expectancy >= 0 ? '+' : ''}$${expectancy}`, color: parseFloat(expectancy) >= 0 ? '#22c55e' : '#ef4444' },
+                    { label: 'Expectancy', value: expectancy === '-' ? '-' : `${parseFloat(expectancy) >= 0 ? '+' : ''}$${expectancy}`, color: expectancy === '-' ? '#666' : parseFloat(expectancy) >= 0 ? '#22c55e' : '#ef4444' },
                     { label: 'Best Trade', value: `+$${Math.round(biggestWin).toLocaleString()}`, color: '#22c55e' },
                     { label: 'Worst Trade', value: `$${Math.round(biggestLoss).toLocaleString()}`, color: '#ef4444' },
                     { label: 'Trade Streak', value: currentStreak >= 0 ? `+${currentStreak}` : `${currentStreak}`, color: currentStreak >= 0 ? '#22c55e' : '#ef4444' },

@@ -168,7 +168,10 @@ export default function DashboardPage() {
   }
 
   async function submitQuickTrade() {
-    if (!quickTradeAccount || !quickTradeSymbol.trim() || !quickTradePnl) return
+    if (!quickTradeAccount) { alert('Please select a journal'); return }
+    if (!quickTradeSymbol?.trim()) { alert('Please enter a symbol'); return }
+    if (!quickTradePnl || isNaN(parseFloat(quickTradePnl))) { alert('Please enter a valid PnL number'); return }
+    if (quickTradeRR && isNaN(parseFloat(quickTradeRR))) { alert('Please enter a valid RR number'); return }
     setSubmittingTrade(true)
     const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY)
 
@@ -286,10 +289,10 @@ export default function DashboardPage() {
     const losses = allTrades.filter(t => t.outcome === 'loss').length
     const totalPnl = allTrades.reduce((sum, t) => sum + (parseFloat(t.pnl) || 0), 0)
     const winrate = (wins + losses) > 0 ? Math.round((wins / (wins + losses)) * 100) : 0
-    const avgRR = totalTrades > 0 ? (allTrades.reduce((sum, t) => sum + (parseFloat(t.rr) || 0), 0) / totalTrades).toFixed(1) : '0'
+    const avgRR = totalTrades > 0 ? (allTrades.reduce((sum, t) => sum + (parseFloat(t.rr) || 0), 0) / totalTrades).toFixed(1) : '-'
     const grossProfit = allTrades.filter(t => parseFloat(t.pnl) > 0).reduce((sum, t) => sum + parseFloat(t.pnl), 0)
     const grossLoss = Math.abs(allTrades.filter(t => parseFloat(t.pnl) < 0).reduce((sum, t) => sum + parseFloat(t.pnl), 0))
-    const profitFactor = grossLoss > 0 ? (grossProfit / grossLoss).toFixed(2) : grossProfit > 0 ? '∞' : '0'
+    const profitFactor = grossLoss > 0 ? (grossProfit / grossLoss).toFixed(2) : grossProfit > 0 ? '∞' : '-'
     const totalStartingBalance = accounts.reduce((sum, acc) => sum + (parseFloat(acc.starting_balance) || 0), 0)
     const currentBalance = totalStartingBalance + totalPnl
     const avgWin = wins > 0 ? (grossProfit / wins).toFixed(0) : 0
@@ -804,7 +807,7 @@ export default function DashboardPage() {
                         { label: 'WINRATE', value: `${stats.winrate}%`, color: stats.winrate >= 50 ? '#22c55e' : '#ef4444' },
                         { label: 'TRADES', value: stats.totalTrades, color: '#fff' },
                         { label: 'W/L', value: `${stats.wins}/${stats.losses}`, color: '#fff' },
-                        { label: 'PROFIT FACTOR', value: stats.profitFactor, color: parseFloat(stats.profitFactor) >= 1 ? '#22c55e' : '#ef4444' },
+                        { label: 'PROFIT FACTOR', value: stats.profitFactor, color: stats.profitFactor === '-' ? '#666' : stats.profitFactor === '∞' ? '#22c55e' : parseFloat(stats.profitFactor) >= 1 ? '#22c55e' : '#ef4444' },
                         { label: 'AVG RR', value: `${stats.avgRR}R`, color: '#fff' },
                         { label: 'AVG WIN', value: `+$${stats.avgWin}`, color: '#22c55e' },
                         { label: 'AVG LOSS', value: `-$${stats.avgLoss}`, color: '#ef4444' },
@@ -860,11 +863,11 @@ export default function DashboardPage() {
                     const losses = accTrades.filter(t => t.outcome === 'loss').length
                     const totalPnl = accTrades.reduce((sum, t) => sum + (parseFloat(t.pnl) || 0), 0)
                     const winrate = (wins + losses) > 0 ? Math.round((wins / (wins + losses)) * 100) : 0
-                    const avgRR = accTrades.length > 0 ? (accTrades.reduce((sum, t) => sum + (parseFloat(t.rr) || 0), 0) / accTrades.length).toFixed(1) : '0'
+                    const avgRR = accTrades.length > 0 ? (accTrades.reduce((sum, t) => sum + (parseFloat(t.rr) || 0), 0) / accTrades.length).toFixed(1) : '-'
                     const currentBalance = (parseFloat(account.starting_balance) || 0) + totalPnl
                     const grossProfit = accTrades.filter(t => parseFloat(t.pnl) > 0).reduce((sum, t) => sum + parseFloat(t.pnl), 0)
                     const grossLoss = Math.abs(accTrades.filter(t => parseFloat(t.pnl) < 0).reduce((sum, t) => sum + parseFloat(t.pnl), 0))
-                    const profitFactor = grossLoss > 0 ? (grossProfit / grossLoss).toFixed(1) : grossProfit > 0 ? '∞' : '0'
+                    const profitFactor = grossLoss > 0 ? (grossProfit / grossLoss).toFixed(1) : grossProfit > 0 ? '∞' : '-'
                     return (
                       <tr key={account.id} style={{ borderBottom: '1px solid #1a1a22' }}>
                         <td style={{ padding: '14px 16px' }}>
@@ -879,7 +882,7 @@ export default function DashboardPage() {
                         <td style={{ padding: '14px 16px', textAlign: 'center', fontWeight: 600, fontSize: '14px', color: totalPnl >= 0 ? '#22c55e' : '#ef4444' }}>{totalPnl >= 0 ? '+' : ''}${totalPnl.toLocaleString()}</td>
                         <td style={{ padding: '14px 16px', textAlign: 'center', fontSize: '14px', color: winrate >= 50 ? '#22c55e' : '#ef4444' }}>{winrate}%</td>
                         <td style={{ padding: '14px 16px', textAlign: 'center', fontSize: '14px', color: '#999' }}>{accTrades.length}</td>
-                        <td style={{ padding: '14px 16px', textAlign: 'center', fontSize: '14px', color: parseFloat(profitFactor) >= 1 ? '#22c55e' : '#ef4444' }}>{profitFactor}</td>
+                        <td style={{ padding: '14px 16px', textAlign: 'center', fontSize: '14px', color: profitFactor === '-' ? '#666' : profitFactor === '∞' ? '#22c55e' : parseFloat(profitFactor) >= 1 ? '#22c55e' : '#ef4444' }}>{profitFactor}</td>
                         <td style={{ padding: '14px 16px', textAlign: 'center', fontSize: '14px', color: '#999' }}>{avgRR}R</td>
                         <td style={{ padding: '14px 16px', textAlign: 'center' }}>
                           <div style={{ display: 'flex', gap: '8px', justifyContent: 'center' }}>
@@ -901,11 +904,11 @@ export default function DashboardPage() {
               const losses = accTrades.filter(t => t.outcome === 'loss').length
               const totalPnl = accTrades.reduce((sum, t) => sum + (parseFloat(t.pnl) || 0), 0)
               const winrate = (wins + losses) > 0 ? Math.round((wins / (wins + losses)) * 100) : 0
-              const avgRR = accTrades.length > 0 ? (accTrades.reduce((sum, t) => sum + (parseFloat(t.rr) || 0), 0) / accTrades.length).toFixed(1) : '0'
+              const avgRR = accTrades.length > 0 ? (accTrades.reduce((sum, t) => sum + (parseFloat(t.rr) || 0), 0) / accTrades.length).toFixed(1) : '-'
               const currentBalance = (parseFloat(account.starting_balance) || 0) + totalPnl
               const grossProfit = accTrades.filter(t => parseFloat(t.pnl) > 0).reduce((sum, t) => sum + parseFloat(t.pnl), 0)
               const grossLoss = Math.abs(accTrades.filter(t => parseFloat(t.pnl) < 0).reduce((sum, t) => sum + parseFloat(t.pnl), 0))
-              const profitFactor = grossLoss > 0 ? (grossProfit / grossLoss).toFixed(1) : grossProfit > 0 ? '∞' : '0'
+              const profitFactor = grossLoss > 0 ? (grossProfit / grossLoss).toFixed(1) : grossProfit > 0 ? '∞' : '-'
               const tradeDays = {}
               accTrades.forEach(t => { if (!tradeDays[t.date]) tradeDays[t.date] = 0; tradeDays[t.date] += parseFloat(t.pnl) || 0 })
               const consistency = Object.keys(tradeDays).length > 0 ? Math.round((Object.values(tradeDays).filter(v => v > 0).length / Object.keys(tradeDays).length) * 100) : 0
