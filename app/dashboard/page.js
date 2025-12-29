@@ -545,7 +545,7 @@ export default function DashboardPage() {
   return (
     <div style={{ minHeight: '100vh', background: '#0a0a0f' }}>
       {/* Header */}
-      <header style={{ padding: isMobile ? '12px 16px' : '16px 40px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #1a1a22', flexWrap: isMobile ? 'wrap' : 'nowrap', gap: isMobile ? '8px' : '0' }}>
+      <header style={{ padding: isMobile ? '12px 16px' : '16px 40px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #333', flexWrap: isMobile ? 'wrap' : 'nowrap', gap: isMobile ? '8px' : '0' }}>
         <a href="/" style={{ fontSize: isMobile ? '22px' : '28px', fontWeight: 700, textDecoration: 'none' }}>
           <span style={{ color: '#22c55e' }}>LSD</span><span style={{ color: '#fff' }}>TRADE</span><span style={{ color: '#22c55e' }}>+</span>
         </a>
