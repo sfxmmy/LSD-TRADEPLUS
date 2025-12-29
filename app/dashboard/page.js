@@ -408,21 +408,21 @@ export default function DashboardPage() {
           <div style={{ width: '260px', flexShrink: 0, position: 'sticky', top: '20px', height: 'fit-content' }}>
             <div style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '14px' }}>
               {/* Title + View Toggle */}
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px', padding: '8px 10px', background: 'rgba(139,92,246,0.08)', border: '1px solid rgba(139,92,246,0.25)', borderRadius: '6px' }}>
                 <div style={{ fontSize: '11px', color: '#fff', textTransform: 'uppercase', letterSpacing: '0.5px', fontWeight: 700 }}>Journal a Trade</div>
-                <div style={{ display: 'flex', background: '#0a0a0f', borderRadius: '3px', overflow: 'hidden' }}>
-                  <button onClick={() => setViewMode('cards')} style={{ padding: '3px 6px', background: viewMode === 'cards' ? '#22c55e' : 'transparent', border: 'none', color: viewMode === 'cards' ? '#fff' : '#666', fontSize: '9px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '2px' }}>
-                    <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="7" height="7" /><rect x="14" y="3" width="7" height="7" /><rect x="3" y="14" width="7" height="7" /><rect x="14" y="14" width="7" height="7" /></svg>
+                <div style={{ display: 'flex', background: '#0a0a0f', borderRadius: '4px', overflow: 'hidden', border: '1px solid #2a2a35' }}>
+                  <button onClick={() => setViewMode('cards')} style={{ padding: '5px 8px', background: viewMode === 'cards' ? '#22c55e' : 'transparent', border: 'none', color: viewMode === 'cards' ? '#fff' : '#666', cursor: 'pointer', display: 'flex', alignItems: 'center' }}>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="7" height="7" /><rect x="14" y="3" width="7" height="7" /><rect x="3" y="14" width="7" height="7" /><rect x="14" y="14" width="7" height="7" /></svg>
                   </button>
-                  <button onClick={() => setViewMode('list')} style={{ padding: '3px 6px', background: viewMode === 'list' ? '#22c55e' : 'transparent', border: 'none', color: viewMode === 'list' ? '#fff' : '#666', fontSize: '9px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '2px' }}>
-                    <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="8" y1="6" x2="21" y2="6" /><line x1="8" y1="12" x2="21" y2="12" /><line x1="8" y1="18" x2="21" y2="18" /><line x1="3" y1="6" x2="3.01" y2="6" /><line x1="3" y1="12" x2="3.01" y2="12" /><line x1="3" y1="18" x2="3.01" y2="18" /></svg>
+                  <button onClick={() => setViewMode('list')} style={{ padding: '5px 8px', background: viewMode === 'list' ? '#22c55e' : 'transparent', border: 'none', color: viewMode === 'list' ? '#fff' : '#666', cursor: 'pointer', display: 'flex', alignItems: 'center' }}>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="8" y1="6" x2="21" y2="6" /><line x1="8" y1="12" x2="21" y2="12" /><line x1="8" y1="18" x2="21" y2="18" /><line x1="3" y1="6" x2="3.01" y2="6" /><line x1="3" y1="12" x2="3.01" y2="12" /><line x1="3" y1="18" x2="3.01" y2="18" /></svg>
                   </button>
                 </div>
               </div>
 
               {/* Journal Select - Important */}
-              <div style={{ display: 'flex', alignItems: 'center', marginBottom: '8px' }}>
-                <span style={{ fontSize: '11px', color: '#22c55e', width: '60px', flexShrink: 0 }}>Journal</span>
+              <div style={{ display: 'flex', alignItems: 'center', marginBottom: '8px', padding: '6px 8px', background: 'rgba(99,102,241,0.06)', border: '1px solid rgba(99,102,241,0.2)', borderRadius: '5px' }}>
+                <span style={{ fontSize: '11px', color: '#22c55e', width: '52px', flexShrink: 0 }}>Journal</span>
                 <select value={quickTradeAccount} onChange={e => setQuickTradeAccount(e.target.value)} style={{ flex: 1, padding: '6px 8px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '4px', color: '#fff', fontSize: '12px' }}>
                   {accounts.map(acc => <option key={acc.id} value={acc.id}>{acc.name}</option>)}
                 </select>
