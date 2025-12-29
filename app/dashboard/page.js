@@ -27,6 +27,11 @@ export default function DashboardPage() {
   const [quickTradeDate, setQuickTradeDate] = useState(new Date().toISOString().split('T')[0])
   const [quickTradeDirection, setQuickTradeDirection] = useState('long')
   const [quickTradeRating, setQuickTradeRating] = useState('')
+  const [quickTradeRiskPercent, setQuickTradeRiskPercent] = useState('')
+  const [quickTradeConfidence, setQuickTradeConfidence] = useState('')
+  const [quickTradeTimeframe, setQuickTradeTimeframe] = useState('')
+  const [quickTradeSession, setQuickTradeSession] = useState('')
+  const [quickTradeNotes, setQuickTradeNotes] = useState('')
   const [submittingTrade, setSubmittingTrade] = useState(false)
   const [quickTradeExtraData, setQuickTradeExtraData] = useState({})
 
@@ -100,6 +105,16 @@ export default function DashboardPage() {
     if (!quickTradeAccount || !quickTradeSymbol.trim() || !quickTradePnl) return
     setSubmittingTrade(true)
     const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY)
+
+    // Build extra_data with all fields
+    const extraData = {
+      ...quickTradeExtraData,
+      riskPercent: quickTradeRiskPercent || '',
+      confidence: quickTradeConfidence || '',
+      timeframe: quickTradeTimeframe || '',
+      session: quickTradeSession || '',
+    }
+
     const { data, error } = await supabase.from('trades').insert({
       account_id: quickTradeAccount,
       symbol: quickTradeSymbol.trim().toUpperCase(),
@@ -109,7 +124,8 @@ export default function DashboardPage() {
       date: quickTradeDate,
       direction: quickTradeDirection,
       rating: quickTradeRating ? parseInt(quickTradeRating) : null,
-      extra_data: JSON.stringify(quickTradeExtraData)
+      notes: quickTradeNotes || null,
+      extra_data: JSON.stringify(extraData)
     }).select().single()
     if (error) { alert('Error: ' + error.message); setSubmittingTrade(false); return }
     // Add to local state
@@ -122,6 +138,11 @@ export default function DashboardPage() {
     setQuickTradePnl('')
     setQuickTradeRR('')
     setQuickTradeRating('')
+    setQuickTradeRiskPercent('')
+    setQuickTradeConfidence('')
+    setQuickTradeTimeframe('')
+    setQuickTradeSession('')
+    setQuickTradeNotes('')
     setQuickTradeExtraData({})
     setSubmittingTrade(false)
   }
@@ -411,6 +432,23 @@ export default function DashboardPage() {
                 <input type="date" value={quickTradeDate} onChange={e => setQuickTradeDate(e.target.value)} style={{ width: '100%', padding: '8px 10px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '4px', color: '#fff', fontSize: '12px', boxSizing: 'border-box' }} />
               </div>
 
+              {/* % Risked */}
+              <div style={{ marginBottom: '10px' }}>
+                <div style={{ fontSize: '10px', color: '#666', marginBottom: '4px' }}>% Risked</div>
+                <input type="number" value={quickTradeRiskPercent} onChange={e => setQuickTradeRiskPercent(e.target.value)} placeholder="e.g. 1" style={{ width: '100%', padding: '8px 10px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '4px', color: '#fff', fontSize: '12px', boxSizing: 'border-box' }} />
+              </div>
+
+              {/* Confidence */}
+              <div style={{ marginBottom: '10px' }}>
+                <div style={{ fontSize: '10px', color: '#666', marginBottom: '4px' }}>Confidence</div>
+                <select value={quickTradeConfidence} onChange={e => setQuickTradeConfidence(e.target.value)} style={{ width: '100%', padding: '8px 10px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '4px', color: '#fff', fontSize: '12px' }}>
+                  <option value="">Select Confidence</option>
+                  <option value="High">High</option>
+                  <option value="Medium">Medium</option>
+                  <option value="Low">Low</option>
+                </select>
+              </div>
+
               {/* Rating */}
               <div style={{ marginBottom: '10px' }}>
                 <div style={{ fontSize: '10px', color: '#666', marginBottom: '4px' }}>Rating</div>
@@ -422,6 +460,39 @@ export default function DashboardPage() {
                   <option value="4">★★★★ (4)</option>
                   <option value="5">★★★★★ (5)</option>
                 </select>
+              </div>
+
+              {/* Timeframe */}
+              <div style={{ marginBottom: '10px' }}>
+                <div style={{ fontSize: '10px', color: '#666', marginBottom: '4px' }}>Timeframe</div>
+                <select value={quickTradeTimeframe} onChange={e => setQuickTradeTimeframe(e.target.value)} style={{ width: '100%', padding: '8px 10px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '4px', color: '#fff', fontSize: '12px' }}>
+                  <option value="">Select Timeframe</option>
+                  <option value="1m">1m</option>
+                  <option value="5m">5m</option>
+                  <option value="15m">15m</option>
+                  <option value="30m">30m</option>
+                  <option value="1H">1H</option>
+                  <option value="4H">4H</option>
+                  <option value="Daily">Daily</option>
+                </select>
+              </div>
+
+              {/* Session */}
+              <div style={{ marginBottom: '10px' }}>
+                <div style={{ fontSize: '10px', color: '#666', marginBottom: '4px' }}>Session</div>
+                <select value={quickTradeSession} onChange={e => setQuickTradeSession(e.target.value)} style={{ width: '100%', padding: '8px 10px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '4px', color: '#fff', fontSize: '12px' }}>
+                  <option value="">Select Session</option>
+                  <option value="London">London</option>
+                  <option value="New York">New York</option>
+                  <option value="Asian">Asian</option>
+                  <option value="Overlap">Overlap</option>
+                </select>
+              </div>
+
+              {/* Notes */}
+              <div style={{ marginBottom: '10px' }}>
+                <div style={{ fontSize: '10px', color: '#666', marginBottom: '4px' }}>Notes</div>
+                <textarea value={quickTradeNotes} onChange={e => setQuickTradeNotes(e.target.value)} placeholder="Trade notes..." style={{ width: '100%', padding: '8px 10px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '4px', color: '#fff', fontSize: '12px', boxSizing: 'border-box', resize: 'vertical', minHeight: '60px' }} />
               </div>
 
               {/* Custom Inputs for selected journal */}
