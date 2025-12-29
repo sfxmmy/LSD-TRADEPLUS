@@ -316,7 +316,7 @@ export default function DashboardPage() {
 
           <div style={{ height: '26px', position: 'relative', overflow: 'hidden', display: 'flex', alignItems: 'center' }}>
             {xLabels.map((l, i) => (
-              <span key={i} style={{ position: 'absolute', left: `${l.pct}%`, transform: 'translateX(-50%)', fontSize: '11px', color: '#ccc', fontWeight: 500, background: '#0d0d12', padding: '2px 6px', borderRadius: '3px', border: '1px solid #2a2a35' }}>{l.label}</span>
+              <span key={i} style={{ position: 'absolute', left: `${l.pct}%`, transform: 'translateX(-50%)', fontSize: '10px', color: '#888' }}>{l.label}</span>
             ))}
           </div>
         </div>
@@ -355,7 +355,7 @@ export default function DashboardPage() {
         {!isMobile && accounts.length > 0 && (
           <div style={{ width: '240px', flexShrink: 0, position: 'sticky', top: '20px', height: 'fit-content' }}>
             <div style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '10px', padding: '16px' }}>
-              <div style={{ fontSize: '12px', color: '#888', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '14px', fontWeight: 600 }}>Quick Trade</div>
+              <div style={{ fontSize: '12px', color: '#888', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '14px', fontWeight: 600 }}>Journal a Trade</div>
 
               {/* Journal Select */}
               <div style={{ marginBottom: '10px' }}>
@@ -369,18 +369,21 @@ export default function DashboardPage() {
                 <input type="text" value={quickTradeSymbol} onChange={e => setQuickTradeSymbol(e.target.value)} placeholder="Symbol (e.g. XAUUSD)" style={{ width: '100%', padding: '10px 12px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '13px', boxSizing: 'border-box' }} />
               </div>
 
-              {/* Direction */}
-              <div style={{ display: 'flex', gap: '6px', marginBottom: '10px' }}>
-                {['long', 'short'].map(d => (
-                  <button key={d} onClick={() => setQuickTradeDirection(d)} style={{ flex: 1, padding: '8px', background: quickTradeDirection === d ? (d === 'long' ? '#22c55e' : '#ef4444') : '#141418', border: '1px solid #1a1a22', borderRadius: '4px', color: quickTradeDirection === d ? '#fff' : '#888', fontSize: '11px', textTransform: 'uppercase', cursor: 'pointer', fontWeight: 600 }}>{d}</button>
-                ))}
+              {/* Direction Dropdown */}
+              <div style={{ marginBottom: '10px' }}>
+                <select value={quickTradeDirection} onChange={e => setQuickTradeDirection(e.target.value)} style={{ width: '100%', padding: '10px 12px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '13px' }}>
+                  <option value="long">Long</option>
+                  <option value="short">Short</option>
+                </select>
               </div>
 
-              {/* Outcome */}
-              <div style={{ display: 'flex', gap: '6px', marginBottom: '10px' }}>
-                {['win', 'loss', 'be'].map(o => (
-                  <button key={o} onClick={() => setQuickTradeOutcome(o)} style={{ flex: 1, padding: '8px', background: quickTradeOutcome === o ? (o === 'win' ? 'rgba(34,197,94,0.2)' : o === 'loss' ? 'rgba(239,68,68,0.2)' : 'rgba(255,255,255,0.1)') : '#141418', border: `1px solid ${quickTradeOutcome === o ? (o === 'win' ? '#22c55e' : o === 'loss' ? '#ef4444' : '#666') : '#1a1a22'}`, borderRadius: '4px', color: quickTradeOutcome === o ? (o === 'win' ? '#22c55e' : o === 'loss' ? '#ef4444' : '#fff') : '#888', fontSize: '11px', textTransform: 'uppercase', cursor: 'pointer', fontWeight: 600 }}>{o}</button>
-                ))}
+              {/* Outcome Dropdown */}
+              <div style={{ marginBottom: '10px' }}>
+                <select value={quickTradeOutcome} onChange={e => setQuickTradeOutcome(e.target.value)} style={{ width: '100%', padding: '10px 12px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '13px' }}>
+                  <option value="win">Win</option>
+                  <option value="loss">Loss</option>
+                  <option value="be">Break Even</option>
+                </select>
               </div>
 
               {/* PnL and RR */}
@@ -407,6 +410,9 @@ export default function DashboardPage() {
                   </select>
                 </div>
               ))}
+
+              {/* Add Input Link */}
+              <a href={`/account/${quickTradeAccount}?tab=settings`} style={{ display: 'block', marginBottom: '14px', fontSize: '11px', color: '#22c55e', textDecoration: 'none', textAlign: 'center' }}>+ Add Custom Input</a>
 
               {/* Submit */}
               <button onClick={submitQuickTrade} disabled={submittingTrade || !quickTradeSymbol.trim() || !quickTradePnl} style={{ width: '100%', padding: '12px', background: (submittingTrade || !quickTradeSymbol.trim() || !quickTradePnl) ? '#1a1a22' : '#22c55e', border: 'none', borderRadius: '6px', color: (submittingTrade || !quickTradeSymbol.trim() || !quickTradePnl) ? '#666' : '#fff', fontWeight: 600, fontSize: '13px', cursor: (submittingTrade || !quickTradeSymbol.trim() || !quickTradePnl) ? 'not-allowed' : 'pointer', marginBottom: '16px' }}>
@@ -522,7 +528,7 @@ export default function DashboardPage() {
                   {/* Chart + Stats Row */}
                   <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', padding: isMobile ? '0 16px 16px' : '0 24px 16px', gap: '16px' }}>
                     {/* Chart */}
-                    <div style={{ flex: 1, height: isMobile ? '200px' : '320px', overflow: 'hidden' }}>
+                    <div style={{ flex: 1, height: isMobile ? '200px' : '350px', overflow: 'hidden' }}>
                       <EquityCurve accountTrades={accTrades} startingBalance={account.starting_balance} />
                     </div>
 
