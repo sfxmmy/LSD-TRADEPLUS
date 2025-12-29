@@ -362,9 +362,9 @@ export default function AccountPage() {
 
   const tabTitles = { trades: 'TRADING AREA', statistics: 'STATISTICS AREA', notes: 'NOTES AREA' }
   const tabDescriptions = {
-    trades: 'View and manage all your trades. Add new trades and track performance.',
-    statistics: 'Detailed statistics, charts, and breakdowns by pair, session, and more.',
-    notes: 'Keep daily, weekly, and custom notes about your trading journey.'
+    trades: 'Log and manage all your trades. Track entries, exits, PnL, and custom metrics. Review your trading history and analyze individual trade performance.',
+    statistics: 'Comprehensive statistics dashboard with equity curves, winrate breakdowns, profit factors, and performance analysis by pair, session, direction, and more.',
+    notes: 'Document your trading journey with daily reflections, weekly reviews, and custom notes. Track your mindset, lessons learned, and market observations.'
   }
 
   // Tooltip component that follows mouse with smooth edge handling
@@ -461,7 +461,7 @@ export default function AccountPage() {
 
       {/* FIXED SUBHEADER - connected to sidebar with no gap */}
       {!isMobile && (
-        <div style={{ position: 'fixed', top: '57px', left: '180px', right: 0, zIndex: 40, padding: '14px 24px', background: '#0a0a0f', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div style={{ position: 'fixed', top: '57px', left: '180px', right: 0, zIndex: 40, padding: '14px 24px', background: '#0a0a0f', borderBottom: '1px solid #1a1a22', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <span style={{ fontSize: '26px', fontWeight: 700, color: '#fff' }}>{account?.name}</span>
           <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
             {activeTab === 'trades' && (

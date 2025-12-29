@@ -423,152 +423,147 @@ export default function DashboardPage() {
         </div>
       </header>
 
-      <div style={{ display: 'flex', gap: '12px', maxWidth: '1600px', margin: '0 auto', padding: isMobile ? '16px' : '24px 24px' }}>
+      <div style={{ display: 'flex', gap: '12px', maxWidth: '1600px', margin: '0 auto', padding: isMobile ? '16px' : '24px 16px' }}>
         {/* Fixed Left Sidebar - Journal a Trade */}
         {!isMobile && accounts.length > 0 && (
-          <div style={{ width: '260px', flexShrink: 0, position: 'sticky', top: '20px', height: 'fit-content' }}>
-            <div style={{ background: 'linear-gradient(145deg, #0d0d12 0%, #0a0a0e 100%)', border: '1px solid rgba(34,197,94,0.4)', borderRadius: '8px', padding: '14px', boxShadow: 'inset 0 0 20px rgba(34,197,94,0.15), inset 0 1px 0 rgba(34,197,94,0.1)' }}>
+          <div style={{ width: '320px', flexShrink: 0, position: 'sticky', top: '20px', height: 'fit-content' }}>
+            <div style={{ background: 'linear-gradient(145deg, #0d0d12 0%, #0a0a0e 100%)', border: '1px solid rgba(139,92,246,0.4)', borderRadius: '8px', padding: '14px', boxShadow: 'inset 0 0 20px rgba(139,92,246,0.15), inset 0 1px 0 rgba(139,92,246,0.1)' }}>
               {/* Title + View Toggle */}
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
-                <div style={{ fontSize: '11px', color: '#22c55e', textTransform: 'uppercase', letterSpacing: '0.5px', fontWeight: 700, textShadow: '0 0 8px rgba(34,197,94,0.4)' }}>Journal a Trade</div>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
+                <div style={{ fontSize: '11px', color: '#fff', textTransform: 'uppercase', letterSpacing: '0.5px', fontWeight: 700 }}>Journal a Trade</div>
                 <div style={{ display: 'flex', background: 'rgba(10,10,15,0.6)', borderRadius: '4px', overflow: 'hidden' }}>
-                  <button onClick={() => setViewMode('cards')} style={{ padding: '5px 8px', background: viewMode === 'cards' ? '#22c55e' : 'transparent', border: 'none', color: viewMode === 'cards' ? '#fff' : '#666', cursor: 'pointer', display: 'flex', alignItems: 'center' }}>
+                  <button onClick={() => setViewMode('cards')} style={{ padding: '5px 8px', background: viewMode === 'cards' ? '#8b5cf6' : 'transparent', border: 'none', color: viewMode === 'cards' ? '#fff' : '#666', cursor: 'pointer', display: 'flex', alignItems: 'center' }}>
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="7" height="7" /><rect x="14" y="3" width="7" height="7" /><rect x="3" y="14" width="7" height="7" /><rect x="14" y="14" width="7" height="7" /></svg>
                   </button>
-                  <button onClick={() => setViewMode('list')} style={{ padding: '5px 8px', background: viewMode === 'list' ? '#22c55e' : 'transparent', border: 'none', color: viewMode === 'list' ? '#fff' : '#666', cursor: 'pointer', display: 'flex', alignItems: 'center' }}>
+                  <button onClick={() => setViewMode('list')} style={{ padding: '5px 8px', background: viewMode === 'list' ? '#8b5cf6' : 'transparent', border: 'none', color: viewMode === 'list' ? '#fff' : '#666', cursor: 'pointer', display: 'flex', alignItems: 'center' }}>
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="8" y1="6" x2="21" y2="6" /><line x1="8" y1="12" x2="21" y2="12" /><line x1="8" y1="18" x2="21" y2="18" /><line x1="3" y1="6" x2="3.01" y2="6" /><line x1="3" y1="12" x2="3.01" y2="12" /><line x1="3" y1="18" x2="3.01" y2="18" /></svg>
                   </button>
                 </div>
               </div>
 
-              {/* Journal Select - Important */}
+              {/* Journal Select - Full Row */}
               <div style={{ display: 'flex', alignItems: 'center', marginBottom: '8px' }}>
-                <span style={{ fontSize: '11px', color: '#a78bfa', width: '60px', flexShrink: 0 }}>Journal</span>
-                <select value={quickTradeAccount} onChange={e => setQuickTradeAccount(e.target.value)} style={{ flex: 1, padding: '6px 8px', background: 'rgba(139,92,246,0.1)', border: '1px solid rgba(139,92,246,0.3)', borderRadius: '4px', color: '#fff', fontSize: '12px' }}>
+                <span style={{ fontSize: '10px', color: '#a78bfa', width: '50px', flexShrink: 0 }}>Journal</span>
+                <select value={quickTradeAccount} onChange={e => setQuickTradeAccount(e.target.value)} style={{ flex: 1, padding: '5px 6px', background: 'rgba(139,92,246,0.1)', border: '1px solid rgba(139,92,246,0.3)', borderRadius: '4px', color: '#fff', fontSize: '11px' }}>
                   {accounts.map(acc => <option key={acc.id} value={acc.id}>{acc.name}</option>)}
                 </select>
               </div>
 
-              {/* Symbol */}
-              <div style={{ display: 'flex', alignItems: 'center', marginBottom: '8px' }}>
-                <span style={{ fontSize: '11px', color: '#888', width: '60px', flexShrink: 0 }}>Symbol</span>
-                <input type="text" value={quickTradeSymbol} onChange={e => setQuickTradeSymbol(e.target.value)} placeholder="XAUUSD" style={{ flex: 1, padding: '6px 8px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '4px', color: '#fff', fontSize: '12px', boxSizing: 'border-box' }} />
-              </div>
-
-              {/* Direction */}
-              <div style={{ display: 'flex', alignItems: 'center', marginBottom: '8px' }}>
-                <span style={{ fontSize: '11px', color: '#888', width: '60px', flexShrink: 0 }}>Direction</span>
-                <select value={quickTradeDirection} onChange={e => setQuickTradeDirection(e.target.value)} style={{ flex: 1, padding: '6px 8px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '4px', color: '#fff', fontSize: '12px' }}>
-                  <option value="long">Long</option>
-                  <option value="short">Short</option>
-                </select>
-              </div>
-
-              {/* Outcome */}
-              <div style={{ display: 'flex', alignItems: 'center', marginBottom: '8px' }}>
-                <span style={{ fontSize: '11px', color: '#888', width: '60px', flexShrink: 0 }}>Outcome</span>
-                <select value={quickTradeOutcome} onChange={e => setQuickTradeOutcome(e.target.value)} style={{ flex: 1, padding: '6px 8px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '4px', color: '#fff', fontSize: '12px' }}>
-                  <option value="win">Win</option>
-                  <option value="loss">Loss</option>
-                  <option value="be">BE</option>
-                </select>
-              </div>
-
-              {/* PnL */}
-              <div style={{ display: 'flex', alignItems: 'center', marginBottom: '8px' }}>
-                <span style={{ fontSize: '11px', color: '#888', width: '60px', flexShrink: 0 }}>P&L ($)</span>
-                <input type="number" value={quickTradePnl} onChange={e => setQuickTradePnl(e.target.value)} placeholder="0" style={{ flex: 1, padding: '6px 8px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '4px', color: '#fff', fontSize: '12px', boxSizing: 'border-box' }} />
-              </div>
-
-              {/* RR */}
-              <div style={{ display: 'flex', alignItems: 'center', marginBottom: '8px' }}>
-                <span style={{ fontSize: '11px', color: '#888', width: '60px', flexShrink: 0 }}>RR</span>
-                <input type="text" value={quickTradeRR} onChange={e => setQuickTradeRR(e.target.value)} placeholder="2.5" style={{ flex: 1, padding: '6px 8px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '4px', color: '#fff', fontSize: '12px', boxSizing: 'border-box' }} />
-              </div>
-
-              {/* Date */}
-              <div style={{ display: 'flex', alignItems: 'center', marginBottom: '8px' }}>
-                <span style={{ fontSize: '11px', color: '#888', width: '60px', flexShrink: 0 }}>Date</span>
-                <input type="date" value={quickTradeDate} onChange={e => setQuickTradeDate(e.target.value)} style={{ flex: 1, padding: '6px 8px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '4px', color: '#fff', fontSize: '12px', boxSizing: 'border-box' }} />
-              </div>
-
-              {/* % Risked */}
-              <div style={{ display: 'flex', alignItems: 'center', marginBottom: '8px' }}>
-                <span style={{ fontSize: '11px', color: '#888', width: '60px', flexShrink: 0 }}>% Risk</span>
-                <input type="number" value={quickTradeRiskPercent} onChange={e => setQuickTradeRiskPercent(e.target.value)} placeholder="1" style={{ flex: 1, padding: '6px 8px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '4px', color: '#fff', fontSize: '12px', boxSizing: 'border-box' }} />
-              </div>
-
-              {/* Confidence */}
-              <div style={{ display: 'flex', alignItems: 'center', marginBottom: '8px' }}>
-                <span style={{ fontSize: '11px', color: '#888', width: '60px', flexShrink: 0 }}>Confid.</span>
-                <select value={quickTradeConfidence} onChange={e => setQuickTradeConfidence(e.target.value)} style={{ flex: 1, padding: '6px 8px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '4px', color: '#fff', fontSize: '12px' }}>
-                  <option value="">-</option>
-                  <option value="High">High</option>
-                  <option value="Medium">Medium</option>
-                  <option value="Low">Low</option>
-                </select>
-              </div>
-
-              {/* Rating */}
-              <div style={{ display: 'flex', alignItems: 'center', marginBottom: '8px' }}>
-                <span style={{ fontSize: '11px', color: '#888', width: '60px', flexShrink: 0 }}>Rating</span>
-                <select value={quickTradeRating} onChange={e => setQuickTradeRating(e.target.value)} style={{ flex: 1, padding: '6px 8px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '4px', color: '#fff', fontSize: '12px' }}>
-                  <option value="">-</option>
-                  <option value="1">★</option>
-                  <option value="2">★★</option>
-                  <option value="3">★★★</option>
-                  <option value="4">★★★★</option>
-                  <option value="5">★★★★★</option>
-                </select>
-              </div>
-
-              {/* Timeframe */}
-              <div style={{ display: 'flex', alignItems: 'center', marginBottom: '8px' }}>
-                <span style={{ fontSize: '11px', color: '#888', width: '60px', flexShrink: 0 }}>TF</span>
-                <select value={quickTradeTimeframe} onChange={e => setQuickTradeTimeframe(e.target.value)} style={{ flex: 1, padding: '6px 8px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '4px', color: '#fff', fontSize: '12px' }}>
-                  <option value="">-</option>
-                  <option value="1m">1m</option>
-                  <option value="5m">5m</option>
-                  <option value="15m">15m</option>
-                  <option value="30m">30m</option>
-                  <option value="1H">1H</option>
-                  <option value="4H">4H</option>
-                  <option value="Daily">Daily</option>
-                </select>
-              </div>
-
-              {/* Session */}
-              <div style={{ display: 'flex', alignItems: 'center', marginBottom: '8px' }}>
-                <span style={{ fontSize: '11px', color: '#888', width: '60px', flexShrink: 0 }}>Session</span>
-                <select value={quickTradeSession} onChange={e => setQuickTradeSession(e.target.value)} style={{ flex: 1, padding: '6px 8px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '4px', color: '#fff', fontSize: '12px' }}>
-                  <option value="">-</option>
-                  <option value="London">London</option>
-                  <option value="New York">NY</option>
-                  <option value="Asian">Asian</option>
-                  <option value="Overlap">Overlap</option>
-                </select>
-              </div>
-
-              {/* Notes */}
-              <div style={{ display: 'flex', alignItems: 'flex-start', marginBottom: '8px' }}>
-                <span style={{ fontSize: '11px', color: '#888', width: '60px', flexShrink: 0, paddingTop: '6px' }}>Notes</span>
-                <textarea value={quickTradeNotes} onChange={e => setQuickTradeNotes(e.target.value)} placeholder="..." style={{ flex: 1, padding: '6px 8px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '4px', color: '#fff', fontSize: '12px', boxSizing: 'border-box', resize: 'none', height: '36px' }} />
-              </div>
-
-              {/* Custom Inputs for selected journal */}
-              {getSelectedAccountCustomInputs().map(input => (
-                <div key={input.id} style={{ display: 'flex', alignItems: 'center', marginBottom: '8px' }}>
-                  <span style={{ fontSize: '11px', color: '#888', width: '60px', flexShrink: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{(input.label || input.id).slice(0, 8)}</span>
-                  <select
-                    value={quickTradeExtraData[input.id] || ''}
-                    onChange={e => setQuickTradeExtraData(prev => ({ ...prev, [input.id]: e.target.value }))}
-                    style={{ flex: 1, padding: '6px 8px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '4px', color: '#fff', fontSize: '12px' }}
-                  >
-                    <option value="">-</option>
-                    {(input.options || []).map(opt => <option key={opt} value={opt}>{opt}</option>)}
+              {/* Two Column Layout */}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px 10px' }}>
+                {/* Symbol */}
+                <div style={{ display: 'flex', alignItems: 'center' }}>
+                  <span style={{ fontSize: '10px', color: '#888', width: '42px', flexShrink: 0 }}>Symbol</span>
+                  <input type="text" value={quickTradeSymbol} onChange={e => setQuickTradeSymbol(e.target.value)} placeholder="XAUUSD" style={{ flex: 1, padding: '5px 6px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '4px', color: '#fff', fontSize: '11px', boxSizing: 'border-box', minWidth: 0 }} />
+                </div>
+                {/* Direction */}
+                <div style={{ display: 'flex', alignItems: 'center' }}>
+                  <span style={{ fontSize: '10px', color: '#888', width: '32px', flexShrink: 0 }}>Dir</span>
+                  <select value={quickTradeDirection} onChange={e => setQuickTradeDirection(e.target.value)} style={{ flex: 1, padding: '5px 6px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '4px', color: '#fff', fontSize: '11px', minWidth: 0 }}>
+                    <option value="long">Long</option>
+                    <option value="short">Short</option>
                   </select>
                 </div>
-              ))}
+                {/* Outcome */}
+                <div style={{ display: 'flex', alignItems: 'center' }}>
+                  <span style={{ fontSize: '10px', color: '#888', width: '42px', flexShrink: 0 }}>W/L</span>
+                  <select value={quickTradeOutcome} onChange={e => setQuickTradeOutcome(e.target.value)} style={{ flex: 1, padding: '5px 6px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '4px', color: '#fff', fontSize: '11px', minWidth: 0 }}>
+                    <option value="win">Win</option>
+                    <option value="loss">Loss</option>
+                    <option value="be">BE</option>
+                  </select>
+                </div>
+                {/* PnL */}
+                <div style={{ display: 'flex', alignItems: 'center' }}>
+                  <span style={{ fontSize: '10px', color: '#888', width: '32px', flexShrink: 0 }}>P&L</span>
+                  <input type="number" value={quickTradePnl} onChange={e => setQuickTradePnl(e.target.value)} placeholder="$" style={{ flex: 1, padding: '5px 6px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '4px', color: '#fff', fontSize: '11px', boxSizing: 'border-box', minWidth: 0 }} />
+                </div>
+                {/* RR */}
+                <div style={{ display: 'flex', alignItems: 'center' }}>
+                  <span style={{ fontSize: '10px', color: '#888', width: '42px', flexShrink: 0 }}>RR</span>
+                  <input type="text" value={quickTradeRR} onChange={e => setQuickTradeRR(e.target.value)} placeholder="2.5" style={{ flex: 1, padding: '5px 6px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '4px', color: '#fff', fontSize: '11px', boxSizing: 'border-box', minWidth: 0 }} />
+                </div>
+                {/* % Risk */}
+                <div style={{ display: 'flex', alignItems: 'center' }}>
+                  <span style={{ fontSize: '10px', color: '#888', width: '32px', flexShrink: 0 }}>%</span>
+                  <input type="number" value={quickTradeRiskPercent} onChange={e => setQuickTradeRiskPercent(e.target.value)} placeholder="1" style={{ flex: 1, padding: '5px 6px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '4px', color: '#fff', fontSize: '11px', boxSizing: 'border-box', minWidth: 0 }} />
+                </div>
+                {/* Date */}
+                <div style={{ display: 'flex', alignItems: 'center' }}>
+                  <span style={{ fontSize: '10px', color: '#888', width: '42px', flexShrink: 0 }}>Date</span>
+                  <input type="date" value={quickTradeDate} onChange={e => setQuickTradeDate(e.target.value)} style={{ flex: 1, padding: '5px 6px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '4px', color: '#fff', fontSize: '11px', boxSizing: 'border-box', minWidth: 0 }} />
+                </div>
+                {/* TF */}
+                <div style={{ display: 'flex', alignItems: 'center' }}>
+                  <span style={{ fontSize: '10px', color: '#888', width: '32px', flexShrink: 0 }}>TF</span>
+                  <select value={quickTradeTimeframe} onChange={e => setQuickTradeTimeframe(e.target.value)} style={{ flex: 1, padding: '5px 6px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '4px', color: '#fff', fontSize: '11px', minWidth: 0 }}>
+                    <option value="">-</option>
+                    <option value="1m">1m</option>
+                    <option value="5m">5m</option>
+                    <option value="15m">15m</option>
+                    <option value="1H">1H</option>
+                    <option value="4H">4H</option>
+                    <option value="Daily">D</option>
+                  </select>
+                </div>
+                {/* Session */}
+                <div style={{ display: 'flex', alignItems: 'center' }}>
+                  <span style={{ fontSize: '10px', color: '#888', width: '42px', flexShrink: 0 }}>Sess</span>
+                  <select value={quickTradeSession} onChange={e => setQuickTradeSession(e.target.value)} style={{ flex: 1, padding: '5px 6px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '4px', color: '#fff', fontSize: '11px', minWidth: 0 }}>
+                    <option value="">-</option>
+                    <option value="London">Lon</option>
+                    <option value="New York">NY</option>
+                    <option value="Asian">Asia</option>
+                  </select>
+                </div>
+                {/* Confidence */}
+                <div style={{ display: 'flex', alignItems: 'center' }}>
+                  <span style={{ fontSize: '10px', color: '#888', width: '32px', flexShrink: 0 }}>Conf</span>
+                  <select value={quickTradeConfidence} onChange={e => setQuickTradeConfidence(e.target.value)} style={{ flex: 1, padding: '5px 6px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '4px', color: '#fff', fontSize: '11px', minWidth: 0 }}>
+                    <option value="">-</option>
+                    <option value="High">High</option>
+                    <option value="Medium">Med</option>
+                    <option value="Low">Low</option>
+                  </select>
+                </div>
+                {/* Rating */}
+                <div style={{ display: 'flex', alignItems: 'center' }}>
+                  <span style={{ fontSize: '10px', color: '#888', width: '42px', flexShrink: 0 }}>Rate</span>
+                  <select value={quickTradeRating} onChange={e => setQuickTradeRating(e.target.value)} style={{ flex: 1, padding: '5px 6px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '4px', color: '#fff', fontSize: '11px', minWidth: 0 }}>
+                    <option value="">-</option>
+                    <option value="1">★</option>
+                    <option value="2">★★</option>
+                    <option value="3">★★★</option>
+                    <option value="4">★★★★</option>
+                    <option value="5">★★★★★</option>
+                  </select>
+                </div>
+              </div>
+
+              {/* Notes - Full Row */}
+              <div style={{ display: 'flex', alignItems: 'center', marginTop: '8px' }}>
+                <span style={{ fontSize: '10px', color: '#888', width: '42px', flexShrink: 0 }}>Notes</span>
+                <input type="text" value={quickTradeNotes} onChange={e => setQuickTradeNotes(e.target.value)} placeholder="..." style={{ flex: 1, padding: '5px 6px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '4px', color: '#fff', fontSize: '11px', boxSizing: 'border-box' }} />
+              </div>
+
+              {/* Custom Inputs - Two per row */}
+              {getSelectedAccountCustomInputs().length > 0 && (
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px 10px', marginTop: '8px' }}>
+                  {getSelectedAccountCustomInputs().map(input => (
+                    <div key={input.id} style={{ display: 'flex', alignItems: 'center' }}>
+                      <span style={{ fontSize: '10px', color: '#888', width: '42px', flexShrink: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{(input.label || input.id).slice(0, 5)}</span>
+                      <select
+                        value={quickTradeExtraData[input.id] || ''}
+                        onChange={e => setQuickTradeExtraData(prev => ({ ...prev, [input.id]: e.target.value }))}
+                        style={{ flex: 1, padding: '5px 6px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '4px', color: '#fff', fontSize: '11px', minWidth: 0 }}
+                      >
+                        <option value="">-</option>
+                        {(input.options || []).map(opt => <option key={opt} value={opt}>{opt}</option>)}
+                      </select>
+                    </div>
+                  ))}
+                </div>
+              )}
 
               {/* Buttons Row */}
               <div style={{ display: 'flex', gap: '8px', marginTop: '10px' }}>
