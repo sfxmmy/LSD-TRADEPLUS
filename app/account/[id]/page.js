@@ -504,8 +504,17 @@ export default function AccountPage() {
 
       {/* FIXED SUBHEADER - connected to sidebar with no gap */}
       {!isMobile && (
-        <div style={{ position: 'fixed', top: '57px', left: '179px', right: 0, zIndex: 50, padding: '14px 24px 14px 25px', background: '#0a0a0f', borderBottom: '1px solid #1a1a22', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <span style={{ fontSize: '26px', fontWeight: 700, color: '#fff' }}>{account?.name}</span>
+        <div style={{ position: 'fixed', top: '57px', left: '179px', right: 0, zIndex: 50, padding: '14px 24px 14px 25px', background: '#0a0a0f', borderTop: '1px solid #333', borderBottom: '1px solid #1a1a22', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+            <span style={{ fontSize: '26px', fontWeight: 700, color: '#fff' }}>{account?.name}</span>
+            {/* Stats toggle - show next to journal name when on statistics tab and has multiple journals */}
+            {activeTab === 'statistics' && allAccounts.length > 1 && (
+              <div style={{ display: 'flex', background: '#0a0a0f', borderRadius: '6px', overflow: 'hidden', border: '1px solid #1a1a22' }}>
+                <button onClick={() => setShowCumulativeStats(false)} style={{ padding: '6px 12px', background: !showCumulativeStats ? '#22c55e' : 'transparent', border: 'none', color: !showCumulativeStats ? '#fff' : '#666', fontSize: '11px', fontWeight: 600, cursor: 'pointer' }}>This Journal</button>
+                <button onClick={() => setShowCumulativeStats(true)} style={{ padding: '6px 12px', background: showCumulativeStats ? '#22c55e' : 'transparent', border: 'none', color: showCumulativeStats ? '#fff' : '#666', fontSize: '11px', fontWeight: 600, cursor: 'pointer' }}>All Journals</button>
+              </div>
+            )}
+          </div>
           <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
             {activeTab === 'trades' && (
               <button onClick={() => setShowEditInputs(true)} style={{ padding: '10px 24px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '8px', color: '#fff', fontSize: '14px', cursor: 'pointer' }}>Edit Columns</button>
@@ -525,7 +534,7 @@ export default function AccountPage() {
 
       {/* FIXED SIDEBAR - desktop only, starts under header */}
       {!isMobile && (
-        <div style={{ position: 'fixed', top: '57px', left: 0, bottom: 0, width: '180px', padding: '16px 12px', background: '#0a0a0f', zIndex: 45, display: 'flex', flexDirection: 'column', paddingTop: '72px', borderRight: '1px solid #1a1a22' }}>
+        <div style={{ position: 'fixed', top: '57px', left: 0, bottom: 0, width: '180px', padding: '16px 12px', background: '#0a0a0f', zIndex: 45, display: 'flex', flexDirection: 'column', paddingTop: '72px', borderRight: '1px solid #1a1a22', borderTop: '1px solid #333' }}>
         <div>
           {['trades', 'statistics', 'notes'].map((tab) => (
             <button
@@ -714,81 +723,26 @@ export default function AccountPage() {
         )}
 
         {/* STATISTICS TAB */}
-        {activeTab === 'statistics' && (
+        {activeTab === 'statistics' && (() => {
+          // Get stats based on toggle - either this journal or all journals
+          const cumStats = showCumulativeStats && allAccounts.length > 1 ? getCumulativeStats() : null
+          const displayTotalPnl = cumStats ? cumStats.totalPnl : totalPnl
+          const displayTrades = cumStats ? cumStats.allTrades : trades
+          const displayWinrate = cumStats ? cumStats.winrate : winrate
+          const displayProfitFactor = cumStats ? cumStats.profitFactor : profitFactor
+          const displayAvgRR = cumStats ? cumStats.avgRR : returnOnRisk
+          const displayExpectancy = cumStats ? Math.round(cumStats.totalPnl / (cumStats.totalTrades || 1)) : expectancy
+          const displayAvgWin = cumStats ? cumStats.avgWin : avgWin
+          const displayAvgLoss = cumStats ? cumStats.avgLoss : avgLoss
+          const displayWins = cumStats ? cumStats.wins : wins
+          const displayLosses = cumStats ? cumStats.losses : losses
+          const displayStartingBalance = cumStats ? cumStats.totalStartingBalance : startingBalance
+          const displayCurrentBalance = cumStats ? cumStats.currentBalance : currentBalance
+          const displayGrossProfit = cumStats ? cumStats.grossProfit : grossProfit
+          const displayGrossLoss = cumStats ? cumStats.grossLoss : grossLoss
+
+          return (
           <div style={{ padding: isMobile ? '0' : '16px 24px' }}>
-            {/* Data Source Toggle */}
-            {allAccounts.length > 1 && (
-              <div style={{ marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '12px' }}>
-                <span style={{ fontSize: '12px', color: '#666' }}>Show stats for:</span>
-                <div style={{ display: 'flex', background: '#0a0a0f', borderRadius: '6px', overflow: 'hidden', border: '1px solid #1a1a22' }}>
-                  <button onClick={() => setShowCumulativeStats(false)} style={{ padding: '8px 16px', background: !showCumulativeStats ? '#22c55e' : 'transparent', border: 'none', color: !showCumulativeStats ? '#fff' : '#666', fontSize: '12px', fontWeight: 600, cursor: 'pointer' }}>This Journal</button>
-                  <button onClick={() => setShowCumulativeStats(true)} style={{ padding: '8px 16px', background: showCumulativeStats ? '#22c55e' : 'transparent', border: 'none', color: showCumulativeStats ? '#fff' : '#666', fontSize: '12px', fontWeight: 600, cursor: 'pointer' }}>All Journals</button>
-                </div>
-              </div>
-            )}
-
-            {/* Cumulative Stats Panel - shown when All Journals selected */}
-            {showCumulativeStats && allAccounts.length > 1 && (() => {
-              const cumStats = getCumulativeStats()
-              const maxPnl = Math.max(...cumStats.pnlPoints, 0)
-              const minPnl = Math.min(...cumStats.pnlPoints, 0)
-              const pnlRange = maxPnl - minPnl || 1
-              return (
-                <div style={{ background: 'linear-gradient(135deg, #0d0d12 0%, #0f1a14 100%)', border: '1px solid rgba(34,197,94,0.3)', borderRadius: '12px', padding: '20px', marginBottom: '20px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '16px' }}>
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#22c55e" strokeWidth="2"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg>
-                    <span style={{ fontSize: '14px', fontWeight: 600, color: '#fff' }}>All Journals Combined</span>
-                    <span style={{ fontSize: '11px', color: '#666', marginLeft: 'auto' }}>{allAccounts.length} journals</span>
-                  </div>
-
-                  {/* Mini PnL Chart */}
-                  {cumStats.pnlPoints.length > 1 && (
-                    <div style={{ background: '#0a0a0f', borderRadius: '8px', border: '1px solid #1a1a22', padding: '12px', marginBottom: '16px' }}>
-                      <div style={{ fontSize: '10px', color: '#666', marginBottom: '8px', textTransform: 'uppercase' }}>Cumulative P&L</div>
-                      <div style={{ height: '80px', position: 'relative' }}>
-                        <svg width="100%" height="100%" viewBox={`0 0 ${Math.max(cumStats.pnlPoints.length - 1, 1)} 80`} preserveAspectRatio="none">
-                          {minPnl < 0 && maxPnl > 0 && (
-                            <line x1="0" y1={80 - ((0 - minPnl) / pnlRange) * 80} x2={cumStats.pnlPoints.length - 1} y2={80 - ((0 - minPnl) / pnlRange) * 80} stroke="#333" strokeWidth="1" strokeDasharray="3,3" />
-                          )}
-                          <polyline
-                            fill="none"
-                            stroke={cumStats.totalPnl >= 0 ? '#22c55e' : '#ef4444'}
-                            strokeWidth="2"
-                            points={cumStats.pnlPoints.map((p, i) => `${i},${80 - ((p - minPnl) / pnlRange) * 80}`).join(' ')}
-                          />
-                        </svg>
-                        <div style={{ position: 'absolute', right: 0, top: 0, fontSize: '12px', fontWeight: 600, color: cumStats.totalPnl >= 0 ? '#22c55e' : '#ef4444' }}>
-                          {cumStats.totalPnl >= 0 ? '+' : ''}${cumStats.totalPnl.toLocaleString()}
-                        </div>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Stats Grid */}
-                  <div style={{ display: 'grid', gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(6, 1fr)', gap: '10px' }}>
-                    {[
-                      { label: 'Total Balance', value: `$${cumStats.currentBalance.toLocaleString()}`, color: cumStats.currentBalance >= cumStats.totalStartingBalance ? '#22c55e' : '#ef4444' },
-                      { label: 'Total PnL', value: `${cumStats.totalPnl >= 0 ? '+' : ''}$${cumStats.totalPnl.toLocaleString()}`, color: cumStats.totalPnl >= 0 ? '#22c55e' : '#ef4444' },
-                      { label: 'Trades', value: cumStats.totalTrades, color: '#fff' },
-                      { label: 'Winrate', value: `${cumStats.winrate}%`, color: cumStats.winrate >= 50 ? '#22c55e' : '#ef4444' },
-                      { label: 'W/L', value: `${cumStats.wins}/${cumStats.losses}`, color: '#fff' },
-                      { label: 'Profit Factor', value: cumStats.profitFactor, color: parseFloat(cumStats.profitFactor) >= 1 ? '#22c55e' : '#ef4444' },
-                      { label: 'Avg RR', value: `${cumStats.avgRR}R`, color: '#fff' },
-                      { label: 'Avg Win', value: `+$${cumStats.avgWin}`, color: '#22c55e' },
-                      { label: 'Avg Loss', value: `-$${cumStats.avgLoss}`, color: '#ef4444' },
-                      { label: 'Gross Profit', value: `+$${cumStats.grossProfit.toLocaleString()}`, color: '#22c55e' },
-                      { label: 'Gross Loss', value: `-$${cumStats.grossLoss.toLocaleString()}`, color: '#ef4444' },
-                    ].map((stat, i) => (
-                      <div key={i} style={{ padding: '10px', background: '#0a0a0f', borderRadius: '6px', border: '1px solid #1a1a22' }}>
-                        <div style={{ fontSize: '9px', color: '#666', marginBottom: '3px', textTransform: 'uppercase' }}>{stat.label}</div>
-                        <div style={{ fontSize: '14px', fontWeight: 700, color: stat.color }}>{stat.value}</div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )
-            })()}
-
             {/* ROW 1: Stats + Graphs - both graphs same height, aligned with Total Trades bottom */}
             <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', gap: '16px', marginBottom: '16px' }}>
               {/* Stats Widget - Clean List */}
@@ -796,35 +750,35 @@ export default function AccountPage() {
                 {/* Key Metrics List */}
                 <div style={{ display: 'flex', justifyContent: 'space-between', padding: '5px 0', borderBottom: '1px solid #1a1a22' }}>
                   <span style={{ fontSize: '12px', color: '#888' }}>Total PnL</span>
-                  <span style={{ fontSize: '13px', fontWeight: 700, color: totalPnl >= 0 ? '#22c55e' : '#ef4444' }}>{totalPnl >= 0 ? '+' : ''}${Math.abs(totalPnl).toLocaleString()}</span>
+                  <span style={{ fontSize: '13px', fontWeight: 700, color: displayTotalPnl >= 0 ? '#22c55e' : '#ef4444' }}>{displayTotalPnl >= 0 ? '+' : ''}${Math.abs(displayTotalPnl).toLocaleString()}</span>
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', padding: '5px 0', borderBottom: '1px solid #1a1a22' }}>
                   <span style={{ fontSize: '12px', color: '#888' }}>Total Trades</span>
-                  <span style={{ fontSize: '13px', fontWeight: 700, color: '#fff' }}>{trades.length}</span>
+                  <span style={{ fontSize: '13px', fontWeight: 700, color: '#fff' }}>{displayTrades.length}</span>
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', padding: '5px 0', borderBottom: '1px solid #1a1a22' }}>
                   <span style={{ fontSize: '12px', color: '#888' }}>Winrate</span>
-                  <span style={{ fontSize: '13px', fontWeight: 700, color: winrate >= 50 ? '#22c55e' : '#ef4444' }}>{winrate}%</span>
+                  <span style={{ fontSize: '13px', fontWeight: 700, color: displayWinrate >= 50 ? '#22c55e' : '#ef4444' }}>{displayWinrate}%</span>
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', padding: '5px 0', borderBottom: '1px solid #1a1a22' }}>
                   <span style={{ fontSize: '12px', color: '#888' }}>Profit Factor</span>
-                  <span style={{ fontSize: '13px', fontWeight: 700, color: parseFloat(profitFactor) >= 1 ? '#22c55e' : '#ef4444' }}>{profitFactor}</span>
+                  <span style={{ fontSize: '13px', fontWeight: 700, color: parseFloat(displayProfitFactor) >= 1 ? '#22c55e' : '#ef4444' }}>{displayProfitFactor}</span>
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', padding: '5px 0', borderBottom: '1px solid #1a1a22' }}>
                   <span style={{ fontSize: '12px', color: '#888' }}>Avg RR</span>
-                  <span style={{ fontSize: '13px', fontWeight: 700, color: '#fff' }}>{returnOnRisk}</span>
+                  <span style={{ fontSize: '13px', fontWeight: 700, color: '#fff' }}>{displayAvgRR}</span>
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', padding: '5px 0', borderBottom: '1px solid #1a1a22' }}>
                   <span style={{ fontSize: '12px', color: '#888' }}>Expectancy</span>
-                  <span style={{ fontSize: '13px', fontWeight: 700, color: expectancy >= 0 ? '#22c55e' : '#ef4444' }}>${expectancy}</span>
+                  <span style={{ fontSize: '13px', fontWeight: 700, color: displayExpectancy >= 0 ? '#22c55e' : '#ef4444' }}>${displayExpectancy}</span>
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', padding: '5px 0', borderBottom: '1px solid #1a1a22' }}>
                   <span style={{ fontSize: '12px', color: '#888' }}>Avg Win</span>
-                  <span style={{ fontSize: '13px', fontWeight: 700, color: '#22c55e' }}>+${avgWin}</span>
+                  <span style={{ fontSize: '13px', fontWeight: 700, color: '#22c55e' }}>+${displayAvgWin}</span>
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', padding: '5px 0', borderBottom: '1px solid #1a1a22' }}>
                   <span style={{ fontSize: '12px', color: '#888' }}>Avg Loss</span>
-                  <span style={{ fontSize: '13px', fontWeight: 700, color: '#ef4444' }}>-${avgLoss}</span>
+                  <span style={{ fontSize: '13px', fontWeight: 700, color: '#ef4444' }}>-${displayAvgLoss}</span>
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', padding: '5px 0', borderBottom: '1px solid #1a1a22' }}>
                   <span style={{ fontSize: '12px', color: '#888' }}>Long WR</span>
@@ -858,7 +812,8 @@ export default function AccountPage() {
                 <div style={{ flex: 1, background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '10px', display: 'flex', flexDirection: 'column', position: 'relative', minHeight: isMobile ? '80px' : '100px' }}>
                   {(() => {
                     // Calculate visible lines first so we can compute dynamic Start/Current
-                    const sorted = trades.length >= 2 ? [...trades].sort((a, b) => new Date(a.date) - new Date(b.date)) : []
+                    const tradesToUse = showCumulativeStats && allAccounts.length > 1 ? displayTrades : trades
+                    const sorted = tradesToUse.length >= 2 ? [...tradesToUse].sort((a, b) => new Date(a.date) - new Date(b.date)) : []
                     const lineColors = ['#22c55e', '#3b82f6', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#14b8a6', '#f97316', '#06b6d4']
                     
                     let lines = []
