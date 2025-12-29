@@ -504,7 +504,7 @@ export default function AccountPage() {
 
       {/* FIXED SUBHEADER - connected to sidebar with no gap */}
       {!isMobile && (
-        <div style={{ position: 'fixed', top: '57px', left: '179px', right: 0, zIndex: 50, padding: '14px 24px 14px 25px', background: '#0a0a0f', borderBottom: '1px solid #1a1a22', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div style={{ position: 'fixed', top: '57px', left: '180px', right: 0, zIndex: 50, padding: '14px 24px 14px 25px', background: '#0a0a0f', borderTop: '1px solid #333', borderBottom: '1px solid #1a1a22', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
             <span style={{ fontSize: '26px', fontWeight: 700, color: '#fff' }}>{account?.name}</span>
             {/* Stats toggle - show next to journal name when on statistics tab and has multiple journals */}
@@ -534,7 +534,7 @@ export default function AccountPage() {
 
       {/* FIXED SIDEBAR - desktop only, starts under header */}
       {!isMobile && (
-        <div style={{ position: 'fixed', top: '57px', left: 0, bottom: 0, width: '180px', padding: '16px 12px', background: '#0a0a0f', zIndex: 45, display: 'flex', flexDirection: 'column', paddingTop: '72px', borderRight: '1px solid #1a1a22' }}>
+        <div style={{ position: 'fixed', top: '57px', left: 0, bottom: 0, width: '180px', padding: '16px 12px', background: '#0a0a0f', zIndex: 45, display: 'flex', flexDirection: 'column', paddingTop: '72px', borderRight: '1px solid #1a1a22', borderTop: '1px solid #333' }}>
         <div>
           {['trades', 'statistics', 'notes'].map((tab) => (
             <button

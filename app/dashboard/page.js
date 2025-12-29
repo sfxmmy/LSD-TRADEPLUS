@@ -548,6 +548,15 @@ export default function DashboardPage() {
         </a>
         {!isMobile && <div style={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)', fontSize: '32px', fontWeight: 700, letterSpacing: '-0.5px', color: '#fff' }}>JOURNAL DASHBOARD</div>}
         <div style={{ display: 'flex', alignItems: 'center', gap: isMobile ? '8px' : '12px' }}>
+          {/* View Toggle - Grid/List */}
+          <div style={{ display: 'flex', background: '#0a0a0f', borderRadius: '6px', overflow: 'hidden', border: '1px solid #1a1a22' }}>
+            <button onClick={() => setViewMode('cards')} style={{ padding: '8px 10px', background: viewMode === 'cards' ? '#22c55e' : 'transparent', border: 'none', color: viewMode === 'cards' ? '#fff' : '#666', cursor: 'pointer', display: 'flex', alignItems: 'center' }}>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="7" height="7" /><rect x="14" y="3" width="7" height="7" /><rect x="3" y="14" width="7" height="7" /><rect x="14" y="14" width="7" height="7" /></svg>
+            </button>
+            <button onClick={() => setViewMode('list')} style={{ padding: '8px 10px', background: viewMode === 'list' ? '#22c55e' : 'transparent', border: 'none', color: viewMode === 'list' ? '#fff' : '#666', cursor: 'pointer', display: 'flex', alignItems: 'center' }}>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="8" y1="6" x2="21" y2="6" /><line x1="8" y1="12" x2="21" y2="12" /><line x1="8" y1="18" x2="21" y2="18" /><line x1="3" y1="6" x2="3.01" y2="6" /><line x1="3" y1="12" x2="3.01" y2="12" /><line x1="3" y1="18" x2="3.01" y2="18" /></svg>
+            </button>
+          </div>
           <button onClick={() => setShowModal(true)} style={{ padding: isMobile ? '8px 12px' : '12px 24px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '6px', color: '#fff', fontSize: isMobile ? '12px' : '14px', cursor: 'pointer' }}>{isMobile ? '+ Add' : '+ Add Journal Account'}</button>
           <button onClick={handleSignOut} style={{ padding: isMobile ? '8px 12px' : '12px 20px', background: 'transparent', border: 'none', color: '#999', fontSize: isMobile ? '12px' : '14px', cursor: 'pointer' }}>Sign Out</button>
         </div>
@@ -565,25 +574,14 @@ export default function DashboardPage() {
                   <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#22c55e' }} />
                   <span style={{ fontSize: '12px', color: '#fff', fontWeight: 600, letterSpacing: '0.5px' }}>LOG TRADE</span>
                 </div>
-                <div style={{ display: 'flex', gap: '4px' }}>
-                  {/* View Toggle */}
-                  <div style={{ display: 'flex', background: '#0a0a0f', borderRadius: '6px', overflow: 'hidden', border: '1px solid #1a1a22' }}>
-                    <button onClick={() => setViewMode('cards')} style={{ padding: '5px 7px', background: viewMode === 'cards' ? '#22c55e' : 'transparent', border: 'none', color: viewMode === 'cards' ? '#fff' : '#666', cursor: 'pointer', display: 'flex', alignItems: 'center' }}>
-                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="7" height="7" /><rect x="14" y="3" width="7" height="7" /><rect x="3" y="14" width="7" height="7" /><rect x="14" y="14" width="7" height="7" /></svg>
-                    </button>
-                    <button onClick={() => setViewMode('list')} style={{ padding: '5px 7px', background: viewMode === 'list' ? '#22c55e' : 'transparent', border: 'none', color: viewMode === 'list' ? '#fff' : '#666', cursor: 'pointer', display: 'flex', alignItems: 'center' }}>
-                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="8" y1="6" x2="21" y2="6" /><line x1="8" y1="12" x2="21" y2="12" /><line x1="8" y1="18" x2="21" y2="18" /><line x1="3" y1="6" x2="3.01" y2="6" /><line x1="3" y1="12" x2="3.01" y2="12" /><line x1="3" y1="18" x2="3.01" y2="18" /></svg>
-                    </button>
-                  </div>
-                  {/* Expand Toggle - show when many inputs */}
-                  {getSelectedAccountCustomInputs().length > 2 && (
-                    <button onClick={() => setSidebarExpanded(!sidebarExpanded)} style={{ padding: '5px 7px', background: sidebarExpanded ? '#22c55e' : '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px', color: sidebarExpanded ? '#fff' : '#666', cursor: 'pointer', display: 'flex', alignItems: 'center' }} title={sidebarExpanded ? 'Collapse' : 'Expand'}>
-                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        {sidebarExpanded ? <><polyline points="4 14 10 14 10 20"/><polyline points="20 10 14 10 14 4"/><line x1="14" y1="10" x2="21" y2="3"/><line x1="3" y1="21" x2="10" y2="14"/></> : <><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></>}
-                      </svg>
-                    </button>
-                  )}
-                </div>
+                {/* Expand Toggle - show when many inputs */}
+                {getSelectedAccountCustomInputs().length > 2 && (
+                  <button onClick={() => setSidebarExpanded(!sidebarExpanded)} style={{ padding: '5px 7px', background: sidebarExpanded ? '#22c55e' : '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px', color: sidebarExpanded ? '#fff' : '#666', cursor: 'pointer', display: 'flex', alignItems: 'center' }} title={sidebarExpanded ? 'Collapse' : 'Expand'}>
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      {sidebarExpanded ? <><polyline points="4 14 10 14 10 20"/><polyline points="20 10 14 10 14 4"/><line x1="14" y1="10" x2="21" y2="3"/><line x1="3" y1="21" x2="10" y2="14"/></> : <><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></>}
+                    </svg>
+                  </button>
+                )}
               </div>
 
               {/* Journal Select - Highlighted */}
