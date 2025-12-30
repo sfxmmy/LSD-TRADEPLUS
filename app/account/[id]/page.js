@@ -827,7 +827,7 @@ export default function AccountPage() {
                   scrollbarColor: '#2a2a35 #0a0a0f'
                 }}>
                 <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: '1200px' }}>
-                  <thead style={{ position: 'sticky', top: 0, zIndex: 10, background: '#0a0a0f' }}>
+                  <thead style={{ position: 'sticky', top: 0, zIndex: 10, background: '#0a0a0f', boxShadow: '0 1px 0 #1a1a22' }}>
                     <tr>
                       {selectMode && <th style={{ padding: '14px 6px', width: '32px', borderBottom: '1px solid #1a1a22', background: '#0a0a0f' }}><input type="checkbox" checked={selectedTrades.size === trades.length && trades.length > 0} onChange={toggleSelectAll} style={{ width: '14px', height: '14px', accentColor: '#22c55e', cursor: 'pointer' }} /></th>}
                       {['Symbol', 'W/L', 'PnL', '%', 'RR', ...customInputs.map(i => i.label), 'Date', ''].map((h, i) => (
