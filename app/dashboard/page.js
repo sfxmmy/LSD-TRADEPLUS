@@ -498,14 +498,6 @@ export default function DashboardPage() {
 
   return (
     <div style={{ minHeight: '100vh', background: '#0a0a0f' }}>
-      {/* Chart Tooltip */}
-      {hoverData && (
-        <div style={{ position: 'fixed', left: hoverData.x + 15, top: hoverData.y - 60, background: '#1a1a22', border: '1px solid #2a2a35', borderRadius: '8px', padding: '10px 14px', fontSize: '12px', zIndex: 1000, pointerEvents: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.5)' }}>
-          <div style={{ color: '#999', marginBottom: '4px' }}>{hoverData.date}</div>
-          <div style={{ fontWeight: 700, fontSize: '16px', color: hoverData.value >= 0 ? '#22c55e' : '#ef4444' }}>{hoverData.value >= 0 ? '+' : ''}${Math.round(hoverData.value).toLocaleString()}</div>
-          {hoverData.symbol && <div style={{ color: '#666', marginTop: '4px', fontSize: '11px' }}>{hoverData.symbol}: {hoverData.pnl >= 0 ? '+' : ''}${Math.round(hoverData.pnl)}</div>}
-        </div>
-      )}
       {/* Header */}
       <header style={{ padding: isMobile ? '12px 16px' : '16px 40px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #333', flexWrap: isMobile ? 'wrap' : 'nowrap', gap: isMobile ? '8px' : '0' }}>
         <a href="/" style={{ fontSize: isMobile ? '22px' : '28px', fontWeight: 700, textDecoration: 'none' }}>
@@ -826,7 +818,7 @@ export default function DashboardPage() {
                             <span style={{ fontSize: '9px', color: '#666', textTransform: 'uppercase' }}>Cumulative P&L</span>
                             <span style={{ fontSize: '13px', fontWeight: 700, color: cumPnl >= 0 ? '#22c55e' : '#ef4444' }}>{cumPnl >= 0 ? '+' : ''}${Math.round(cumPnl).toLocaleString()}</span>
                           </div>
-                          <div style={{ position: 'relative', height: `${chartHeight}px`, borderRadius: '4px', overflow: 'hidden' }}>
+                          <div style={{ position: 'relative', height: `${chartHeight}px`, borderRadius: '4px', overflow: 'visible' }}>
                             <svg
                               width="100%"
                               height="100%"
@@ -839,7 +831,7 @@ export default function DashboardPage() {
                                 let closest = chartPts[0], minDist = Math.abs(mouseX - chartPts[0].x)
                                 chartPts.forEach(p => { const d = Math.abs(mouseX - p.x); if (d < minDist) { minDist = d; closest = p } })
                                 if (minDist < 20) {
-                                  setHoverData({ value: closest.value, date: closest.date, pnl: closest.pnl, symbol: closest.symbol, x: e.clientX, y: e.clientY })
+                                  setHoverData({ value: closest.value, date: closest.date, pnl: closest.pnl, symbol: closest.symbol, xPct: (closest.x / svgW) * 100, yPct: (closest.y / svgH) * 100 })
                                 } else {
                                   setHoverData(null)
                                 }
@@ -855,6 +847,18 @@ export default function DashboardPage() {
                               {/* PnL line */}
                               <path fill="none" stroke={cumPnl >= 0 ? '#22c55e' : '#ef4444'} strokeWidth="2" strokeLinejoin="round" vectorEffect="non-scaling-stroke" d={pathD} />
                             </svg>
+                            {/* Hover dot on the line */}
+                            {hoverData && (
+                              <div style={{ position: 'absolute', left: `${hoverData.xPct}%`, top: `${hoverData.yPct}%`, transform: 'translate(-50%, -50%)', width: '10px', height: '10px', borderRadius: '50%', background: hoverData.value >= 0 ? '#22c55e' : '#ef4444', border: '2px solid #fff', pointerEvents: 'none', zIndex: 10 }} />
+                            )}
+                            {/* Tooltip next to the dot */}
+                            {hoverData && (
+                              <div style={{ position: 'absolute', left: `${hoverData.xPct}%`, top: `${hoverData.yPct}%`, transform: `translate(${hoverData.xPct > 70 ? 'calc(-100% - 12px)' : '12px'}, -50%)`, background: '#1a1a22', border: '1px solid #2a2a35', borderRadius: '6px', padding: '6px 10px', fontSize: '10px', whiteSpace: 'nowrap', zIndex: 10, pointerEvents: 'none' }}>
+                                <div style={{ color: '#999' }}>{hoverData.date ? new Date(hoverData.date).toLocaleDateString() : 'Start'}</div>
+                                <div style={{ fontWeight: 600, fontSize: '12px', color: hoverData.value >= 0 ? '#22c55e' : '#ef4444' }}>{hoverData.value >= 0 ? '+' : ''}${Math.round(hoverData.value).toLocaleString()}</div>
+                                {hoverData.symbol && <div style={{ color: '#666', fontSize: '9px' }}>{hoverData.symbol}: {hoverData.pnl >= 0 ? '+' : ''}${Math.round(hoverData.pnl)}</div>}
+                              </div>
+                            )}
                           </div>
                         </div>
                       )
