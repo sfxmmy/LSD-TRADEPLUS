@@ -2578,84 +2578,147 @@ export default function AccountPage() {
       {/* FILTERS MODAL */}
       {showFilters && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.9)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100 }} onClick={() => setShowFilters(false)}>
-          <div style={{ background: 'linear-gradient(180deg, #0f0f14 0%, #0a0a0f 100%)', border: '1px solid #1a1a22', borderRadius: '12px', padding: '24px', width: '400px', maxHeight: '90vh', overflowY: 'auto' }} onClick={e => e.stopPropagation()}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px', paddingBottom: '12px', borderBottom: '1px solid #1a1a22' }}>
+          <div style={{ background: 'linear-gradient(180deg, #0f0f14 0%, #0a0a0f 100%)', border: '1px solid #1a1a22', borderRadius: '12px', padding: '20px', width: '460px', maxHeight: '90vh', overflowY: 'auto' }} onClick={e => e.stopPropagation()}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px', paddingBottom: '10px', borderBottom: '1px solid #1a1a22' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#22c55e" strokeWidth="2"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
-                <span style={{ fontSize: '14px', color: '#fff', fontWeight: 600 }}>Filter Trades</span>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#22c55e" strokeWidth="2"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
+                <span style={{ fontSize: '13px', color: '#fff', fontWeight: 600 }}>Filter Trades</span>
               </div>
-              <button onClick={() => setShowFilters(false)} style={{ background: 'none', border: 'none', color: '#666', fontSize: '20px', cursor: 'pointer', padding: '4px' }}>×</button>
+              <button onClick={() => setShowFilters(false)} style={{ background: 'none', border: 'none', color: '#666', fontSize: '18px', cursor: 'pointer', padding: '4px' }}>×</button>
             </div>
 
             {/* Date Range */}
-            <div style={{ marginBottom: '16px' }}>
-              <label style={{ display: 'block', fontSize: '11px', color: '#888', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Date Range</label>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
-                <div>
-                  <label style={{ display: 'block', fontSize: '10px', color: '#666', marginBottom: '4px' }}>From</label>
-                  <input type="date" value={filters.dateFrom} onChange={e => setFilters({...filters, dateFrom: e.target.value})} style={{ width: '100%', padding: '10px 12px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '13px', boxSizing: 'border-box' }} />
-                </div>
-                <div>
-                  <label style={{ display: 'block', fontSize: '10px', color: '#666', marginBottom: '4px' }}>To</label>
-                  <input type="date" value={filters.dateTo} onChange={e => setFilters({...filters, dateTo: e.target.value})} style={{ width: '100%', padding: '10px 12px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '13px', boxSizing: 'border-box' }} />
-                </div>
+            <div style={{ marginBottom: '12px' }}>
+              <label style={{ display: 'block', fontSize: '10px', color: '#888', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Date Range</label>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+                <input type="date" value={draftFilters.dateFrom} onChange={e => setDraftFilters({...draftFilters, dateFrom: e.target.value, quickSelect: ''})} style={{ width: '100%', padding: '8px 10px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '12px', boxSizing: 'border-box' }} />
+                <input type="date" value={draftFilters.dateTo} onChange={e => setDraftFilters({...draftFilters, dateTo: e.target.value, quickSelect: ''})} style={{ width: '100%', padding: '8px 10px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '12px', boxSizing: 'border-box' }} />
               </div>
             </div>
 
             {/* Quick Date Presets */}
-            <div style={{ marginBottom: '16px' }}>
-              <label style={{ display: 'block', fontSize: '11px', color: '#888', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Quick Select</label>
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+            <div style={{ marginBottom: '14px' }}>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '5px' }}>
                 {[
-                  { label: 'Today', fn: () => { const d = new Date().toISOString().split('T')[0]; setFilters({...filters, dateFrom: d, dateTo: d}) } },
-                  { label: 'This Week', fn: () => { const now = new Date(); const start = new Date(now); start.setDate(now.getDate() - now.getDay()); setFilters({...filters, dateFrom: start.toISOString().split('T')[0], dateTo: now.toISOString().split('T')[0]}) } },
-                  { label: 'This Month', fn: () => { const now = new Date(); const start = new Date(now.getFullYear(), now.getMonth(), 1); setFilters({...filters, dateFrom: start.toISOString().split('T')[0], dateTo: now.toISOString().split('T')[0]}) } },
-                  { label: 'Last 7 Days', fn: () => { const now = new Date(); const start = new Date(now); start.setDate(now.getDate() - 7); setFilters({...filters, dateFrom: start.toISOString().split('T')[0], dateTo: now.toISOString().split('T')[0]}) } },
-                  { label: 'Last 30 Days', fn: () => { const now = new Date(); const start = new Date(now); start.setDate(now.getDate() - 30); setFilters({...filters, dateFrom: start.toISOString().split('T')[0], dateTo: now.toISOString().split('T')[0]}) } },
+                  { label: 'Today', key: 'today', fn: () => { const d = new Date().toISOString().split('T')[0]; return { dateFrom: d, dateTo: d } } },
+                  { label: 'This Week', key: 'week', fn: () => { const now = new Date(); const start = new Date(now); start.setDate(now.getDate() - now.getDay()); return { dateFrom: start.toISOString().split('T')[0], dateTo: now.toISOString().split('T')[0] } } },
+                  { label: 'This Month', key: 'month', fn: () => { const now = new Date(); const start = new Date(now.getFullYear(), now.getMonth(), 1); return { dateFrom: start.toISOString().split('T')[0], dateTo: now.toISOString().split('T')[0] } } },
+                  { label: 'Last 7 Days', key: '7days', fn: () => { const now = new Date(); const start = new Date(now); start.setDate(now.getDate() - 7); return { dateFrom: start.toISOString().split('T')[0], dateTo: now.toISOString().split('T')[0] } } },
+                  { label: 'Last 30 Days', key: '30days', fn: () => { const now = new Date(); const start = new Date(now); start.setDate(now.getDate() - 30); return { dateFrom: start.toISOString().split('T')[0], dateTo: now.toISOString().split('T')[0] } } },
                 ].map(preset => (
-                  <button key={preset.label} onClick={preset.fn} style={{ padding: '6px 12px', background: '#0a0a0f', border: '1px solid #2a2a35', borderRadius: '4px', color: '#888', fontSize: '11px', cursor: 'pointer' }}>{preset.label}</button>
+                  <button key={preset.key} onClick={() => { const dates = preset.fn(); setDraftFilters({...draftFilters, ...dates, quickSelect: preset.key}) }} style={{ padding: '5px 10px', background: draftFilters.quickSelect === preset.key ? 'rgba(34,197,94,0.15)' : '#0a0a0f', border: draftFilters.quickSelect === preset.key ? '1px solid #22c55e' : '1px solid #2a2a35', borderRadius: '4px', color: draftFilters.quickSelect === preset.key ? '#22c55e' : '#888', fontSize: '10px', cursor: 'pointer' }}>{preset.label}</button>
                 ))}
               </div>
             </div>
 
-            {/* Outcome Filter */}
-            <div style={{ marginBottom: '16px' }}>
-              <label style={{ display: 'block', fontSize: '11px', color: '#888', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Outcome</label>
-              <div style={{ display: 'flex', gap: '8px' }}>
-                {['', 'win', 'loss', 'breakeven'].map(o => (
-                  <button key={o || 'all'} onClick={() => setFilters({...filters, outcome: o})} style={{ flex: 1, padding: '10px', background: filters.outcome === o ? (o === 'win' ? 'rgba(34,197,94,0.2)' : o === 'loss' ? 'rgba(239,68,68,0.2)' : o === 'breakeven' ? 'rgba(234,179,8,0.2)' : 'rgba(34,197,94,0.15)') : '#0a0a0f', border: filters.outcome === o ? (o === 'win' ? '1px solid #22c55e' : o === 'loss' ? '1px solid #ef4444' : o === 'breakeven' ? '1px solid #eab308' : '1px solid #22c55e') : '1px solid #2a2a35', borderRadius: '6px', color: filters.outcome === o ? (o === 'win' ? '#22c55e' : o === 'loss' ? '#ef4444' : o === 'breakeven' ? '#eab308' : '#22c55e') : '#888', fontSize: '12px', cursor: 'pointer', textTransform: 'capitalize' }}>{o || 'All'}</button>
-                ))}
-              </div>
-            </div>
+            {/* Two Column Layout */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+              {/* Left Column */}
+              <div>
+                {/* Outcome Filter */}
+                <div style={{ marginBottom: '10px' }}>
+                  <label style={{ display: 'block', fontSize: '10px', color: '#888', marginBottom: '5px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Outcome</label>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '4px' }}>
+                    {['', 'win', 'loss', 'breakeven'].map(o => (
+                      <button key={o || 'all'} onClick={() => setDraftFilters({...draftFilters, outcome: o})} style={{ padding: '6px', background: draftFilters.outcome === o ? 'rgba(34,197,94,0.15)' : '#0a0a0f', border: draftFilters.outcome === o ? '1px solid #22c55e' : '1px solid #2a2a35', borderRadius: '4px', color: draftFilters.outcome === o ? '#22c55e' : '#888', fontSize: '10px', cursor: 'pointer', textTransform: 'capitalize' }}>{o || 'All'}</button>
+                    ))}
+                  </div>
+                </div>
 
-            {/* Direction Filter */}
-            <div style={{ marginBottom: '16px' }}>
-              <label style={{ display: 'block', fontSize: '11px', color: '#888', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Direction</label>
-              <div style={{ display: 'flex', gap: '8px' }}>
-                {['', 'long', 'short'].map(d => (
-                  <button key={d || 'all'} onClick={() => setFilters({...filters, direction: d})} style={{ flex: 1, padding: '10px', background: filters.direction === d ? 'rgba(34,197,94,0.15)' : '#0a0a0f', border: filters.direction === d ? '1px solid #22c55e' : '1px solid #2a2a35', borderRadius: '6px', color: filters.direction === d ? '#22c55e' : '#888', fontSize: '12px', cursor: 'pointer', textTransform: 'capitalize' }}>{d || 'All'}</button>
-                ))}
-              </div>
-            </div>
+                {/* Direction Filter */}
+                <div style={{ marginBottom: '10px' }}>
+                  <label style={{ display: 'block', fontSize: '10px', color: '#888', marginBottom: '5px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Direction</label>
+                  <div style={{ display: 'flex', gap: '4px' }}>
+                    {['', 'long', 'short'].map(d => (
+                      <button key={d || 'all'} onClick={() => setDraftFilters({...draftFilters, direction: d})} style={{ flex: 1, padding: '6px', background: draftFilters.direction === d ? 'rgba(34,197,94,0.15)' : '#0a0a0f', border: draftFilters.direction === d ? '1px solid #22c55e' : '1px solid #2a2a35', borderRadius: '4px', color: draftFilters.direction === d ? '#22c55e' : '#888', fontSize: '10px', cursor: 'pointer', textTransform: 'capitalize' }}>{d || 'All'}</button>
+                    ))}
+                  </div>
+                </div>
 
-            {/* Symbol Filter */}
-            <div style={{ marginBottom: '20px' }}>
-              <label style={{ display: 'block', fontSize: '11px', color: '#888', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Symbol</label>
-              <input type="text" value={filters.symbol} onChange={e => setFilters({...filters, symbol: e.target.value})} placeholder="e.g. XAUUSD, EUR" style={{ width: '100%', padding: '10px 12px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '13px', boxSizing: 'border-box' }} />
+                {/* Symbol Filter */}
+                <div style={{ marginBottom: '10px' }}>
+                  <label style={{ display: 'block', fontSize: '10px', color: '#888', marginBottom: '5px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Symbol</label>
+                  <input type="text" value={draftFilters.symbol} onChange={e => setDraftFilters({...draftFilters, symbol: e.target.value})} placeholder="e.g. XAUUSD" style={{ width: '100%', padding: '7px 10px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '5px', color: '#fff', fontSize: '11px', boxSizing: 'border-box' }} />
+                </div>
+
+                {/* Session Filter */}
+                <div style={{ marginBottom: '10px' }}>
+                  <label style={{ display: 'block', fontSize: '10px', color: '#888', marginBottom: '5px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Session</label>
+                  <select value={draftFilters.session} onChange={e => setDraftFilters({...draftFilters, session: e.target.value})} style={{ width: '100%', padding: '7px 10px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '5px', color: '#fff', fontSize: '11px', boxSizing: 'border-box' }}>
+                    <option value="">All</option>
+                    {(inputs.find(i => i.id === 'session')?.options || ['london', 'new york', 'asian', 'other']).map(s => (
+                      <option key={s} value={s}>{s}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              {/* Right Column */}
+              <div>
+                {/* Timeframe Filter */}
+                <div style={{ marginBottom: '10px' }}>
+                  <label style={{ display: 'block', fontSize: '10px', color: '#888', marginBottom: '5px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Timeframe</label>
+                  <select value={draftFilters.timeframe} onChange={e => setDraftFilters({...draftFilters, timeframe: e.target.value})} style={{ width: '100%', padding: '7px 10px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '5px', color: '#fff', fontSize: '11px', boxSizing: 'border-box' }}>
+                    <option value="">All</option>
+                    {(inputs.find(i => i.id === 'timeframe')?.options || ['1m', '5m', '15m', '1h', '4h', 'daily']).map(t => (
+                      <option key={t} value={t}>{t}</option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Confidence Filter */}
+                <div style={{ marginBottom: '10px' }}>
+                  <label style={{ display: 'block', fontSize: '10px', color: '#888', marginBottom: '5px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Confidence</label>
+                  <select value={draftFilters.confidence} onChange={e => setDraftFilters({...draftFilters, confidence: e.target.value})} style={{ width: '100%', padding: '7px 10px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '5px', color: '#fff', fontSize: '11px', boxSizing: 'border-box' }}>
+                    <option value="">All</option>
+                    {(inputs.find(i => i.id === 'confidence')?.options || ['high', 'medium', 'low']).map(c => (
+                      <option key={c} value={c}>{c}</option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* RR Filter */}
+                <div style={{ marginBottom: '10px' }}>
+                  <label style={{ display: 'block', fontSize: '10px', color: '#888', marginBottom: '5px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Min R:R</label>
+                  <input type="number" step="0.1" value={draftFilters.rr} onChange={e => setDraftFilters({...draftFilters, rr: e.target.value})} placeholder="e.g. 2" style={{ width: '100%', padding: '7px 10px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '5px', color: '#fff', fontSize: '11px', boxSizing: 'border-box' }} />
+                </div>
+
+                {/* Rating Filter */}
+                <div style={{ marginBottom: '10px' }}>
+                  <label style={{ display: 'block', fontSize: '10px', color: '#888', marginBottom: '5px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Min Rating</label>
+                  <div style={{ display: 'flex', gap: '3px' }}>
+                    {['', '1', '2', '3', '4', '5'].map(r => (
+                      <button key={r || 'all'} onClick={() => setDraftFilters({...draftFilters, rating: r})} style={{ flex: 1, padding: '5px 2px', background: draftFilters.rating === r ? 'rgba(34,197,94,0.15)' : '#0a0a0f', border: draftFilters.rating === r ? '1px solid #22c55e' : '1px solid #2a2a35', borderRadius: '4px', color: draftFilters.rating === r ? '#22c55e' : '#888', fontSize: '9px', cursor: 'pointer' }}>{r ? r + '★' : 'All'}</button>
+                    ))}
+                  </div>
+                </div>
+              </div>
             </div>
 
             {/* Actions */}
-            <div style={{ display: 'flex', gap: '10px' }}>
-              <button onClick={() => setFilters({ dateFrom: '', dateTo: '', outcome: '', direction: '', symbol: '' })} style={{ flex: 1, padding: '12px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '8px', color: '#888', fontSize: '13px', cursor: 'pointer' }}>Clear All</button>
-              <button onClick={() => setShowFilters(false)} style={{ flex: 1, padding: '12px', background: '#22c55e', border: 'none', borderRadius: '8px', color: '#fff', fontWeight: 600, fontSize: '13px', cursor: 'pointer' }}>Apply Filters</button>
+            <div style={{ display: 'flex', gap: '10px', marginTop: '14px' }}>
+              <button onClick={() => setDraftFilters({ dateFrom: '', dateTo: '', outcome: '', direction: '', symbol: '', session: '', timeframe: '', confidence: '', rr: '', rating: '', quickSelect: '' })} style={{ flex: 1, padding: '10px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '8px', color: '#888', fontSize: '12px', cursor: 'pointer' }}>Clear All</button>
+              <button onClick={() => { setFilters({...draftFilters}); setShowFilters(false) }} style={{ flex: 1, padding: '10px', background: '#22c55e', border: 'none', borderRadius: '8px', color: '#fff', fontWeight: 600, fontSize: '12px', cursor: 'pointer' }}>Apply Filters</button>
             </div>
 
-            {/* Filter Summary */}
-            {hasActiveFilters && (
-              <div style={{ marginTop: '16px', padding: '12px', background: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.3)', borderRadius: '8px' }}>
-                <div style={{ fontSize: '11px', color: '#22c55e', marginBottom: '6px' }}>Active Filters:</div>
-                <div style={{ fontSize: '12px', color: '#888' }}>
-                  Showing {filteredTrades.length} of {trades.length} trades
+            {/* Filter Preview */}
+            {Object.values(draftFilters).some(v => v && v !== '') && (
+              <div style={{ marginTop: '12px', padding: '10px', background: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.3)', borderRadius: '6px' }}>
+                <div style={{ fontSize: '10px', color: '#22c55e', marginBottom: '4px' }}>Preview:</div>
+                <div style={{ fontSize: '11px', color: '#888' }}>
+                  {trades.filter(t => {
+                    if (draftFilters.dateFrom && t.date < draftFilters.dateFrom) return false
+                    if (draftFilters.dateTo && t.date > draftFilters.dateTo) return false
+                    if (draftFilters.outcome && t.outcome !== draftFilters.outcome) return false
+                    if (draftFilters.direction && t.direction !== draftFilters.direction) return false
+                    if (draftFilters.symbol && !t.symbol?.toLowerCase().includes(draftFilters.symbol.toLowerCase())) return false
+                    if (draftFilters.session && t.session !== draftFilters.session) return false
+                    if (draftFilters.timeframe && t.timeframe !== draftFilters.timeframe) return false
+                    if (draftFilters.confidence && t.confidence !== draftFilters.confidence) return false
+                    if (draftFilters.rr && parseFloat(t.rr || 0) < parseFloat(draftFilters.rr)) return false
+                    if (draftFilters.rating && parseInt(t.rating || 0) < parseInt(draftFilters.rating)) return false
+                    return true
+                  }).length} of {trades.length} trades match
                 </div>
               </div>
             )}
