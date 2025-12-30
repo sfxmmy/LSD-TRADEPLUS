@@ -771,7 +771,7 @@ export default function AccountPage() {
             <div style={{ marginTop: '8px', padding: '10px', background: '#0d0d12', border: '1px solid #22c55e', borderRadius: '8px' }}>
               <div style={{ fontSize: '11px', color: '#22c55e', marginBottom: '8px', fontWeight: 600, textAlign: 'center' }}>{selectedTrades.size} SELECTED</div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                <button onClick={toggleSelectAll} style={{ width: '100%', padding: '6px', background: '#1a1a22', border: 'none', borderRadius: '4px', color: '#fff', fontSize: '10px', cursor: 'pointer' }}>{selectedTrades.size === trades.length ? 'Deselect All' : 'Select All'}</button>
+                <button onClick={() => { const allSelected = filteredTrades.every(t => selectedTrades.has(t.id)); if (allSelected) { const newSet = new Set(selectedTrades); filteredTrades.forEach(t => newSet.delete(t.id)); setSelectedTrades(newSet) } else { const newSet = new Set(selectedTrades); filteredTrades.forEach(t => newSet.add(t.id)); setSelectedTrades(newSet) } }} style={{ width: '100%', padding: '6px', background: '#1a1a22', border: 'none', borderRadius: '4px', color: '#fff', fontSize: '10px', cursor: 'pointer' }}>{filteredTrades.every(t => selectedTrades.has(t.id)) && filteredTrades.length > 0 ? 'Deselect All' : 'Select All'}</button>
                 {selectedTrades.size > 0 && getSlideshowImages().length > 0 && <button onClick={() => { setSlideshowIndex(0); setSlideshowMode(true) }} style={{ width: '100%', padding: '6px', background: '#1a1a22', border: 'none', borderRadius: '4px', color: '#fff', fontSize: '10px', cursor: 'pointer' }}>View Images</button>}
                 {selectedTrades.size > 0 && <button onClick={() => { setViewingSelectedStats(true); setActiveTab('statistics') }} style={{ width: '100%', padding: '6px', background: '#1a1a22', border: 'none', borderRadius: '4px', color: '#fff', fontSize: '10px', cursor: 'pointer' }}>View Stats</button>}
                 {selectedTrades.size > 0 && <button onClick={() => setDeleteSelectedConfirm(true)} style={{ width: '100%', padding: '6px', background: '#ef4444', border: 'none', borderRadius: '4px', color: '#fff', fontSize: '10px', cursor: 'pointer', fontWeight: 600 }}>Delete</button>}
@@ -833,6 +833,11 @@ export default function AccountPage() {
           <div style={{ position: 'relative', height: 'calc(100vh - 140px)' }}>
             {trades.length === 0 ? (
               <div style={{ padding: isMobile ? '40px 20px' : '60px', textAlign: 'center', color: '#999', fontSize: '15px' }}>No trades yet. Click "+ LOG NEW TRADE" to add your first trade.</div>
+            ) : filteredTrades.length === 0 ? (
+              <div style={{ padding: isMobile ? '40px 20px' : '60px', textAlign: 'center' }}>
+                <div style={{ color: '#999', fontSize: '15px', marginBottom: '16px' }}>No trades match your filters.</div>
+                <button onClick={() => setFilters({ dateFrom: '', dateTo: '', outcome: '', direction: '', symbol: '' })} style={{ padding: '10px 20px', background: 'transparent', border: '1px solid #22c55e', borderRadius: '8px', color: '#22c55e', fontSize: '13px', cursor: 'pointer' }}>Clear Filters</button>
+              </div>
             ) : (
               <>
               <div
@@ -852,14 +857,14 @@ export default function AccountPage() {
                 <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: '1200px' }}>
                   <thead style={{ position: 'sticky', top: 0, zIndex: 10, background: '#0a0a0f', boxShadow: '0 1px 0 #1a1a22' }}>
                     <tr>
-                      {selectMode && <th style={{ padding: '14px 6px', width: '32px', borderBottom: '1px solid #1a1a22', background: '#0a0a0f' }}><input type="checkbox" checked={selectedTrades.size === trades.length && trades.length > 0} onChange={toggleSelectAll} style={{ width: '14px', height: '14px', accentColor: '#22c55e', cursor: 'pointer' }} /></th>}
+                      {selectMode && <th style={{ padding: '14px 6px', width: '32px', borderBottom: '1px solid #1a1a22', background: '#0a0a0f' }}><input type="checkbox" checked={filteredTrades.length > 0 && filteredTrades.every(t => selectedTrades.has(t.id))} onChange={() => { const allSelected = filteredTrades.every(t => selectedTrades.has(t.id)); if (allSelected) { const newSet = new Set(selectedTrades); filteredTrades.forEach(t => newSet.delete(t.id)); setSelectedTrades(newSet) } else { const newSet = new Set(selectedTrades); filteredTrades.forEach(t => newSet.add(t.id)); setSelectedTrades(newSet) } }} style={{ width: '14px', height: '14px', accentColor: '#22c55e', cursor: 'pointer' }} /></th>}
                       {['Symbol', 'W/L', 'PnL', '%', 'RR', ...customInputs.map(i => i.label), 'Date', ''].map((h, i) => (
                         <th key={i} style={{ padding: isMobile ? '10px 8px' : '14px 12px', textAlign: 'center', color: '#999', fontSize: isMobile ? '11px' : '12px', fontWeight: 600, textTransform: 'uppercase', borderBottom: '1px solid #1a1a22', background: '#0a0a0f' }}>{h}</th>
                       ))}
                     </tr>
                   </thead>
                   <tbody>
-                    {trades.map((trade) => {
+                    {filteredTrades.map((trade) => {
                       const extra = getExtraData(trade)
                       const pnlValue = parseFloat(trade.pnl) || 0
                       const noteContent = trade.notes || extra.notes || ''
@@ -2556,6 +2561,94 @@ export default function AccountPage() {
           </div>
         )}
       </div>
+
+      {/* FILTERS MODAL */}
+      {showFilters && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.9)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100 }} onClick={() => setShowFilters(false)}>
+          <div style={{ background: 'linear-gradient(180deg, #0f0f14 0%, #0a0a0f 100%)', border: '1px solid #1a1a22', borderRadius: '12px', padding: '24px', width: '400px', maxHeight: '90vh', overflowY: 'auto' }} onClick={e => e.stopPropagation()}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px', paddingBottom: '12px', borderBottom: '1px solid #1a1a22' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#22c55e" strokeWidth="2"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
+                <span style={{ fontSize: '14px', color: '#fff', fontWeight: 600 }}>Filter Trades</span>
+              </div>
+              <button onClick={() => setShowFilters(false)} style={{ background: 'none', border: 'none', color: '#666', fontSize: '20px', cursor: 'pointer', padding: '4px' }}>×</button>
+            </div>
+
+            {/* Date Range */}
+            <div style={{ marginBottom: '16px' }}>
+              <label style={{ display: 'block', fontSize: '11px', color: '#888', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Date Range</label>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+                <div>
+                  <label style={{ display: 'block', fontSize: '10px', color: '#666', marginBottom: '4px' }}>From</label>
+                  <input type="date" value={filters.dateFrom} onChange={e => setFilters({...filters, dateFrom: e.target.value})} style={{ width: '100%', padding: '10px 12px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '13px', boxSizing: 'border-box' }} />
+                </div>
+                <div>
+                  <label style={{ display: 'block', fontSize: '10px', color: '#666', marginBottom: '4px' }}>To</label>
+                  <input type="date" value={filters.dateTo} onChange={e => setFilters({...filters, dateTo: e.target.value})} style={{ width: '100%', padding: '10px 12px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '13px', boxSizing: 'border-box' }} />
+                </div>
+              </div>
+            </div>
+
+            {/* Quick Date Presets */}
+            <div style={{ marginBottom: '16px' }}>
+              <label style={{ display: 'block', fontSize: '11px', color: '#888', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Quick Select</label>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+                {[
+                  { label: 'Today', fn: () => { const d = new Date().toISOString().split('T')[0]; setFilters({...filters, dateFrom: d, dateTo: d}) } },
+                  { label: 'This Week', fn: () => { const now = new Date(); const start = new Date(now); start.setDate(now.getDate() - now.getDay()); setFilters({...filters, dateFrom: start.toISOString().split('T')[0], dateTo: now.toISOString().split('T')[0]}) } },
+                  { label: 'This Month', fn: () => { const now = new Date(); const start = new Date(now.getFullYear(), now.getMonth(), 1); setFilters({...filters, dateFrom: start.toISOString().split('T')[0], dateTo: now.toISOString().split('T')[0]}) } },
+                  { label: 'Last 7 Days', fn: () => { const now = new Date(); const start = new Date(now); start.setDate(now.getDate() - 7); setFilters({...filters, dateFrom: start.toISOString().split('T')[0], dateTo: now.toISOString().split('T')[0]}) } },
+                  { label: 'Last 30 Days', fn: () => { const now = new Date(); const start = new Date(now); start.setDate(now.getDate() - 30); setFilters({...filters, dateFrom: start.toISOString().split('T')[0], dateTo: now.toISOString().split('T')[0]}) } },
+                ].map(preset => (
+                  <button key={preset.label} onClick={preset.fn} style={{ padding: '6px 12px', background: '#0a0a0f', border: '1px solid #2a2a35', borderRadius: '4px', color: '#888', fontSize: '11px', cursor: 'pointer' }}>{preset.label}</button>
+                ))}
+              </div>
+            </div>
+
+            {/* Outcome Filter */}
+            <div style={{ marginBottom: '16px' }}>
+              <label style={{ display: 'block', fontSize: '11px', color: '#888', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Outcome</label>
+              <div style={{ display: 'flex', gap: '8px' }}>
+                {['', 'win', 'loss', 'breakeven'].map(o => (
+                  <button key={o || 'all'} onClick={() => setFilters({...filters, outcome: o})} style={{ flex: 1, padding: '10px', background: filters.outcome === o ? (o === 'win' ? 'rgba(34,197,94,0.2)' : o === 'loss' ? 'rgba(239,68,68,0.2)' : o === 'breakeven' ? 'rgba(234,179,8,0.2)' : 'rgba(34,197,94,0.15)') : '#0a0a0f', border: filters.outcome === o ? (o === 'win' ? '1px solid #22c55e' : o === 'loss' ? '1px solid #ef4444' : o === 'breakeven' ? '1px solid #eab308' : '1px solid #22c55e') : '1px solid #2a2a35', borderRadius: '6px', color: filters.outcome === o ? (o === 'win' ? '#22c55e' : o === 'loss' ? '#ef4444' : o === 'breakeven' ? '#eab308' : '#22c55e') : '#888', fontSize: '12px', cursor: 'pointer', textTransform: 'capitalize' }}>{o || 'All'}</button>
+                ))}
+              </div>
+            </div>
+
+            {/* Direction Filter */}
+            <div style={{ marginBottom: '16px' }}>
+              <label style={{ display: 'block', fontSize: '11px', color: '#888', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Direction</label>
+              <div style={{ display: 'flex', gap: '8px' }}>
+                {['', 'long', 'short'].map(d => (
+                  <button key={d || 'all'} onClick={() => setFilters({...filters, direction: d})} style={{ flex: 1, padding: '10px', background: filters.direction === d ? 'rgba(34,197,94,0.15)' : '#0a0a0f', border: filters.direction === d ? '1px solid #22c55e' : '1px solid #2a2a35', borderRadius: '6px', color: filters.direction === d ? '#22c55e' : '#888', fontSize: '12px', cursor: 'pointer', textTransform: 'capitalize' }}>{d || 'All'}</button>
+                ))}
+              </div>
+            </div>
+
+            {/* Symbol Filter */}
+            <div style={{ marginBottom: '20px' }}>
+              <label style={{ display: 'block', fontSize: '11px', color: '#888', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Symbol</label>
+              <input type="text" value={filters.symbol} onChange={e => setFilters({...filters, symbol: e.target.value})} placeholder="e.g. XAUUSD, EUR" style={{ width: '100%', padding: '10px 12px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '13px', boxSizing: 'border-box' }} />
+            </div>
+
+            {/* Actions */}
+            <div style={{ display: 'flex', gap: '10px' }}>
+              <button onClick={() => setFilters({ dateFrom: '', dateTo: '', outcome: '', direction: '', symbol: '' })} style={{ flex: 1, padding: '12px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '8px', color: '#888', fontSize: '13px', cursor: 'pointer' }}>Clear All</button>
+              <button onClick={() => setShowFilters(false)} style={{ flex: 1, padding: '12px', background: '#22c55e', border: 'none', borderRadius: '8px', color: '#fff', fontWeight: 600, fontSize: '13px', cursor: 'pointer' }}>Apply Filters</button>
+            </div>
+
+            {/* Filter Summary */}
+            {hasActiveFilters && (
+              <div style={{ marginTop: '16px', padding: '12px', background: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.3)', borderRadius: '8px' }}>
+                <div style={{ fontSize: '11px', color: '#22c55e', marginBottom: '6px' }}>Active Filters:</div>
+                <div style={{ fontSize: '12px', color: '#888' }}>
+                  Showing {filteredTrades.length} of {trades.length} trades
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* MODALS */}
       {showAddTrade && (
