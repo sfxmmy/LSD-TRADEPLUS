@@ -730,10 +730,18 @@ export default function DashboardPage() {
             </div>
 
             {/* Stats Card - Below Trade Entry */}
-            <div style={{ background: '#0f0f14', border: '1px solid #1a1a22', borderRadius: '12px', padding: '12px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '10px' }}>
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#22c55e" strokeWidth="2"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg>
-                <span style={{ fontSize: '12px', color: '#fff', fontWeight: 600, letterSpacing: '0.5px' }}>ALL STATS</span>
+            <div style={{ background: '#0f0f14', border: '1px solid #1a1a22', borderRadius: '12px', padding: '14px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#22c55e" strokeWidth="2"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg>
+                  <span style={{ fontSize: '12px', color: '#fff', fontWeight: 600, letterSpacing: '0.5px' }}>ALL STATS</span>
+                </div>
+                {accounts.length > 0 && (
+                  <a href={`/account/${accounts[0]?.id}?tab=statistics`} style={{ fontSize: '10px', color: '#22c55e', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    View Full Stats
+                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                  </a>
+                )}
               </div>
 
               {(() => {
@@ -751,39 +759,41 @@ export default function DashboardPage() {
                 const maxPnl = pnlPoints.length > 0 ? Math.max(...pnlPoints.map(p => p.value), 0) : 0
                 const minPnl = pnlPoints.length > 0 ? Math.min(...pnlPoints.map(p => p.value), 0) : 0
                 const pnlRange = maxPnl - minPnl || 1
-                const chartWidth = Math.max(pnlPoints.length - 1, 1) * 4
-                const chartHeight = 60
+                const chartHeight = 55
 
                 return (
                   <div>
-                    {/* Mini PnL Chart with axis */}
+                    {/* Mini PnL Chart - Full Width */}
                     {pnlPoints.length > 1 && (
-                      <div style={{ background: '#0a0a0f', borderRadius: '6px', padding: '8px', marginBottom: '8px' }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
+                      <div style={{ background: '#0a0a0f', borderRadius: '6px', padding: '10px', marginBottom: '10px' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
                           <span style={{ fontSize: '9px', color: '#666', textTransform: 'uppercase' }}>Cumulative P&L</span>
-                          <span style={{ fontSize: '11px', fontWeight: 600, color: cumPnl >= 0 ? '#22c55e' : '#ef4444' }}>{cumPnl >= 0 ? '+' : ''}${Math.round(cumPnl).toLocaleString()}</span>
+                          <span style={{ fontSize: '13px', fontWeight: 700, color: cumPnl >= 0 ? '#22c55e' : '#ef4444' }}>{cumPnl >= 0 ? '+' : ''}${Math.round(cumPnl).toLocaleString()}</span>
                         </div>
-                        <div style={{ display: 'flex', gap: '4px' }}>
-                          {/* Y-axis labels */}
-                          <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', width: '32px', fontSize: '8px', color: '#555', textAlign: 'right', paddingRight: '4px' }}>
-                            <span>${maxPnl >= 1000 ? `${(maxPnl/1000).toFixed(0)}k` : Math.round(maxPnl)}</span>
-                            {minPnl < 0 && maxPnl > 0 && <span>$0</span>}
-                            <span>{minPnl < 0 ? `-$${Math.abs(minPnl) >= 1000 ? `${(Math.abs(minPnl)/1000).toFixed(0)}k` : Math.round(Math.abs(minPnl))}` : '$0'}</span>
+                        <div style={{ position: 'relative', height: `${chartHeight}px` }}>
+                          {/* Y-axis labels - positioned absolutely */}
+                          <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: '28px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', fontSize: '7px', color: '#444', textAlign: 'right', paddingRight: '4px', zIndex: 1 }}>
+                            <span>${maxPnl >= 1000 ? `${(maxPnl/1000).toFixed(1)}k` : Math.round(maxPnl)}</span>
+                            <span>{minPnl < 0 ? `-$${Math.abs(minPnl) >= 1000 ? `${(Math.abs(minPnl)/1000).toFixed(1)}k` : Math.round(Math.abs(minPnl))}` : '$0'}</span>
                           </div>
-                          {/* Chart */}
-                          <div style={{ flex: 1, height: `${chartHeight}px`, position: 'relative' }}>
-                            <svg width="100%" height="100%" viewBox={`0 0 ${chartWidth} ${chartHeight}`} preserveAspectRatio="none" style={{ overflow: 'visible' }}>
+                          {/* Chart - Full width with left margin for labels */}
+                          <div style={{ position: 'absolute', left: '30px', right: 0, top: 0, bottom: 0 }}>
+                            <svg width="100%" height="100%" preserveAspectRatio="none" style={{ display: 'block' }}>
                               {/* Grid lines */}
-                              <line x1="0" y1="0" x2={chartWidth} y2="0" stroke="#1a1a22" strokeWidth="0.5" />
-                              <line x1="0" y1={chartHeight} x2={chartWidth} y2={chartHeight} stroke="#1a1a22" strokeWidth="0.5" />
+                              <line x1="0" y1="0" x2="100%" y2="0" stroke="#1a1a22" strokeWidth="0.5" />
+                              <line x1="0" y1="100%" x2="100%" y2="100%" stroke="#1a1a22" strokeWidth="0.5" />
                               {/* Zero line */}
                               {minPnl < 0 && maxPnl > 0 && (
-                                <line x1="0" y1={chartHeight - ((0 - minPnl) / pnlRange) * chartHeight} x2={chartWidth} y2={chartHeight - ((0 - minPnl) / pnlRange) * chartHeight} stroke="#333" strokeWidth="1" strokeDasharray="3,3" />
+                                <line x1="0" y1={`${((maxPnl) / pnlRange) * 100}%`} x2="100%" y2={`${((maxPnl) / pnlRange) * 100}%`} stroke="#333" strokeWidth="1" strokeDasharray="3,3" />
                               )}
                               {/* Area fill */}
                               <path
-                                fill={cumPnl >= 0 ? 'rgba(34,197,94,0.1)' : 'rgba(239,68,68,0.1)'}
-                                d={`M0,${chartHeight} ${pnlPoints.map((p, i) => `L${i * 4},${chartHeight - ((p.value - minPnl) / pnlRange) * chartHeight}`).join(' ')} L${(pnlPoints.length - 1) * 4},${chartHeight} Z`}
+                                fill={cumPnl >= 0 ? 'rgba(34,197,94,0.15)' : 'rgba(239,68,68,0.15)'}
+                                d={`M0,${chartHeight} ${pnlPoints.map((p, i) => {
+                                  const x = (i / (pnlPoints.length - 1)) * 100
+                                  const y = chartHeight - ((p.value - minPnl) / pnlRange) * chartHeight
+                                  return `L${x}%,${y}`
+                                }).join(' ')} L100%,${chartHeight} Z`}
                               />
                               {/* PnL line */}
                               <polyline
@@ -791,7 +801,12 @@ export default function DashboardPage() {
                                 stroke={cumPnl >= 0 ? '#22c55e' : '#ef4444'}
                                 strokeWidth="1.5"
                                 strokeLinejoin="round"
-                                points={pnlPoints.map((p, i) => `${i * 4},${chartHeight - ((p.value - minPnl) / pnlRange) * chartHeight}`).join(' ')}
+                                vectorEffect="non-scaling-stroke"
+                                points={pnlPoints.map((p, i) => {
+                                  const x = (i / (pnlPoints.length - 1)) * 100
+                                  const y = chartHeight - ((p.value - minPnl) / pnlRange) * chartHeight
+                                  return `${x}%,${y}`
+                                }).join(' ')}
                               />
                             </svg>
                           </div>
@@ -799,8 +814,8 @@ export default function DashboardPage() {
                       </div>
                     )}
 
-                    {/* Stats Grid - Compact */}
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '4px' }}>
+                    {/* Stats Grid - Clean 2 columns */}
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px' }}>
                       {[
                         { label: 'BALANCE', value: `$${stats.currentBalance.toLocaleString()}`, color: stats.currentBalance >= stats.totalStartingBalance ? '#22c55e' : '#ef4444' },
                         { label: 'TOTAL P&L', value: `${stats.totalPnl >= 0 ? '+' : ''}$${stats.totalPnl.toLocaleString()}`, color: stats.totalPnl >= 0 ? '#22c55e' : '#ef4444' },
@@ -814,20 +829,28 @@ export default function DashboardPage() {
                         { label: 'GROSS PROFIT', value: `+$${stats.grossProfit.toLocaleString()}`, color: '#22c55e' },
                         { label: 'GROSS LOSS', value: `-$${stats.grossLoss.toLocaleString()}`, color: '#ef4444' },
                       ].map((stat, i) => (
-                        <div key={i} style={{ padding: '6px 8px', background: '#0a0a0f', borderRadius: '4px' }}>
-                          <div style={{ fontSize: '8px', color: '#555', marginBottom: '1px' }}>{stat.label}</div>
-                          <div style={{ fontSize: '12px', fontWeight: 700, color: stat.color }}>{stat.value}</div>
+                        <div key={i} style={{ padding: '8px 10px', background: '#0a0a0f', borderRadius: '6px', borderLeft: `2px solid ${stat.color === '#fff' ? '#333' : stat.color}22` }}>
+                          <div style={{ fontSize: '8px', color: '#666', marginBottom: '2px', textTransform: 'uppercase' }}>{stat.label}</div>
+                          <div style={{ fontSize: '14px', fontWeight: 700, color: stat.color }}>{stat.value}</div>
                         </div>
                       ))}
                     </div>
 
-                    {/* Export Button */}
-                    {selectedCount > 0 && (
-                      <button onClick={exportTradesToCSV} style={{ marginTop: '8px', width: '100%', padding: '8px', background: '#22c55e', border: 'none', borderRadius: '6px', color: '#fff', fontSize: '11px', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}>
-                        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-                        Export {selectedCount} Trade{selectedCount > 1 ? 's' : ''}
-                      </button>
-                    )}
+                    {/* Buttons */}
+                    <div style={{ marginTop: '10px', display: 'flex', gap: '8px' }}>
+                      {selectedCount > 0 && (
+                        <button onClick={exportTradesToCSV} style={{ flex: 1, padding: '10px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '6px', color: '#999', fontSize: '11px', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}>
+                          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                          Export {selectedCount}
+                        </button>
+                      )}
+                      {accounts.length > 0 && (
+                        <a href={`/account/${accounts[0]?.id}?tab=statistics`} style={{ flex: 1, padding: '10px', background: '#22c55e', borderRadius: '6px', color: '#fff', fontSize: '11px', fontWeight: 600, textDecoration: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}>
+                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg>
+                          Statistics
+                        </a>
+                      )}
+                    </div>
                   </div>
                 )
               })()}

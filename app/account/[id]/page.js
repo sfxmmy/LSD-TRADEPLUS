@@ -242,15 +242,41 @@ export default function AccountPage() {
     setInputs([...inputs, newInput]) 
   }
   function updateInput(i, f, v) { const n = [...inputs]; n[i] = { ...n[i], [f]: v }; setInputs(n) }
-  function deleteInput(i) { setInputs(inputs.filter((_, idx) => idx !== i)) }
+  function deleteInput(i) {
+    // Soft delete - mark as hidden instead of removing (preserves data)
+    const n = [...inputs]
+    n[i] = { ...n[i], hidden: true }
+    setInputs(n)
+  }
+  function restoreInput(i) {
+    const n = [...inputs]
+    n[i] = { ...n[i], hidden: false }
+    setInputs(n)
+  }
   function openOptionsEditor(i) { setEditingOptions(i); setOptionsText((inputs[i].options || []).join('\n')) }
   function saveOptions() { if (editingOptions === null) return; updateInput(editingOptions, 'options', optionsText.split('\n').map(o => o.trim()).filter(o => o)); setEditingOptions(null); setOptionsText('') }
   function getExtraData(t) { try { return JSON.parse(t.extra_data || '{}') } catch { return {} } }
   function getDaysAgo(d) { const diff = Math.floor((new Date() - new Date(d)) / 86400000); return diff === 0 ? 'Today' : diff === 1 ? '1d ago' : `${diff}d ago` }
 
-  // Get custom select inputs for dropdown options
+  // Get custom select inputs for dropdown options (excludes hidden)
   function getCustomSelectInputs() {
-    return inputs.filter(i => i.type === 'select' && i.enabled && !['outcome'].includes(i.id))
+    return inputs.filter(i => i.type === 'select' && i.enabled && !i.hidden && !['outcome'].includes(i.id))
+  }
+  // Get custom number inputs for stats (excludes hidden)
+  function getCustomNumberInputs() {
+    return inputs.filter(i => i.type === 'number' && i.enabled && !i.hidden && !['pnl', 'rr', 'riskPercent'].includes(i.id))
+  }
+  // Get custom rating inputs for stats (excludes hidden)
+  function getCustomRatingInputs() {
+    return inputs.filter(i => i.type === 'rating' && i.enabled && !i.hidden)
+  }
+  // Get visible inputs (not hidden)
+  function getVisibleInputs() {
+    return inputs.filter(i => !i.hidden)
+  }
+  // Get hidden inputs
+  function getHiddenInputs() {
+    return inputs.filter(i => i.hidden)
   }
 
   // Calculate cumulative stats across all accounts
@@ -2052,52 +2078,159 @@ export default function AccountPage() {
               )
             })()}
 
-            {/* Auto-generated widgets for custom inputs */}
+            {/* Auto-generated widgets for ALL custom inputs */}
             {(() => {
-              const customInputs = getCustomSelectInputs().filter(i => !['direction', 'session', 'confidence', 'timeframe', 'symbol'].includes(i.id))
-              if (customInputs.length === 0) return null
-              return (
-                <div style={{ display: 'flex', gap: '16px', marginTop: '16px', flexWrap: 'wrap' }}>
-                  {customInputs.map(input => {
-                    // Calculate stats for this custom input
-                    const stats = {}
-                    trades.forEach(t => {
-                      const val = getExtraData(t)[input.id] || 'Not Set'
-                      if (!stats[val]) stats[val] = { wins: 0, losses: 0, pnl: 0, count: 0 }
-                      if (t.outcome === 'win') stats[val].wins++
-                      else if (t.outcome === 'loss') stats[val].losses++
-                      stats[val].pnl += parseFloat(t.pnl) || 0
-                      stats[val].count++
-                    })
-                    const entries = Object.entries(stats).sort((a, b) => b[1].count - a[1].count).slice(0, 5)
-                    if (entries.length === 0) return null
-                    const maxCount = Math.max(...entries.map(e => e[1].count))
+              const selectInputs = getCustomSelectInputs().filter(i => !['direction', 'session', 'confidence', 'timeframe', 'symbol'].includes(i.id))
+              const numberInputs = getCustomNumberInputs()
+              const ratingInputs = getCustomRatingInputs()
 
-                    return (
-                      <div key={input.id} style={{ flex: '1 1 280px', maxWidth: '350px', background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '14px' }}>
-                        <div style={{ fontSize: '11px', color: '#999', textTransform: 'uppercase', marginBottom: '12px' }}>By {input.label}</div>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                          {entries.map(([val, data], idx) => {
-                            const wr = data.wins + data.losses > 0 ? Math.round((data.wins / (data.wins + data.losses)) * 100) : 0
-                            const barWidth = (data.count / maxCount) * 100
-                            return (
-                              <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                <div style={{ width: '70px', fontSize: '11px', color: '#ccc', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{val}</div>
-                                <div style={{ flex: 1, height: '18px', background: '#1a1a22', borderRadius: '3px', position: 'relative', overflow: 'hidden' }}>
-                                  <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: `${barWidth}%`, background: data.pnl >= 0 ? '#22c55e' : '#ef4444', opacity: 0.3, borderRadius: '3px' }} />
-                                  <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 6px', fontSize: '9px' }}>
-                                    <span style={{ color: '#999' }}>{data.count} trades</span>
-                                    <span style={{ color: wr >= 50 ? '#22c55e' : '#ef4444' }}>{wr}% WR</span>
+              if (selectInputs.length === 0 && numberInputs.length === 0 && ratingInputs.length === 0) return null
+
+              return (
+                <div style={{ marginTop: '16px' }}>
+                  {/* Section Header */}
+                  <div style={{ fontSize: '12px', color: '#666', textTransform: 'uppercase', marginBottom: '12px', letterSpacing: '0.5px' }}>Custom Input Analytics</div>
+
+                  <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
+                    {/* SELECT INPUT WIDGETS */}
+                    {selectInputs.map(input => {
+                      const stats = {}
+                      displayTrades.forEach(t => {
+                        const val = getExtraData(t)[input.id] || 'Not Set'
+                        if (!stats[val]) stats[val] = { wins: 0, losses: 0, pnl: 0, count: 0 }
+                        if (t.outcome === 'win') stats[val].wins++
+                        else if (t.outcome === 'loss') stats[val].losses++
+                        stats[val].pnl += parseFloat(t.pnl) || 0
+                        stats[val].count++
+                      })
+                      const entries = Object.entries(stats).sort((a, b) => b[1].count - a[1].count).slice(0, 5)
+                      if (entries.length === 0) return null
+                      const maxCount = Math.max(...entries.map(e => e[1].count))
+
+                      return (
+                        <div key={input.id} style={{ flex: '1 1 280px', maxWidth: '350px', background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '14px' }}>
+                          <div style={{ fontSize: '11px', color: '#999', textTransform: 'uppercase', marginBottom: '12px' }}>By {input.label}</div>
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                            {entries.map(([val, data], idx) => {
+                              const wr = data.wins + data.losses > 0 ? Math.round((data.wins / (data.wins + data.losses)) * 100) : 0
+                              const barWidth = (data.count / maxCount) * 100
+                              return (
+                                <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                  <div style={{ width: '70px', fontSize: '11px', color: '#ccc', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{val}</div>
+                                  <div style={{ flex: 1, height: '18px', background: '#1a1a22', borderRadius: '3px', position: 'relative', overflow: 'hidden' }}>
+                                    <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: `${barWidth}%`, background: data.pnl >= 0 ? '#22c55e' : '#ef4444', opacity: 0.3, borderRadius: '3px' }} />
+                                    <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 6px', fontSize: '9px' }}>
+                                      <span style={{ color: '#999' }}>{data.count} trades</span>
+                                      <span style={{ color: wr >= 50 ? '#22c55e' : '#ef4444' }}>{wr}% WR</span>
+                                    </div>
                                   </div>
+                                  <div style={{ width: '55px', fontSize: '10px', fontWeight: 600, color: data.pnl >= 0 ? '#22c55e' : '#ef4444', textAlign: 'right' }}>{data.pnl >= 0 ? '+' : ''}${Math.round(data.pnl)}</div>
                                 </div>
-                                <div style={{ width: '55px', fontSize: '10px', fontWeight: 600, color: data.pnl >= 0 ? '#22c55e' : '#ef4444', textAlign: 'right' }}>{data.pnl >= 0 ? '+' : ''}${Math.round(data.pnl)}</div>
-                              </div>
-                            )
-                          })}
+                              )
+                            })}
+                          </div>
                         </div>
-                      </div>
-                    )
-                  })}
+                      )
+                    })}
+
+                    {/* NUMBER INPUT WIDGETS - show ranges/buckets */}
+                    {numberInputs.map(input => {
+                      const values = displayTrades.map(t => parseFloat(getExtraData(t)[input.id])).filter(v => !isNaN(v))
+                      if (values.length === 0) return null
+
+                      const min = Math.min(...values)
+                      const max = Math.max(...values)
+                      const range = max - min
+                      const bucketSize = range / 4 || 1
+
+                      // Create 4 buckets
+                      const buckets = {}
+                      displayTrades.forEach(t => {
+                        const val = parseFloat(getExtraData(t)[input.id])
+                        if (isNaN(val)) return
+                        const bucketIdx = Math.min(3, Math.floor((val - min) / bucketSize))
+                        const bucketLabel = range === 0 ? String(min) : `${Math.round(min + bucketIdx * bucketSize)}-${Math.round(min + (bucketIdx + 1) * bucketSize)}`
+                        if (!buckets[bucketLabel]) buckets[bucketLabel] = { wins: 0, losses: 0, pnl: 0, count: 0, order: bucketIdx }
+                        if (t.outcome === 'win') buckets[bucketLabel].wins++
+                        else if (t.outcome === 'loss') buckets[bucketLabel].losses++
+                        buckets[bucketLabel].pnl += parseFloat(t.pnl) || 0
+                        buckets[bucketLabel].count++
+                      })
+
+                      const entries = Object.entries(buckets).sort((a, b) => a[1].order - b[1].order)
+                      if (entries.length === 0) return null
+                      const maxCount = Math.max(...entries.map(e => e[1].count))
+
+                      return (
+                        <div key={input.id} style={{ flex: '1 1 280px', maxWidth: '350px', background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '14px' }}>
+                          <div style={{ fontSize: '11px', color: '#999', textTransform: 'uppercase', marginBottom: '12px' }}>{input.label} Ranges</div>
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                            {entries.map(([label, data], idx) => {
+                              const wr = data.wins + data.losses > 0 ? Math.round((data.wins / (data.wins + data.losses)) * 100) : 0
+                              const barWidth = (data.count / maxCount) * 100
+                              return (
+                                <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                  <div style={{ width: '70px', fontSize: '11px', color: '#ccc', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{label}</div>
+                                  <div style={{ flex: 1, height: '18px', background: '#1a1a22', borderRadius: '3px', position: 'relative', overflow: 'hidden' }}>
+                                    <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: `${barWidth}%`, background: data.pnl >= 0 ? '#22c55e' : '#ef4444', opacity: 0.3, borderRadius: '3px' }} />
+                                    <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 6px', fontSize: '9px' }}>
+                                      <span style={{ color: '#999' }}>{data.count} trades</span>
+                                      <span style={{ color: wr >= 50 ? '#22c55e' : '#ef4444' }}>{wr}% WR</span>
+                                    </div>
+                                  </div>
+                                  <div style={{ width: '55px', fontSize: '10px', fontWeight: 600, color: data.pnl >= 0 ? '#22c55e' : '#ef4444', textAlign: 'right' }}>{data.pnl >= 0 ? '+' : ''}${Math.round(data.pnl)}</div>
+                                </div>
+                              )
+                            })}
+                          </div>
+                        </div>
+                      )
+                    })}
+
+                    {/* RATING INPUT WIDGETS - show performance by star rating */}
+                    {ratingInputs.map(input => {
+                      const stats = {}
+                      displayTrades.forEach(t => {
+                        const val = parseFloat(getExtraData(t)[input.id]) || 0
+                        if (val === 0) return
+                        const ratingLabel = val % 1 === 0 ? `${val}★` : `${val}★`
+                        if (!stats[ratingLabel]) stats[ratingLabel] = { wins: 0, losses: 0, pnl: 0, count: 0, rating: val }
+                        if (t.outcome === 'win') stats[ratingLabel].wins++
+                        else if (t.outcome === 'loss') stats[ratingLabel].losses++
+                        stats[ratingLabel].pnl += parseFloat(t.pnl) || 0
+                        stats[ratingLabel].count++
+                      })
+
+                      const entries = Object.entries(stats).sort((a, b) => b[1].rating - a[1].rating)
+                      if (entries.length === 0) return null
+                      const maxCount = Math.max(...entries.map(e => e[1].count))
+
+                      return (
+                        <div key={input.id} style={{ flex: '1 1 280px', maxWidth: '350px', background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '14px' }}>
+                          <div style={{ fontSize: '11px', color: '#999', textTransform: 'uppercase', marginBottom: '12px' }}>By {input.label}</div>
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                            {entries.map(([label, data], idx) => {
+                              const wr = data.wins + data.losses > 0 ? Math.round((data.wins / (data.wins + data.losses)) * 100) : 0
+                              const barWidth = (data.count / maxCount) * 100
+                              return (
+                                <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                  <div style={{ width: '50px', fontSize: '12px', color: '#f59e0b' }}>{label}</div>
+                                  <div style={{ flex: 1, height: '18px', background: '#1a1a22', borderRadius: '3px', position: 'relative', overflow: 'hidden' }}>
+                                    <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: `${barWidth}%`, background: data.pnl >= 0 ? '#22c55e' : '#ef4444', opacity: 0.3, borderRadius: '3px' }} />
+                                    <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 6px', fontSize: '9px' }}>
+                                      <span style={{ color: '#999' }}>{data.count} trades</span>
+                                      <span style={{ color: wr >= 50 ? '#22c55e' : '#ef4444' }}>{wr}% WR</span>
+                                    </div>
+                                  </div>
+                                  <div style={{ width: '55px', fontSize: '10px', fontWeight: 600, color: data.pnl >= 0 ? '#22c55e' : '#ef4444', textAlign: 'right' }}>{data.pnl >= 0 ? '+' : ''}${Math.round(data.pnl)}</div>
+                                </div>
+                              )
+                            })}
+                          </div>
+                        </div>
+                      )
+                    })}
+                  </div>
                 </div>
               )
             })()}
