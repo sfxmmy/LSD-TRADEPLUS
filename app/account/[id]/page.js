@@ -75,13 +75,15 @@ export default function AccountPage() {
   const [deleteConfirmId, setDeleteConfirmId] = useState(null)
   const [deleteInputConfirm, setDeleteInputConfirm] = useState(null)
   const [deleteSelectedConfirm, setDeleteSelectedConfirm] = useState(false)
-  const [showCumulativeStats, setShowCumulativeStats] = useState(false)
+  const [showCumulativeStats, setShowCumulativeStats] = useState(searchParams.get('cumulative') === 'true')
   const [allAccountsTrades, setAllAccountsTrades] = useState({})
   const [selectMode, setSelectMode] = useState(false)
   const [selectedTrades, setSelectedTrades] = useState(new Set())
   const [slideshowMode, setSlideshowMode] = useState(false)
   const [slideshowIndex, setSlideshowIndex] = useState(0)
   const [viewingSelectedStats, setViewingSelectedStats] = useState(false)
+  const [showFilters, setShowFilters] = useState(false)
+  const [filters, setFilters] = useState({ dateFrom: '', dateTo: '', outcome: '', direction: '', symbol: '' })
 
   const tradesScrollRef = useRef(null)
   const fixedScrollRef = useRef(null)
@@ -384,6 +386,17 @@ export default function AccountPage() {
     </div>
   )
 
+  // Apply filters to trades for display
+  const filteredTrades = trades.filter(t => {
+    if (filters.dateFrom && t.date < filters.dateFrom) return false
+    if (filters.dateTo && t.date > filters.dateTo) return false
+    if (filters.outcome && t.outcome !== filters.outcome) return false
+    if (filters.direction && t.direction !== filters.direction) return false
+    if (filters.symbol && !t.symbol.toLowerCase().includes(filters.symbol.toLowerCase())) return false
+    return true
+  })
+  const hasActiveFilters = filters.dateFrom || filters.dateTo || filters.outcome || filters.direction || filters.symbol
+
   const wins = trades.filter(t => t.outcome === 'win').length
   const losses = trades.filter(t => t.outcome === 'loss').length
   const totalPnl = trades.reduce((s, t) => s + (parseFloat(t.pnl) || 0), 0)
@@ -554,6 +567,9 @@ export default function AccountPage() {
         .trades-scroll::-webkit-scrollbar-thumb { background: #22c55e; border-radius: 5px; }
         .trades-scroll::-webkit-scrollbar-thumb:hover { background: #16a34a; }
         .trades-scroll::-webkit-scrollbar-corner { background: #0a0a0f; }
+        select option { background: #141418; color: #fff; }
+        select option:hover { background: #22c55e; }
+        select option:checked { background: #1a1a22; }
       `}</style>
       {/* Global Tooltip */}
       <Tooltip data={tooltip} />
