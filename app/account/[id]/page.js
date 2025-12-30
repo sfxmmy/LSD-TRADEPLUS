@@ -566,12 +566,12 @@ export default function AccountPage() {
             <span style={{ fontSize: '32px', fontWeight: 700, color: '#fff' }}>{tabTitles[activeTab]}</span>
           </div>
         )}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          {isMobile && (
+        {isMobile && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <button onClick={() => setShowMobileMenu(!showMobileMenu)} style={{ padding: '8px 12px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '6px', color: '#fff', fontSize: '16px', cursor: 'pointer' }}>☰</button>
-          )}
-          <a href="/dashboard" style={{ padding: isMobile ? '8px 12px' : '10px 20px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '8px', color: '#fff', fontSize: isMobile ? '12px' : '14px', textDecoration: 'none' }}>← Dashboard</a>
-        </div>
+            <a href="/dashboard" style={{ padding: '8px 12px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '8px', color: '#fff', fontSize: '12px', textDecoration: 'none' }}>← Dashboard</a>
+          </div>
+        )}
       </header>
 
       {/* Mobile Menu Overlay */}
@@ -611,6 +611,7 @@ export default function AccountPage() {
             {activeTab === 'trades' && (
               <button onClick={() => setShowEditInputs(true)} style={{ padding: '10px 16px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '8px', color: '#888', fontSize: '13px', cursor: 'pointer' }}>Edit Columns</button>
             )}
+            <a href="/dashboard" style={{ padding: '10px 16px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '8px', color: '#888', fontSize: '13px', textDecoration: 'none' }}>← Dashboard</a>
             <button onClick={() => setShowAddTrade(true)} style={{ padding: '10px 24px', background: '#22c55e', border: 'none', borderRadius: '8px', color: '#fff', fontWeight: 600, fontSize: '14px', cursor: 'pointer' }}>+ LOG TRADE</button>
           </div>
         </div>

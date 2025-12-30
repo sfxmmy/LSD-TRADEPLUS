@@ -40,10 +40,8 @@ export default function DashboardPage() {
   const [newInputLabel, setNewInputLabel] = useState('')
   const [newInputOptions, setNewInputOptions] = useState('')
   const [savingInput, setSavingInput] = useState(false)
-  // Cumulative stats and export state
-  const [showCumulativeStats, setShowCumulativeStats] = useState(false)
-  const [selectedTrades, setSelectedTrades] = useState({})
-  const [selectAllTrades, setSelectAllTrades] = useState(false)
+  // Chart hover state
+  const [hoverData, setHoverData] = useState(null)
   // Sidebar expand state
   const [sidebarExpanded, setSidebarExpanded] = useState(false)
   // Pagination state
@@ -303,53 +301,6 @@ export default function DashboardPage() {
     return { totalTrades, wins, losses, totalPnl, winrate, avgRR, profitFactor, totalStartingBalance, currentBalance, avgWin, avgLoss, grossProfit, grossLoss }
   }
 
-  // Toggle trade selection
-  function toggleTradeSelection(tradeId) {
-    setSelectedTrades(prev => ({ ...prev, [tradeId]: !prev[tradeId] }))
-  }
-
-  // Toggle all trades selection
-  function toggleSelectAllTrades() {
-    const allTrades = getAllTrades()
-    if (selectAllTrades) {
-      setSelectedTrades({})
-    } else {
-      const allSelected = {}
-      allTrades.forEach(t => { allSelected[t.id] = true })
-      setSelectedTrades(allSelected)
-    }
-    setSelectAllTrades(!selectAllTrades)
-  }
-
-  // Export selected trades to CSV
-  function exportTradesToCSV() {
-    const allTrades = getAllTrades()
-    const selectedList = allTrades.filter(t => selectedTrades[t.id])
-    if (selectedList.length === 0) {
-      alert('No trades selected for export')
-      return
-    }
-    const headers = ['Date', 'Account', 'Symbol', 'Direction', 'Outcome', 'PnL', 'RR', 'Notes']
-    const rows = selectedList.map(t => [
-      t.date,
-      t.accountName,
-      t.symbol,
-      t.direction,
-      t.outcome,
-      t.pnl,
-      t.rr || '',
-      (t.notes || '').replace(/,/g, ';')
-    ])
-    const csv = [headers.join(','), ...rows.map(r => r.join(','))].join('\n')
-    const blob = new Blob([csv], { type: 'text/csv' })
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = `trades_export_${new Date().toISOString().split('T')[0]}.csv`
-    a.click()
-    URL.revokeObjectURL(url)
-  }
-
   function EquityCurve({ accountTrades, startingBalance }) {
     const [hoverPoint, setHoverPoint] = useState(null)
     const svgRef = useRef(null)
@@ -547,6 +498,14 @@ export default function DashboardPage() {
 
   return (
     <div style={{ minHeight: '100vh', background: '#0a0a0f' }}>
+      {/* Chart Tooltip */}
+      {hoverData && (
+        <div style={{ position: 'fixed', left: hoverData.x + 15, top: hoverData.y - 60, background: '#1a1a22', border: '1px solid #2a2a35', borderRadius: '8px', padding: '10px 14px', fontSize: '12px', zIndex: 1000, pointerEvents: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.5)' }}>
+          <div style={{ color: '#999', marginBottom: '4px' }}>{hoverData.date}</div>
+          <div style={{ fontWeight: 700, fontSize: '16px', color: hoverData.value >= 0 ? '#22c55e' : '#ef4444' }}>{hoverData.value >= 0 ? '+' : ''}${Math.round(hoverData.value).toLocaleString()}</div>
+          {hoverData.symbol && <div style={{ color: '#666', marginTop: '4px', fontSize: '11px' }}>{hoverData.symbol}: {hoverData.pnl >= 0 ? '+' : ''}${Math.round(hoverData.pnl)}</div>}
+        </div>
+      )}
       {/* Header */}
       <header style={{ padding: isMobile ? '12px 16px' : '16px 40px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #333', flexWrap: isMobile ? 'wrap' : 'nowrap', gap: isMobile ? '8px' : '0' }}>
         <a href="/" style={{ fontSize: isMobile ? '22px' : '28px', fontWeight: 700, textDecoration: 'none' }}>
@@ -825,7 +784,6 @@ export default function DashboardPage() {
               {(() => {
                 const stats = getCumulativeStats()
                 const allTrades = getAllTrades()
-                const selectedCount = Object.values(selectedTrades).filter(Boolean).length
 
                 // Build cumulative PnL data for mini chart
                 let cumPnl = 0
@@ -852,45 +810,55 @@ export default function DashboardPage() {
 
                 return (
                   <div>
-                    {/* Mini PnL Chart - Full Width, No Axis Labels */}
-                    {pnlPoints.length > 1 && (
-                      <div style={{ background: '#0a0a0f', borderRadius: '6px', padding: '8px', marginBottom: '10px' }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
-                          <span style={{ fontSize: '9px', color: '#666', textTransform: 'uppercase' }}>Cumulative P&L</span>
-                          <span style={{ fontSize: '13px', fontWeight: 700, color: cumPnl >= 0 ? '#22c55e' : '#ef4444' }}>{cumPnl >= 0 ? '+' : ''}${Math.round(cumPnl).toLocaleString()}</span>
+                    {/* Mini PnL Chart - Full Width with Tooltip */}
+                    {pnlPoints.length > 1 && (() => {
+                      const svgW = 200, svgH = 60
+                      const chartPts = pnlPoints.map((p, i) => ({
+                        x: pnlPoints.length > 1 ? (i / (pnlPoints.length - 1)) * svgW : svgW / 2,
+                        y: svgH - ((p.value - minPnl) / pnlRange) * svgH,
+                        ...p
+                      }))
+                      const pathD = chartPts.map((p, i) => `${i === 0 ? 'M' : 'L'}${p.x},${p.y}`).join(' ')
+                      const areaD = `${pathD} L${svgW},${svgH} L0,${svgH} Z`
+                      return (
+                        <div style={{ background: '#0a0a0f', borderRadius: '6px', padding: '8px', marginBottom: '10px' }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
+                            <span style={{ fontSize: '9px', color: '#666', textTransform: 'uppercase' }}>Cumulative P&L</span>
+                            <span style={{ fontSize: '13px', fontWeight: 700, color: cumPnl >= 0 ? '#22c55e' : '#ef4444' }}>{cumPnl >= 0 ? '+' : ''}${Math.round(cumPnl).toLocaleString()}</span>
+                          </div>
+                          <div style={{ position: 'relative', height: `${chartHeight}px`, borderRadius: '4px', overflow: 'hidden' }}>
+                            <svg
+                              width="100%"
+                              height="100%"
+                              viewBox={`0 0 ${svgW} ${svgH}`}
+                              preserveAspectRatio="none"
+                              style={{ display: 'block' }}
+                              onMouseMove={(e) => {
+                                const rect = e.currentTarget.getBoundingClientRect()
+                                const mouseX = ((e.clientX - rect.left) / rect.width) * svgW
+                                let closest = chartPts[0], minDist = Math.abs(mouseX - chartPts[0].x)
+                                chartPts.forEach(p => { const d = Math.abs(mouseX - p.x); if (d < minDist) { minDist = d; closest = p } })
+                                if (minDist < 20) {
+                                  setHoverData({ value: closest.value, date: closest.date, pnl: closest.pnl, symbol: closest.symbol, x: e.clientX, y: e.clientY })
+                                } else {
+                                  setHoverData(null)
+                                }
+                              }}
+                              onMouseLeave={() => setHoverData(null)}
+                            >
+                              {/* Zero line if needed */}
+                              {minPnl < 0 && maxPnl > 0 && (
+                                <line x1="0" y1={svgH - ((0 - minPnl) / pnlRange) * svgH} x2={svgW} y2={svgH - ((0 - minPnl) / pnlRange) * svgH} stroke="#333" strokeWidth="1" strokeDasharray="2,2" vectorEffect="non-scaling-stroke" />
+                              )}
+                              {/* Area fill */}
+                              <path fill={cumPnl >= 0 ? 'rgba(34,197,94,0.2)' : 'rgba(239,68,68,0.2)'} d={areaD} />
+                              {/* PnL line */}
+                              <path fill="none" stroke={cumPnl >= 0 ? '#22c55e' : '#ef4444'} strokeWidth="2" strokeLinejoin="round" vectorEffect="non-scaling-stroke" d={pathD} />
+                            </svg>
+                          </div>
                         </div>
-                        <div style={{ position: 'relative', height: `${chartHeight}px`, borderRadius: '4px', overflow: 'hidden' }}>
-                          <svg width="100%" height="100%" preserveAspectRatio="none" style={{ display: 'block' }}>
-                            {/* Zero line if needed */}
-                            {minPnl < 0 && maxPnl > 0 && (
-                              <line x1="0" y1={`${((maxPnl) / pnlRange) * 100}%`} x2="100%" y2={`${((maxPnl) / pnlRange) * 100}%`} stroke="#333" strokeWidth="1" strokeDasharray="2,2" />
-                            )}
-                            {/* Area fill */}
-                            <path
-                              fill={cumPnl >= 0 ? 'rgba(34,197,94,0.2)' : 'rgba(239,68,68,0.2)'}
-                              d={`M0,${chartHeight} ${pnlPoints.map((p, i) => {
-                                const x = (i / (pnlPoints.length - 1)) * 100
-                                const y = chartHeight - ((p.value - minPnl) / pnlRange) * chartHeight
-                                return `L${x}%,${y}`
-                              }).join(' ')} L100%,${chartHeight} Z`}
-                            />
-                            {/* PnL line */}
-                            <polyline
-                              fill="none"
-                              stroke={cumPnl >= 0 ? '#22c55e' : '#ef4444'}
-                              strokeWidth="2"
-                              strokeLinejoin="round"
-                              vectorEffect="non-scaling-stroke"
-                              points={pnlPoints.map((p, i) => {
-                                const x = (i / (pnlPoints.length - 1)) * 100
-                                const y = chartHeight - ((p.value - minPnl) / pnlRange) * chartHeight
-                                return `${x}%,${y}`
-                              }).join(' ')}
-                            />
-                          </svg>
-                        </div>
-                      </div>
-                    )}
+                      )
+                    })()}
 
                     {/* Stats Grid - Clean 2 columns, Logically Organized */}
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '5px' }}>
@@ -1063,9 +1031,6 @@ export default function DashboardPage() {
                         <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: isMobile ? '600px' : 'auto' }}>
                           <thead style={{ position: 'sticky', top: 0, background: '#0d0d12' }}>
                             <tr>
-                              <th style={{ padding: '10px', textAlign: 'center', width: '30px' }}>
-                                <input type="checkbox" checked={selectAllTrades} onChange={toggleSelectAllTrades} style={{ width: '14px', height: '14px', accentColor: '#22c55e', cursor: 'pointer' }} />
-                              </th>
                               {['Symbol', 'W/L', 'PnL', 'RR', '%', 'Emotion', 'Rating', 'Image', 'Placed', 'Date'].map((h, i) => (
                                 <th key={i} style={{ padding: '10px', textAlign: 'center', color: '#999', fontSize: '11px', fontWeight: 600, textTransform: 'uppercase' }}>{h}</th>
                               ))}
@@ -1075,10 +1040,7 @@ export default function DashboardPage() {
                             {recentTrades.map((trade, idx) => {
                               const extra = getExtraData(trade)
                               return (
-                                <tr key={trade.id} style={{ borderBottom: '1px solid #1a1a22', background: selectedTrades[trade.id] ? 'rgba(34,197,94,0.05)' : 'transparent' }}>
-                                  <td style={{ padding: '12px', textAlign: 'center' }}>
-                                    <input type="checkbox" checked={!!selectedTrades[trade.id]} onChange={() => toggleTradeSelection(trade.id)} style={{ width: '14px', height: '14px', accentColor: '#22c55e', cursor: 'pointer' }} />
-                                  </td>
+                                <tr key={trade.id} style={{ borderBottom: '1px solid #1a1a22' }}>
                                   <td style={{ padding: '12px', fontWeight: 600, fontSize: '14px', textAlign: 'center' }}>{trade.symbol}</td>
                                   <td style={{ padding: '12px', textAlign: 'center' }}>
                                     <span style={{ padding: '5px 12px', borderRadius: '4px', fontSize: '12px', fontWeight: 600, background: trade.outcome === 'win' ? 'rgba(34,197,94,0.15)' : trade.outcome === 'loss' ? 'rgba(239,68,68,0.15)' : 'rgba(255,255,255,0.1)', color: trade.outcome === 'win' ? '#22c55e' : trade.outcome === 'loss' ? '#ef4444' : '#888' }}>
