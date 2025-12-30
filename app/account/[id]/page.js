@@ -2018,9 +2018,17 @@ export default function AccountPage() {
                           <span><span style={{ color: '#22c55e' }}>●</span> Win</span>
                           <span><span style={{ color: '#ef4444' }}>●</span> Loss</span>
                         </div>
-                        <div style={{ marginTop: '8px', fontSize: '9px', color: '#888', textAlign: 'center', lineHeight: '1.5' }}>
-                          <div>PnL: <span style={{ color: data.pnl >= 0 ? '#22c55e' : '#ef4444', fontWeight: 600 }}>{data.pnl >= 0 ? '+' : ''}${Math.round(data.pnl)}</span></div>
-                          <div>Avg RR: <span style={{ color: '#fff', fontWeight: 600 }}>{avgRR}</span> · PF: <span style={{ color: '#fff', fontWeight: 600 }}>{pf}</span></div>
+                        <div style={{ marginTop: '10px', width: '100%' }}>
+                          {[
+                            { l: 'PnL', v: (data.pnl >= 0 ? '+' : '') + '$' + Math.round(data.pnl), c: data.pnl >= 0 ? '#22c55e' : '#ef4444' },
+                            { l: 'Avg RR', v: avgRR, c: '#fff' },
+                            { l: 'Profit Factor', v: pf, c: '#fff' },
+                          ].map((item, i) => (
+                            <div key={i} style={{ display: 'flex', justifyContent: 'space-between', padding: '3px 0', borderBottom: i < 2 ? '1px solid #1a1a22' : 'none' }}>
+                              <span style={{ fontSize: '11px', color: '#999' }}>{item.l}</span>
+                              <span style={{ fontSize: '11px', fontWeight: 600, color: item.c }}>{item.v}</span>
+                            </div>
+                          ))}
                         </div>
                       </>
                     )
