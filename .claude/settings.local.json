@@ -17,7 +17,8 @@
       "Bash(node -c:*)",
       "Bash(head:*)",
       "Bash(timeout 15 npm run dev:*)",
-      "Bash(node --check:*)"
+      "Bash(node --check:*)",
+      "Bash(git diff:*)"
     ]
   }
 }

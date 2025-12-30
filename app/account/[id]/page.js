@@ -529,9 +529,9 @@ export default function AccountPage() {
         </div>
       )}
 
-      {/* FIXED SUBHEADER - spans full width, no left border */}
+      {/* FIXED SUBHEADER - starts at sidebar edge */}
       {!isMobile && (
-        <div style={{ position: 'fixed', top: '65px', left: 0, right: 0, zIndex: 46, padding: '14px 24px 14px 204px', background: '#0a0a0f', borderBottom: '1px solid #1a1a22', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div style={{ position: 'fixed', top: '65px', left: '180px', right: 0, zIndex: 46, padding: '14px 24px', background: '#0a0a0f', borderBottom: '1px solid #1a1a22', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
             <span style={{ fontSize: '26px', fontWeight: 700, color: '#fff' }}>{account?.name}</span>
             {/* Stats toggle - show next to journal name when on statistics tab and has multiple journals */}
@@ -561,7 +561,7 @@ export default function AccountPage() {
 
       {/* FIXED SIDEBAR - desktop only, starts under header */}
       {!isMobile && (
-        <div style={{ position: 'fixed', top: '65px', left: 0, bottom: 0, width: '180px', padding: '16px 12px', background: '#0a0a0f', zIndex: 45, display: 'flex', flexDirection: 'column', paddingTop: '72px' }}>
+        <div style={{ position: 'fixed', top: '65px', left: 0, bottom: 0, width: '180px', padding: '16px 12px', background: '#0a0a0f', zIndex: 45, display: 'flex', flexDirection: 'column', paddingTop: '72px', borderRight: '1px solid #1a1a22' }}>
         <div>
           {['trades', 'statistics', 'notes'].map((tab) => (
             <button
@@ -2422,7 +2422,7 @@ export default function AccountPage() {
           <div style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '28px', width: '520px', maxHeight: '85vh', overflowY: 'auto' }} onClick={e => e.stopPropagation()}>
             <h2 style={{ fontSize: '20px', fontWeight: 600, marginBottom: '20px', color: '#fff' }}>Customize Columns</h2>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '20px' }}>
-              {inputs.map((input, i) => (
+              {inputs.map((input, i) => !input.hidden && (
                 <div key={input.id} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '12px', background: input.fixed ? '#141418' : '#0a0a0e', borderRadius: '6px', opacity: input.fixed ? 0.7 : 1 }}>
                   <input type="checkbox" checked={input.enabled} onChange={e => !input.fixed && updateInput(i, 'enabled', e.target.checked)} disabled={input.fixed} style={{ width: '18px', height: '18px', accentColor: '#22c55e' }} />
                   <input type="text" value={input.label} onChange={e => updateInput(i, 'label', e.target.value)} disabled={input.fixed} style={{ flex: 1, padding: '8px 12px', background: '#141418', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '6px', color: '#fff', fontSize: '13px', boxShadow: '0 0 4px rgba(255,255,255,0.1)' }} />
@@ -2436,6 +2436,22 @@ export default function AccountPage() {
               ))}
             </div>
             <button onClick={addNewInput} style={{ width: '100%', padding: '12px', background: 'transparent', border: '1px dashed #2a2a35', borderRadius: '8px', color: '#999', fontSize: '13px', cursor: 'pointer', marginBottom: '20px' }}>+ Add New Field</button>
+
+            {/* Hidden Inputs Section */}
+            {inputs.filter(inp => inp.hidden).length > 0 && (
+              <div style={{ marginBottom: '20px', padding: '12px', background: '#0a0a0e', borderRadius: '8px', border: '1px solid #1a1a22' }}>
+                <div style={{ fontSize: '11px', color: '#666', textTransform: 'uppercase', marginBottom: '10px' }}>Hidden Fields (data preserved)</div>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                  {inputs.map((inp, idx) => inp.hidden && (
+                    <div key={inp.id} style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '6px 10px', background: '#141418', borderRadius: '6px', border: '1px solid #1a1a22' }}>
+                      <span style={{ fontSize: '12px', color: '#888' }}>{inp.label}</span>
+                      <button onClick={() => restoreInput(idx)} style={{ background: '#22c55e', border: 'none', borderRadius: '4px', color: '#fff', fontSize: '10px', padding: '3px 8px', cursor: 'pointer' }}>Restore</button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
             <div style={{ display: 'flex', gap: '12px' }}>
               <button onClick={saveInputs} style={{ flex: 1, padding: '14px', background: '#22c55e', border: 'none', borderRadius: '8px', color: '#fff', fontWeight: 600, fontSize: '14px', cursor: 'pointer' }}>Save</button>
               <button onClick={() => setShowEditInputs(false)} style={{ flex: 1, padding: '14px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '8px', color: '#999', fontWeight: 600, fontSize: '14px', cursor: 'pointer' }}>Cancel</button>
