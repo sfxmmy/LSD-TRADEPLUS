@@ -38,7 +38,7 @@ export default function AccountPage() {
   const [showExpandedNote, setShowExpandedNote] = useState(null)
   const [showExpandedImage, setShowExpandedImage] = useState(null)
   const [editingOptions, setEditingOptions] = useState(null)
-  const [optionsText, setOptionsText] = useState('')
+  const [optionsList, setOptionsList] = useState([])  // [{value, color}]
   const [saving, setSaving] = useState(false)
   const [inputs, setInputs] = useState(defaultInputs)
   const [tradeForm, setTradeForm] = useState({})
@@ -568,7 +568,7 @@ export default function AccountPage() {
 
       {/* FIXED SUBHEADER - starts at sidebar edge */}
       {!isMobile && (
-        <div style={{ position: 'fixed', top: '65px', left: '180px', right: 0, zIndex: 46, padding: '14px 24px', background: '#0a0a0f', borderBottom: '1px solid #1a1a22', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div style={{ position: 'fixed', top: '57px', left: '180px', right: 0, zIndex: 46, padding: '16px 24px', background: '#0a0a0f', borderBottom: '1px solid #1a1a22', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
             <span style={{ fontSize: '26px', fontWeight: 700, color: '#fff' }}>{account?.name}</span>
             {/* Stats toggle - show next to journal name when on statistics tab and has multiple journals */}
@@ -579,11 +579,14 @@ export default function AccountPage() {
               </div>
             )}
           </div>
-          <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-            {activeTab === 'trades' && (
-              <button onClick={() => setShowEditInputs(true)} style={{ padding: '10px 24px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '8px', color: '#fff', fontSize: '14px', cursor: 'pointer' }}>Edit Columns</button>
+          <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+            {activeTab === 'trades' && trades.length > 0 && !selectMode && (
+              <button onClick={() => setSelectMode(true)} style={{ padding: '10px 16px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '8px', color: '#888', fontSize: '13px', cursor: 'pointer' }}>Select</button>
             )}
-            <button onClick={() => setShowAddTrade(true)} style={{ padding: '10px 28px', background: '#22c55e', border: 'none', borderRadius: '8px', color: '#fff', fontWeight: 600, fontSize: '14px', cursor: 'pointer' }}>+ LOG NEW TRADE</button>
+            {activeTab === 'trades' && (
+              <button onClick={() => setShowEditInputs(true)} style={{ padding: '10px 16px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '8px', color: '#888', fontSize: '13px', cursor: 'pointer' }}>Edit Columns</button>
+            )}
+            <button onClick={() => setShowAddTrade(true)} style={{ padding: '10px 24px', background: '#22c55e', border: 'none', borderRadius: '8px', color: '#fff', fontWeight: 600, fontSize: '14px', cursor: 'pointer' }}>+ LOG TRADE</button>
           </div>
         </div>
       )}
@@ -598,7 +601,7 @@ export default function AccountPage() {
 
       {/* FIXED SIDEBAR - desktop only, starts under header */}
       {!isMobile && (
-        <div style={{ position: 'fixed', top: '65px', left: 0, bottom: 0, width: '180px', padding: '16px 12px', background: '#0a0a0f', zIndex: 45, display: 'flex', flexDirection: 'column', paddingTop: '8px', borderRight: '1px solid #1a1a22' }}>
+        <div style={{ position: 'fixed', top: '57px', left: 0, bottom: 0, width: '180px', padding: '16px 12px', background: '#0a0a0f', zIndex: 45, display: 'flex', flexDirection: 'column', paddingTop: '16px', borderRight: '1px solid #1a1a22' }}>
         <div>
           {['trades', 'statistics', 'notes'].map((tab) => (
             <button
@@ -621,13 +624,7 @@ export default function AccountPage() {
               Slideshow ({getSlideshowImages().length})
             </button>
           )}
-          {/* Select Button */}
-          {activeTab === 'trades' && trades.length > 0 && !selectMode && (
-            <button onClick={() => setSelectMode(true)} style={{ width: '100%', padding: '10px', marginTop: '4px', background: '#0d0d12', border: '1px solid #2a2a35', borderRadius: '6px', color: '#888', fontSize: '11px', cursor: 'pointer' }}>
-              Select Trades
-            </button>
-          )}
-          {/* Selection Controls */}
+                    {/* Selection Controls */}
           {selectMode && (
             <div style={{ marginTop: '8px', padding: '10px', background: '#0d0d12', border: '1px solid #22c55e', borderRadius: '8px' }}>
               <div style={{ fontSize: '11px', color: '#22c55e', marginBottom: '8px', fontWeight: 600, textAlign: 'center' }}>{selectedTrades.size} SELECTED</div>
@@ -2503,87 +2500,91 @@ export default function AccountPage() {
 
       {showEditInputs && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.9)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 101 }} onClick={() => setShowEditInputs(false)}>
-          <div style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '12px', padding: '32px', width: '800px', maxHeight: '90vh', overflowY: 'auto' }} onClick={e => e.stopPropagation()}>
-            <div style={{ marginBottom: '24px' }}>
-              <h2 style={{ fontSize: '22px', fontWeight: 700, color: '#fff', marginBottom: '6px' }}>Customize Columns</h2>
-              <p style={{ fontSize: '13px', color: '#666' }}>Configure input fields for <span style={{ color: '#22c55e', fontWeight: 600 }}>{account?.name}</span></p>
+          <div style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '12px', padding: '28px', width: '700px', maxHeight: '85vh', overflowY: 'auto' }} onClick={e => e.stopPropagation()}>
+            <div style={{ marginBottom: '20px' }}>
+              <h2 style={{ fontSize: '20px', fontWeight: 700, color: '#fff', marginBottom: '4px' }}>Edit Columns</h2>
+              <p style={{ fontSize: '12px', color: '#555' }}>Configure fields for {account?.name}</p>
             </div>
 
-            {/* Core Fields Section */}
-            <div style={{ marginBottom: '24px' }}>
-              <div style={{ fontSize: '11px', color: '#666', textTransform: 'uppercase', marginBottom: '12px', letterSpacing: '0.5px' }}>Core Fields</div>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px' }}>
+            {/* Core Fields Section - in bordered container */}
+            <div style={{ marginBottom: '20px', padding: '16px', background: '#0a0a0e', borderRadius: '10px', border: '1px solid #1a1a22' }}>
+              <div style={{ fontSize: '12px', color: '#888', marginBottom: '14px', fontWeight: 600 }}>Default Fields</div>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '6px' }}>
                 {inputs.map((input, i) => input.fixed && !input.hidden && (
-                  <div key={input.id} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '12px 14px', background: '#0a0a0e', borderRadius: '8px', border: '1px solid #1a1a22' }}>
-                    <input type="checkbox" checked={input.enabled} onChange={e => updateInput(i, 'enabled', e.target.checked)} style={{ width: '16px', height: '16px', accentColor: '#22c55e' }} />
-                    <span style={{ flex: 1, fontSize: '13px', color: input.enabled ? '#fff' : '#555', fontWeight: 500 }}>{input.label}</span>
+                  <div key={input.id} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 12px', background: '#141418', borderRadius: '6px' }}>
+                    <input type="checkbox" checked={input.enabled} onChange={e => updateInput(i, 'enabled', e.target.checked)} style={{ width: '15px', height: '15px', accentColor: '#22c55e' }} />
+                    <span style={{ flex: 1, fontSize: '13px', color: input.enabled ? '#fff' : '#555' }}>{input.label}</span>
                     {input.type === 'select' && (
-                      <button onClick={() => openOptionsEditor(i)} style={{ padding: '5px 10px', background: '#141418', border: '1px solid #2a2a35', borderRadius: '5px', color: '#888', fontSize: '11px', cursor: 'pointer' }}>
-                        {(input.options || []).length} options
-                      </button>
+                      <select
+                        style={{ padding: '4px 8px', background: '#0a0a0e', border: '1px solid #2a2a35', borderRadius: '4px', color: '#888', fontSize: '11px', cursor: 'pointer' }}
+                        value=""
+                        onChange={(e) => { if (e.target.value === 'edit') openOptionsEditor(i) }}
+                      >
+                        <option value="">{(input.options || []).length} opts</option>
+                        <option value="edit">Edit Options & Colors</option>
+                      </select>
                     )}
-                    <span style={{ fontSize: '11px', color: '#555', padding: '4px 8px', background: '#141418', borderRadius: '4px' }}>
-                      {input.type === 'select' ? '▾' : input.type === 'number' ? '#' : input.type === 'text' ? 'Aa' : input.type === 'date' ? '📅' : input.type === 'textarea' ? '📝' : input.type === 'rating' ? '⭐' : input.type === 'file' ? '📷' : input.type}
-                    </span>
                   </div>
                 ))}
               </div>
             </div>
 
-            {/* Custom Fields Section */}
-            <div style={{ marginBottom: '24px' }}>
-              <div style={{ fontSize: '11px', color: '#666', textTransform: 'uppercase', marginBottom: '12px', letterSpacing: '0.5px' }}>Custom Fields</div>
+            {/* Custom Fields Section - in bordered container */}
+            <div style={{ marginBottom: '20px', padding: '16px', background: '#0a0a0e', borderRadius: '10px', border: '1px solid #1a1a22' }}>
+              <div style={{ fontSize: '12px', color: '#888', marginBottom: '14px', fontWeight: 600 }}>Custom Fields</div>
               {inputs.filter(inp => !inp.fixed && !inp.hidden).length === 0 ? (
-                <div style={{ padding: '20px', background: '#0a0a0e', borderRadius: '8px', border: '1px solid #1a1a22', textAlign: 'center', color: '#555', fontSize: '13px' }}>
-                  No custom fields yet. Add one below to track additional data.
+                <div style={{ padding: '16px', textAlign: 'center', color: '#555', fontSize: '12px' }}>
+                  No custom fields yet
                 </div>
               ) : (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                   {inputs.map((input, i) => !input.fixed && !input.hidden && (
-                    <div key={input.id} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '12px 14px', background: '#0a0a0e', borderRadius: '8px', border: '1px solid #1a1a22' }}>
-                      <input type="checkbox" checked={input.enabled} onChange={e => updateInput(i, 'enabled', e.target.checked)} style={{ width: '16px', height: '16px', accentColor: '#22c55e' }} />
-                      <input type="text" value={input.label} onChange={e => updateInput(i, 'label', e.target.value)} style={{ flex: 1, padding: '8px 12px', background: '#141418', border: '1px solid #2a2a35', borderRadius: '6px', color: '#fff', fontSize: '13px' }} placeholder="Field name" />
-                      <select value={input.type} onChange={e => updateInput(i, 'type', e.target.value)} style={{ padding: '8px 12px', background: '#141418', border: '1px solid #2a2a35', borderRadius: '6px', color: '#fff', fontSize: '12px', minWidth: '110px' }}>
+                    <div key={input.id} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 12px', background: '#141418', borderRadius: '6px' }}>
+                      <input type="checkbox" checked={input.enabled} onChange={e => updateInput(i, 'enabled', e.target.checked)} style={{ width: '15px', height: '15px', accentColor: '#22c55e' }} />
+                      <input type="text" value={input.label} onChange={e => updateInput(i, 'label', e.target.value)} style={{ flex: 1, padding: '6px 10px', background: '#0a0a0e', border: '1px solid #2a2a35', borderRadius: '4px', color: '#fff', fontSize: '12px' }} placeholder="Field name" />
+                      <select value={input.type} onChange={e => updateInput(i, 'type', e.target.value)} style={{ padding: '6px 10px', background: '#0a0a0e', border: '1px solid #2a2a35', borderRadius: '4px', color: '#fff', fontSize: '11px' }}>
                         <option value="text">Text</option>
                         <option value="number">Number</option>
                         <option value="select">Dropdown</option>
-                        <option value="textarea">Long Text</option>
+                        <option value="textarea">Notes</option>
                         <option value="rating">Rating</option>
                       </select>
                       {input.type === 'select' && (
-                        <button onClick={() => openOptionsEditor(i)} style={{ padding: '8px 12px', background: '#141418', border: '1px solid #2a2a35', borderRadius: '6px', color: '#888', fontSize: '11px', cursor: 'pointer', whiteSpace: 'nowrap' }}>
-                          {(input.options || []).length} options
-                        </button>
+                        <select
+                          style={{ padding: '6px 8px', background: '#0a0a0e', border: '1px solid #2a2a35', borderRadius: '4px', color: '#888', fontSize: '11px', cursor: 'pointer' }}
+                          value=""
+                          onChange={(e) => { if (e.target.value === 'edit') openOptionsEditor(i) }}
+                        >
+                          <option value="">{(input.options || []).length} opts</option>
+                          <option value="edit">Edit Options & Colors</option>
+                        </select>
                       )}
-                      <button onClick={() => deleteInput(i)} style={{ padding: '6px 10px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '6px', color: '#666', cursor: 'pointer', fontSize: '14px' }} title="Hide field">×</button>
+                      <button onClick={() => deleteInput(i)} style={{ padding: '4px 8px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '4px', color: '#555', cursor: 'pointer', fontSize: '12px' }}>×</button>
                     </div>
                   ))}
                 </div>
               )}
+              <button onClick={addNewInput} style={{ width: '100%', padding: '10px', marginTop: '10px', background: 'transparent', border: '1px dashed #2a2a35', borderRadius: '6px', color: '#555', fontSize: '12px', cursor: 'pointer' }}>+ Add Field</button>
             </div>
-
-            {/* Add New Field */}
-            <button onClick={addNewInput} style={{ width: '100%', padding: '14px', background: 'transparent', border: '2px dashed #2a2a35', borderRadius: '8px', color: '#888', fontSize: '13px', cursor: 'pointer', marginBottom: '20px', transition: 'all 0.2s' }} onMouseOver={e => { e.target.style.borderColor = '#22c55e'; e.target.style.color = '#22c55e' }} onMouseOut={e => { e.target.style.borderColor = '#2a2a35'; e.target.style.color = '#888' }}>+ Add Custom Field</button>
 
             {/* Hidden Fields */}
             {inputs.filter(inp => inp.hidden).length > 0 && (
-              <div style={{ marginBottom: '20px', padding: '14px', background: '#0a0a0e', borderRadius: '8px', border: '1px solid #1a1a22' }}>
-                <div style={{ fontSize: '11px', color: '#555', textTransform: 'uppercase', marginBottom: '10px' }}>Hidden Fields</div>
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+              <div style={{ marginBottom: '20px', padding: '12px', background: '#0a0a0e', borderRadius: '8px', border: '1px solid #1a1a22' }}>
+                <div style={{ fontSize: '11px', color: '#555', marginBottom: '8px' }}>Hidden</div>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
                   {inputs.map((inp, idx) => inp.hidden && (
-                    <div key={inp.id} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 12px', background: '#141418', borderRadius: '6px', border: '1px solid #2a2a35' }}>
-                      <span style={{ fontSize: '12px', color: '#888' }}>{inp.label}</span>
-                      <button onClick={() => restoreInput(idx)} style={{ background: 'transparent', border: '1px solid #2a2a35', borderRadius: '4px', color: '#888', fontSize: '10px', padding: '4px 10px', cursor: 'pointer' }}>Restore</button>
-                    </div>
+                    <button key={inp.id} onClick={() => restoreInput(idx)} style={{ padding: '6px 10px', background: '#141418', border: '1px solid #2a2a35', borderRadius: '4px', color: '#666', fontSize: '11px', cursor: 'pointer' }}>
+                      {inp.label} ↩
+                    </button>
                   ))}
                 </div>
               </div>
             )}
 
             {/* Action buttons */}
-            <div style={{ display: 'flex', gap: '12px' }}>
-              <button onClick={saveInputs} style={{ flex: 1, padding: '14px', background: '#22c55e', border: 'none', borderRadius: '8px', color: '#fff', fontWeight: 600, fontSize: '14px', cursor: 'pointer' }}>Save Changes</button>
-              <button onClick={() => setShowEditInputs(false)} style={{ flex: 1, padding: '14px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '8px', color: '#999', fontWeight: 600, fontSize: '14px', cursor: 'pointer' }}>Cancel</button>
+            <div style={{ display: 'flex', gap: '10px' }}>
+              <button onClick={saveInputs} style={{ flex: 1, padding: '12px', background: '#22c55e', border: 'none', borderRadius: '8px', color: '#fff', fontWeight: 600, fontSize: '13px', cursor: 'pointer' }}>Save</button>
+              <button onClick={() => setShowEditInputs(false)} style={{ flex: 1, padding: '12px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '8px', color: '#888', fontWeight: 600, fontSize: '13px', cursor: 'pointer' }}>Cancel</button>
             </div>
           </div>
         </div>
