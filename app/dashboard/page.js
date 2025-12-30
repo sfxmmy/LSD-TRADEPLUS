@@ -587,11 +587,44 @@ export default function DashboardPage() {
                 )}
               </div>
 
-              {/* Journal Select - Highlighted */}
+              {/* Journal Select - Card Style */}
               <div style={{ marginBottom: '12px' }}>
-                <select value={quickTradeAccount} onChange={e => setQuickTradeAccount(e.target.value)} style={{ width: '100%', padding: '10px 12px', background: 'linear-gradient(135deg, rgba(34,197,94,0.1) 0%, rgba(34,197,94,0.05) 100%)', border: '1px solid rgba(34,197,94,0.3)', borderRadius: '8px', color: '#22c55e', fontSize: '13px', fontWeight: 600, cursor: 'pointer' }}>
-                  {accounts.map(acc => <option key={acc.id} value={acc.id}>{acc.name}</option>)}
-                </select>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                  {accounts.map(acc => {
+                    const isSelected = quickTradeAccount === acc.id
+                    return (
+                      <button
+                        key={acc.id}
+                        onClick={() => setQuickTradeAccount(acc.id)}
+                        style={{
+                          width: '100%',
+                          padding: '10px 12px',
+                          background: isSelected ? 'rgba(34,197,94,0.1)' : '#0a0a0f',
+                          border: `1px solid ${isSelected ? 'rgba(34,197,94,0.5)' : '#1a1a22'}`,
+                          borderRadius: '8px',
+                          color: isSelected ? '#22c55e' : '#888',
+                          fontSize: '13px',
+                          fontWeight: 600,
+                          cursor: 'pointer',
+                          textAlign: 'left',
+                          transition: 'all 0.15s ease',
+                          boxShadow: isSelected ? '0 0 12px rgba(34,197,94,0.2), inset 0 0 20px rgba(34,197,94,0.05)' : 'none'
+                        }}
+                      >
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <div style={{
+                            width: '8px',
+                            height: '8px',
+                            borderRadius: '50%',
+                            background: isSelected ? '#22c55e' : '#333',
+                            boxShadow: isSelected ? '0 0 6px #22c55e' : 'none'
+                          }} />
+                          {acc.name}
+                        </div>
+                      </button>
+                    )
+                  })}
+                </div>
               </div>
 
               {/* Core Fields Grid */}
@@ -1209,12 +1242,45 @@ export default function DashboardPage() {
 
             {/* Scrollable Form */}
             <div style={{ flex: 1, overflow: 'auto', padding: '20px' }}>
-              {/* Journal Select */}
+              {/* Journal Select - Card Style */}
               <div style={{ marginBottom: '16px' }}>
-                <label style={{ display: 'block', fontSize: '11px', color: '#666', marginBottom: '6px', textTransform: 'uppercase' }}>Journal</label>
-                <select value={quickTradeAccount} onChange={e => setQuickTradeAccount(e.target.value)} style={{ width: '100%', padding: '14px', background: 'linear-gradient(135deg, rgba(34,197,94,0.1) 0%, rgba(34,197,94,0.05) 100%)', border: '1px solid rgba(34,197,94,0.3)', borderRadius: '8px', color: '#22c55e', fontSize: '15px', fontWeight: 600 }}>
-                  {accounts.map(acc => <option key={acc.id} value={acc.id}>{acc.name}</option>)}
-                </select>
+                <label style={{ display: 'block', fontSize: '11px', color: '#666', marginBottom: '8px', textTransform: 'uppercase' }}>Journal</label>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  {accounts.map(acc => {
+                    const isSelected = quickTradeAccount === acc.id
+                    return (
+                      <button
+                        key={acc.id}
+                        onClick={() => setQuickTradeAccount(acc.id)}
+                        style={{
+                          width: '100%',
+                          padding: '14px 16px',
+                          background: isSelected ? 'rgba(34,197,94,0.1)' : '#0a0a0f',
+                          border: `1px solid ${isSelected ? 'rgba(34,197,94,0.5)' : '#1a1a22'}`,
+                          borderRadius: '10px',
+                          color: isSelected ? '#22c55e' : '#888',
+                          fontSize: '15px',
+                          fontWeight: 600,
+                          cursor: 'pointer',
+                          textAlign: 'left',
+                          transition: 'all 0.15s ease',
+                          boxShadow: isSelected ? '0 0 15px rgba(34,197,94,0.25), inset 0 0 25px rgba(34,197,94,0.05)' : 'none'
+                        }}
+                      >
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                          <div style={{
+                            width: '10px',
+                            height: '10px',
+                            borderRadius: '50%',
+                            background: isSelected ? '#22c55e' : '#333',
+                            boxShadow: isSelected ? '0 0 8px #22c55e' : 'none'
+                          }} />
+                          {acc.name}
+                        </div>
+                      </button>
+                    )
+                  })}
+                </div>
               </div>
 
               {/* Symbol & PnL Row */}

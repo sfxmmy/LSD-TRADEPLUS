@@ -20,6 +20,15 @@ const defaultInputs = [
   { id: 'notes', label: 'Notes', type: 'textarea', required: false, enabled: true, fixed: true, color: '#64748b' },
 ]
 
+// Helper functions for handling options (string or {value, color} object)
+function getOptVal(o) { return typeof o === 'object' ? o.value : o }
+function getOptColor(o, fallback = '#888') { return typeof o === 'object' ? (o.color || fallback) : fallback }
+function findOptColor(opts, val, fallback = '#888') {
+  if (!opts || !val) return fallback
+  const o = opts.find(x => getOptVal(x).toLowerCase() === val.toLowerCase())
+  return o ? getOptColor(o, fallback) : fallback
+}
+
 export default function AccountPage() {
   const params = useParams()
   const searchParams = useSearchParams()
@@ -116,7 +125,7 @@ export default function AccountPage() {
     const initial = {}
     inputs.forEach(inp => {
       if (inp.type === 'date') initial[inp.id] = new Date().toISOString().split('T')[0]
-      else if (inp.type === 'select' && inp.options?.length) initial[inp.id] = inp.options[0].toLowerCase()
+      else if (inp.type === 'select' && inp.options?.length) initial[inp.id] = getOptVal(inp.options[0]).toLowerCase()
       else if (inp.type === 'rating') initial[inp.id] = '3'
       else initial[inp.id] = ''
     })
@@ -188,7 +197,7 @@ export default function AccountPage() {
     const initial = {}
     inputs.forEach(inp => {
       if (inp.type === 'date') initial[inp.id] = new Date().toISOString().split('T')[0]
-      else if (inp.type === 'select' && inp.options?.length) initial[inp.id] = inp.options[0].toLowerCase()
+      else if (inp.type === 'select' && inp.options?.length) initial[inp.id] = getOptVal(inp.options[0]).toLowerCase()
       else if (inp.type === 'rating') initial[inp.id] = '3'
       else initial[inp.id] = ''
     })
@@ -260,8 +269,23 @@ export default function AccountPage() {
     n[i] = { ...n[i], hidden: false }
     setInputs(n)
   }
-  function openOptionsEditor(i) { setEditingOptions(i); setOptionsText((inputs[i].options || []).join('\n')) }
-  function saveOptions() { if (editingOptions === null) return; updateInput(editingOptions, 'options', optionsText.split('\n').map(o => o.trim()).filter(o => o)); setEditingOptions(null); setOptionsText('') }
+  function openOptionsEditor(i) {
+    setEditingOptions(i)
+    const opts = inputs[i].options || []
+    // Convert to [{value, color}] format, handle both string and object options
+    setOptionsList(opts.map(o => typeof o === 'object' ? { ...o } : { value: o, color: '#888888' }))
+  }
+  function saveOptions() {
+    if (editingOptions === null) return
+    const validOpts = optionsList.filter(o => o.value.trim())
+    updateInput(editingOptions, 'options', validOpts)
+    setEditingOptions(null)
+    setOptionsList([])
+  }
+  function updateOptionValue(idx, val) { const n = [...optionsList]; n[idx] = { ...n[idx], value: val }; setOptionsList(n) }
+  function updateOptionColor(idx, col) { const n = [...optionsList]; n[idx] = { ...n[idx], color: col }; setOptionsList(n) }
+  function addOption() { setOptionsList([...optionsList, { value: '', color: '#888888' }]) }
+  function removeOption(idx) { setOptionsList(optionsList.filter((_, i) => i !== idx)) }
   function getExtraData(t) { try { return JSON.parse(t.extra_data || '{}') } catch { return {} } }
   function getDaysAgo(d) { const diff = Math.floor((new Date() - new Date(d)) / 86400000); return diff === 0 ? 'Today' : diff === 1 ? '1d ago' : `${diff}d ago` }
 
@@ -568,7 +592,7 @@ export default function AccountPage() {
 
       {/* FIXED SUBHEADER - starts at sidebar edge */}
       {!isMobile && (
-        <div style={{ position: 'fixed', top: '57px', left: '180px', right: 0, zIndex: 46, padding: '16px 24px', background: '#0a0a0f', borderBottom: '1px solid #1a1a22', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div style={{ position: 'fixed', top: '57px', left: '180px', right: 0, zIndex: 46, padding: '18px 24px', background: '#0a0a0f', borderBottom: '1px solid #333', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
             <span style={{ fontSize: '26px', fontWeight: 700, color: '#fff' }}>{account?.name}</span>
             {/* Stats toggle - show next to journal name when on statistics tab and has multiple journals */}
@@ -601,7 +625,7 @@ export default function AccountPage() {
 
       {/* FIXED SIDEBAR - desktop only, starts under header */}
       {!isMobile && (
-        <div style={{ position: 'fixed', top: '57px', left: 0, bottom: 0, width: '180px', padding: '16px 12px', background: '#0a0a0f', zIndex: 45, display: 'flex', flexDirection: 'column', paddingTop: '16px', borderRight: '1px solid #1a1a22' }}>
+        <div style={{ position: 'fixed', top: '57px', left: 0, bottom: 0, width: '180px', padding: '16px 12px', background: '#0a0a0f', zIndex: 45, display: 'flex', flexDirection: 'column', paddingTop: '24px', borderRight: '1px solid #1a1a22' }}>
         <div>
           {['trades', 'statistics', 'notes'].map((tab) => (
             <button
@@ -2445,7 +2469,7 @@ export default function AccountPage() {
                     {input.type === 'select' ? (
                       <select value={tradeForm[input.id] || ''} onChange={e => setTradeForm({...tradeForm, [input.id]: e.target.value})} style={{ width: '100%', padding: '10px 12px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '13px' }}>
                         <option value="">-</option>
-                        {input.options?.map(o => <option key={o} value={o.toLowerCase()}>{o}</option>)}
+                        {input.options?.map((o, idx) => <option key={idx} value={getOptVal(o).toLowerCase()}>{getOptVal(o)}</option>)}
                       </select>
                     ) : input.type === 'textarea' ? (
                       <input type="text" value={tradeForm[input.id] || ''} onChange={e => setTradeForm({...tradeForm, [input.id]: e.target.value})} placeholder="..." style={{ width: '100%', padding: '10px 12px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '13px', boxSizing: 'border-box' }} />
@@ -2591,14 +2615,26 @@ export default function AccountPage() {
       )}
 
       {editingOptions !== null && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.9)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 102 }} onClick={() => setEditingOptions(null)}>
-          <div style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '12px', padding: '28px', width: '400px' }} onClick={e => e.stopPropagation()}>
-            <h2 style={{ fontSize: '20px', fontWeight: 700, marginBottom: '8px', color: '#fff' }}>Edit Dropdown Options</h2>
-            <p style={{ fontSize: '13px', color: '#666', marginBottom: '20px' }}>Enter each option on a new line. These will appear in the dropdown menu.</p>
-            <textarea value={optionsText} onChange={e => setOptionsText(e.target.value)} rows={8} placeholder="Option 1&#10;Option 2&#10;Option 3" style={{ width: '100%', padding: '14px', background: '#0a0a0e', border: '1px solid #2a2a35', borderRadius: '8px', color: '#fff', fontSize: '14px', resize: 'none', boxSizing: 'border-box', marginBottom: '20px', lineHeight: '1.6' }} />
-            <div style={{ display: 'flex', gap: '12px' }}>
-              <button onClick={saveOptions} style={{ flex: 1, padding: '14px', background: '#22c55e', border: 'none', borderRadius: '8px', color: '#fff', fontWeight: 600, cursor: 'pointer' }}>Save Options</button>
-              <button onClick={() => setEditingOptions(null)} style={{ flex: 1, padding: '14px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '8px', color: '#999', fontWeight: 600, cursor: 'pointer' }}>Cancel</button>
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.9)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 102 }} onClick={() => { setEditingOptions(null); setOptionsList([]) }}>
+          <div style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '12px', padding: '24px', width: '420px', maxHeight: '80vh', overflowY: 'auto' }} onClick={e => e.stopPropagation()}>
+            <h2 style={{ fontSize: '18px', fontWeight: 700, marginBottom: '4px', color: '#fff' }}>Edit Options</h2>
+            <p style={{ fontSize: '12px', color: '#555', marginBottom: '16px' }}>Set option values and their colors</p>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '12px' }}>
+              {optionsList.map((opt, idx) => (
+                <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 10px', background: '#0a0a0e', borderRadius: '6px', borderLeft: `4px solid ${opt.color}` }}>
+                  <input type="color" value={opt.color} onChange={e => updateOptionColor(idx, e.target.value)} style={{ width: '28px', height: '28px', border: 'none', borderRadius: '4px', cursor: 'pointer', background: 'transparent', padding: 0 }} />
+                  <input type="text" value={opt.value} onChange={e => updateOptionValue(idx, e.target.value)} placeholder="Option name" style={{ flex: 1, padding: '8px 10px', background: '#141418', border: '1px solid #2a2a35', borderRadius: '4px', color: '#fff', fontSize: '13px' }} />
+                  <button onClick={() => removeOption(idx)} style={{ padding: '6px 10px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '4px', color: '#666', cursor: 'pointer', fontSize: '12px' }}>×</button>
+                </div>
+              ))}
+            </div>
+
+            <button onClick={addOption} style={{ width: '100%', padding: '10px', marginBottom: '16px', background: 'transparent', border: '1px dashed #2a2a35', borderRadius: '6px', color: '#555', fontSize: '12px', cursor: 'pointer' }}>+ Add Option</button>
+
+            <div style={{ display: 'flex', gap: '10px' }}>
+              <button onClick={saveOptions} style={{ flex: 1, padding: '12px', background: '#22c55e', border: 'none', borderRadius: '8px', color: '#fff', fontWeight: 600, fontSize: '13px', cursor: 'pointer' }}>Save</button>
+              <button onClick={() => { setEditingOptions(null); setOptionsList([]) }} style={{ flex: 1, padding: '12px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '8px', color: '#888', fontWeight: 600, fontSize: '13px', cursor: 'pointer' }}>Cancel</button>
             </div>
           </div>
         </div>
