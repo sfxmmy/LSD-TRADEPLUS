@@ -2098,22 +2098,22 @@ export default function AccountPage() {
                         else if (analysisGroupBy === 'outcome') key = t.outcome?.toUpperCase()
                         else key = getExtraData(t)[analysisGroupBy]
                         if (!key) return
-                        if (!groups[key]) groups[key] = { w: 0, l: 0, pnl: 0, count: 0, rr: 0, maxWin: -Infinity, maxLoss: Infinity }
+                        if (!groups[key]) groups[key] = { w: 0, l: 0, pnl: 0, count: 0, rr: 0, maxWin: -Infinity, maxLoss: Infinity, winPnl: 0, lossPnl: 0 }
                         groups[key].count++
                         const pnl = parseFloat(t.pnl) || 0
                         groups[key].pnl += pnl
                         groups[key].rr += parseFloat(t.rr) || 0
                         if (pnl > groups[key].maxWin) groups[key].maxWin = pnl
                         if (pnl < groups[key].maxLoss) groups[key].maxLoss = pnl
-                        if (t.outcome === 'win') groups[key].w++
-                        else if (t.outcome === 'loss') groups[key].l++
+                        if (t.outcome === 'win') { groups[key].w++; groups[key].winPnl += pnl }
+                        else if (t.outcome === 'loss') { groups[key].l++; groups[key].lossPnl += pnl }
                       })
                       const entries = Object.entries(groups).slice(0, 4)
                       if (entries.length === 0) return <div style={{ color: '#999', textAlign: 'center', padding: '20px' }}>No data</div>
                       return entries.map(([name, data]) => {
                         let val, disp
-                        const avgWin = data.w > 0 ? data.pnl > 0 ? data.pnl / data.w : 0 : 0
-                        const avgLoss = data.l > 0 ? Math.abs(data.pnl < 0 ? data.pnl / data.l : 0) : 0
+                        const avgWin = data.w > 0 ? data.winPnl / data.w : 0
+                        const avgLoss = data.l > 0 ? Math.abs(data.lossPnl / data.l) : 0
                         if (analysisMetric === 'avgpnl') { val = data.count > 0 ? data.pnl / data.count : 0; disp = (val >= 0 ? '+' : '') + '$' + Math.round(val) }
                         else if (analysisMetric === 'winrate') { val = (data.w + data.l) > 0 ? (data.w / (data.w + data.l)) * 100 : 0; disp = Math.round(val) + '%' }
                         else if (analysisMetric === 'pnl') { val = data.pnl; disp = (val >= 0 ? '+' : '') + '$' + Math.round(val) }
