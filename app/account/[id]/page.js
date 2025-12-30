@@ -390,9 +390,13 @@ export default function AccountPage() {
   const filteredTrades = trades.filter(t => {
     if (filters.dateFrom && t.date < filters.dateFrom) return false
     if (filters.dateTo && t.date > filters.dateTo) return false
-    if (filters.outcome && t.outcome !== filters.outcome) return false
-    if (filters.direction && t.direction !== filters.direction) return false
-    if (filters.symbol && !t.symbol.toLowerCase().includes(filters.symbol.toLowerCase())) return false
+    if (filters.outcome) {
+      const fo = filters.outcome.toLowerCase(), to = (t.outcome || '').toLowerCase()
+      if (fo === 'breakeven') { if (to !== 'be' && to !== 'breakeven') return false }
+      else if (to !== fo) return false
+    }
+    if (filters.direction && (t.direction || '').toLowerCase() !== filters.direction.toLowerCase()) return false
+    if (filters.symbol && !(t.symbol || '').toLowerCase().includes(filters.symbol.toLowerCase())) return false
     return true
   })
   const hasActiveFilters = filters.dateFrom || filters.dateTo || filters.outcome || filters.direction || filters.symbol
@@ -627,7 +631,16 @@ export default function AccountPage() {
             {activeTab === 'trades' && trades.length > 0 && !selectMode && (
               <button onClick={() => setSelectMode(true)} style={{ padding: '10px 16px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '8px', color: '#888', fontSize: '13px', cursor: 'pointer' }}>Select</button>
             )}
-            {activeTab === 'trades' && (
+            {activeTab === 'trades' && selectMode && (
+              <>
+                <span style={{ fontSize: '12px', color: '#22c55e', fontWeight: 600 }}>{selectedTrades.size} selected</span>
+                <button onClick={() => { const allSelected = filteredTrades.every(t => selectedTrades.has(t.id)); if (allSelected) { const newSet = new Set(selectedTrades); filteredTrades.forEach(t => newSet.delete(t.id)); setSelectedTrades(newSet) } else { const newSet = new Set(selectedTrades); filteredTrades.forEach(t => newSet.add(t.id)); setSelectedTrades(newSet) } }} style={{ padding: '10px 16px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '8px', color: '#888', fontSize: '13px', cursor: 'pointer' }}>{filteredTrades.every(t => selectedTrades.has(t.id)) && filteredTrades.length > 0 ? 'Deselect All' : 'Select All'}</button>
+                {selectedTrades.size > 0 && <button onClick={() => { setViewingSelectedStats(true); setActiveTab('statistics') }} style={{ padding: '10px 16px', background: 'transparent', border: '1px solid #22c55e', borderRadius: '8px', color: '#22c55e', fontSize: '13px', cursor: 'pointer' }}>View Stats</button>}
+                {selectedTrades.size > 0 && <button onClick={() => setDeleteSelectedConfirm(true)} style={{ padding: '10px 16px', background: 'rgba(239,68,68,0.15)', border: '1px solid #ef4444', borderRadius: '8px', color: '#ef4444', fontSize: '13px', cursor: 'pointer' }}>Delete</button>}
+                <button onClick={exitSelectMode} style={{ padding: '10px 16px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '8px', color: '#888', fontSize: '13px', cursor: 'pointer' }}>Cancel</button>
+              </>
+            )}
+            {activeTab === 'trades' && !selectMode && (
               <button onClick={() => setShowEditInputs(true)} style={{ padding: '10px 16px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '8px', color: '#888', fontSize: '13px', cursor: 'pointer' }}>Edit Columns</button>
             )}
             <button onClick={() => setShowFilters(true)} style={{ padding: '10px 16px', background: hasActiveFilters ? 'rgba(34,197,94,0.15)' : 'transparent', border: hasActiveFilters ? '1px solid #22c55e' : '1px solid #2a2a35', borderRadius: '8px', color: hasActiveFilters ? '#22c55e' : '#888', fontSize: '13px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}>
@@ -765,19 +778,6 @@ export default function AccountPage() {
             <button onClick={() => { setSlideshowIndex(0); setSlideshowMode(true) }} style={{ width: '100%', padding: '10px', marginTop: '4px', background: '#0d0d12', border: '1px solid #2a2a35', borderRadius: '6px', color: '#888', fontSize: '11px', cursor: 'pointer' }}>
               Slideshow ({getSlideshowImages().length})
             </button>
-          )}
-                    {/* Selection Controls */}
-          {selectMode && (
-            <div style={{ marginTop: '8px', padding: '10px', background: '#0d0d12', border: '1px solid #22c55e', borderRadius: '8px' }}>
-              <div style={{ fontSize: '11px', color: '#22c55e', marginBottom: '8px', fontWeight: 600, textAlign: 'center' }}>{selectedTrades.size} SELECTED</div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                <button onClick={() => { const allSelected = filteredTrades.every(t => selectedTrades.has(t.id)); if (allSelected) { const newSet = new Set(selectedTrades); filteredTrades.forEach(t => newSet.delete(t.id)); setSelectedTrades(newSet) } else { const newSet = new Set(selectedTrades); filteredTrades.forEach(t => newSet.add(t.id)); setSelectedTrades(newSet) } }} style={{ width: '100%', padding: '6px', background: '#1a1a22', border: 'none', borderRadius: '4px', color: '#fff', fontSize: '10px', cursor: 'pointer' }}>{filteredTrades.every(t => selectedTrades.has(t.id)) && filteredTrades.length > 0 ? 'Deselect All' : 'Select All'}</button>
-                {selectedTrades.size > 0 && getSlideshowImages().length > 0 && <button onClick={() => { setSlideshowIndex(0); setSlideshowMode(true) }} style={{ width: '100%', padding: '6px', background: '#1a1a22', border: 'none', borderRadius: '4px', color: '#fff', fontSize: '10px', cursor: 'pointer' }}>View Images</button>}
-                {selectedTrades.size > 0 && <button onClick={() => { setViewingSelectedStats(true); setActiveTab('statistics') }} style={{ width: '100%', padding: '6px', background: '#1a1a22', border: 'none', borderRadius: '4px', color: '#fff', fontSize: '10px', cursor: 'pointer' }}>View Stats</button>}
-                {selectedTrades.size > 0 && <button onClick={() => setDeleteSelectedConfirm(true)} style={{ width: '100%', padding: '6px', background: '#ef4444', border: 'none', borderRadius: '4px', color: '#fff', fontSize: '10px', cursor: 'pointer', fontWeight: 600 }}>Delete</button>}
-                <button onClick={exitSelectMode} style={{ width: '100%', padding: '5px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '4px', color: '#666', fontSize: '10px', cursor: 'pointer' }}>Cancel</button>
-              </div>
-            </div>
           )}
         </div>
         {/* Spacer */}
@@ -1079,7 +1079,7 @@ export default function AccountPage() {
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', padding: '5px 0', borderBottom: '1px solid #1a1a22' }}>
                   <span style={{ fontSize: '12px', color: '#888' }}>Profit Factor</span>
-                  <span style={{ fontSize: '13px', fontWeight: 700, color: parseFloat(displayProfitFactor) >= 1 ? '#22c55e' : '#ef4444' }}>{displayProfitFactor}</span>
+                  <span style={{ fontSize: '13px', fontWeight: 700, color: displayProfitFactor === '-' ? '#666' : displayProfitFactor === '∞' ? '#22c55e' : parseFloat(displayProfitFactor) >= 1 ? '#22c55e' : '#ef4444' }}>{displayProfitFactor}</span>
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', padding: '5px 0', borderBottom: '1px solid #1a1a22' }}>
                   <span style={{ fontSize: '12px', color: '#888' }}>Avg RR</span>
