@@ -67,6 +67,11 @@ export default function AccountPage() {
   const [deleteConfirmText, setDeleteConfirmText] = useState('')
   const [showCumulativeStats, setShowCumulativeStats] = useState(false)
   const [allAccountsTrades, setAllAccountsTrades] = useState({})
+  const [selectMode, setSelectMode] = useState(false)
+  const [selectedTrades, setSelectedTrades] = useState(new Set())
+  const [slideshowMode, setSlideshowMode] = useState(false)
+  const [slideshowIndex, setSlideshowIndex] = useState(0)
+  const [viewingSelectedStats, setViewingSelectedStats] = useState(false)
 
   const tradesScrollRef = useRef(null)
   const fixedScrollRef = useRef(null)
@@ -279,6 +284,36 @@ export default function AccountPage() {
   // Get hidden inputs
   function getHiddenInputs() {
     return inputs.filter(i => i.hidden)
+  }
+
+  // Get trades with images
+  function getTradesWithImages() {
+    return trades.filter(t => { const e = getExtraData(t); return e.image && e.image.length > 0 })
+  }
+  // Toggle trade selection
+  function toggleTradeSelection(id) {
+    const s = new Set(selectedTrades)
+    s.has(id) ? s.delete(id) : s.add(id)
+    setSelectedTrades(s)
+  }
+  // Select/deselect all
+  function toggleSelectAll() {
+    setSelectedTrades(selectedTrades.size === trades.length ? new Set() : new Set(trades.map(t => t.id)))
+  }
+  // Exit select mode
+  function exitSelectMode() { setSelectMode(false); setSelectedTrades(new Set()); setViewingSelectedStats(false) }
+  // Delete selected
+  async function deleteSelectedTrades() {
+    if (selectedTrades.size === 0) return
+    const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY)
+    for (const id of selectedTrades) await supabase.from('trades').delete().eq('id', id)
+    setTrades(trades.filter(t => !selectedTrades.has(t.id)))
+    exitSelectMode()
+  }
+  // Get slideshow images
+  function getSlideshowImages() {
+    const target = selectedTrades.size > 0 ? trades.filter(t => selectedTrades.has(t.id)) : trades
+    return target.map(t => ({ trade: t, image: getExtraData(t).image })).filter(x => x.image)
   }
 
   // Calculate cumulative stats across all accounts
@@ -580,6 +615,31 @@ export default function AccountPage() {
               {tab}
             </button>
           ))}
+          {/* Slideshow Button */}
+          {getTradesWithImages().length > 0 && (
+            <button onClick={() => { setSlideshowIndex(0); setSlideshowMode(true) }} style={{ width: '100%', padding: '10px', marginTop: '4px', background: '#0d0d12', border: '1px solid #2a2a35', borderRadius: '6px', color: '#888', fontSize: '11px', cursor: 'pointer' }}>
+              Slideshow ({getSlideshowImages().length})
+            </button>
+          )}
+          {/* Select Button */}
+          {activeTab === 'trades' && trades.length > 0 && !selectMode && (
+            <button onClick={() => setSelectMode(true)} style={{ width: '100%', padding: '10px', marginTop: '4px', background: '#0d0d12', border: '1px solid #2a2a35', borderRadius: '6px', color: '#888', fontSize: '11px', cursor: 'pointer' }}>
+              Select Trades
+            </button>
+          )}
+          {/* Selection Controls */}
+          {selectMode && (
+            <div style={{ marginTop: '8px', padding: '10px', background: '#0d0d12', border: '1px solid #22c55e', borderRadius: '8px' }}>
+              <div style={{ fontSize: '11px', color: '#22c55e', marginBottom: '8px', fontWeight: 600, textAlign: 'center' }}>{selectedTrades.size} SELECTED</div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                <button onClick={toggleSelectAll} style={{ width: '100%', padding: '6px', background: '#1a1a22', border: 'none', borderRadius: '4px', color: '#fff', fontSize: '10px', cursor: 'pointer' }}>{selectedTrades.size === trades.length ? 'Deselect All' : 'Select All'}</button>
+                {selectedTrades.size > 0 && getSlideshowImages().length > 0 && <button onClick={() => { setSlideshowIndex(0); setSlideshowMode(true) }} style={{ width: '100%', padding: '6px', background: '#1a1a22', border: 'none', borderRadius: '4px', color: '#fff', fontSize: '10px', cursor: 'pointer' }}>View Images</button>}
+                {selectedTrades.size > 0 && <button onClick={() => { setViewingSelectedStats(true); setActiveTab('statistics') }} style={{ width: '100%', padding: '6px', background: '#1a1a22', border: 'none', borderRadius: '4px', color: '#fff', fontSize: '10px', cursor: 'pointer' }}>View Stats</button>}
+                {selectedTrades.size > 0 && <button onClick={() => { if(confirm(`Delete ${selectedTrades.size} trades?`)) deleteSelectedTrades() }} style={{ width: '100%', padding: '6px', background: '#ef4444', border: 'none', borderRadius: '4px', color: '#fff', fontSize: '10px', cursor: 'pointer', fontWeight: 600 }}>Delete</button>}
+                <button onClick={exitSelectMode} style={{ width: '100%', padding: '5px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '4px', color: '#666', fontSize: '10px', cursor: 'pointer' }}>Cancel</button>
+              </div>
+            </div>
+          )}
         </div>
         {/* Spacer */}
         <div style={{ flex: 1 }} />
@@ -639,6 +699,7 @@ export default function AccountPage() {
                 <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: '1200px' }}>
                   <thead style={{ position: 'sticky', top: 0, zIndex: 10, background: '#0a0a0f' }}>
                     <tr>
+                      {selectMode && <th style={{ padding: '14px 6px', width: '32px', borderBottom: '1px solid #1a1a22', background: '#0a0a0f' }}><input type="checkbox" checked={selectedTrades.size === trades.length && trades.length > 0} onChange={toggleSelectAll} style={{ width: '14px', height: '14px', accentColor: '#22c55e', cursor: 'pointer' }} /></th>}
                       {['Symbol', 'W/L', 'PnL', '%', 'RR', ...customInputs.map(i => i.label), 'Date', ''].map((h, i) => (
                         <th key={i} style={{ padding: isMobile ? '10px 8px' : '14px 12px', textAlign: 'center', color: '#999', fontSize: isMobile ? '11px' : '12px', fontWeight: 600, textTransform: 'uppercase', borderBottom: '1px solid #1a1a22', background: '#0a0a0f' }}>{h}</th>
                       ))}
@@ -650,7 +711,8 @@ export default function AccountPage() {
                       const pnlValue = parseFloat(trade.pnl) || 0
                       const noteContent = trade.notes || extra.notes || ''
                       return (
-                        <tr key={trade.id} style={{ borderBottom: '1px solid #141418' }}>
+                        <tr key={trade.id} style={{ borderBottom: '1px solid #141418', background: selectMode && selectedTrades.has(trade.id) ? 'rgba(34,197,94,0.06)' : 'transparent' }}>
+                          {selectMode && <td style={{ padding: '14px 6px', width: '32px', textAlign: 'center' }}><input type="checkbox" checked={selectedTrades.has(trade.id)} onChange={() => toggleTradeSelection(trade.id)} style={{ width: '14px', height: '14px', accentColor: '#22c55e', cursor: 'pointer' }} /></td>}
                           <td style={{ padding: isMobile ? '10px 8px' : '14px 12px', fontWeight: 600, fontSize: isMobile ? '14px' : '16px', textAlign: 'center', color: '#fff' }}>{trade.symbol}</td>
                           <td style={{ padding: '14px 12px', textAlign: 'center' }}>
                             <span style={{ padding: '5px 12px', borderRadius: '6px', fontSize: '13px', fontWeight: 600, background: trade.outcome === 'win' ? 'rgba(34,197,94,0.15)' : trade.outcome === 'loss' ? 'rgba(239,68,68,0.15)' : 'rgba(255,255,255,0.1)', color: trade.outcome === 'win' ? '#22c55e' : trade.outcome === 'loss' ? '#ef4444' : '#888' }}>
@@ -753,22 +815,35 @@ export default function AccountPage() {
 
         {/* STATISTICS TAB */}
         {activeTab === 'statistics' && (() => {
-          // Get stats based on toggle - either this journal or all journals
-          const cumStats = showCumulativeStats && allAccounts.length > 1 ? getCumulativeStats() : null
-          const displayTotalPnl = cumStats ? cumStats.totalPnl : totalPnl
-          const displayTrades = cumStats ? cumStats.allTrades : trades
-          const displayWinrate = cumStats ? cumStats.winrate : winrate
-          const displayProfitFactor = cumStats ? cumStats.profitFactor : profitFactor
-          const displayAvgRR = cumStats ? cumStats.avgRR : returnOnRisk
-          const displayExpectancy = cumStats ? Math.round(cumStats.totalPnl / (cumStats.totalTrades || 1)) : expectancy
-          const displayAvgWin = cumStats ? cumStats.avgWin : avgWin
-          const displayAvgLoss = cumStats ? cumStats.avgLoss : avgLoss
-          const displayWins = cumStats ? cumStats.wins : wins
-          const displayLosses = cumStats ? cumStats.losses : losses
+          // Filter by selected trades if viewing selected
+          const baseTrades = viewingSelectedStats && selectedTrades.size > 0 ? trades.filter(t => selectedTrades.has(t.id)) : trades
+          const bWins = baseTrades.filter(t => t.outcome === 'win').length
+          const bLosses = baseTrades.filter(t => t.outcome === 'loss').length
+          const bPnl = baseTrades.reduce((s, t) => s + (parseFloat(t.pnl) || 0), 0)
+          const bWinrate = (bWins + bLosses) > 0 ? Math.round((bWins / (bWins + bLosses)) * 100) : 0
+          const bGrossProfit = baseTrades.filter(t => parseFloat(t.pnl) > 0).reduce((s, t) => s + parseFloat(t.pnl), 0)
+          const bGrossLoss = Math.abs(baseTrades.filter(t => parseFloat(t.pnl) < 0).reduce((s, t) => s + parseFloat(t.pnl), 0))
+          const bPF = bGrossLoss > 0 ? (bGrossProfit / bGrossLoss).toFixed(2) : bGrossProfit > 0 ? '∞' : '-'
+          const bAvgWin = bWins > 0 ? Math.round(bGrossProfit / bWins) : 0
+          const bAvgLoss = bLosses > 0 ? Math.round(bGrossLoss / bLosses) : 0
+          const bAvgRR = baseTrades.length > 0 ? (baseTrades.reduce((s, t) => s + (parseFloat(t.rr) || 0), 0) / baseTrades.length).toFixed(1) : '0'
+
+          // Get stats based on toggle - either this journal or all journals (disabled when viewing selected)
+          const cumStats = showCumulativeStats && allAccounts.length > 1 && !viewingSelectedStats ? getCumulativeStats() : null
+          const displayTotalPnl = cumStats ? cumStats.totalPnl : bPnl
+          const displayTrades = cumStats ? cumStats.allTrades : baseTrades
+          const displayWinrate = cumStats ? cumStats.winrate : bWinrate
+          const displayProfitFactor = cumStats ? cumStats.profitFactor : bPF
+          const displayAvgRR = cumStats ? cumStats.avgRR : bAvgRR
+          const displayExpectancy = cumStats ? Math.round(cumStats.totalPnl / (cumStats.totalTrades || 1)) : (baseTrades.length > 0 ? Math.round(bPnl / baseTrades.length) : 0)
+          const displayAvgWin = cumStats ? cumStats.avgWin : bAvgWin
+          const displayAvgLoss = cumStats ? cumStats.avgLoss : bAvgLoss
+          const displayWins = cumStats ? cumStats.wins : bWins
+          const displayLosses = cumStats ? cumStats.losses : bLosses
           const displayStartingBalance = cumStats ? cumStats.totalStartingBalance : startingBalance
-          const displayCurrentBalance = cumStats ? cumStats.currentBalance : currentBalance
-          const displayGrossProfit = cumStats ? cumStats.grossProfit : grossProfit
-          const displayGrossLoss = cumStats ? cumStats.grossLoss : grossLoss
+          const displayCurrentBalance = cumStats ? cumStats.currentBalance : startingBalance + bPnl
+          const displayGrossProfit = cumStats ? cumStats.grossProfit : bGrossProfit
+          const displayGrossLoss = cumStats ? cumStats.grossLoss : bGrossLoss
 
           // Recalculate derived stats based on displayTrades
           const displayLongTrades = displayTrades.filter(t => t.direction === 'long')
@@ -809,6 +884,13 @@ export default function AccountPage() {
 
           return (
           <div style={{ padding: isMobile ? '0' : '16px 24px' }}>
+            {/* Selected Trades Banner */}
+            {viewingSelectedStats && selectedTrades.size > 0 && (
+              <div style={{ marginBottom: '16px', padding: '12px 16px', background: 'rgba(34,197,94,0.1)', border: '1px solid #22c55e', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <span style={{ fontSize: '14px', fontWeight: 600, color: '#22c55e' }}>VIEWING {selectedTrades.size} SELECTED TRADES</span>
+                <button onClick={() => setViewingSelectedStats(false)} style={{ padding: '6px 12px', background: '#1a1a22', border: 'none', borderRadius: '6px', color: '#fff', fontSize: '12px', cursor: 'pointer' }}>View All</button>
+              </div>
+            )}
             {/* ROW 1: Stats + Graphs - both graphs same height, aligned with Total Trades bottom */}
             <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', gap: '16px', marginBottom: '16px' }}>
               {/* Stats Widget - Clean List */}
@@ -2539,6 +2621,35 @@ export default function AccountPage() {
           </div>
         </div>
       )}
+
+      {/* Slideshow Modal */}
+      {slideshowMode && (() => {
+        const imgs = getSlideshowImages()
+        if (!imgs.length) { setSlideshowMode(false); return null }
+        const idx = Math.min(slideshowIndex, imgs.length - 1)
+        const { trade, image } = imgs[idx]
+        const pnl = parseFloat(trade.pnl) || 0
+        return (
+          <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.98)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', zIndex: 100 }}>
+            <div style={{ position: 'absolute', top: 20, left: '50%', transform: 'translateX(-50%)', display: 'flex', alignItems: 'center', gap: 16, padding: '12px 24px', background: '#0d0d12', borderRadius: 8, border: '1px solid #1a1a22' }}>
+              <span style={{ fontWeight: 600, color: '#fff', fontSize: 16 }}>{trade.symbol}</span>
+              <span style={{ padding: '4px 10px', borderRadius: 4, fontSize: 12, fontWeight: 600, background: trade.outcome === 'win' ? 'rgba(34,197,94,0.15)' : trade.outcome === 'loss' ? 'rgba(239,68,68,0.15)' : 'rgba(255,255,255,0.1)', color: trade.outcome === 'win' ? '#22c55e' : trade.outcome === 'loss' ? '#ef4444' : '#888' }}>{trade.outcome?.toUpperCase()}</span>
+              <span style={{ fontWeight: 600, color: pnl >= 0 ? '#22c55e' : '#ef4444' }}>{pnl >= 0 ? '+' : ''}${pnl.toFixed(0)}</span>
+              <span style={{ color: '#666', fontSize: 12 }}>{new Date(trade.date).toLocaleDateString()}</span>
+            </div>
+            <button onClick={() => setSlideshowMode(false)} style={{ position: 'absolute', top: 20, right: 20, background: 'transparent', border: 'none', color: '#999', fontSize: 32, cursor: 'pointer', zIndex: 101 }}>×</button>
+            {imgs.length > 1 && <>
+              <button onClick={() => setSlideshowIndex(idx === 0 ? imgs.length - 1 : idx - 1)} style={{ position: 'absolute', left: 20, top: '50%', transform: 'translateY(-50%)', background: '#1a1a22', border: '1px solid #2a2a35', borderRadius: '50%', width: 48, height: 48, color: '#fff', fontSize: 24, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>‹</button>
+              <button onClick={() => setSlideshowIndex(idx === imgs.length - 1 ? 0 : idx + 1)} style={{ position: 'absolute', right: 20, top: '50%', transform: 'translateY(-50%)', background: '#1a1a22', border: '1px solid #2a2a35', borderRadius: '50%', width: 48, height: 48, color: '#fff', fontSize: 24, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>›</button>
+            </>}
+            <img src={image} alt="" style={{ maxWidth: '85vw', maxHeight: '70vh', borderRadius: 8, objectFit: 'contain' }} />
+            <div style={{ position: 'absolute', bottom: 30, display: 'flex', alignItems: 'center', gap: 12 }}>
+              <span style={{ color: '#666', fontSize: 14 }}>{idx + 1} / {imgs.length}</span>
+              {imgs.length <= 10 && <div style={{ display: 'flex', gap: 6 }}>{imgs.map((_, i) => <button key={i} onClick={() => setSlideshowIndex(i)} style={{ width: 8, height: 8, borderRadius: '50%', background: i === idx ? '#22c55e' : '#333', border: 'none', cursor: 'pointer', padding: 0 }} />)}</div>}
+            </div>
+          </div>
+        )
+      })()}
 
       {/* Enlarged Chart Modal */}
       {enlargedChart && (
