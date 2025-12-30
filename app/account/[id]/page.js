@@ -600,16 +600,9 @@ export default function AccountPage() {
 
       {/* FIXED SUBHEADER - starts at sidebar edge */}
       {!isMobile && (
-        <div style={{ position: 'fixed', top: '71px', left: '180px', right: 0, zIndex: 46, padding: '16px', background: '#0a0a0f', borderBottom: '1px solid #333', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div style={{ position: 'fixed', top: '71px', left: '180px', right: 0, zIndex: 46, padding: '14px', background: '#0a0a0f', borderBottom: '1px solid #333', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
             <span style={{ fontSize: '26px', fontWeight: 700, color: '#fff' }}>{account?.name}</span>
-            {/* Stats toggle - show next to journal name when on statistics tab and has multiple journals */}
-            {activeTab === 'statistics' && allAccounts.length > 1 && (
-              <div style={{ display: 'flex', background: '#0a0a0f', borderRadius: '6px', overflow: 'hidden', border: '1px solid #1a1a22' }}>
-                <button onClick={() => setShowCumulativeStats(false)} style={{ padding: '6px 12px', background: !showCumulativeStats ? '#22c55e' : 'transparent', border: 'none', color: !showCumulativeStats ? '#fff' : '#666', fontSize: '11px', fontWeight: 600, cursor: 'pointer' }}>This Journal</button>
-                <button onClick={() => setShowCumulativeStats(true)} style={{ padding: '6px 12px', background: showCumulativeStats ? '#22c55e' : 'transparent', border: 'none', color: showCumulativeStats ? '#fff' : '#666', fontSize: '11px', fontWeight: 600, cursor: 'pointer' }}>All Journals</button>
-              </div>
-            )}
           </div>
           <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
             {activeTab === 'trades' && trades.length > 0 && !selectMode && (
@@ -633,7 +626,7 @@ export default function AccountPage() {
 
       {/* FIXED SIDEBAR - desktop only, starts under header */}
       {!isMobile && (
-        <div style={{ position: 'fixed', top: '71px', left: 0, bottom: 0, width: '180px', padding: '16px 12px 12px 12px', background: '#0a0a0f', zIndex: 45, display: 'flex', flexDirection: 'column', borderRight: '1px solid #1a1a22' }}>
+        <div style={{ position: 'fixed', top: '71px', left: 0, bottom: 0, width: '180px', padding: '14px 12px 12px 12px', background: '#0a0a0f', zIndex: 45, display: 'flex', flexDirection: 'column', borderRight: '1px solid #1a1a22' }}>
         <div>
           {['trades', 'statistics', 'notes'].map((tab) => (
             <button
@@ -650,6 +643,100 @@ export default function AccountPage() {
               {tab}
             </button>
           ))}
+
+          {/* Stats View Selector - show when on statistics tab */}
+          {activeTab === 'statistics' && (
+            <div style={{ marginTop: '4px', marginBottom: '8px', padding: '10px', background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px' }}>
+              <div style={{ fontSize: '9px', color: '#666', textTransform: 'uppercase', marginBottom: '8px', letterSpacing: '0.5px' }}>Viewing Stats For</div>
+
+              {/* Show "Selected Trades" indicator when viewing selected */}
+              {viewingSelectedStats && (
+                <div style={{
+                  padding: '10px 12px',
+                  marginBottom: '6px',
+                  background: 'rgba(34,197,94,0.15)',
+                  border: '1px solid rgba(34,197,94,0.5)',
+                  borderRadius: '6px',
+                  boxShadow: '0 0 12px rgba(34,197,94,0.2), inset 0 0 20px rgba(34,197,94,0.05)'
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#22c55e', boxShadow: '0 0 6px #22c55e' }} />
+                    <span style={{ fontSize: '12px', fontWeight: 600, color: '#22c55e' }}>Selected Trades</span>
+                  </div>
+                  <div style={{ fontSize: '10px', color: '#888', marginTop: '4px', marginLeft: '16px' }}>{selectedTrades.size} trades selected</div>
+                  <button
+                    onClick={() => setViewingSelectedStats(false)}
+                    style={{ marginTop: '8px', width: '100%', padding: '6px', background: 'transparent', border: '1px solid rgba(34,197,94,0.3)', borderRadius: '4px', color: '#22c55e', fontSize: '10px', cursor: 'pointer' }}
+                  >
+                    View All Stats
+                  </button>
+                </div>
+              )}
+
+              {/* Journal toggles - show when not viewing selected */}
+              {!viewingSelectedStats && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                  <button
+                    onClick={() => setShowCumulativeStats(false)}
+                    style={{
+                      width: '100%',
+                      padding: '10px 12px',
+                      background: !showCumulativeStats ? 'rgba(34,197,94,0.15)' : '#0a0a0f',
+                      border: `1px solid ${!showCumulativeStats ? 'rgba(34,197,94,0.5)' : '#1a1a22'}`,
+                      borderRadius: '6px',
+                      color: !showCumulativeStats ? '#22c55e' : '#888',
+                      fontSize: '12px',
+                      fontWeight: 600,
+                      cursor: 'pointer',
+                      textAlign: 'left',
+                      boxShadow: !showCumulativeStats ? '0 0 10px rgba(34,197,94,0.2), inset 0 0 15px rgba(34,197,94,0.05)' : 'none'
+                    }}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <div style={{
+                        width: '6px',
+                        height: '6px',
+                        borderRadius: '50%',
+                        background: !showCumulativeStats ? '#22c55e' : '#444',
+                        boxShadow: !showCumulativeStats ? '0 0 4px #22c55e' : 'none'
+                      }} />
+                      This Journal
+                    </div>
+                  </button>
+                  {allAccounts.length > 1 && (
+                    <button
+                      onClick={() => setShowCumulativeStats(true)}
+                      style={{
+                        width: '100%',
+                        padding: '10px 12px',
+                        background: showCumulativeStats ? 'rgba(34,197,94,0.15)' : '#0a0a0f',
+                        border: `1px solid ${showCumulativeStats ? 'rgba(34,197,94,0.5)' : '#1a1a22'}`,
+                        borderRadius: '6px',
+                        color: showCumulativeStats ? '#22c55e' : '#888',
+                        fontSize: '12px',
+                        fontWeight: 600,
+                        cursor: 'pointer',
+                        textAlign: 'left',
+                        boxShadow: showCumulativeStats ? '0 0 10px rgba(34,197,94,0.2), inset 0 0 15px rgba(34,197,94,0.05)' : 'none'
+                      }}
+                    >
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <div style={{
+                          width: '6px',
+                          height: '6px',
+                          borderRadius: '50%',
+                          background: showCumulativeStats ? '#22c55e' : '#444',
+                          boxShadow: showCumulativeStats ? '0 0 4px #22c55e' : 'none'
+                        }} />
+                        All Journals
+                      </div>
+                    </button>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
+
           {/* Slideshow Button */}
           {getTradesWithImages().length > 0 && (
             <button onClick={() => { setSlideshowIndex(0); setSlideshowMode(true) }} style={{ width: '100%', padding: '10px', marginTop: '4px', background: '#0d0d12', border: '1px solid #2a2a35', borderRadius: '6px', color: '#888', fontSize: '11px', cursor: 'pointer' }}>
@@ -716,11 +803,11 @@ export default function AccountPage() {
       )}
 
       {/* MAIN CONTENT */}
-      <div style={{ marginLeft: isMobile ? 0 : '180px', marginTop: isMobile ? '100px' : '130px', padding: isMobile ? '12px' : '0' }}>
+      <div style={{ marginLeft: isMobile ? 0 : '180px', marginTop: isMobile ? '100px' : '140px', padding: isMobile ? '12px' : '0' }}>
 
         {/* TRADES TAB */}
         {activeTab === 'trades' && (
-          <div style={{ position: 'relative', height: 'calc(100vh - 130px)' }}>
+          <div style={{ position: 'relative', height: 'calc(100vh - 140px)' }}>
             {trades.length === 0 ? (
               <div style={{ padding: isMobile ? '40px 20px' : '60px', textAlign: 'center', color: '#999', fontSize: '15px' }}>No trades yet. Click "+ LOG NEW TRADE" to add your first trade.</div>
             ) : (
