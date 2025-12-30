@@ -578,9 +578,12 @@ export default function AccountPage() {
       <header style={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 50, padding: isMobile ? '10px 16px' : '16px 40px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#0a0a0f', borderBottom: '1px solid #333' }}>
         <a href="/" style={{ fontSize: isMobile ? '20px' : '28px', fontWeight: 700, textDecoration: 'none', letterSpacing: '-0.5px' }}><span style={{ color: '#22c55e' }}>LSD</span><span style={{ color: '#fff' }}>TRADE</span><span style={{ color: '#22c55e' }}>+</span></a>
         {!isMobile && (
-          <div style={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)' }}>
-            <span style={{ fontSize: '32px', fontWeight: 700, color: '#fff' }}>{tabTitles[activeTab]}</span>
-          </div>
+          <>
+            <div style={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)' }}>
+              <span style={{ fontSize: '32px', fontWeight: 700, color: '#fff' }}>{tabTitles[activeTab]}</span>
+            </div>
+            <a href="/dashboard" style={{ padding: '10px 20px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '8px', color: '#888', fontSize: '13px', textDecoration: 'none' }}>← Dashboard</a>
+          </>
         )}
         {isMobile && (
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -627,7 +630,10 @@ export default function AccountPage() {
             {activeTab === 'trades' && (
               <button onClick={() => setShowEditInputs(true)} style={{ padding: '10px 16px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '8px', color: '#888', fontSize: '13px', cursor: 'pointer' }}>Edit Columns</button>
             )}
-            <a href="/dashboard" style={{ padding: '10px 16px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '8px', color: '#888', fontSize: '13px', textDecoration: 'none' }}>← Dashboard</a>
+            <button onClick={() => setShowFilters(true)} style={{ padding: '10px 16px', background: hasActiveFilters ? 'rgba(34,197,94,0.15)' : 'transparent', border: hasActiveFilters ? '1px solid #22c55e' : '1px solid #2a2a35', borderRadius: '8px', color: hasActiveFilters ? '#22c55e' : '#888', fontSize: '13px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
+              Filters{hasActiveFilters && ` (${[filters.dateFrom, filters.dateTo, filters.outcome, filters.direction, filters.symbol].filter(Boolean).length})`}
+            </button>
             <button onClick={() => setShowAddTrade(true)} style={{ padding: '10px 24px', background: '#22c55e', border: 'none', borderRadius: '8px', color: '#fff', fontWeight: 600, fontSize: '14px', cursor: 'pointer' }}>+ LOG TRADE</button>
           </div>
         </div>
@@ -1963,22 +1969,33 @@ export default function AccountPage() {
                   ))}
                 </div>
                 <div style={{ width: '1px', background: '#1a1a22', margin: '0 10px' }} />
-                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', minWidth: '110px' }}>
-                  <div style={{ fontSize: '10px', color: '#999', textTransform: 'uppercase', marginBottom: '6px', fontWeight: 600 }}>Pair Analysis</div>
-                  <select value={pairAnalysisType} onChange={e => setPairAnalysisType(e.target.value)} style={{ fontSize: '9px', color: '#ccc', marginBottom: '6px', background: '#141418', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '4px', padding: '4px 8px', cursor: 'pointer', boxShadow: '0 0 6px rgba(255,255,255,0.1)' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', minWidth: '120px' }}>
+                  <select value={pairAnalysisType} onChange={e => setPairAnalysisType(e.target.value)} style={{ fontSize: '9px', color: '#ccc', marginBottom: '12px', background: '#141418', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '4px', padding: '4px 8px', cursor: 'pointer', boxShadow: '0 0 6px rgba(255,255,255,0.1)' }}>
                     <option value="best">Best Pair</option>
                     <option value="worst">Worst Pair</option>
-                    <option value="most">Most Used</option>
+                    <option value="most">Most Used Pair</option>
                   </select>
                   {(() => {
                     const ps = {}
-                    displayTrades.forEach(t => { if (!ps[t.symbol]) ps[t.symbol] = { w: 0, l: 0, pnl: 0, count: 0 }; if (t.outcome === 'win') ps[t.symbol].w++; else if (t.outcome === 'loss') ps[t.symbol].l++; ps[t.symbol].pnl += parseFloat(t.pnl) || 0; ps[t.symbol].count++ })
+                    displayTrades.forEach(t => {
+                      if (!ps[t.symbol]) ps[t.symbol] = { w: 0, l: 0, pnl: 0, count: 0, rrs: [], wins: [], losses: [] }
+                      if (t.outcome === 'win') { ps[t.symbol].w++; ps[t.symbol].wins.push(parseFloat(t.pnl) || 0) }
+                      else if (t.outcome === 'loss') { ps[t.symbol].l++; ps[t.symbol].losses.push(Math.abs(parseFloat(t.pnl)) || 0) }
+                      ps[t.symbol].pnl += parseFloat(t.pnl) || 0
+                      ps[t.symbol].count++
+                      if (t.rr) ps[t.symbol].rrs.push(parseFloat(t.rr))
+                    })
                     let selected
                     if (pairAnalysisType === 'best') selected = Object.entries(ps).sort((a, b) => b[1].pnl - a[1].pnl)[0]
                     else if (pairAnalysisType === 'worst') selected = Object.entries(ps).sort((a, b) => a[1].pnl - b[1].pnl)[0]
                     else selected = Object.entries(ps).sort((a, b) => b[1].count - a[1].count)[0]
                     if (!selected) return <div style={{ color: '#999' }}>No data</div>
-                    const wr = selected[1].w + selected[1].l > 0 ? Math.round((selected[1].w / (selected[1].w + selected[1].l)) * 100) : 0
+                    const data = selected[1]
+                    const wr = data.w + data.l > 0 ? Math.round((data.w / (data.w + data.l)) * 100) : 0
+                    const avgRR = data.rrs.length > 0 ? (data.rrs.reduce((a, b) => a + b, 0) / data.rrs.length).toFixed(1) : '-'
+                    const totalWins = data.wins.reduce((a, b) => a + b, 0)
+                    const totalLosses = data.losses.reduce((a, b) => a + b, 0)
+                    const pf = totalLosses > 0 ? (totalWins / totalLosses).toFixed(2) : totalWins > 0 ? '∞' : '-'
                     const size = 70, stroke = 7, r = (size - stroke) / 2, c = 2 * Math.PI * r
                     return (
                       <>
@@ -1995,6 +2012,10 @@ export default function AccountPage() {
                         <div style={{ display: 'flex', gap: '8px', marginTop: '4px', fontSize: '8px' }}>
                           <span><span style={{ color: '#22c55e' }}>●</span> Win</span>
                           <span><span style={{ color: '#ef4444' }}>●</span> Loss</span>
+                        </div>
+                        <div style={{ marginTop: '8px', fontSize: '9px', color: '#888', textAlign: 'center', lineHeight: '1.5' }}>
+                          <div>PnL: <span style={{ color: data.pnl >= 0 ? '#22c55e' : '#ef4444', fontWeight: 600 }}>{data.pnl >= 0 ? '+' : ''}${Math.round(data.pnl)}</span></div>
+                          <div>Avg RR: <span style={{ color: '#fff', fontWeight: 600 }}>{avgRR}</span> · PF: <span style={{ color: '#fff', fontWeight: 600 }}>{pf}</span></div>
                         </div>
                       </>
                     )
