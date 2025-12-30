@@ -2197,7 +2197,7 @@ export default function AccountPage() {
                     <div style={{ fontSize: '11px', color: '#aaa', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '8px', borderBottom: '1px solid #1a1a22', paddingBottom: '6px', fontWeight: 600 }}>Performance</div>
                     <StatBox label="Winrate" value={displayWinrate + '%'} color={displayWinrate >= 50 ? '#22c55e' : '#ef4444'} />
                     <StatBox label="Wins / Losses" value={displayWins + ' / ' + displayLosses} color="#fff" />
-                    <StatBox label="Profit Factor" value={displayProfitFactor} color={parseFloat(displayProfitFactor) >= 1.5 ? '#22c55e' : parseFloat(displayProfitFactor) >= 1 ? '#f59e0b' : '#ef4444'} />
+                    <StatBox label="Profit Factor" value={displayProfitFactor} color={displayProfitFactor === '-' ? '#666' : displayProfitFactor === '∞' ? '#22c55e' : parseFloat(displayProfitFactor) >= 1.5 ? '#22c55e' : parseFloat(displayProfitFactor) >= 1 ? '#f59e0b' : '#ef4444'} />
                     <StatBox label="Expectancy" value={'$' + displayExpectancy} color={parseFloat(displayExpectancy) >= 0 ? '#22c55e' : '#ef4444'} />
                   </div>
 
