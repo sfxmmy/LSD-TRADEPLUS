@@ -5,19 +5,19 @@ import { useParams, useSearchParams } from 'next/navigation'
 import { createClient } from '@supabase/supabase-js'
 
 const defaultInputs = [
-  { id: 'symbol', label: 'Symbol', type: 'text', required: true, enabled: true, fixed: true },
-  { id: 'outcome', label: 'Win/Loss', type: 'select', options: ['Win', 'Loss', 'Breakeven'], required: true, enabled: true, fixed: true },
-  { id: 'pnl', label: 'PnL ($)', type: 'number', required: true, enabled: true, fixed: true },
-  { id: 'riskPercent', label: '% Risked', type: 'number', required: false, enabled: true, fixed: true },
-  { id: 'rr', label: 'RR', type: 'number', required: false, enabled: true, fixed: true },
-  { id: 'direction', label: 'Trend', type: 'select', options: ['Long', 'Short'], required: false, enabled: true, fixed: false },
-  { id: 'confidence', label: 'Confidence', type: 'select', options: ['High', 'Medium', 'Low'], required: false, enabled: true, fixed: false },
-  { id: 'rating', label: 'Rating', type: 'rating', required: false, enabled: true, fixed: false },
-  { id: 'notes', label: 'Notes', type: 'textarea', required: false, enabled: true, fixed: false },
-  { id: 'date', label: 'Date', type: 'date', required: true, enabled: true, fixed: true },
-  { id: 'timeframe', label: 'Timeframe', type: 'select', options: ['1m', '5m', '15m', '30m', '1H', '4H', 'Daily'], required: false, enabled: true, fixed: false },
-  { id: 'session', label: 'Session', type: 'select', options: ['London', 'New York', 'Asian', 'Overlap'], required: false, enabled: true, fixed: false },
-  { id: 'image', label: 'Image', type: 'file', required: false, enabled: true, fixed: false },
+  { id: 'symbol', label: 'Symbol', type: 'text', required: true, enabled: true, fixed: true, color: '#22c55e' },
+  { id: 'pnl', label: 'PnL ($)', type: 'number', required: true, enabled: true, fixed: true, color: '#22c55e' },
+  { id: 'direction', label: 'Direction', type: 'select', options: ['Long', 'Short'], required: true, enabled: true, fixed: true, color: '#3b82f6' },
+  { id: 'outcome', label: 'Outcome', type: 'select', options: ['Win', 'Loss', 'Breakeven'], required: true, enabled: true, fixed: true, color: '#22c55e' },
+  { id: 'rr', label: 'RR', type: 'number', required: false, enabled: true, fixed: true, color: '#f59e0b' },
+  { id: 'riskPercent', label: '% Risk', type: 'number', required: false, enabled: true, fixed: true, color: '#ef4444' },
+  { id: 'date', label: 'Date', type: 'date', required: true, enabled: true, fixed: true, color: '#8b5cf6' },
+  { id: 'confidence', label: 'Confidence', type: 'select', options: ['High', 'Medium', 'Low'], required: false, enabled: true, fixed: true, color: '#f59e0b' },
+  { id: 'rating', label: 'Rating', type: 'rating', required: false, enabled: true, fixed: true, color: '#fbbf24' },
+  { id: 'timeframe', label: 'Timeframe', type: 'select', options: ['1m', '5m', '15m', '30m', '1H', '4H', 'Daily'], required: false, enabled: true, fixed: true, color: '#06b6d4' },
+  { id: 'session', label: 'Session', type: 'select', options: ['London', 'New York', 'Asian', 'Overlap'], required: false, enabled: true, fixed: true, color: '#ec4899' },
+  { id: 'image', label: 'Image', type: 'file', required: false, enabled: true, fixed: true, color: '#64748b' },
+  { id: 'notes', label: 'Notes', type: 'textarea', required: false, enabled: true, fixed: true, color: '#64748b' },
 ]
 
 export default function AccountPage() {
@@ -158,10 +158,10 @@ export default function AccountPage() {
     setSaving(true)
     const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY)
     
-    // Collect all custom field data
+    // Collect all custom field data (including image)
     const extraData = {}
     inputs.forEach(inp => {
-      if (!['symbol', 'outcome', 'pnl', 'rr', 'date', 'notes', 'direction', 'image'].includes(inp.id)) {
+      if (!['symbol', 'outcome', 'pnl', 'rr', 'date', 'notes', 'direction'].includes(inp.id)) {
         extraData[inp.id] = tradeForm[inp.id] || ''
       }
     })
@@ -237,9 +237,11 @@ export default function AccountPage() {
     return new Date(d.setDate(diff)).toISOString().split('T')[0]
   }
 
-  function addNewInput() { 
-    const newInput = { id: `custom_${Date.now()}`, label: 'New Field', type: 'text', required: false, enabled: true, fixed: false, options: [] }
-    setInputs([...inputs, newInput]) 
+  function addNewInput() {
+    const colors = ['#22c55e', '#3b82f6', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#06b6d4', '#f97316']
+    const randomColor = colors[Math.floor(Math.random() * colors.length)]
+    const newInput = { id: `custom_${Date.now()}`, label: 'New Field', type: 'text', required: false, enabled: true, fixed: false, options: [], color: randomColor }
+    setInputs([...inputs, newInput])
   }
   function updateInput(i, f, v) { const n = [...inputs]; n[i] = { ...n[i], [f]: v }; setInputs(n) }
   function deleteInput(i) {
@@ -2297,7 +2299,7 @@ export default function AccountPage() {
       {/* MODALS */}
       {showAddTrade && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.9)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100 }} onClick={() => setShowAddTrade(false)}>
-          <div style={{ background: 'linear-gradient(180deg, #0f0f14 0%, #0a0a0f 100%)', border: '1px solid #1a1a22', borderRadius: '12px', padding: '24px', width: '440px' }} onClick={e => e.stopPropagation()}>
+          <div style={{ background: 'linear-gradient(180deg, #0f0f14 0%, #0a0a0f 100%)', border: '1px solid #1a1a22', borderRadius: '12px', padding: '24px', width: customInputs.filter(i => !['symbol', 'outcome', 'pnl', 'riskPercent', 'rr', 'date', 'direction'].includes(i.id) && !i.hidden).length > 4 ? '560px' : customInputs.filter(i => !['symbol', 'outcome', 'pnl', 'riskPercent', 'rr', 'date', 'direction'].includes(i.id) && !i.hidden).length > 2 ? '500px' : '440px', maxHeight: '90vh', overflowY: 'auto' }} onClick={e => e.stopPropagation()}>
             {/* Header */}
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px', paddingBottom: '12px', borderBottom: '1px solid #1a1a22' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -2419,41 +2421,88 @@ export default function AccountPage() {
 
       {showEditInputs && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.9)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 101 }} onClick={() => setShowEditInputs(false)}>
-          <div style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '28px', width: '520px', maxHeight: '85vh', overflowY: 'auto' }} onClick={e => e.stopPropagation()}>
-            <h2 style={{ fontSize: '20px', fontWeight: 600, marginBottom: '20px', color: '#fff' }}>Customize Columns</h2>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '20px' }}>
-              {inputs.map((input, i) => !input.hidden && (
-                <div key={input.id} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '12px', background: input.fixed ? '#141418' : '#0a0a0e', borderRadius: '6px', opacity: input.fixed ? 0.7 : 1 }}>
-                  <input type="checkbox" checked={input.enabled} onChange={e => !input.fixed && updateInput(i, 'enabled', e.target.checked)} disabled={input.fixed} style={{ width: '18px', height: '18px', accentColor: '#22c55e' }} />
-                  <input type="text" value={input.label} onChange={e => updateInput(i, 'label', e.target.value)} disabled={input.fixed} style={{ flex: 1, padding: '8px 12px', background: '#141418', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '6px', color: '#fff', fontSize: '13px', boxShadow: '0 0 4px rgba(255,255,255,0.1)' }} />
-                  <select value={input.type} onChange={e => updateInput(i, 'type', e.target.value)} disabled={input.fixed} style={{ padding: '8px', background: '#141418', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '6px', color: '#999', fontSize: '12px', boxShadow: '0 0 4px rgba(255,255,255,0.1)' }}>
-                    {['text', 'number', 'date', 'select', 'textarea', 'rating', 'file'].map(t => <option key={t} value={t}>{t}</option>)}
-                  </select>
-                  {input.type === 'select' && !input.fixed && <button onClick={() => openOptionsEditor(i)} style={{ padding: '6px 12px', background: '#22c55e', border: 'none', borderRadius: '6px', color: '#fff', fontSize: '11px', cursor: 'pointer' }}>Opts</button>}
-                  {!input.fixed && <button onClick={() => deleteInput(i)} style={{ background: 'transparent', border: 'none', color: '#ef4444', cursor: 'pointer', fontSize: '18px' }}>×</button>}
-                  {input.fixed && <span style={{ fontSize: '10px', color: '#999', padding: '4px 8px', background: '#1a1a22', borderRadius: '4px' }}>Fixed</span>}
-                </div>
-              ))}
+          <div style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '12px', padding: '32px', width: '800px', maxHeight: '90vh', overflowY: 'auto' }} onClick={e => e.stopPropagation()}>
+            <div style={{ marginBottom: '24px' }}>
+              <h2 style={{ fontSize: '22px', fontWeight: 700, color: '#fff', marginBottom: '6px' }}>Customize Columns</h2>
+              <p style={{ fontSize: '13px', color: '#666' }}>Configure input fields for <span style={{ color: '#22c55e', fontWeight: 600 }}>{account?.name}</span></p>
             </div>
-            <button onClick={addNewInput} style={{ width: '100%', padding: '12px', background: 'transparent', border: '1px dashed #2a2a35', borderRadius: '8px', color: '#999', fontSize: '13px', cursor: 'pointer', marginBottom: '20px' }}>+ Add New Field</button>
 
-            {/* Hidden Inputs Section */}
+            {/* Core Fields Section */}
+            <div style={{ marginBottom: '24px' }}>
+              <div style={{ fontSize: '11px', color: '#888', textTransform: 'uppercase', marginBottom: '12px', letterSpacing: '0.5px' }}>Core Fields (Always Available)</div>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px' }}>
+                {inputs.map((input, i) => input.fixed && !input.hidden && (
+                  <div key={input.id} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '10px 14px', background: '#141418', borderRadius: '8px', borderLeft: `3px solid ${input.color || '#22c55e'}` }}>
+                    <input type="checkbox" checked={input.enabled} onChange={e => updateInput(i, 'enabled', e.target.checked)} style={{ width: '16px', height: '16px', accentColor: input.color || '#22c55e' }} />
+                    <span style={{ flex: 1, fontSize: '13px', color: input.enabled ? '#fff' : '#666', fontWeight: 500 }}>{input.label}</span>
+                    <span style={{ fontSize: '10px', color: '#666', padding: '3px 8px', background: '#0a0a0e', borderRadius: '4px' }}>
+                      {input.type === 'select' ? '▾ Select' : input.type === 'number' ? '# Number' : input.type === 'text' ? 'Aa Text' : input.type === 'date' ? '📅 Date' : input.type === 'textarea' ? '📝 Notes' : input.type === 'rating' ? '⭐ Rating' : input.type === 'file' ? '📷 Image' : input.type}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Custom Fields Section */}
+            <div style={{ marginBottom: '24px' }}>
+              <div style={{ fontSize: '11px', color: '#888', textTransform: 'uppercase', marginBottom: '12px', letterSpacing: '0.5px' }}>Custom Fields</div>
+              {inputs.filter(inp => !inp.fixed && !inp.hidden).length === 0 ? (
+                <div style={{ padding: '20px', background: '#0a0a0e', borderRadius: '8px', textAlign: 'center', color: '#666', fontSize: '13px' }}>
+                  No custom fields yet. Add one below to track additional data.
+                </div>
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                  {inputs.map((input, i) => !input.fixed && !input.hidden && (
+                    <div key={input.id} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '14px 16px', background: '#0a0a0e', borderRadius: '8px', borderLeft: `3px solid ${input.color || '#22c55e'}` }}>
+                      <input type="checkbox" checked={input.enabled} onChange={e => updateInput(i, 'enabled', e.target.checked)} style={{ width: '16px', height: '16px', accentColor: input.color || '#22c55e' }} />
+                      {/* Color picker */}
+                      <input type="color" value={input.color || '#22c55e'} onChange={e => updateInput(i, 'color', e.target.value)} style={{ width: '28px', height: '28px', border: 'none', borderRadius: '4px', cursor: 'pointer', background: 'transparent' }} title="Choose color" />
+                      {/* Label */}
+                      <input type="text" value={input.label} onChange={e => updateInput(i, 'label', e.target.value)} style={{ flex: 1, padding: '8px 12px', background: '#141418', border: '1px solid #2a2a35', borderRadius: '6px', color: '#fff', fontSize: '13px' }} placeholder="Field name" />
+                      {/* Type selector */}
+                      <select value={input.type} onChange={e => updateInput(i, 'type', e.target.value)} style={{ padding: '8px 12px', background: '#141418', border: '1px solid #2a2a35', borderRadius: '6px', color: '#fff', fontSize: '12px', minWidth: '120px' }}>
+                        <option value="text">Aa Text</option>
+                        <option value="number"># Number</option>
+                        <option value="select">▾ Dropdown</option>
+                        <option value="textarea">📝 Long Text</option>
+                        <option value="rating">⭐ Rating</option>
+                      </select>
+                      {/* Edit options for select type */}
+                      {input.type === 'select' && (
+                        <button onClick={() => openOptionsEditor(i)} style={{ padding: '8px 14px', background: '#1a1a22', border: '1px solid #2a2a35', borderRadius: '6px', color: '#fff', fontSize: '11px', cursor: 'pointer', whiteSpace: 'nowrap' }}>
+                          Edit Options ({(input.options || []).length})
+                        </button>
+                      )}
+                      {/* Delete button */}
+                      <button onClick={() => deleteInput(i)} style={{ padding: '6px 10px', background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.3)', borderRadius: '6px', color: '#ef4444', cursor: 'pointer', fontSize: '14px' }} title="Hide field">×</button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Add New Field */}
+            <button onClick={addNewInput} style={{ width: '100%', padding: '14px', background: 'transparent', border: '2px dashed #2a2a35', borderRadius: '8px', color: '#888', fontSize: '13px', cursor: 'pointer', marginBottom: '20px', transition: 'all 0.2s' }} onMouseOver={e => { e.target.style.borderColor = '#22c55e'; e.target.style.color = '#22c55e' }} onMouseOut={e => { e.target.style.borderColor = '#2a2a35'; e.target.style.color = '#888' }}>+ Add Custom Field</button>
+
+            {/* Hidden Fields */}
             {inputs.filter(inp => inp.hidden).length > 0 && (
-              <div style={{ marginBottom: '20px', padding: '12px', background: '#0a0a0e', borderRadius: '8px', border: '1px solid #1a1a22' }}>
+              <div style={{ marginBottom: '20px', padding: '14px', background: '#0a0a0e', borderRadius: '8px', border: '1px solid #1a1a22' }}>
                 <div style={{ fontSize: '11px', color: '#666', textTransform: 'uppercase', marginBottom: '10px' }}>Hidden Fields (data preserved)</div>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
                   {inputs.map((inp, idx) => inp.hidden && (
-                    <div key={inp.id} style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '6px 10px', background: '#141418', borderRadius: '6px', border: '1px solid #1a1a22' }}>
+                    <div key={inp.id} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 12px', background: '#141418', borderRadius: '6px', border: '1px solid #1a1a22' }}>
+                      <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: inp.color || '#666' }} />
                       <span style={{ fontSize: '12px', color: '#888' }}>{inp.label}</span>
-                      <button onClick={() => restoreInput(idx)} style={{ background: '#22c55e', border: 'none', borderRadius: '4px', color: '#fff', fontSize: '10px', padding: '3px 8px', cursor: 'pointer' }}>Restore</button>
+                      <button onClick={() => restoreInput(idx)} style={{ background: '#22c55e', border: 'none', borderRadius: '4px', color: '#fff', fontSize: '10px', padding: '4px 10px', cursor: 'pointer' }}>Restore</button>
                     </div>
                   ))}
                 </div>
               </div>
             )}
 
+            {/* Action buttons */}
             <div style={{ display: 'flex', gap: '12px' }}>
-              <button onClick={saveInputs} style={{ flex: 1, padding: '14px', background: '#22c55e', border: 'none', borderRadius: '8px', color: '#fff', fontWeight: 600, fontSize: '14px', cursor: 'pointer' }}>Save</button>
+              <button onClick={saveInputs} style={{ flex: 1, padding: '14px', background: '#22c55e', border: 'none', borderRadius: '8px', color: '#fff', fontWeight: 600, fontSize: '14px', cursor: 'pointer' }}>Save Changes</button>
               <button onClick={() => setShowEditInputs(false)} style={{ flex: 1, padding: '14px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '8px', color: '#999', fontWeight: 600, fontSize: '14px', cursor: 'pointer' }}>Cancel</button>
             </div>
           </div>
@@ -2462,12 +2511,12 @@ export default function AccountPage() {
 
       {editingOptions !== null && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.9)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 102 }} onClick={() => setEditingOptions(null)}>
-          <div style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '28px', width: '360px' }} onClick={e => e.stopPropagation()}>
-            <h2 style={{ fontSize: '20px', fontWeight: 600, marginBottom: '16px', color: '#fff' }}>Edit Options</h2>
-            <p style={{ fontSize: '13px', color: '#999', marginBottom: '16px' }}>One option per line</p>
-            <textarea value={optionsText} onChange={e => setOptionsText(e.target.value)} rows={8} style={{ width: '100%', padding: '12px', background: '#0a0a0e', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '14px', resize: 'none', boxSizing: 'border-box', marginBottom: '16px' }} />
+          <div style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '12px', padding: '28px', width: '400px' }} onClick={e => e.stopPropagation()}>
+            <h2 style={{ fontSize: '20px', fontWeight: 700, marginBottom: '8px', color: '#fff' }}>Edit Dropdown Options</h2>
+            <p style={{ fontSize: '13px', color: '#666', marginBottom: '20px' }}>Enter each option on a new line. These will appear in the dropdown menu.</p>
+            <textarea value={optionsText} onChange={e => setOptionsText(e.target.value)} rows={8} placeholder="Option 1&#10;Option 2&#10;Option 3" style={{ width: '100%', padding: '14px', background: '#0a0a0e', border: '1px solid #2a2a35', borderRadius: '8px', color: '#fff', fontSize: '14px', resize: 'none', boxSizing: 'border-box', marginBottom: '20px', lineHeight: '1.6' }} />
             <div style={{ display: 'flex', gap: '12px' }}>
-              <button onClick={saveOptions} style={{ flex: 1, padding: '14px', background: '#22c55e', border: 'none', borderRadius: '8px', color: '#fff', fontWeight: 600, cursor: 'pointer' }}>Save</button>
+              <button onClick={saveOptions} style={{ flex: 1, padding: '14px', background: '#22c55e', border: 'none', borderRadius: '8px', color: '#fff', fontWeight: 600, cursor: 'pointer' }}>Save Options</button>
               <button onClick={() => setEditingOptions(null)} style={{ flex: 1, padding: '14px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '8px', color: '#999', fontWeight: 600, cursor: 'pointer' }}>Cancel</button>
             </div>
           </div>
