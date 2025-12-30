@@ -576,10 +576,7 @@ export default function DashboardPage() {
             <div style={{ background: 'linear-gradient(180deg, #0f0f14 0%, #0a0a0f 100%)', border: '1px solid #1a1a22', borderRadius: '12px', padding: '16px', flex: sidebarExpanded ? '1' : 'none' }}>
               {/* Header */}
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px', paddingBottom: '10px', borderBottom: '1px solid #1a1a22' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#22c55e' }} />
-                  <span style={{ fontSize: '12px', color: '#fff', fontWeight: 600, letterSpacing: '0.5px' }}>LOG TRADE</span>
-                </div>
+                <span style={{ fontSize: '12px', color: '#fff', fontWeight: 600, letterSpacing: '0.5px' }}>LOG TRADE</span>
                 {/* Expand Toggle - show when many inputs */}
                 {getSelectedAccountCustomInputs().length > 2 && (
                   <button onClick={() => setSidebarExpanded(!sidebarExpanded)} style={{ padding: '5px 7px', background: sidebarExpanded ? '#22c55e' : '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px', color: sidebarExpanded ? '#fff' : '#666', cursor: 'pointer', display: 'flex', alignItems: 'center' }} title={sidebarExpanded ? 'Collapse' : 'Expand'}>
@@ -1198,12 +1195,18 @@ export default function DashboardPage() {
         )}
 
         {showDeleteModal && (
-          <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.9)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100 }} onClick={() => { setShowDeleteModal(null); setDeleteConfirm('') }}>
-            <div style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '10px', padding: '28px', width: '380px' }} onClick={e => e.stopPropagation()}>
-              <h2 style={{ fontSize: '18px', fontWeight: 600, marginBottom: '8px', color: '#ef4444' }}>Delete Journal</h2>
-              <p style={{ fontSize: '14px', color: '#888', marginBottom: '16px' }}>This action cannot be undone. All trades will be permanently deleted.</p>
-              <div style={{ marginBottom: '16px' }}><label style={{ display: 'block', fontSize: '11px', color: '#777', marginBottom: '6px', textTransform: 'uppercase' }}>Type "delete" to confirm</label><input type="text" value={deleteConfirm} onChange={e => setDeleteConfirm(e.target.value)} placeholder="delete" style={{ width: '100%', padding: '12px 14px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '14px', boxSizing: 'border-box' }} /></div>
-              <div style={{ display: 'flex', gap: '12px' }}><button onClick={() => deleteAccount(showDeleteModal)} disabled={deleteConfirm.toLowerCase() !== 'delete'} style={{ flex: 1, padding: '12px', background: '#ef4444', border: 'none', borderRadius: '6px', color: '#fff', fontWeight: 600, fontSize: '14px', cursor: 'pointer', opacity: deleteConfirm.toLowerCase() !== 'delete' ? 0.5 : 1 }}>Delete Forever</button><button onClick={() => { setShowDeleteModal(null); setDeleteConfirm('') }} style={{ flex: 1, padding: '12px', background: 'transparent', border: '1px solid #1a1a22', borderRadius: '6px', color: '#888', fontWeight: 600, fontSize: '14px', cursor: 'pointer' }}>Cancel</button></div>
+          <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.8)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100 }} onClick={() => { setShowDeleteModal(null); setDeleteConfirm('') }}>
+            <div style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '12px', padding: '24px', width: '90%', maxWidth: '380px' }} onClick={e => e.stopPropagation()}>
+              <h3 style={{ fontSize: '18px', marginBottom: '8px', color: '#ef4444' }}>Delete Journal?</h3>
+              <p style={{ color: '#888', fontSize: '14px', marginBottom: '16px' }}>This action cannot be undone. All trades will be permanently deleted.</p>
+              <div style={{ marginBottom: '20px' }}>
+                <label style={{ display: 'block', fontSize: '11px', color: '#666', marginBottom: '6px', textTransform: 'uppercase' }}>Type "delete" to confirm</label>
+                <input type="text" value={deleteConfirm} onChange={e => setDeleteConfirm(e.target.value)} placeholder="delete" style={{ width: '100%', padding: '12px 14px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '8px', color: '#fff', fontSize: '14px', boxSizing: 'border-box' }} />
+              </div>
+              <div style={{ display: 'flex', gap: '12px' }}>
+                <button onClick={() => { setShowDeleteModal(null); setDeleteConfirm('') }} style={{ flex: 1, padding: '12px', background: 'transparent', border: '1px solid #1a1a22', borderRadius: '8px', color: '#888', cursor: 'pointer', fontWeight: 600, fontSize: '14px' }}>Cancel</button>
+                <button onClick={() => deleteAccount(showDeleteModal)} disabled={deleteConfirm.toLowerCase() !== 'delete'} style={{ flex: 1, padding: '12px', background: deleteConfirm.toLowerCase() === 'delete' ? '#ef4444' : '#333', border: 'none', borderRadius: '8px', color: '#fff', fontWeight: 600, fontSize: '14px', cursor: deleteConfirm.toLowerCase() === 'delete' ? 'pointer' : 'not-allowed' }}>Delete Forever</button>
+              </div>
             </div>
           </div>
         )}

@@ -673,27 +673,41 @@ export default function AccountPage() {
         {/* Spacer */}
         <div style={{ flex: 1 }} />
         {/* Journals List - at bottom */}
-        <div style={{ marginBottom: '8px', padding: '10px', background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', maxHeight: '160px', overflowY: 'auto' }}>
-          {allAccounts.map((acc) => (
-            <a
-              key={acc.id}
-              href={`/account/${acc.id}`}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-                padding: '8px 6px',
-                marginBottom: '2px',
-                background: 'transparent',
-                borderRadius: '4px',
-                textDecoration: 'none'
-              }}
-            >
-              <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: acc.id === accountId ? '#22c55e' : '#444', flexShrink: 0 }} />
-              <span style={{ fontSize: '11px', fontWeight: 500, color: acc.id === accountId ? '#fff' : '#888', flex: 1 }}>{acc.name}</span>
-              <span style={{ fontSize: '10px', color: acc.id === accountId ? '#22c55e' : '#666' }}>${(acc.starting_balance || 0).toLocaleString()}</span>
-            </a>
-          ))}
+        <div style={{ marginBottom: '8px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+          {allAccounts.map((acc) => {
+            const isSelected = acc.id === accountId
+            return (
+              <a
+                key={acc.id}
+                href={`/account/${acc.id}`}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  padding: '10px 12px',
+                  background: isSelected ? 'rgba(34,197,94,0.1)' : '#0a0a0f',
+                  border: `1px solid ${isSelected ? 'rgba(34,197,94,0.5)' : '#1a1a22'}`,
+                  borderRadius: '8px',
+                  textDecoration: 'none',
+                  transition: 'all 0.15s ease',
+                  boxShadow: isSelected ? '0 0 12px rgba(34,197,94,0.2), inset 0 0 20px rgba(34,197,94,0.05)' : 'none'
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <div style={{
+                    width: '8px',
+                    height: '8px',
+                    borderRadius: '50%',
+                    background: isSelected ? '#22c55e' : '#444',
+                    boxShadow: isSelected ? '0 0 6px #22c55e' : 'none',
+                    flexShrink: 0
+                  }} />
+                  <span style={{ fontSize: '12px', fontWeight: 600, color: isSelected ? '#22c55e' : '#888' }}>{acc.name}</span>
+                </div>
+                <span style={{ fontSize: '11px', color: isSelected ? '#22c55e' : '#666' }}>${(acc.starting_balance || 0).toLocaleString()}</span>
+              </a>
+            )
+          })}
         </div>
         <div style={{ padding: '10px 12px', background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '6px' }}>
           <div style={{ fontSize: '11px', color: '#888', lineHeight: '1.4' }}>{tabDescriptions[activeTab]}</div>
