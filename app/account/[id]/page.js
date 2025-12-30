@@ -257,7 +257,15 @@ export default function AccountPage() {
     const newInput = { id: `custom_${Date.now()}`, label: 'New Field', type: 'text', required: false, enabled: true, fixed: false, options: [], color: randomColor }
     setInputs([...inputs, newInput])
   }
-  function updateInput(i, f, v) { const n = [...inputs]; n[i] = { ...n[i], [f]: v }; setInputs(n) }
+  function updateInput(i, f, v) {
+    const n = [...inputs]
+    n[i] = { ...n[i], [f]: v }
+    // If changing to select type and no options exist, initialize empty array
+    if (f === 'type' && v === 'select' && !n[i].options) {
+      n[i].options = []
+    }
+    setInputs(n)
+  }
   function deleteInput(i) {
     // Soft delete - mark as hidden instead of removing (preserves data)
     const n = [...inputs]
@@ -2533,20 +2541,24 @@ export default function AccountPage() {
             {/* Core Fields Section - in bordered container */}
             <div style={{ marginBottom: '20px', padding: '16px', background: '#0a0a0e', borderRadius: '10px', border: '1px solid #1a1a22' }}>
               <div style={{ fontSize: '12px', color: '#888', marginBottom: '14px', fontWeight: 600 }}>Default Fields</div>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '6px' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                 {inputs.map((input, i) => input.fixed && !input.hidden && (
                   <div key={input.id} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 12px', background: '#141418', borderRadius: '6px' }}>
                     <input type="checkbox" checked={input.enabled} onChange={e => updateInput(i, 'enabled', e.target.checked)} style={{ width: '15px', height: '15px', accentColor: '#22c55e' }} />
-                    <span style={{ flex: 1, fontSize: '13px', color: input.enabled ? '#fff' : '#555' }}>{input.label}</span>
+                    <span style={{ minWidth: '80px', fontSize: '13px', color: input.enabled ? '#fff' : '#555' }}>{input.label}</span>
+                    <select value={input.type} onChange={e => updateInput(i, 'type', e.target.value)} style={{ padding: '6px 10px', background: '#0a0a0e', border: '1px solid #2a2a35', borderRadius: '4px', color: '#fff', fontSize: '11px', minWidth: '100px' }}>
+                      <option value="text">Text</option>
+                      <option value="number">Number</option>
+                      <option value="select">Dropdown</option>
+                      <option value="textarea">Notes</option>
+                      <option value="rating">Rating</option>
+                      <option value="date">Date</option>
+                      <option value="file">Image</option>
+                    </select>
                     {input.type === 'select' && (
-                      <select
-                        style={{ padding: '4px 8px', background: '#0a0a0e', border: '1px solid #2a2a35', borderRadius: '4px', color: '#888', fontSize: '11px', cursor: 'pointer' }}
-                        value=""
-                        onChange={(e) => { if (e.target.value === 'edit') openOptionsEditor(i) }}
-                      >
-                        <option value="">{(input.options || []).length} opts</option>
-                        <option value="edit">Edit Options & Colors</option>
-                      </select>
+                      <button onClick={() => openOptionsEditor(i)} style={{ padding: '6px 12px', background: '#0a0a0e', border: '1px solid #2a2a35', borderRadius: '4px', color: '#888', fontSize: '11px', cursor: 'pointer', whiteSpace: 'nowrap' }}>
+                        {(input.options || []).length} options
+                      </button>
                     )}
                   </div>
                 ))}
@@ -2565,23 +2577,20 @@ export default function AccountPage() {
                   {inputs.map((input, i) => !input.fixed && !input.hidden && (
                     <div key={input.id} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 12px', background: '#141418', borderRadius: '6px' }}>
                       <input type="checkbox" checked={input.enabled} onChange={e => updateInput(i, 'enabled', e.target.checked)} style={{ width: '15px', height: '15px', accentColor: '#22c55e' }} />
-                      <input type="text" value={input.label} onChange={e => updateInput(i, 'label', e.target.value)} style={{ flex: 1, padding: '6px 10px', background: '#0a0a0e', border: '1px solid #2a2a35', borderRadius: '4px', color: '#fff', fontSize: '12px' }} placeholder="Field name" />
-                      <select value={input.type} onChange={e => updateInput(i, 'type', e.target.value)} style={{ padding: '6px 10px', background: '#0a0a0e', border: '1px solid #2a2a35', borderRadius: '4px', color: '#fff', fontSize: '11px' }}>
+                      <input type="text" value={input.label} onChange={e => updateInput(i, 'label', e.target.value)} style={{ flex: 1, padding: '6px 10px', background: '#0a0a0e', border: '1px solid #2a2a35', borderRadius: '4px', color: '#fff', fontSize: '12px', minWidth: '80px' }} placeholder="Field name" />
+                      <select value={input.type} onChange={e => updateInput(i, 'type', e.target.value)} style={{ padding: '6px 10px', background: '#0a0a0e', border: '1px solid #2a2a35', borderRadius: '4px', color: '#fff', fontSize: '11px', minWidth: '100px' }}>
                         <option value="text">Text</option>
                         <option value="number">Number</option>
                         <option value="select">Dropdown</option>
                         <option value="textarea">Notes</option>
                         <option value="rating">Rating</option>
+                        <option value="date">Date</option>
+                        <option value="file">Image</option>
                       </select>
                       {input.type === 'select' && (
-                        <select
-                          style={{ padding: '6px 8px', background: '#0a0a0e', border: '1px solid #2a2a35', borderRadius: '4px', color: '#888', fontSize: '11px', cursor: 'pointer' }}
-                          value=""
-                          onChange={(e) => { if (e.target.value === 'edit') openOptionsEditor(i) }}
-                        >
-                          <option value="">{(input.options || []).length} opts</option>
-                          <option value="edit">Edit Options & Colors</option>
-                        </select>
+                        <button onClick={() => openOptionsEditor(i)} style={{ padding: '6px 12px', background: '#0a0a0e', border: '1px solid #2a2a35', borderRadius: '4px', color: '#888', fontSize: '11px', cursor: 'pointer', whiteSpace: 'nowrap' }}>
+                          {(input.options || []).length} options
+                        </button>
                       )}
                       <button onClick={() => deleteInput(i)} style={{ padding: '4px 8px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '4px', color: '#555', cursor: 'pointer', fontSize: '12px' }}>×</button>
                     </div>
