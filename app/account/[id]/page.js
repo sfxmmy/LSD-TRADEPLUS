@@ -373,9 +373,9 @@ export default function AccountPage() {
     return { cs, mw, ml }
   }
   const streaks = getStreaks()
-  const enabledInputs = inputs.filter(i => i.enabled)
-  const fixedInputs = enabledInputs.filter(i => i.fixed || ['symbol', 'outcome', 'pnl', 'riskPercent', 'rr', 'date'].includes(i.id))
-  const customInputs = enabledInputs.filter(i => !i.fixed && !['symbol', 'outcome', 'pnl', 'riskPercent', 'rr', 'date'].includes(i.id))
+  const enabledInputs = inputs.filter(i => i.enabled && !i.hidden)
+  const fixedInputs = enabledInputs.filter(i => ['symbol', 'outcome', 'pnl', 'riskPercent', 'rr', 'date'].includes(i.id))
+  const customInputs = enabledInputs.filter(i => !['symbol', 'outcome', 'pnl', 'riskPercent', 'rr', 'date'].includes(i.id))
 
   const avgRating = trades.length > 0 ? (trades.reduce((s, t) => s + (parseInt(getExtraData(t).rating) || 0), 0) / trades.length).toFixed(1) : '0'
   const avgPnl = trades.length > 0 ? Math.round(totalPnl / trades.length) : 0
@@ -598,7 +598,7 @@ export default function AccountPage() {
 
       {/* FIXED SIDEBAR - desktop only, starts under header */}
       {!isMobile && (
-        <div style={{ position: 'fixed', top: '65px', left: 0, bottom: 0, width: '180px', padding: '16px 12px', background: '#0a0a0f', zIndex: 45, display: 'flex', flexDirection: 'column', paddingTop: '72px', borderRight: '1px solid #1a1a22' }}>
+        <div style={{ position: 'fixed', top: '65px', left: 0, bottom: 0, width: '180px', padding: '16px 12px', background: '#0a0a0f', zIndex: 45, display: 'flex', flexDirection: 'column', paddingTop: '8px', borderRight: '1px solid #1a1a22' }}>
         <div>
           {['trades', 'statistics', 'notes'].map((tab) => (
             <button
