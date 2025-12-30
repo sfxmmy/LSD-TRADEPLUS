@@ -36,6 +36,7 @@ export default function DashboardPage() {
   const [quickTradeExtraData, setQuickTradeExtraData] = useState({})
   const [showAddInputModal, setShowAddInputModal] = useState(false)
   const [showEditInputsModal, setShowEditInputsModal] = useState(false)
+  const [deleteInputConfirm, setDeleteInputConfirm] = useState(null)
   const [newInputLabel, setNewInputLabel] = useState('')
   const [newInputOptions, setNewInputOptions] = useState('')
   const [savingInput, setSavingInput] = useState(false)
@@ -1250,7 +1251,7 @@ export default function DashboardPage() {
                           <div style={{ fontSize: '14px', fontWeight: 500, color: '#fff', marginBottom: '2px' }}>{input.label || input.id}</div>
                           <div style={{ fontSize: '11px', color: '#666' }}>{(input.options || []).join(', ')}</div>
                         </div>
-                        <button onClick={() => { if (confirm(`Remove "${input.label || input.id}" input?`)) removeCustomInput(input.id) }} style={{ padding: '6px 10px', background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.3)', borderRadius: '6px', color: '#ef4444', fontSize: '12px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                        <button onClick={() => setDeleteInputConfirm({ id: input.id, label: input.label || input.id })} style={{ padding: '6px 10px', background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.3)', borderRadius: '6px', color: '#ef4444', fontSize: '12px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}>
                           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
                           Remove
                         </button>
@@ -1278,6 +1279,26 @@ export default function DashboardPage() {
                 <button onClick={() => { saveCustomInput(); }} disabled={savingInput || !newInputLabel.trim() || !newInputOptions.trim()} style={{ width: '100%', padding: '12px', background: (savingInput || !newInputLabel.trim() || !newInputOptions.trim()) ? '#1a1a22' : '#22c55e', border: 'none', borderRadius: '8px', color: (savingInput || !newInputLabel.trim() || !newInputOptions.trim()) ? '#666' : '#fff', fontWeight: 600, fontSize: '13px', cursor: (savingInput || !newInputLabel.trim() || !newInputOptions.trim()) ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
                   {savingInput ? 'Adding...' : 'Add Input'}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Delete Input Confirmation Modal */}
+        {deleteInputConfirm && (
+          <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.8)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 101 }} onClick={() => setDeleteInputConfirm(null)}>
+            <div style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '12px', padding: '24px', width: '90%', maxWidth: '380px' }} onClick={e => e.stopPropagation()}>
+              <h3 style={{ fontSize: '18px', marginBottom: '8px', color: '#ef4444' }}>Remove "{deleteInputConfirm.label}"?</h3>
+              <p style={{ color: '#888', fontSize: '14px', marginBottom: '8px' }}>This input will be removed from your journal.</p>
+              <p style={{ color: '#666', fontSize: '13px', marginBottom: '20px', padding: '10px 12px', background: '#0a0a0f', borderRadius: '6px', borderLeft: '3px solid #3b82f6' }}>Your existing trade data for this field will be preserved.</p>
+              <div style={{ display: 'flex', gap: '12px' }}>
+                <button onClick={() => setDeleteInputConfirm(null)} style={{ flex: 1, padding: '12px', background: 'transparent', border: '1px solid #1a1a22', borderRadius: '8px', color: '#888', cursor: 'pointer', fontWeight: 600, fontSize: '14px' }}>Cancel</button>
+                <button
+                  onClick={() => { removeCustomInput(deleteInputConfirm.id); setDeleteInputConfirm(null) }}
+                  style={{ flex: 1, padding: '12px', background: '#ef4444', border: 'none', borderRadius: '8px', color: '#fff', cursor: 'pointer', fontWeight: 600, fontSize: '14px' }}
+                >
+                  Remove
                 </button>
               </div>
             </div>

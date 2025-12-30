@@ -73,7 +73,8 @@ export default function AccountPage() {
   const [isMobile, setIsMobile] = useState(false)
   const [showMobileMenu, setShowMobileMenu] = useState(false)
   const [deleteConfirmId, setDeleteConfirmId] = useState(null)
-  const [deleteConfirmText, setDeleteConfirmText] = useState('')
+  const [deleteInputConfirm, setDeleteInputConfirm] = useState(null)
+  const [deleteSelectedConfirm, setDeleteSelectedConfirm] = useState(false)
   const [showCumulativeStats, setShowCumulativeStats] = useState(false)
   const [allAccountsTrades, setAllAccountsTrades] = useState({})
   const [selectMode, setSelectMode] = useState(false)
@@ -207,7 +208,6 @@ export default function AccountPage() {
   }
 
   async function deleteTrade(tradeId) {
-    if (!confirm('Delete this trade?')) return
     const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY)
     await supabase.from('trades').delete().eq('id', tradeId)
     setTrades(trades.filter(t => t.id !== tradeId))
@@ -600,7 +600,7 @@ export default function AccountPage() {
 
       {/* FIXED SUBHEADER - starts at sidebar edge */}
       {!isMobile && (
-        <div style={{ position: 'fixed', top: '65px', left: '180px', right: 0, zIndex: 46, height: '60px', padding: '0 24px', background: '#0a0a0f', borderBottom: '1px solid #333', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div style={{ position: 'fixed', top: '65px', left: '180px', right: 0, zIndex: 46, padding: '12px 24px', background: '#0a0a0f', borderBottom: '1px solid #333', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
             <span style={{ fontSize: '26px', fontWeight: 700, color: '#fff' }}>{account?.name}</span>
             {/* Stats toggle - show next to journal name when on statistics tab and has multiple journals */}
@@ -633,7 +633,7 @@ export default function AccountPage() {
 
       {/* FIXED SIDEBAR - desktop only, starts under header */}
       {!isMobile && (
-        <div style={{ position: 'fixed', top: '57px', left: 0, bottom: 0, width: '180px', padding: '16px 12px', background: '#0a0a0f', zIndex: 45, display: 'flex', flexDirection: 'column', paddingTop: '20px', borderRight: '1px solid #1a1a22' }}>
+        <div style={{ position: 'fixed', top: '65px', left: 0, bottom: 0, width: '180px', padding: '12px 12px 16px 12px', background: '#0a0a0f', zIndex: 45, display: 'flex', flexDirection: 'column', borderRight: '1px solid #1a1a22' }}>
         <div>
           {['trades', 'statistics', 'notes'].map((tab) => (
             <button
@@ -664,7 +664,7 @@ export default function AccountPage() {
                 <button onClick={toggleSelectAll} style={{ width: '100%', padding: '6px', background: '#1a1a22', border: 'none', borderRadius: '4px', color: '#fff', fontSize: '10px', cursor: 'pointer' }}>{selectedTrades.size === trades.length ? 'Deselect All' : 'Select All'}</button>
                 {selectedTrades.size > 0 && getSlideshowImages().length > 0 && <button onClick={() => { setSlideshowIndex(0); setSlideshowMode(true) }} style={{ width: '100%', padding: '6px', background: '#1a1a22', border: 'none', borderRadius: '4px', color: '#fff', fontSize: '10px', cursor: 'pointer' }}>View Images</button>}
                 {selectedTrades.size > 0 && <button onClick={() => { setViewingSelectedStats(true); setActiveTab('statistics') }} style={{ width: '100%', padding: '6px', background: '#1a1a22', border: 'none', borderRadius: '4px', color: '#fff', fontSize: '10px', cursor: 'pointer' }}>View Stats</button>}
-                {selectedTrades.size > 0 && <button onClick={() => { if(confirm(`Delete ${selectedTrades.size} trades?`)) deleteSelectedTrades() }} style={{ width: '100%', padding: '6px', background: '#ef4444', border: 'none', borderRadius: '4px', color: '#fff', fontSize: '10px', cursor: 'pointer', fontWeight: 600 }}>Delete</button>}
+                {selectedTrades.size > 0 && <button onClick={() => setDeleteSelectedConfirm(true)} style={{ width: '100%', padding: '6px', background: '#ef4444', border: 'none', borderRadius: '4px', color: '#fff', fontSize: '10px', cursor: 'pointer', fontWeight: 600 }}>Delete</button>}
                 <button onClick={exitSelectMode} style={{ width: '100%', padding: '5px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '4px', color: '#666', fontSize: '10px', cursor: 'pointer' }}>Cancel</button>
               </div>
             </div>
@@ -815,25 +815,36 @@ export default function AccountPage() {
           </div>
         )}
 
-        {/* Delete Confirmation Modal */}
+        {/* Delete Trade Confirmation Modal */}
         {deleteConfirmId && (
-          <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.8)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }} onClick={() => { setDeleteConfirmId(null); setDeleteConfirmText('') }}>
-            <div style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '12px', padding: '24px', width: '90%', maxWidth: '400px' }} onClick={e => e.stopPropagation()}>
-              <h3 style={{ fontSize: '18px', marginBottom: '12px', color: '#fff' }}>Delete Trade?</h3>
-              <p style={{ color: '#999', fontSize: '14px', marginBottom: '16px' }}>This action cannot be undone. Type <span style={{ color: '#ef4444', fontWeight: 600 }}>delete</span> to confirm.</p>
-              <input 
-                type="text" 
-                value={deleteConfirmText} 
-                onChange={e => setDeleteConfirmText(e.target.value)}
-                placeholder="Type 'delete' to confirm"
-                style={{ width: '100%', padding: '12px', background: '#0a0a0e', border: '1px solid #2a2a35', borderRadius: '8px', color: '#fff', fontSize: '14px', marginBottom: '16px' }}
-              />
+          <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.8)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }} onClick={() => setDeleteConfirmId(null)}>
+            <div style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '12px', padding: '24px', width: '90%', maxWidth: '340px' }} onClick={e => e.stopPropagation()}>
+              <h3 style={{ fontSize: '18px', marginBottom: '8px', color: '#ef4444' }}>Delete Trade?</h3>
+              <p style={{ color: '#888', fontSize: '14px', marginBottom: '20px' }}>This action cannot be undone.</p>
               <div style={{ display: 'flex', gap: '12px' }}>
-                <button onClick={() => { setDeleteConfirmId(null); setDeleteConfirmText('') }} style={{ flex: 1, padding: '12px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '8px', color: '#999', cursor: 'pointer' }}>Cancel</button>
-                <button 
-                  onClick={() => { if (deleteConfirmText.toLowerCase() === 'delete') { deleteTrade(deleteConfirmId); setDeleteConfirmId(null); setDeleteConfirmText('') } }}
-                  style={{ flex: 1, padding: '12px', background: deleteConfirmText.toLowerCase() === 'delete' ? '#ef4444' : '#333', border: 'none', borderRadius: '8px', color: '#fff', cursor: deleteConfirmText.toLowerCase() === 'delete' ? 'pointer' : 'not-allowed', fontWeight: 600 }}
-                  disabled={deleteConfirmText.toLowerCase() !== 'delete'}
+                <button onClick={() => setDeleteConfirmId(null)} style={{ flex: 1, padding: '12px', background: 'transparent', border: '1px solid #1a1a22', borderRadius: '8px', color: '#888', cursor: 'pointer', fontWeight: 600, fontSize: '14px' }}>Cancel</button>
+                <button
+                  onClick={() => { deleteTrade(deleteConfirmId); setDeleteConfirmId(null) }}
+                  style={{ flex: 1, padding: '12px', background: '#ef4444', border: 'none', borderRadius: '8px', color: '#fff', cursor: 'pointer', fontWeight: 600, fontSize: '14px' }}
+                >
+                  Delete
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Delete Selected Trades Confirmation Modal */}
+        {deleteSelectedConfirm && (
+          <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.8)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }} onClick={() => setDeleteSelectedConfirm(false)}>
+            <div style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '12px', padding: '24px', width: '90%', maxWidth: '340px' }} onClick={e => e.stopPropagation()}>
+              <h3 style={{ fontSize: '18px', marginBottom: '8px', color: '#ef4444' }}>Delete {selectedTrades.size} Trade{selectedTrades.size > 1 ? 's' : ''}?</h3>
+              <p style={{ color: '#888', fontSize: '14px', marginBottom: '20px' }}>This action cannot be undone.</p>
+              <div style={{ display: 'flex', gap: '12px' }}>
+                <button onClick={() => setDeleteSelectedConfirm(false)} style={{ flex: 1, padding: '12px', background: 'transparent', border: '1px solid #1a1a22', borderRadius: '8px', color: '#888', cursor: 'pointer', fontWeight: 600, fontSize: '14px' }}>Cancel</button>
+                <button
+                  onClick={() => { deleteSelectedTrades(); setDeleteSelectedConfirm(false) }}
+                  style={{ flex: 1, padding: '12px', background: '#ef4444', border: 'none', borderRadius: '8px', color: '#fff', cursor: 'pointer', fontWeight: 600, fontSize: '14px' }}
                 >
                   Delete
                 </button>
@@ -2592,7 +2603,7 @@ export default function AccountPage() {
                           {(input.options || []).length} opts
                         </button>
                       )}
-                      <button onClick={() => deleteInput(i)} style={{ padding: '4px 8px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '4px', color: '#555', cursor: 'pointer', fontSize: '12px' }}>×</button>
+                      <button onClick={() => setDeleteInputConfirm({ index: i, label: input.label || input.id })} style={{ padding: '4px 8px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '4px', color: '#555', cursor: 'pointer', fontSize: '12px' }}>×</button>
                     </div>
                   ))}
                 </div>
@@ -2631,8 +2642,11 @@ export default function AccountPage() {
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '12px' }}>
               {optionsList.map((opt, idx) => (
-                <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 10px', background: '#0a0a0e', borderRadius: '6px', borderLeft: `4px solid ${opt.color}` }}>
-                  <input type="color" value={opt.color} onChange={e => updateOptionColor(idx, e.target.value)} style={{ width: '28px', height: '28px', border: 'none', borderRadius: '4px', cursor: 'pointer', background: 'transparent', padding: 0 }} />
+                <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '10px 12px', background: '#0a0a0e', borderRadius: '6px', border: '1px solid #1a1a22' }}>
+                  <div style={{ position: 'relative', width: '32px', height: '32px', flexShrink: 0 }}>
+                    <div style={{ width: '32px', height: '32px', borderRadius: '6px', background: opt.color, border: '2px solid #2a2a35', cursor: 'pointer' }} />
+                    <input type="color" value={opt.color} onChange={e => updateOptionColor(idx, e.target.value)} style={{ position: 'absolute', inset: 0, opacity: 0, width: '100%', height: '100%', cursor: 'pointer' }} />
+                  </div>
                   <input type="text" value={opt.value} onChange={e => updateOptionValue(idx, e.target.value)} placeholder="Option name" style={{ flex: 1, padding: '8px 10px', background: '#141418', border: '1px solid #2a2a35', borderRadius: '4px', color: '#fff', fontSize: '13px' }} />
                   <button onClick={() => removeOption(idx)} style={{ padding: '6px 10px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '4px', color: '#666', cursor: 'pointer', fontSize: '12px' }}>×</button>
                 </div>
@@ -2644,6 +2658,26 @@ export default function AccountPage() {
             <div style={{ display: 'flex', gap: '10px' }}>
               <button onClick={saveOptions} style={{ flex: 1, padding: '12px', background: '#22c55e', border: 'none', borderRadius: '8px', color: '#fff', fontWeight: 600, fontSize: '13px', cursor: 'pointer' }}>Save</button>
               <button onClick={() => { setEditingOptions(null); setOptionsList([]) }} style={{ flex: 1, padding: '12px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '8px', color: '#888', fontWeight: 600, fontSize: '13px', cursor: 'pointer' }}>Cancel</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Input Confirmation Modal */}
+      {deleteInputConfirm && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.8)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 103 }} onClick={() => setDeleteInputConfirm(null)}>
+          <div style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '12px', padding: '24px', width: '90%', maxWidth: '380px' }} onClick={e => e.stopPropagation()}>
+            <h3 style={{ fontSize: '18px', marginBottom: '8px', color: '#ef4444' }}>Hide "{deleteInputConfirm.label}"?</h3>
+            <p style={{ color: '#888', fontSize: '14px', marginBottom: '8px' }}>This field will be hidden from your journal.</p>
+            <p style={{ color: '#666', fontSize: '13px', marginBottom: '20px', padding: '10px 12px', background: '#0a0a0e', borderRadius: '6px', borderLeft: '3px solid #3b82f6' }}>Your existing trade data for this field will be preserved and can be restored anytime.</p>
+            <div style={{ display: 'flex', gap: '12px' }}>
+              <button onClick={() => setDeleteInputConfirm(null)} style={{ flex: 1, padding: '12px', background: 'transparent', border: '1px solid #1a1a22', borderRadius: '8px', color: '#888', cursor: 'pointer', fontWeight: 600, fontSize: '14px' }}>Cancel</button>
+              <button
+                onClick={() => { deleteInput(deleteInputConfirm.index); setDeleteInputConfirm(null) }}
+                style={{ flex: 1, padding: '12px', background: '#ef4444', border: 'none', borderRadius: '8px', color: '#fff', cursor: 'pointer', fontWeight: 600, fontSize: '14px' }}
+              >
+                Hide Field
+              </button>
             </div>
           </div>
         </div>
