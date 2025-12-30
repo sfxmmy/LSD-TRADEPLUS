@@ -2429,14 +2429,19 @@ export default function AccountPage() {
 
             {/* Core Fields Section */}
             <div style={{ marginBottom: '24px' }}>
-              <div style={{ fontSize: '11px', color: '#888', textTransform: 'uppercase', marginBottom: '12px', letterSpacing: '0.5px' }}>Core Fields (Always Available)</div>
+              <div style={{ fontSize: '11px', color: '#666', textTransform: 'uppercase', marginBottom: '12px', letterSpacing: '0.5px' }}>Core Fields</div>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px' }}>
                 {inputs.map((input, i) => input.fixed && !input.hidden && (
-                  <div key={input.id} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '10px 14px', background: '#141418', borderRadius: '8px', borderLeft: `3px solid ${input.color || '#22c55e'}` }}>
-                    <input type="checkbox" checked={input.enabled} onChange={e => updateInput(i, 'enabled', e.target.checked)} style={{ width: '16px', height: '16px', accentColor: input.color || '#22c55e' }} />
-                    <span style={{ flex: 1, fontSize: '13px', color: input.enabled ? '#fff' : '#666', fontWeight: 500 }}>{input.label}</span>
-                    <span style={{ fontSize: '10px', color: '#666', padding: '3px 8px', background: '#0a0a0e', borderRadius: '4px' }}>
-                      {input.type === 'select' ? '▾ Select' : input.type === 'number' ? '# Number' : input.type === 'text' ? 'Aa Text' : input.type === 'date' ? '📅 Date' : input.type === 'textarea' ? '📝 Notes' : input.type === 'rating' ? '⭐ Rating' : input.type === 'file' ? '📷 Image' : input.type}
+                  <div key={input.id} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '12px 14px', background: '#0a0a0e', borderRadius: '8px', border: '1px solid #1a1a22' }}>
+                    <input type="checkbox" checked={input.enabled} onChange={e => updateInput(i, 'enabled', e.target.checked)} style={{ width: '16px', height: '16px', accentColor: '#22c55e' }} />
+                    <span style={{ flex: 1, fontSize: '13px', color: input.enabled ? '#fff' : '#555', fontWeight: 500 }}>{input.label}</span>
+                    {input.type === 'select' && (
+                      <button onClick={() => openOptionsEditor(i)} style={{ padding: '5px 10px', background: '#141418', border: '1px solid #2a2a35', borderRadius: '5px', color: '#888', fontSize: '11px', cursor: 'pointer' }}>
+                        {(input.options || []).length} options
+                      </button>
+                    )}
+                    <span style={{ fontSize: '11px', color: '#555', padding: '4px 8px', background: '#141418', borderRadius: '4px' }}>
+                      {input.type === 'select' ? '▾' : input.type === 'number' ? '#' : input.type === 'text' ? 'Aa' : input.type === 'date' ? '📅' : input.type === 'textarea' ? '📝' : input.type === 'rating' ? '⭐' : input.type === 'file' ? '📷' : input.type}
                     </span>
                   </div>
                 ))}
@@ -2445,36 +2450,30 @@ export default function AccountPage() {
 
             {/* Custom Fields Section */}
             <div style={{ marginBottom: '24px' }}>
-              <div style={{ fontSize: '11px', color: '#888', textTransform: 'uppercase', marginBottom: '12px', letterSpacing: '0.5px' }}>Custom Fields</div>
+              <div style={{ fontSize: '11px', color: '#666', textTransform: 'uppercase', marginBottom: '12px', letterSpacing: '0.5px' }}>Custom Fields</div>
               {inputs.filter(inp => !inp.fixed && !inp.hidden).length === 0 ? (
-                <div style={{ padding: '20px', background: '#0a0a0e', borderRadius: '8px', textAlign: 'center', color: '#666', fontSize: '13px' }}>
+                <div style={{ padding: '20px', background: '#0a0a0e', borderRadius: '8px', border: '1px solid #1a1a22', textAlign: 'center', color: '#555', fontSize: '13px' }}>
                   No custom fields yet. Add one below to track additional data.
                 </div>
               ) : (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                   {inputs.map((input, i) => !input.fixed && !input.hidden && (
-                    <div key={input.id} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '14px 16px', background: '#0a0a0e', borderRadius: '8px', borderLeft: `3px solid ${input.color || '#22c55e'}` }}>
-                      <input type="checkbox" checked={input.enabled} onChange={e => updateInput(i, 'enabled', e.target.checked)} style={{ width: '16px', height: '16px', accentColor: input.color || '#22c55e' }} />
-                      {/* Color picker */}
-                      <input type="color" value={input.color || '#22c55e'} onChange={e => updateInput(i, 'color', e.target.value)} style={{ width: '28px', height: '28px', border: 'none', borderRadius: '4px', cursor: 'pointer', background: 'transparent' }} title="Choose color" />
-                      {/* Label */}
+                    <div key={input.id} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '12px 14px', background: '#0a0a0e', borderRadius: '8px', border: '1px solid #1a1a22' }}>
+                      <input type="checkbox" checked={input.enabled} onChange={e => updateInput(i, 'enabled', e.target.checked)} style={{ width: '16px', height: '16px', accentColor: '#22c55e' }} />
                       <input type="text" value={input.label} onChange={e => updateInput(i, 'label', e.target.value)} style={{ flex: 1, padding: '8px 12px', background: '#141418', border: '1px solid #2a2a35', borderRadius: '6px', color: '#fff', fontSize: '13px' }} placeholder="Field name" />
-                      {/* Type selector */}
-                      <select value={input.type} onChange={e => updateInput(i, 'type', e.target.value)} style={{ padding: '8px 12px', background: '#141418', border: '1px solid #2a2a35', borderRadius: '6px', color: '#fff', fontSize: '12px', minWidth: '120px' }}>
-                        <option value="text">Aa Text</option>
-                        <option value="number"># Number</option>
-                        <option value="select">▾ Dropdown</option>
-                        <option value="textarea">📝 Long Text</option>
-                        <option value="rating">⭐ Rating</option>
+                      <select value={input.type} onChange={e => updateInput(i, 'type', e.target.value)} style={{ padding: '8px 12px', background: '#141418', border: '1px solid #2a2a35', borderRadius: '6px', color: '#fff', fontSize: '12px', minWidth: '110px' }}>
+                        <option value="text">Text</option>
+                        <option value="number">Number</option>
+                        <option value="select">Dropdown</option>
+                        <option value="textarea">Long Text</option>
+                        <option value="rating">Rating</option>
                       </select>
-                      {/* Edit options for select type */}
                       {input.type === 'select' && (
-                        <button onClick={() => openOptionsEditor(i)} style={{ padding: '8px 14px', background: '#1a1a22', border: '1px solid #2a2a35', borderRadius: '6px', color: '#fff', fontSize: '11px', cursor: 'pointer', whiteSpace: 'nowrap' }}>
-                          Edit Options ({(input.options || []).length})
+                        <button onClick={() => openOptionsEditor(i)} style={{ padding: '8px 12px', background: '#141418', border: '1px solid #2a2a35', borderRadius: '6px', color: '#888', fontSize: '11px', cursor: 'pointer', whiteSpace: 'nowrap' }}>
+                          {(input.options || []).length} options
                         </button>
                       )}
-                      {/* Delete button */}
-                      <button onClick={() => deleteInput(i)} style={{ padding: '6px 10px', background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.3)', borderRadius: '6px', color: '#ef4444', cursor: 'pointer', fontSize: '14px' }} title="Hide field">×</button>
+                      <button onClick={() => deleteInput(i)} style={{ padding: '6px 10px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '6px', color: '#666', cursor: 'pointer', fontSize: '14px' }} title="Hide field">×</button>
                     </div>
                   ))}
                 </div>
@@ -2487,13 +2486,12 @@ export default function AccountPage() {
             {/* Hidden Fields */}
             {inputs.filter(inp => inp.hidden).length > 0 && (
               <div style={{ marginBottom: '20px', padding: '14px', background: '#0a0a0e', borderRadius: '8px', border: '1px solid #1a1a22' }}>
-                <div style={{ fontSize: '11px', color: '#666', textTransform: 'uppercase', marginBottom: '10px' }}>Hidden Fields (data preserved)</div>
+                <div style={{ fontSize: '11px', color: '#555', textTransform: 'uppercase', marginBottom: '10px' }}>Hidden Fields</div>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
                   {inputs.map((inp, idx) => inp.hidden && (
-                    <div key={inp.id} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 12px', background: '#141418', borderRadius: '6px', border: '1px solid #1a1a22' }}>
-                      <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: inp.color || '#666' }} />
+                    <div key={inp.id} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 12px', background: '#141418', borderRadius: '6px', border: '1px solid #2a2a35' }}>
                       <span style={{ fontSize: '12px', color: '#888' }}>{inp.label}</span>
-                      <button onClick={() => restoreInput(idx)} style={{ background: '#22c55e', border: 'none', borderRadius: '4px', color: '#fff', fontSize: '10px', padding: '4px 10px', cursor: 'pointer' }}>Restore</button>
+                      <button onClick={() => restoreInput(idx)} style={{ background: 'transparent', border: '1px solid #2a2a35', borderRadius: '4px', color: '#888', fontSize: '10px', padding: '4px 10px', cursor: 'pointer' }}>Restore</button>
                     </div>
                   ))}
                 </div>
