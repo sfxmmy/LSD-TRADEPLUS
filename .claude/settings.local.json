@@ -16,7 +16,8 @@
       "Bash(npm run build:*)",
       "Bash(node -c:*)",
       "Bash(head:*)",
-      "Bash(timeout 15 npm run dev:*)"
+      "Bash(timeout 15 npm run dev:*)",
+      "Bash(node --check:*)"
     ]
   }
 }

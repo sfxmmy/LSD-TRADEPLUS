@@ -463,13 +463,12 @@ export default function AccountPage() {
       {/* Global Tooltip */}
       <Tooltip data={tooltip} />
 
-      {/* FIXED HEADER */}
-      <header style={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 50, padding: isMobile ? '10px 16px' : '12px 32px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#0a0a0f' }}>
+      {/* FIXED HEADER - same structure as dashboard */}
+      <header style={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 50, padding: isMobile ? '10px 16px' : '16px 40px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#0a0a0f', borderBottom: '1px solid #333' }}>
         <a href="/" style={{ fontSize: isMobile ? '20px' : '28px', fontWeight: 700, textDecoration: 'none', letterSpacing: '-0.5px' }}><span style={{ color: '#22c55e' }}>LSD</span><span style={{ color: '#fff' }}>TRADE</span><span style={{ color: '#22c55e' }}>+</span></a>
         {!isMobile && (
-          <div style={{ position: 'relative', paddingBottom: '8px' }}>
+          <div style={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)' }}>
             <span style={{ fontSize: '32px', fontWeight: 700, color: '#fff' }}>{tabTitles[activeTab]}</span>
-            <div style={{ position: 'absolute', bottom: 0, left: '-120px', right: '-120px', height: '2px', background: 'linear-gradient(90deg, transparent 0%, #ef4444 20%, #ef4444 80%, transparent 100%)' }} />
           </div>
         )}
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -479,9 +478,6 @@ export default function AccountPage() {
           <a href="/dashboard" style={{ padding: isMobile ? '8px 12px' : '10px 20px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '8px', color: '#fff', fontSize: isMobile ? '12px' : '14px', textDecoration: 'none' }}>← Dashboard</a>
         </div>
       </header>
-
-      {/* Single full-width border line under header */}
-      {!isMobile && <div style={{ position: 'fixed', top: '57px', left: 0, right: 0, height: '1px', background: '#333', zIndex: 51 }} />}
 
       {/* Mobile Menu Overlay */}
       {isMobile && showMobileMenu && (
@@ -507,9 +503,9 @@ export default function AccountPage() {
         </div>
       )}
 
-      {/* FIXED SUBHEADER - connected to sidebar with no gap */}
+      {/* FIXED SUBHEADER - spans full width, no left border */}
       {!isMobile && (
-        <div style={{ position: 'fixed', top: '58px', left: '180px', right: 0, zIndex: 50, padding: '14px 24px 14px 25px', background: '#0a0a0f', borderBottom: '1px solid #1a1a22', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div style={{ position: 'fixed', top: '65px', left: 0, right: 0, zIndex: 46, padding: '14px 24px 14px 204px', background: '#0a0a0f', borderBottom: '1px solid #1a1a22', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
             <span style={{ fontSize: '26px', fontWeight: 700, color: '#fff' }}>{account?.name}</span>
             {/* Stats toggle - show next to journal name when on statistics tab and has multiple journals */}
@@ -539,7 +535,7 @@ export default function AccountPage() {
 
       {/* FIXED SIDEBAR - desktop only, starts under header */}
       {!isMobile && (
-        <div style={{ position: 'fixed', top: '58px', left: 0, bottom: 0, width: '180px', padding: '16px 12px', background: '#0a0a0f', zIndex: 45, display: 'flex', flexDirection: 'column', paddingTop: '72px', borderRight: '1px solid #1a1a22' }}>
+        <div style={{ position: 'fixed', top: '65px', left: 0, bottom: 0, width: '180px', padding: '16px 12px', background: '#0a0a0f', zIndex: 45, display: 'flex', flexDirection: 'column', paddingTop: '72px' }}>
         <div>
           {['trades', 'statistics', 'notes'].map((tab) => (
             <button
@@ -589,11 +585,11 @@ export default function AccountPage() {
       )}
 
       {/* MAIN CONTENT */}
-      <div style={{ marginLeft: isMobile ? 0 : '180px', marginTop: isMobile ? '100px' : '124px', padding: isMobile ? '12px' : '0' }}>
+      <div style={{ marginLeft: isMobile ? 0 : '180px', marginTop: isMobile ? '100px' : '130px', padding: isMobile ? '12px' : '0' }}>
 
         {/* TRADES TAB */}
         {activeTab === 'trades' && (
-          <div style={{ position: 'relative', height: 'calc(100vh - 124px)' }}>
+          <div style={{ position: 'relative', height: 'calc(100vh - 130px)' }}>
             {trades.length === 0 ? (
               <div style={{ padding: isMobile ? '40px 20px' : '60px', textAlign: 'center', color: '#999', fontSize: '15px' }}>No trades yet. Click "+ LOG NEW TRADE" to add your first trade.</div>
             ) : (
@@ -2168,7 +2164,7 @@ export default function AccountPage() {
       {/* MODALS */}
       {showAddTrade && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.9)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100 }} onClick={() => setShowAddTrade(false)}>
-          <div style={{ background: 'linear-gradient(180deg, #0f0f14 0%, #0a0a0f 100%)', border: '1px solid #1a1a22', borderRadius: '12px', padding: '20px', width: '340px', maxHeight: '85vh', overflowY: 'auto' }} onClick={e => e.stopPropagation()}>
+          <div style={{ background: 'linear-gradient(180deg, #0f0f14 0%, #0a0a0f 100%)', border: '1px solid #1a1a22', borderRadius: '12px', padding: '24px', width: '440px' }} onClick={e => e.stopPropagation()}>
             {/* Header */}
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px', paddingBottom: '12px', borderBottom: '1px solid #1a1a22' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
