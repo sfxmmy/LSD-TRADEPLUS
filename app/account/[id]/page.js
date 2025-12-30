@@ -398,9 +398,14 @@ export default function AccountPage() {
     }
     if (filters.direction && (t.direction || '').toLowerCase() !== filters.direction.toLowerCase()) return false
     if (filters.symbol && !(t.symbol || '').toLowerCase().includes(filters.symbol.toLowerCase())) return false
+    if (filters.session && (t.session || '').toLowerCase() !== filters.session.toLowerCase()) return false
+    if (filters.timeframe && (t.timeframe || '') !== filters.timeframe) return false
+    if (filters.confidence && (t.confidence || '').toLowerCase() !== filters.confidence.toLowerCase()) return false
+    if (filters.rr && parseFloat(t.rr || 0) < parseFloat(filters.rr)) return false
+    if (filters.rating && parseInt(t.rating || 0) < parseInt(filters.rating)) return false
     return true
   })
-  const hasActiveFilters = filters.dateFrom || filters.dateTo || filters.outcome || filters.direction || filters.symbol
+  const hasActiveFilters = filters.dateFrom || filters.dateTo || filters.outcome || filters.direction || filters.symbol || filters.session || filters.timeframe || filters.confidence || filters.rr || filters.rating
 
   const wins = trades.filter(t => t.outcome === 'win').length
   const losses = trades.filter(t => t.outcome === 'loss').length
