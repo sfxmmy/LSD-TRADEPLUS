@@ -51,6 +51,8 @@ export default function DashboardPage() {
   const [loadingMore, setLoadingMore] = useState(false)
   // Mobile trade entry modal
   const [showMobileTradeModal, setShowMobileTradeModal] = useState(false)
+  // Journal dropdown state
+  const [journalDropdownOpen, setJournalDropdownOpen] = useState(false)
 
   useEffect(() => {
     const checkMobile = () => setIsMobile(window.innerWidth < 768)
@@ -587,44 +589,97 @@ export default function DashboardPage() {
                 )}
               </div>
 
-              {/* Journal Select - Card Style */}
-              <div style={{ marginBottom: '12px' }}>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                  {accounts.map(acc => {
-                    const isSelected = quickTradeAccount === acc.id
-                    return (
-                      <button
-                        key={acc.id}
-                        onClick={() => setQuickTradeAccount(acc.id)}
-                        style={{
-                          width: '100%',
-                          padding: '10px 12px',
-                          background: isSelected ? 'rgba(34,197,94,0.1)' : '#0a0a0f',
-                          border: `1px solid ${isSelected ? 'rgba(34,197,94,0.5)' : '#1a1a22'}`,
-                          borderRadius: '8px',
-                          color: isSelected ? '#22c55e' : '#888',
-                          fontSize: '13px',
-                          fontWeight: 600,
-                          cursor: 'pointer',
-                          textAlign: 'left',
-                          transition: 'all 0.15s ease',
-                          boxShadow: isSelected ? '0 0 12px rgba(34,197,94,0.2), inset 0 0 20px rgba(34,197,94,0.05)' : 'none'
-                        }}
-                      >
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                          <div style={{
-                            width: '8px',
-                            height: '8px',
-                            borderRadius: '50%',
-                            background: isSelected ? '#22c55e' : '#333',
-                            boxShadow: isSelected ? '0 0 6px #22c55e' : 'none'
-                          }} />
-                          {acc.name}
-                        </div>
-                      </button>
-                    )
-                  })}
-                </div>
+              {/* Journal Select - Dropdown */}
+              <div style={{ marginBottom: '12px', position: 'relative' }}>
+                {/* Dropdown Header */}
+                <button
+                  onClick={() => setJournalDropdownOpen(!journalDropdownOpen)}
+                  style={{
+                    width: '100%',
+                    padding: '10px 12px',
+                    background: 'rgba(34,197,94,0.1)',
+                    border: '1px solid rgba(34,197,94,0.4)',
+                    borderRadius: journalDropdownOpen ? '8px 8px 0 0' : '8px',
+                    color: '#22c55e',
+                    fontSize: '13px',
+                    fontWeight: 600,
+                    cursor: 'pointer',
+                    textAlign: 'left',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    boxShadow: '0 0 12px rgba(34,197,94,0.15)'
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#22c55e', boxShadow: '0 0 6px #22c55e' }} />
+                    {accounts.find(a => a.id === quickTradeAccount)?.name || 'Select Journal'}
+                  </div>
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ transform: journalDropdownOpen ? 'rotate(180deg)' : 'rotate(0)', transition: 'transform 0.2s' }}>
+                    <path d="M6 9l6 6 6-6"/>
+                  </svg>
+                </button>
+                {/* Dropdown Content */}
+                {journalDropdownOpen && (
+                  <div style={{
+                    position: 'absolute',
+                    top: '100%',
+                    left: 0,
+                    right: 0,
+                    background: '#0d0d12',
+                    border: '1px solid rgba(34,197,94,0.3)',
+                    borderTop: 'none',
+                    borderRadius: '0 0 8px 8px',
+                    padding: '6px',
+                    zIndex: 10,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '4px',
+                    boxShadow: '0 4px 12px rgba(0,0,0,0.3)'
+                  }}>
+                    {accounts.map(acc => {
+                      const isSelected = quickTradeAccount === acc.id
+                      const accTrades = trades[acc.id] || []
+                      const totalPnl = accTrades.reduce((sum, t) => sum + (parseFloat(t.pnl) || 0), 0)
+                      return (
+                        <button
+                          key={acc.id}
+                          onClick={() => { setQuickTradeAccount(acc.id); setJournalDropdownOpen(false) }}
+                          style={{
+                            width: '100%',
+                            padding: '10px 12px',
+                            background: isSelected ? 'rgba(34,197,94,0.15)' : '#0a0a0f',
+                            border: `1px solid ${isSelected ? 'rgba(34,197,94,0.5)' : '#1a1a22'}`,
+                            borderRadius: '6px',
+                            color: isSelected ? '#22c55e' : '#999',
+                            fontSize: '12px',
+                            fontWeight: 600,
+                            cursor: 'pointer',
+                            textAlign: 'left',
+                            transition: 'all 0.15s ease',
+                            boxShadow: isSelected ? '0 0 10px rgba(34,197,94,0.2), inset 0 0 15px rgba(34,197,94,0.05)' : 'none'
+                          }}
+                        >
+                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                              <div style={{
+                                width: '6px',
+                                height: '6px',
+                                borderRadius: '50%',
+                                background: isSelected ? '#22c55e' : '#444',
+                                boxShadow: isSelected ? '0 0 4px #22c55e' : 'none'
+                              }} />
+                              {acc.name}
+                            </div>
+                            <span style={{ fontSize: '11px', color: totalPnl >= 0 ? '#22c55e' : '#ef4444' }}>
+                              {totalPnl >= 0 ? '+' : ''}${Math.round(totalPnl).toLocaleString()}
+                            </span>
+                          </div>
+                        </button>
+                      )
+                    })}
+                  </div>
+                )}
               </div>
 
               {/* Core Fields Grid */}
@@ -1242,45 +1297,98 @@ export default function DashboardPage() {
 
             {/* Scrollable Form */}
             <div style={{ flex: 1, overflow: 'auto', padding: '20px' }}>
-              {/* Journal Select - Card Style */}
-              <div style={{ marginBottom: '16px' }}>
+              {/* Journal Select - Dropdown */}
+              <div style={{ marginBottom: '16px', position: 'relative' }}>
                 <label style={{ display: 'block', fontSize: '11px', color: '#666', marginBottom: '8px', textTransform: 'uppercase' }}>Journal</label>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                  {accounts.map(acc => {
-                    const isSelected = quickTradeAccount === acc.id
-                    return (
-                      <button
-                        key={acc.id}
-                        onClick={() => setQuickTradeAccount(acc.id)}
-                        style={{
-                          width: '100%',
-                          padding: '14px 16px',
-                          background: isSelected ? 'rgba(34,197,94,0.1)' : '#0a0a0f',
-                          border: `1px solid ${isSelected ? 'rgba(34,197,94,0.5)' : '#1a1a22'}`,
-                          borderRadius: '10px',
-                          color: isSelected ? '#22c55e' : '#888',
-                          fontSize: '15px',
-                          fontWeight: 600,
-                          cursor: 'pointer',
-                          textAlign: 'left',
-                          transition: 'all 0.15s ease',
-                          boxShadow: isSelected ? '0 0 15px rgba(34,197,94,0.25), inset 0 0 25px rgba(34,197,94,0.05)' : 'none'
-                        }}
-                      >
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                          <div style={{
-                            width: '10px',
-                            height: '10px',
-                            borderRadius: '50%',
-                            background: isSelected ? '#22c55e' : '#333',
-                            boxShadow: isSelected ? '0 0 8px #22c55e' : 'none'
-                          }} />
-                          {acc.name}
-                        </div>
-                      </button>
-                    )
-                  })}
-                </div>
+                {/* Dropdown Header */}
+                <button
+                  onClick={() => setJournalDropdownOpen(!journalDropdownOpen)}
+                  style={{
+                    width: '100%',
+                    padding: '14px 16px',
+                    background: 'rgba(34,197,94,0.1)',
+                    border: '1px solid rgba(34,197,94,0.4)',
+                    borderRadius: journalDropdownOpen ? '10px 10px 0 0' : '10px',
+                    color: '#22c55e',
+                    fontSize: '15px',
+                    fontWeight: 600,
+                    cursor: 'pointer',
+                    textAlign: 'left',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    boxShadow: '0 0 15px rgba(34,197,94,0.15)'
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#22c55e', boxShadow: '0 0 8px #22c55e' }} />
+                    {accounts.find(a => a.id === quickTradeAccount)?.name || 'Select Journal'}
+                  </div>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ transform: journalDropdownOpen ? 'rotate(180deg)' : 'rotate(0)', transition: 'transform 0.2s' }}>
+                    <path d="M6 9l6 6 6-6"/>
+                  </svg>
+                </button>
+                {/* Dropdown Content */}
+                {journalDropdownOpen && (
+                  <div style={{
+                    position: 'absolute',
+                    top: '100%',
+                    left: 0,
+                    right: 0,
+                    background: '#0d0d12',
+                    border: '1px solid rgba(34,197,94,0.3)',
+                    borderTop: 'none',
+                    borderRadius: '0 0 10px 10px',
+                    padding: '8px',
+                    zIndex: 10,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '6px',
+                    boxShadow: '0 4px 15px rgba(0,0,0,0.4)'
+                  }}>
+                    {accounts.map(acc => {
+                      const isSelected = quickTradeAccount === acc.id
+                      const accTrades = trades[acc.id] || []
+                      const totalPnl = accTrades.reduce((sum, t) => sum + (parseFloat(t.pnl) || 0), 0)
+                      return (
+                        <button
+                          key={acc.id}
+                          onClick={() => { setQuickTradeAccount(acc.id); setJournalDropdownOpen(false) }}
+                          style={{
+                            width: '100%',
+                            padding: '12px 14px',
+                            background: isSelected ? 'rgba(34,197,94,0.15)' : '#0a0a0f',
+                            border: `1px solid ${isSelected ? 'rgba(34,197,94,0.5)' : '#1a1a22'}`,
+                            borderRadius: '8px',
+                            color: isSelected ? '#22c55e' : '#999',
+                            fontSize: '14px',
+                            fontWeight: 600,
+                            cursor: 'pointer',
+                            textAlign: 'left',
+                            transition: 'all 0.15s ease',
+                            boxShadow: isSelected ? '0 0 12px rgba(34,197,94,0.2), inset 0 0 20px rgba(34,197,94,0.05)' : 'none'
+                          }}
+                        >
+                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                              <div style={{
+                                width: '8px',
+                                height: '8px',
+                                borderRadius: '50%',
+                                background: isSelected ? '#22c55e' : '#444',
+                                boxShadow: isSelected ? '0 0 6px #22c55e' : 'none'
+                              }} />
+                              {acc.name}
+                            </div>
+                            <span style={{ fontSize: '13px', color: totalPnl >= 0 ? '#22c55e' : '#ef4444' }}>
+                              {totalPnl >= 0 ? '+' : ''}${Math.round(totalPnl).toLocaleString()}
+                            </span>
+                          </div>
+                        </button>
+                      )
+                    })}
+                  </div>
+                )}
               </div>
 
               {/* Symbol & PnL Row */}
