@@ -382,7 +382,7 @@ export default function DashboardPage() {
     }
 
     const svgW = 100, svgH = 100
-    const padX = 1 // Padding to prevent stroke clipping at edges
+    const padX = 2 // Padding to keep stroke (2.5px) fully inside viewBox
     const chartPoints = points.map((p, i) => {
       const x = points.length > 1 ? padX + (i / (points.length - 1)) * (svgW - 2 * padX) : svgW / 2
       const y = svgH - ((p.balance - yMin) / yRange) * svgH
@@ -463,7 +463,7 @@ export default function DashboardPage() {
                 <span style={{ position: 'absolute', right: '4px', top: '-12px', fontSize: '9px', color: '#999' }}>Start</span>
               </div>
             )}
-            <svg ref={svgRef} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', overflow: 'visible' }} viewBox={`0 0 ${svgW} ${svgH}`} preserveAspectRatio="none" onMouseMove={handleMouseMove} onMouseLeave={() => setHoverPoint(null)}>
+            <svg ref={svgRef} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%' }} viewBox={`0 0 ${svgW} ${svgH}`} preserveAspectRatio="none" onMouseMove={handleMouseMove} onMouseLeave={() => setHoverPoint(null)}>
               <defs>
                 <linearGradient id="areaGradGreen" x1="0%" y1="0%" x2="0%" y2="100%">
                   <stop offset="0%" stopColor="#22c55e" stopOpacity="0.3" />
