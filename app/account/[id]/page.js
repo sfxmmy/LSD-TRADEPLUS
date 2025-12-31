@@ -687,7 +687,12 @@ export default function AccountPage() {
             {activeTab === 'trades' && !selectMode && (
               <button onClick={() => setShowEditInputs(true)} style={{ padding: '10px 16px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '8px', color: '#888', fontSize: '13px', cursor: 'pointer' }}>Edit Columns</button>
             )}
-            {!selectMode && <button onClick={() => setShowAddTrade(true)} style={{ padding: '10px 24px', background: '#22c55e', border: 'none', borderRadius: '8px', color: '#fff', fontWeight: 600, fontSize: '14px', cursor: 'pointer' }}>+ LOG TRADE</button>}
+            {!selectMode && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', alignItems: 'center' }}>
+                <a href="/dashboard" style={{ padding: '10px 24px', background: 'linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%)', border: 'none', borderRadius: '8px', color: '#fff', fontWeight: 600, fontSize: '14px', textDecoration: 'none', textAlign: 'center', width: '100%', boxSizing: 'border-box' }}>← Dashboard</a>
+                <button onClick={() => setShowAddTrade(true)} style={{ padding: '10px 24px', background: '#22c55e', border: 'none', borderRadius: '8px', color: '#fff', fontWeight: 600, fontSize: '14px', cursor: 'pointer', width: '100%' }}>+ LOG TRADE</button>
+              </div>
+            )}
           </div>
         </div>
       )}
