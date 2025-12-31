@@ -59,27 +59,27 @@ export async function GET(request) {
             )
 
             if (isMember) {
-              // User is a Discord member - give them free access
+              // User is a Discord member - give them subscribing access
               await serviceSupabase
                 .from('profiles')
                 .upsert({
                   id: user.id,
                   email: user.email,
                   username: user.user_metadata?.full_name || user.email?.split('@')[0],
-                  subscription_status: 'active',
+                  subscription_status: 'subscribing',
                   updated_at: new Date().toISOString()
                 }, { onConflict: 'id' })
 
               return NextResponse.redirect(`${origin}/dashboard`)
             } else {
-              // User is NOT a Discord member - show error
+              // User is NOT a Discord member - no access
               await serviceSupabase
                 .from('profiles')
                 .upsert({
                   id: user.id,
                   email: user.email,
                   username: user.user_metadata?.full_name || user.email?.split('@')[0],
-                  subscription_status: 'free',
+                  subscription_status: 'not subscribing',
                   updated_at: new Date().toISOString()
                 }, { onConflict: 'id' })
 
@@ -109,8 +109,8 @@ export async function GET(request) {
       .eq('id', user.id)
       .single()
 
-    // Determine subscription status (preserve existing, default to 'none' for new users - no access until they pay)
-    let subscriptionStatus = existingProfile?.subscription_status || 'none'
+    // Determine subscription status (preserve existing, default to 'not subscribing' for new users)
+    let subscriptionStatus = existingProfile?.subscription_status || 'not subscribing'
 
     // Upsert profile (preserve is_admin if exists)
     await serviceSupabase
@@ -125,8 +125,8 @@ export async function GET(request) {
       }, { onConflict: 'id' })
 
     // Redirect based on access
-    // is_admin = full access, 'active' = paying, 'free' = giveaway
-    if (existingProfile?.is_admin || subscriptionStatus === 'active' || subscriptionStatus === 'free') {
+    // is_admin = full access, 'subscribing' = paying, 'free subscription' = giveaway
+    if (existingProfile?.is_admin || subscriptionStatus === 'subscribing' || subscriptionStatus === 'free subscription') {
       return NextResponse.redirect(`${origin}/dashboard`)
     } else {
       return NextResponse.redirect(`${origin}/pricing`)

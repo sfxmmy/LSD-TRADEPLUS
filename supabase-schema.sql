@@ -17,13 +17,27 @@ CREATE TABLE IF NOT EXISTS profiles (
   id UUID REFERENCES auth.users(id) ON DELETE CASCADE PRIMARY KEY,
   email TEXT,
   username TEXT,
-  subscription_status TEXT DEFAULT 'free',
-  stripe_customer_id TEXT,
-  stripe_subscription_id TEXT,
-  discord_id TEXT,
+  subscription_status TEXT DEFAULT 'not subscribing',
+  is_admin BOOLEAN DEFAULT FALSE,
+  customer_id TEXT,
+  subscription_id TEXT,
+  subscription_start TIMESTAMPTZ,
+  subscription_end TIMESTAMPTZ,
+  cancelled_at TIMESTAMPTZ,
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
+
+-- =====================================================
+-- SUBSCRIPTION STATUS VALUES:
+-- =====================================================
+-- 'subscribing'      = Paying subscriber (has access)
+-- 'free subscription' = Free entry/giveaway (has access)
+-- 'not subscribing'  = No subscription (NO access, must pay)
+--
+-- is_admin = TRUE means full access regardless of subscription
+-- Only ssiagos@hotmail.com should be admin
+-- =====================================================
 
 -- =====================================================
 -- ACCOUNTS TABLE (Trading Journals)
@@ -82,16 +96,16 @@ DROP POLICY IF EXISTS "trades_delete" ON trades;
 DROP POLICY IF EXISTS "trades_all" ON trades;
 
 -- Create new policies
-CREATE POLICY "profiles_all" ON profiles 
-  FOR ALL 
+CREATE POLICY "profiles_all" ON profiles
+  FOR ALL
   USING (auth.uid() = id);
 
-CREATE POLICY "accounts_all" ON accounts 
-  FOR ALL 
+CREATE POLICY "accounts_all" ON accounts
+  FOR ALL
   USING (auth.uid() = user_id);
 
-CREATE POLICY "trades_all" ON trades 
-  FOR ALL 
+CREATE POLICY "trades_all" ON trades
+  FOR ALL
   USING (
     account_id IN (
       SELECT id FROM accounts WHERE user_id = auth.uid()
@@ -113,7 +127,7 @@ BEGIN
       NEW.raw_user_meta_data->>'full_name',
       split_part(NEW.email, '@', 1)
     ),
-    'none',  -- New users have no subscription, must pay to access
+    'not subscribing',
     FALSE
   )
   ON CONFLICT (id) DO UPDATE SET
@@ -128,18 +142,13 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
 CREATE TRIGGER on_auth_user_created
   AFTER INSERT ON auth.users
-  FOR EACH ROW 
+  FOR EACH ROW
   EXECUTE FUNCTION handle_new_user();
 
 -- =====================================================
--- GIVE ADMIN ACCESS
--- Run this after creating the admin user in Supabase Auth
+-- SET ADMIN (only ssiagos@hotmail.com)
 -- =====================================================
-INSERT INTO profiles (id, email, username, subscription_status)
-SELECT id, email, split_part(email, '@', 1), 'active'
-FROM auth.users
-WHERE email = 'ssiagos@hotmail.com'
-ON CONFLICT (id) DO UPDATE SET subscription_status = 'active';
+UPDATE profiles SET is_admin = TRUE WHERE email = 'ssiagos@hotmail.com';
 
 -- =====================================================
 -- INDEXES FOR BETTER PERFORMANCE
@@ -148,7 +157,7 @@ CREATE INDEX IF NOT EXISTS idx_accounts_user_id ON accounts(user_id);
 CREATE INDEX IF NOT EXISTS idx_trades_account_id ON trades(account_id);
 CREATE INDEX IF NOT EXISTS idx_trades_date ON trades(date);
 CREATE INDEX IF NOT EXISTS idx_profiles_email ON profiles(email);
-CREATE INDEX IF NOT EXISTS idx_profiles_stripe_customer ON profiles(stripe_customer_id);
+CREATE INDEX IF NOT EXISTS idx_profiles_customer ON profiles(customer_id);
 
 -- =====================================================
 -- HELPER FUNCTION: Update updated_at timestamp

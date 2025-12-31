@@ -34,7 +34,7 @@ export default function AuthCallbackPage() {
             id: session.user.id,
             email: session.user.email,
             full_name: session.user.user_metadata?.full_name || null,
-            subscription_status: 'inactive'
+            subscription_status: 'not subscribing'
           })
         }
 
@@ -45,8 +45,8 @@ export default function AuthCallbackPage() {
           .eq('id', session.user.id)
           .single()
 
-        // is_admin = full access, 'active' = paying, 'free' = giveaway
-        if (profileData?.is_admin || profileData?.subscription_status === 'active' || profileData?.subscription_status === 'free') {
+        // is_admin = full access, 'subscribing' = paying, 'free subscription' = giveaway
+        if (profileData?.is_admin || profileData?.subscription_status === 'subscribing' || profileData?.subscription_status === 'free subscription') {
           window.location.href = '/dashboard'
         } else {
           window.location.href = '/pricing'

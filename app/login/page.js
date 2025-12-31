@@ -45,12 +45,12 @@ export default function LoginPage() {
         .single()
 
       // Check if user has valid subscription or is admin
-      // is_admin = full access, 'active' = paying, 'free' = giveaway
+      // is_admin = full access, 'subscribing' = paying, 'free subscription' = giveaway
       const hasAccess = (() => {
         if (!profile) return false
         if (profile.is_admin) return true
-        if (profile.subscription_status === 'active') return true
-        if (profile.subscription_status === 'free') return true
+        if (profile.subscription_status === 'subscribing') return true
+        if (profile.subscription_status === 'free subscription') return true
         return false
       })()
 

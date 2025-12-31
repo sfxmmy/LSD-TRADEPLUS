@@ -14,13 +14,13 @@ export default function PricingPage() {
   }, [])
 
   // Check if user has valid subscription
-  // 'active' = paying subscriber, 'free' = giveaway/free entry, both get access
-  // 'none'/null = no subscription, no access
+  // 'subscribing' = paying subscriber, 'free subscription' = giveaway/free entry, both get access
+  // 'not subscribing'/null = no subscription, no access
   function hasValidSubscription(profile) {
     if (!profile) return false
     const { subscription_status } = profile
-    if (subscription_status === 'active') return true
-    if (subscription_status === 'free') return true
+    if (subscription_status === 'subscribing') return true
+    if (subscription_status === 'free subscription') return true
     return false
   }
 

@@ -51,7 +51,7 @@ export async function POST(request) {
             const { error } = await supabase
               .from('profiles')
               .update({
-                subscription_status: 'active',
+                subscription_status: 'subscribing',
                 subscription_id: session.subscription,
                 customer_id: session.customer,
                 subscription_start: new Date().toISOString(),
@@ -81,9 +81,9 @@ export async function POST(request) {
         }
 
         if (userId) {
-          const status = subscription.status === 'active' ? 'active' :
+          const status = subscription.status === 'active' ? 'subscribing' :
                         subscription.status === 'past_due' ? 'past_due' :
-                        subscription.status === 'canceled' ? 'cancelled' : subscription.status
+                        subscription.status === 'canceled' ? 'not subscribing' : subscription.status
 
           const updateData = { subscription_status: status }
 
@@ -117,11 +117,11 @@ export async function POST(request) {
         }
 
         if (userId) {
-          // Set to 'none' - no longer paying, no access
+          // Set to 'not subscribing' - no longer paying, no access
           const { error } = await supabase
             .from('profiles')
             .update({
-              subscription_status: 'none',
+              subscription_status: 'not subscribing',
               subscription_id: null,
               cancelled_at: new Date().toISOString(),
               subscription_end: new Date().toISOString()
