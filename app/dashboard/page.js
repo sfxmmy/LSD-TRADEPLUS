@@ -492,14 +492,17 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          <div style={{ height: '26px', position: 'relative', overflow: 'visible', display: 'flex', alignItems: 'center' }}>
+          <div style={{ height: '26px', position: 'relative', overflow: 'visible' }}>
             {xLabels.map((l, i) => {
               // Adjust transform for edge labels to prevent cutoff
               const isFirst = i === 0
               const isLast = i === xLabels.length - 1
               const transform = isFirst ? 'translateX(0)' : isLast ? 'translateX(-100%)' : 'translateX(-50%)'
               return (
-                <span key={i} style={{ position: 'absolute', left: `${l.pct}%`, transform, fontSize: '10px', color: '#999', whiteSpace: 'nowrap' }}>{l.label}</span>
+                <div key={i} style={{ position: 'absolute', left: `${l.pct}%`, transform, display: 'flex', flexDirection: 'column', alignItems: isFirst ? 'flex-start' : isLast ? 'flex-end' : 'center' }}>
+                  <div style={{ width: '1px', height: '6px', background: '#1a1a22' }} />
+                  <span style={{ fontSize: '10px', color: '#999', whiteSpace: 'nowrap', marginTop: '2px' }}>{l.label}</span>
+                </div>
               )
             })}
           </div>
