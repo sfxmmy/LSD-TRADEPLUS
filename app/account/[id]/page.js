@@ -620,12 +620,9 @@ export default function AccountPage() {
       <header style={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 50, padding: isMobile ? '10px 16px' : '16px 40px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#0a0a0f', borderBottom: '1px solid #333' }}>
         <a href="/" style={{ fontSize: isMobile ? '20px' : '28px', fontWeight: 700, textDecoration: 'none', letterSpacing: '-0.5px' }}><span style={{ color: '#22c55e' }}>LSD</span><span style={{ color: '#fff' }}>TRADE</span><span style={{ color: '#22c55e' }}>+</span></a>
         {!isMobile && (
-          <>
-            <div style={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)' }}>
-              <span style={{ fontSize: '32px', fontWeight: 700, color: '#fff' }}>{tabTitles[activeTab]}</span>
-            </div>
-            <a href="/dashboard" style={{ padding: '10px 20px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '8px', color: '#888', fontSize: '13px', textDecoration: 'none' }}>← Dashboard</a>
-          </>
+          <div style={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)' }}>
+            <span style={{ fontSize: '32px', fontWeight: 700, color: '#fff' }}>{tabTitles[activeTab]}</span>
+          </div>
         )}
         {isMobile && (
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -687,6 +684,7 @@ export default function AccountPage() {
             {activeTab === 'trades' && !selectMode && (
               <button onClick={() => setShowEditInputs(true)} style={{ padding: '10px 16px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '8px', color: '#888', fontSize: '13px', cursor: 'pointer' }}>Edit Columns</button>
             )}
+            {!selectMode && <a href="/dashboard" style={{ padding: '10px 16px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '8px', color: '#888', fontSize: '13px', textDecoration: 'none' }}>← Dashboard</a>}
             {!selectMode && <button onClick={() => setShowAddTrade(true)} style={{ padding: '10px 24px', background: '#22c55e', border: 'none', borderRadius: '8px', color: '#fff', fontWeight: 600, fontSize: '14px', cursor: 'pointer' }}>+ LOG TRADE</button>}
           </div>
         </div>
