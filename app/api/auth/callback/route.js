@@ -105,17 +105,14 @@ export async function GET(request) {
     // Get existing profile to preserve subscription status
     const { data: existingProfile } = await serviceSupabase
       .from('profiles')
-      .select('subscription_status')
+      .select('subscription_status, is_admin')
       .eq('id', user.id)
       .single()
 
-    // Determine subscription status
+    // Determine subscription status (preserve existing, default to free for new users)
     let subscriptionStatus = existingProfile?.subscription_status || 'free'
-    if (user.email === 'ssiagos@hotmail.com') {
-      subscriptionStatus = 'active'
-    }
 
-    // Upsert profile
+    // Upsert profile (preserve is_admin if exists)
     await serviceSupabase
       .from('profiles')
       .upsert({
@@ -123,11 +120,12 @@ export async function GET(request) {
         email: user.email,
         username: user.user_metadata?.full_name || user.email?.split('@')[0],
         subscription_status: subscriptionStatus,
+        is_admin: existingProfile?.is_admin || false,
         updated_at: new Date().toISOString()
       }, { onConflict: 'id' })
 
-    // Redirect based on access
-    if (subscriptionStatus === 'active') {
+    // Redirect based on access (admin or active subscription goes to dashboard)
+    if (existingProfile?.is_admin || subscriptionStatus === 'active') {
       return NextResponse.redirect(`${origin}/dashboard`)
     } else {
       return NextResponse.redirect(`${origin}/pricing`)

@@ -36,15 +36,14 @@ export default function PricingPage() {
       setUser(user)
 
       if (user) {
-        const isAdmin = user.email === process.env.NEXT_PUBLIC_ADMIN_EMAIL || user.email === 'ssiagos@hotmail.com'
-        if (isAdmin) {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('subscription_status, subscription_end, plan, is_admin')
+          .eq('id', user.id)
+          .single()
+        if (profile?.is_admin) {
           setHasAccess(true)
         } else {
-          const { data: profile } = await supabase
-            .from('profiles')
-            .select('subscription_status, subscription_end, plan')
-            .eq('id', user.id)
-            .single()
           setHasAccess(hasValidSubscription(profile))
         }
       }

@@ -87,11 +87,8 @@ export default function DashboardPage() {
     const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY)
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) { window.location.href = '/login'; return }
-    const isAdmin = user.email === process.env.NEXT_PUBLIC_ADMIN_EMAIL || user.email === 'ssiagos@hotmail.com'
-    if (!isAdmin) {
-      const { data: profile } = await supabase.from('profiles').select('subscription_status, subscription_end, plan').eq('id', user.id).single()
-      if (!hasValidSubscription(profile)) { window.location.href = '/pricing'; return }
-    }
+    const { data: profile } = await supabase.from('profiles').select('subscription_status, subscription_end, plan, is_admin').eq('id', user.id).single()
+    if (!profile?.is_admin && !hasValidSubscription(profile)) { window.location.href = '/pricing'; return }
     setUser(user)
     const { data: accountsData } = await supabase.from('accounts').select('*').eq('user_id', user.id).order('created_at', { ascending: true })
     setAccounts(accountsData || [])

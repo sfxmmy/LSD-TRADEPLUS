@@ -37,24 +37,17 @@ export default function LoginPage() {
         return
       }
 
-      // Check if admin
-      const isAdmin = data.user.email === process.env.NEXT_PUBLIC_ADMIN_EMAIL || data.user.email === 'ssiagos@hotmail.com'
-
-      if (isAdmin) {
-        window.location.href = '/dashboard'
-        return
-      }
-
       // Check subscription status before redirecting
       const { data: profile } = await supabase
         .from('profiles')
-        .select('subscription_status, subscription_end, plan')
+        .select('subscription_status, subscription_end, plan, is_admin')
         .eq('id', data.user.id)
         .single()
 
-      // Check if user has valid subscription
+      // Check if user has valid subscription or is admin
       const hasAccess = (() => {
         if (!profile) return false
+        if (profile.is_admin) return true
         const { subscription_status, subscription_end, plan } = profile
         if (subscription_status === 'active') return true
         if (plan === 'lifetime') return true

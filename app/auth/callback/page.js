@@ -41,17 +41,11 @@ export default function AuthCallbackPage() {
         // Redirect to dashboard or pricing based on subscription
         const { data: profileData } = await supabase
           .from('profiles')
-          .select('subscription_status')
+          .select('subscription_status, is_admin')
           .eq('id', session.user.id)
           .single()
 
-        // Admin bypass
-        if (session.user.email === 'ssiagos@hotmail.com') {
-          window.location.href = '/dashboard'
-          return
-        }
-
-        if (profileData?.subscription_status === 'active') {
+        if (profileData?.is_admin || profileData?.subscription_status === 'active') {
           window.location.href = '/dashboard'
         } else {
           window.location.href = '/pricing'
