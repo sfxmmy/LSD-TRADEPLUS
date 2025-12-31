@@ -269,7 +269,7 @@ export default function AccountPage() {
     }
     setInputs(n)
   }
-  function deleteInput(i) {
+  function hideInput(i) {
     // Soft delete - mark as hidden instead of removing (preserves data)
     const n = [...inputs]
     n[i] = { ...n[i], hidden: true }
@@ -279,6 +279,38 @@ export default function AccountPage() {
     const n = [...inputs]
     n[i] = { ...n[i], hidden: false }
     setInputs(n)
+  }
+  function inputHasData(inputId) {
+    // Check if any trades have data for this input
+    return trades.some(t => {
+      const extra = getExtraData(t)
+      const val = extra[inputId]
+      return val !== undefined && val !== null && val !== ''
+    })
+  }
+  async function permanentlyDeleteInput(i) {
+    const input = inputs[i]
+    if (!input) return
+    // Remove data from all trades
+    const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY)
+    for (const trade of trades) {
+      const extra = getExtraData(trade)
+      if (extra[input.id] !== undefined) {
+        delete extra[input.id]
+        await supabase.from('trades').update({ extra_data: JSON.stringify(extra) }).eq('id', trade.id)
+      }
+    }
+    // Remove input from inputs array (for custom inputs) or just hide (for fixed inputs)
+    if (input.fixed) {
+      const n = [...inputs]
+      n[i] = { ...n[i], hidden: true }
+      setInputs(n)
+    } else {
+      setInputs(inputs.filter((_, idx) => idx !== i))
+    }
+    // Reload trades to reflect changes
+    const { data } = await supabase.from('trades').select('*').eq('account_id', account.id).order('date', { ascending: true })
+    if (data) setTrades(data)
   }
   function openOptionsEditor(i) {
     setEditingOptions(i)
@@ -2907,7 +2939,7 @@ export default function AccountPage() {
                           {(input.options || []).length} opts
                         </button>
                       )}
-                      <button onClick={() => setDeleteInputConfirm({ index: i, label: input.label || input.id })} style={{ padding: '4px 8px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '4px', color: '#555', cursor: 'pointer', fontSize: '12px' }}>×</button>
+                      <button onClick={() => setDeleteInputConfirm({ index: i, label: input.label || input.id, id: input.id })} style={{ padding: '4px 8px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '4px', color: '#555', cursor: 'pointer', fontSize: '12px' }}>×</button>
                     </div>
                   ))}
                 </div>
@@ -2968,24 +3000,44 @@ export default function AccountPage() {
       )}
 
       {/* Delete Input Confirmation Modal */}
-      {deleteInputConfirm && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.8)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 103 }} onClick={() => setDeleteInputConfirm(null)}>
-          <div style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '12px', padding: '24px', width: '90%', maxWidth: '380px' }} onClick={e => e.stopPropagation()}>
-            <h3 style={{ fontSize: '18px', marginBottom: '8px', color: '#ef4444' }}>Hide "{deleteInputConfirm.label}"?</h3>
-            <p style={{ color: '#888', fontSize: '14px', marginBottom: '8px' }}>This field will be hidden from your journal.</p>
-            <p style={{ color: '#666', fontSize: '13px', marginBottom: '20px', padding: '10px 12px', background: '#0a0a0e', borderRadius: '6px', borderLeft: '3px solid #3b82f6' }}>Your existing trade data for this field will be preserved and can be restored anytime.</p>
-            <div style={{ display: 'flex', gap: '12px' }}>
-              <button onClick={() => setDeleteInputConfirm(null)} style={{ flex: 1, padding: '12px', background: 'transparent', border: '1px solid #1a1a22', borderRadius: '8px', color: '#888', cursor: 'pointer', fontWeight: 600, fontSize: '14px' }}>Cancel</button>
-              <button
-                onClick={() => { deleteInput(deleteInputConfirm.index); setDeleteInputConfirm(null) }}
-                style={{ flex: 1, padding: '12px', background: '#ef4444', border: 'none', borderRadius: '8px', color: '#fff', cursor: 'pointer', fontWeight: 600, fontSize: '14px' }}
-              >
-                Hide Field
-              </button>
+      {deleteInputConfirm && (() => {
+        const hasData = inputHasData(deleteInputConfirm.id)
+        return (
+          <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.8)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 103 }} onClick={() => setDeleteInputConfirm(null)}>
+            <div style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '12px', padding: '24px', width: '90%', maxWidth: '420px' }} onClick={e => e.stopPropagation()}>
+              <h3 style={{ fontSize: '18px', marginBottom: '8px', color: '#ef4444' }}>Delete "{deleteInputConfirm.label}"?</h3>
+              {hasData ? (
+                <>
+                  <p style={{ color: '#888', fontSize: '14px', marginBottom: '12px' }}>This field has existing data in your trades. What would you like to do?</p>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '16px' }}>
+                    <div style={{ padding: '12px', background: '#0a0a0e', borderRadius: '6px', borderLeft: '3px solid #3b82f6' }}>
+                      <div style={{ fontWeight: 600, color: '#fff', fontSize: '13px', marginBottom: '4px' }}>Hide Only</div>
+                      <div style={{ color: '#666', fontSize: '12px' }}>Column hidden, data preserved. Can restore anytime.</div>
+                    </div>
+                    <div style={{ padding: '12px', background: '#0a0a0e', borderRadius: '6px', borderLeft: '3px solid #ef4444' }}>
+                      <div style={{ fontWeight: 600, color: '#fff', fontSize: '13px', marginBottom: '4px' }}>Delete Permanently</div>
+                      <div style={{ color: '#666', fontSize: '12px' }}>Column and ALL data removed forever. Cannot undo.</div>
+                    </div>
+                  </div>
+                  <div style={{ display: 'flex', gap: '10px' }}>
+                    <button onClick={() => setDeleteInputConfirm(null)} style={{ flex: 1, padding: '12px', background: 'transparent', border: '1px solid #1a1a22', borderRadius: '8px', color: '#888', cursor: 'pointer', fontWeight: 600, fontSize: '13px' }}>Cancel</button>
+                    <button onClick={() => { hideInput(deleteInputConfirm.index); setDeleteInputConfirm(null) }} style={{ flex: 1, padding: '12px', background: '#3b82f6', border: 'none', borderRadius: '8px', color: '#fff', cursor: 'pointer', fontWeight: 600, fontSize: '13px' }}>Hide Only</button>
+                    <button onClick={() => { permanentlyDeleteInput(deleteInputConfirm.index); setDeleteInputConfirm(null) }} style={{ flex: 1, padding: '12px', background: '#ef4444', border: 'none', borderRadius: '8px', color: '#fff', cursor: 'pointer', fontWeight: 600, fontSize: '13px' }}>Delete All</button>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <p style={{ color: '#888', fontSize: '14px', marginBottom: '16px' }}>This field has no data. It will be permanently removed.</p>
+                  <div style={{ display: 'flex', gap: '12px' }}>
+                    <button onClick={() => setDeleteInputConfirm(null)} style={{ flex: 1, padding: '12px', background: 'transparent', border: '1px solid #1a1a22', borderRadius: '8px', color: '#888', cursor: 'pointer', fontWeight: 600, fontSize: '14px' }}>Cancel</button>
+                    <button onClick={() => { permanentlyDeleteInput(deleteInputConfirm.index); setDeleteInputConfirm(null) }} style={{ flex: 1, padding: '12px', background: '#ef4444', border: 'none', borderRadius: '8px', color: '#fff', cursor: 'pointer', fontWeight: 600, fontSize: '14px' }}>Delete</button>
+                  </div>
+                </>
+              )}
             </div>
           </div>
-        </div>
-      )}
+        )
+      })()}
 
       {showExpandedNote && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.9)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100 }} onClick={() => setShowExpandedNote(null)}>
