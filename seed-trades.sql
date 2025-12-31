@@ -8,7 +8,8 @@
 -- 3. Replace 'YOUR_ACCOUNT_ID_HERE' below with your actual account ID
 -- 4. Run in Supabase SQL Editor
 
--- STEP 1: Add extra_data column (run this first!)
+-- STEP 1: Add missing columns if they don't exist
+ALTER TABLE trades ADD COLUMN IF NOT EXISTS risk DECIMAL(5,2);
 ALTER TABLE trades ADD COLUMN IF NOT EXISTS extra_data JSONB;
 
 DO $$

@@ -437,13 +437,13 @@ export default function DashboardPage() {
             </div>
             {/* Zero line if negative values exist */}
             {zeroY !== null && (
-              <div style={{ position: 'absolute', left: 0, right: 0, top: `${zeroY}%`, borderTop: '2px solid #666', zIndex: 1 }}>
+              <div style={{ position: 'absolute', left: 0, right: 0, top: `${zeroY}%`, borderTop: '1px solid #333', zIndex: 1 }}>
                 <span style={{ position: 'absolute', left: '-44px', top: '-8px', fontSize: '9px', color: '#999' }}>$0</span>
               </div>
             )}
             {/* Starting balance line if balance dropped below start */}
             {startLineY !== null && (
-              <div style={{ position: 'absolute', left: 0, right: 0, top: `${startLineY}%`, borderTop: '1px dashed #666', zIndex: 1 }}>
+              <div style={{ position: 'absolute', left: 0, right: 0, top: `${startLineY}%`, borderTop: '1px dashed #444', zIndex: 1 }}>
                 <span style={{ position: 'absolute', right: '4px', top: '-12px', fontSize: '9px', color: '#999' }}>Start</span>
               </div>
             )}
