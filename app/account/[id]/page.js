@@ -329,7 +329,11 @@ export default function AccountPage() {
   function updateOptionColor(idx, col) { const n = [...optionsList]; n[idx] = { ...n[idx], color: col }; setOptionsList(n) }
   function addOption() { setOptionsList([...optionsList, { value: '', color: '#888888' }]) }
   function removeOption(idx) { setOptionsList(optionsList.filter((_, i) => i !== idx)) }
-  function getExtraData(t) { try { return JSON.parse(t.extra_data || '{}') } catch { return {} } }
+  function getExtraData(t) {
+    if (!t.extra_data) return {}
+    if (typeof t.extra_data === 'object') return t.extra_data
+    try { return JSON.parse(t.extra_data) } catch { return {} }
+  }
   function getDaysAgo(d) { const diff = Math.floor((new Date() - new Date(d)) / 86400000); return diff === 0 ? 'Today' : diff === 1 ? '1d ago' : `${diff}d ago` }
 
   // Get custom select inputs for dropdown options (excludes hidden)
@@ -1720,8 +1724,8 @@ export default function AccountPage() {
                       return Math.ceil(v / 500) * 500
                     }
                     const niceMax = barGraphMetric === 'winrate' ? 100 : getNiceMax(maxVal)
-                    // More labels when enlarged
-                    const labelCount = enlargedChart === 'bar' ? 10 : 6
+                    // Fewer labels to prevent overlap
+                    const labelCount = enlargedChart === 'bar' ? 6 : 4
                     const yLabels = []
                     for (let i = 0; i <= labelCount - 1; i++) {
                       const val = Math.round((1 - i / (labelCount - 1)) * niceMax)
@@ -1772,8 +1776,9 @@ export default function AccountPage() {
                                       onMouseEnter={() => setBarHover(i)}
                                       onMouseLeave={() => setBarHover(null)}
                                     >
-                                      <div style={{ fontSize: '10px', color: isGreen ? '#22c55e' : '#ef4444', marginBottom: '2px', fontWeight: 600 }}>{item.disp}</div>
                                       <div style={{ width: '100%', maxWidth: '50px', height: `${hPct}%`, background: `linear-gradient(to bottom, ${isGreen ? `rgba(34, 197, 94, ${0.1 + (hPct / 100) * 0.25})` : `rgba(239, 68, 68, ${0.1 + (hPct / 100) * 0.25})`} 0%, transparent 100%)`, border: `2px solid ${isGreen ? '#22c55e' : '#ef4444'}`, borderBottom: 'none', borderRadius: '3px 3px 0 0', position: 'relative', cursor: 'pointer' }}>
+                                        {/* Price label at top of bar */}
+                                        <div style={{ position: 'absolute', top: '-16px', left: '50%', transform: 'translateX(-50%)', fontSize: '10px', color: isGreen ? '#22c55e' : '#ef4444', fontWeight: 600, whiteSpace: 'nowrap' }}>{item.disp}</div>
                                         {isHovered && (
                                           <>
                                             <div style={{ position: 'absolute', bottom: '4px', left: '50%', transform: 'translateX(-50%)', width: '10px', height: '10px', borderRadius: '50%', background: isGreen ? '#22c55e' : '#ef4444', border: '2px solid #fff', zIndex: 5 }} />
@@ -3675,7 +3680,7 @@ export default function AccountPage() {
                           let key
                           if (equityCurveGroupBy === 'symbol') key = t.symbol
                           else if (equityCurveGroupBy === 'direction') key = t.direction
-                          else key = (JSON.parse(t.extra_data || '{}')[equityCurveGroupBy] || 'Unknown')
+                          else key = (getExtraData(t)[equityCurveGroupBy] || 'Unknown')
                           return visibleLineNames.includes(key)
                         })
                       } else {

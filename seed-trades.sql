@@ -3,20 +3,20 @@
 -- Includes all inputs: symbol, outcome, pnl, rr, risk, direction, date, notes, extra_data (confidence, rating, timeframe, session)
 --
 -- INSTRUCTIONS:
--- 1. First run the ALTER TABLE commands below to add columns if not exists
--- 2. Get your account_id: SELECT id, name FROM accounts;
--- 3. Replace account ID below with your actual account ID
--- 4. Run in Supabase SQL Editor
+-- 1. Replace account ID below with your actual account ID
+-- 2. Run in Supabase SQL Editor
+-- 3. This will DELETE existing trades for this account and insert fresh demo data
 
 -- STEP 1: Add missing columns if they don't exist
 ALTER TABLE trades ADD COLUMN IF NOT EXISTS risk DECIMAL(5,2);
 ALTER TABLE trades ADD COLUMN IF NOT EXISTS extra_data JSONB DEFAULT '{}';
-ALTER TABLE accounts ADD COLUMN IF NOT EXISTS custom_inputs TEXT DEFAULT '[]';
 
--- STEP 2: Set up custom input definitions for the account
-UPDATE accounts
-SET custom_inputs = '[{"id":"confidence","label":"Confidence","options":["Low","Medium","High"]},{"id":"rating","label":"Rating","options":["1","2","3","4","5"]},{"id":"timeframe","label":"Timeframe","options":["5m","15m","30m","1h","4h"]},{"id":"session","label":"Session","options":["Asian","London","New York","Overlap"]}]'
-WHERE id = '615da27e-d788-4a5f-902d-df1ab836ae14';
+-- STEP 2: Delete existing trades for this account (prevents duplicates)
+DELETE FROM trades WHERE account_id = '615da27e-d788-4a5f-902d-df1ab836ae14';
+
+-- STEP 3: Reset custom_inputs to NULL so app uses default inputs
+-- (The app has built-in defaults for confidence, rating, timeframe, session)
+UPDATE accounts SET custom_inputs = NULL WHERE id = '615da27e-d788-4a5f-902d-df1ab836ae14';
 
 DO $$
 DECLARE
@@ -33,7 +33,7 @@ INSERT INTO trades (account_id, symbol, outcome, pnl, rr, risk, direction, date,
 (acc_id, 'NAS100', 'loss', -100.00, 1.0, 1.0, 'long', '2025-01-07', 'Tech weak. Tried to catch falling knife. Bad idea.', '{"confidence":"Medium","rating":"1","timeframe":"5m","session":"New York"}'),
 (acc_id, 'USDJPY', 'win', 150.00, 1.5, 1.0, 'long', '2025-01-08', 'Dollar strength on yields. Nice trend continuation.', '{"confidence":"High","rating":"4","timeframe":"15m","session":"Asian"}'),
 (acc_id, 'EURUSD', 'loss', -100.00, 1.0, 1.0, 'short', '2025-01-10', 'Choppy price action pre-NFP. Should avoid trading before major news.', '{"confidence":"Low","rating":"1","timeframe":"5m","session":"London"}'),
-(acc_id, 'XAUUSD', 'win', 350.00, 3.5, 1.0, 'long', '2025-01-13', 'Beautiful 30m setup. Gold breaking out on risk-off sentiment. Let it run.', '{"confidence":"High","rating":"5","timeframe":"30m","session":"Overlap"}'),
+(acc_id, 'XAUUSD', 'win', 600.00, 6.0, 1.0, 'long', '2025-01-13', 'Beautiful 30m setup. Gold breaking out on risk-off sentiment. Let it run to 6R!', '{"confidence":"High","rating":"5","timeframe":"30m","session":"Overlap"}'),
 (acc_id, 'GBPUSD', 'win', 180.00, 1.8, 1.0, 'long', '2025-01-15', 'UK CPI beat. Cable rallied hard. Good fundamental alignment.', '{"confidence":"High","rating":"4","timeframe":"15m","session":"London"}'),
 (acc_id, 'US30', 'loss', -100.00, 1.0, 1.0, 'long', '2025-01-17', 'Indices choppy. Got stopped in the noise.', '{"confidence":"Medium","rating":"2","timeframe":"5m","session":"New York"}'),
 (acc_id, 'GBPJPY', 'win', 280.00, 2.8, 1.0, 'long', '2025-01-20', 'Risk-on Monday. Yen crosses flying. Caught nice move on 30m.', '{"confidence":"High","rating":"5","timeframe":"30m","session":"London"}'),
@@ -46,7 +46,7 @@ INSERT INTO trades (account_id, symbol, outcome, pnl, rr, risk, direction, date,
 (acc_id, 'USDJPY', 'win', 250.00, 2.5, 1.0, 'long', '2025-02-03', 'BOJ keeping rates low. Dollar bid. Clean breakout.', '{"confidence":"High","rating":"4","timeframe":"15m","session":"Asian"}'),
 (acc_id, 'GBPUSD', 'loss', -100.00, 1.0, 1.0, 'long', '2025-02-05', 'UK data miss. Got caught wrong side.', '{"confidence":"Medium","rating":"2","timeframe":"5m","session":"London"}'),
 (acc_id, 'EURUSD', 'win', 180.00, 1.8, 1.0, 'long', '2025-02-07', 'Euro bounce on positioning. Quick scalp.', '{"confidence":"Medium","rating":"3","timeframe":"5m","session":"London"}'),
-(acc_id, 'XAUUSD', 'win', 400.00, 4.0, 1.0, 'long', '2025-02-10', 'Gold new highs. 30m trend trade. Best of the month so far.', '{"confidence":"High","rating":"5","timeframe":"30m","session":"Overlap"}'),
+(acc_id, 'XAUUSD', 'win', 800.00, 8.0, 1.0, 'long', '2025-02-10', 'Gold new highs. 30m trend trade. MONSTER 8R runner! Best trade of the year so far.', '{"confidence":"High","rating":"5","timeframe":"30m","session":"Overlap"}'),
 (acc_id, 'NAS100', 'loss', -100.00, 1.0, 1.0, 'long', '2025-02-12', 'Tech selling on rates fear. Bad timing.', '{"confidence":"Medium","rating":"2","timeframe":"5m","session":"New York"}'),
 (acc_id, 'GBPJPY', 'loss', -100.00, 1.0, 1.0, 'short', '2025-02-13', 'Risk still on. Wrong read on sentiment.', '{"confidence":"Low","rating":"1","timeframe":"5m","session":"London"}'),
 (acc_id, 'US30', 'win', 220.00, 2.2, 1.0, 'long', '2025-02-17', 'Presidents Day rally. Indices pushing.', '{"confidence":"High","rating":"4","timeframe":"15m","session":"New York"}'),
@@ -63,7 +63,7 @@ INSERT INTO trades (account_id, symbol, outcome, pnl, rr, risk, direction, date,
 (acc_id, 'GBPJPY', 'win', 250.00, 2.5, 1.0, 'long', '2025-03-10', 'Risk-on post NFP. Yen crosses ripping.', '{"confidence":"High","rating":"4","timeframe":"15m","session":"London"}'),
 (acc_id, 'US30', 'win', 200.00, 2.0, 1.0, 'long', '2025-03-12', 'Indices breaking out. Good follow through.', '{"confidence":"High","rating":"4","timeframe":"15m","session":"New York"}'),
 (acc_id, 'EURUSD', 'win', 280.00, 2.8, 1.0, 'long', '2025-03-14', 'Euro strength on ECB. Four in a row!', '{"confidence":"High","rating":"5","timeframe":"15m","session":"London"}'),
-(acc_id, 'XAUUSD', 'win', 400.00, 4.0, 1.0, 'long', '2025-03-17', 'Gold breakout. Five wins straight. On fire!', '{"confidence":"High","rating":"5","timeframe":"30m","session":"Overlap"}'),
+(acc_id, 'XAUUSD', 'win', 700.00, 7.0, 1.0, 'long', '2025-03-17', 'Gold breakout. Five wins straight. 7R runner! On fire!', '{"confidence":"High","rating":"5","timeframe":"30m","session":"Overlap"}'),
 (acc_id, 'NAS100', 'win', 300.00, 3.0, 1.0, 'long', '2025-03-19', 'FOMC dovish. Tech rallying hard. SIX consecutive wins!', '{"confidence":"High","rating":"5","timeframe":"15m","session":"New York"}'),
 (acc_id, 'GBPUSD', 'loss', -100.00, 1.0, 1.0, 'short', '2025-03-21', 'Tried to fade the move. Streak ended. Still a great run.', '{"confidence":"Low","rating":"2","timeframe":"5m","session":"London"}'),
 (acc_id, 'USDJPY', 'win', 200.00, 2.0, 1.0, 'long', '2025-03-24', 'Dollar strength resuming. Back on track.', '{"confidence":"High","rating":"4","timeframe":"15m","session":"Asian"}'),
@@ -98,7 +98,7 @@ INSERT INTO trades (account_id, symbol, outcome, pnl, rr, risk, direction, date,
 (acc_id, 'GBPUSD', 'win', 220.00, 2.2, 1.0, 'short', '2025-05-09', 'BOE dovish. Cable weakness confirmed.', '{"confidence":"High","rating":"4","timeframe":"15m","session":"London"}'),
 (acc_id, 'USDJPY', 'loss', -100.00, 1.0, 1.0, 'short', '2025-05-12', 'Yen still weak. Wrong side.', '{"confidence":"Medium","rating":"2","timeframe":"5m","session":"Asian"}'),
 (acc_id, 'GBPJPY', 'win', 280.00, 2.8, 1.0, 'long', '2025-05-14', 'Risk-on sentiment. Yen crosses flying.', '{"confidence":"High","rating":"4","timeframe":"30m","session":"Overlap"}'),
-(acc_id, 'XAUUSD', 'win', 400.00, 4.0, 1.0, 'long', '2025-05-16', 'Gold breakout to new highs. Monster move.', '{"confidence":"High","rating":"5","timeframe":"30m","session":"Overlap"}'),
+(acc_id, 'XAUUSD', 'win', 650.00, 6.5, 1.0, 'long', '2025-05-16', 'Gold breakout to new highs. 6.5R monster move!', '{"confidence":"High","rating":"5","timeframe":"30m","session":"Overlap"}'),
 (acc_id, 'US30', 'loss', -100.00, 1.0, 1.0, 'short', '2025-05-19', 'Indices still rallying. Dont short strength.', '{"confidence":"Low","rating":"1","timeframe":"5m","session":"New York"}'),
 (acc_id, 'EURUSD', 'win', 180.00, 1.8, 1.0, 'long', '2025-05-21', 'Euro bounce on ECB. Quick 1.8R.', '{"confidence":"Medium","rating":"3","timeframe":"5m","session":"London"}'),
 (acc_id, 'NAS100', 'win', 300.00, 3.0, 1.0, 'long', '2025-05-23', 'NVIDIA earnings hype. Tech ripping.', '{"confidence":"High","rating":"5","timeframe":"15m","session":"New York"}'),
@@ -113,7 +113,7 @@ INSERT INTO trades (account_id, symbol, outcome, pnl, rr, risk, direction, date,
 (acc_id, 'XAUUSD', 'win', 280.00, 2.8, 1.0, 'long', '2025-06-06', 'Gold trending. Following the system.', '{"confidence":"High","rating":"4","timeframe":"30m","session":"Overlap"}'),
 (acc_id, 'NAS100', 'loss', -100.00, 1.0, 1.0, 'short', '2025-06-09', 'Tech still strong. Stop fighting it.', '{"confidence":"Low","rating":"1","timeframe":"5m","session":"New York"}'),
 (acc_id, 'US30', 'win', 220.00, 2.2, 1.0, 'long', '2025-06-11', 'FOMC week positioning. Indices bid.', '{"confidence":"High","rating":"4","timeframe":"15m","session":"New York"}'),
-(acc_id, 'GBPUSD', 'win', 450.00, 4.5, 1.0, 'long', '2025-06-13', 'UK data beat. Huge 30m cable rally. Best trade of month.', '{"confidence":"High","rating":"5","timeframe":"30m","session":"London"}'),
+(acc_id, 'GBPUSD', 'win', 750.00, 7.5, 1.0, 'long', '2025-06-13', 'UK data beat. Huge 30m cable rally. 7.5R runner! Best trade of month.', '{"confidence":"High","rating":"5","timeframe":"30m","session":"London"}'),
 (acc_id, 'EURUSD', 'win', 200.00, 2.0, 1.0, 'long', '2025-06-16', 'Dollar weakness post FOMC. Euro strength.', '{"confidence":"High","rating":"4","timeframe":"15m","session":"London"}'),
 (acc_id, 'USDJPY', 'loss', -100.00, 1.0, 1.0, 'long', '2025-06-18', 'Yen strength on risk-off. Bad read.', '{"confidence":"Medium","rating":"2","timeframe":"5m","session":"Asian"}'),
 (acc_id, 'XAUUSD', 'win', 350.00, 3.5, 1.0, 'long', '2025-06-20', 'Gold breakout continuation. 30m perfection.', '{"confidence":"High","rating":"5","timeframe":"30m","session":"Overlap"}'),
@@ -163,7 +163,7 @@ INSERT INTO trades (account_id, symbol, outcome, pnl, rr, risk, direction, date,
 (acc_id, 'GBPJPY', 'loss', -100.00, 1.0, 1.0, 'long', '2025-09-10', 'Risk-off. Yen strength. Two losses.', '{"confidence":"Medium","rating":"2","timeframe":"5m","session":"Overlap"}'),
 (acc_id, 'NAS100', 'win', 300.00, 3.0, 1.0, 'short', '2025-09-12', 'Tech rolling over. Good short entry.', '{"confidence":"High","rating":"5","timeframe":"15m","session":"New York"}'),
 (acc_id, 'US30', 'win', 220.00, 2.2, 1.0, 'short', '2025-09-15', 'Indices weak. Following momentum.', '{"confidence":"High","rating":"4","timeframe":"15m","session":"New York"}'),
-(acc_id, 'XAUUSD', 'win', 400.00, 4.0, 1.0, 'long', '2025-09-17', 'FOMC week. Gold safe haven.', '{"confidence":"High","rating":"5","timeframe":"30m","session":"Overlap"}'),
+(acc_id, 'XAUUSD', 'win', 550.00, 5.5, 1.0, 'long', '2025-09-17', 'FOMC week. Gold safe haven. 5.5R runner.', '{"confidence":"High","rating":"5","timeframe":"30m","session":"Overlap"}'),
 (acc_id, 'GBPUSD', 'loss', -100.00, 1.0, 1.0, 'short', '2025-09-19', 'Cable squeezed post FOMC.', '{"confidence":"Medium","rating":"2","timeframe":"5m","session":"London"}'),
 (acc_id, 'EURUSD', 'win', 200.00, 2.0, 1.0, 'short', '2025-09-22', 'Euro weakness. Dollar strength.', '{"confidence":"High","rating":"4","timeframe":"15m","session":"London"}'),
 (acc_id, 'USDJPY', 'loss', -100.00, 1.0, 1.0, 'long', '2025-09-24', 'Yen intervention. Got stopped.', '{"confidence":"Medium","rating":"2","timeframe":"5m","session":"Asian"}'),
@@ -196,7 +196,7 @@ INSERT INTO trades (account_id, symbol, outcome, pnl, rr, risk, direction, date,
 (acc_id, 'GBPJPY', 'win', 300.00, 3.0, 1.0, 'long', '2025-11-14', 'Risk-on continuing. Yen crosses up.', '{"confidence":"High","rating":"5","timeframe":"30m","session":"Overlap"}'),
 (acc_id, 'US30', 'win', 250.00, 2.5, 1.0, 'long', '2025-11-17', 'Indices rally. Good momentum.', '{"confidence":"High","rating":"4","timeframe":"15m","session":"New York"}'),
 (acc_id, 'EURUSD', 'loss', -100.00, 1.0, 1.0, 'long', '2025-11-19', 'Euro weak. Dollar strength.', '{"confidence":"Medium","rating":"2","timeframe":"5m","session":"London"}'),
-(acc_id, 'XAUUSD', 'win', 400.00, 4.0, 1.0, 'long', '2025-11-21', 'Gold geopolitical bid. 30m monster.', '{"confidence":"High","rating":"5","timeframe":"30m","session":"Overlap"}'),
+(acc_id, 'XAUUSD', 'win', 850.00, 8.5, 1.0, 'long', '2025-11-21', 'Gold geopolitical bid. 8.5R MONSTER! Best trade of the year!', '{"confidence":"High","rating":"5","timeframe":"30m","session":"Overlap"}'),
 (acc_id, 'GBPUSD', 'win', 200.00, 2.0, 1.0, 'short', '2025-11-24', 'Cable weakness. Good short.', '{"confidence":"High","rating":"4","timeframe":"15m","session":"London"}'),
 (acc_id, 'NAS100', 'win', 220.00, 2.2, 1.0, 'long', '2025-11-26', 'Black Friday optimism. Tech strong.', '{"confidence":"High","rating":"4","timeframe":"15m","session":"New York"}'),
 (acc_id, 'USDJPY', 'win', 200.00, 2.0, 1.0, 'long', '2025-11-27', 'Thanksgiving thin liquidity. Dollar bid.', '{"confidence":"High","rating":"4","timeframe":"15m","session":"Asian"}'),
@@ -209,7 +209,7 @@ INSERT INTO trades (account_id, symbol, outcome, pnl, rr, risk, direction, date,
 (acc_id, 'XAUUSD', 'win', 350.00, 3.5, 1.0, 'long', '2025-12-05', 'Gold year-end buying. 30m trend.', '{"confidence":"High","rating":"5","timeframe":"30m","session":"Overlap"}'),
 (acc_id, 'NAS100', 'win', 300.00, 3.0, 1.0, 'long', '2025-12-08', 'Santa rally starting. Tech leading.', '{"confidence":"High","rating":"5","timeframe":"15m","session":"New York"}'),
 (acc_id, 'US30', 'loss', -100.00, 1.0, 1.0, 'short', '2025-12-10', 'Tried to short Santa rally. Bad idea.', '{"confidence":"Low","rating":"1","timeframe":"5m","session":"New York"}'),
-(acc_id, 'GBPUSD', 'win', 450.00, 4.5, 1.0, 'long', '2025-12-12', 'UK data beat. Cable rally. 30m monster.', '{"confidence":"High","rating":"5","timeframe":"30m","session":"London"}'),
+(acc_id, 'GBPUSD', 'win', 600.00, 6.0, 1.0, 'long', '2025-12-12', 'UK data beat. Cable rally. 6R beauty to end the year strong!', '{"confidence":"High","rating":"5","timeframe":"30m","session":"London"}'),
 (acc_id, 'USDJPY', 'win', 200.00, 2.0, 1.0, 'long', '2025-12-15', 'Dollar strength into year end.', '{"confidence":"High","rating":"4","timeframe":"15m","session":"Asian"}'),
 (acc_id, 'XAUUSD', 'win', 280.00, 2.8, 1.0, 'long', '2025-12-17', 'Gold FOMC bid. Good setup.', '{"confidence":"High","rating":"4","timeframe":"30m","session":"Overlap"}'),
 (acc_id, 'EURUSD', 'win', 200.00, 2.0, 1.0, 'short', '2025-12-19', 'ECB dovish. Euro weakness.', '{"confidence":"High","rating":"4","timeframe":"15m","session":"London"}'),

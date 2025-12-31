@@ -4,16 +4,13 @@ import { useState, useEffect } from 'react'
 import { createClient } from '@supabase/supabase-js'
 
 export default function HomePage() {
-  const [user, setUser] = useState(null)
-  const [hasAccess, setHasAccess] = useState(false)
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    checkAuth()
+    checkAuthAndRedirect()
   }, [])
 
   // Check if user has valid subscription
-  // 'admin' = admin user, 'subscribing' = paying, 'free subscription' = free access
-  // 'not subscribing' = no subscription, no access
   function hasValidSubscription(profile) {
     if (!profile) return false
     const { subscription_status } = profile
@@ -23,14 +20,13 @@ export default function HomePage() {
     return false
   }
 
-  async function checkAuth() {
+  async function checkAuthAndRedirect() {
     try {
       const supabase = createClient(
         process.env.NEXT_PUBLIC_SUPABASE_URL,
         process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
       )
       const { data: { user } } = await supabase.auth.getUser()
-      setUser(user)
 
       if (user) {
         const { data: profile } = await supabase
@@ -38,11 +34,26 @@ export default function HomePage() {
           .select('subscription_status, subscription_end')
           .eq('id', user.id)
           .single()
-        setHasAccess(hasValidSubscription(profile))
+
+        // Auto-redirect to dashboard if user has valid subscription
+        if (hasValidSubscription(profile)) {
+          window.location.href = '/dashboard'
+          return
+        }
       }
     } catch (err) {
       console.error('Auth check:', err)
     }
+    setLoading(false)
+  }
+
+  // Show loading state while checking auth
+  if (loading) {
+    return (
+      <div style={{ minHeight: '100vh', background: '#0a0a0f', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div style={{ color: '#999' }}>Loading...</div>
+      </div>
+    )
   }
 
   return (
@@ -56,15 +67,9 @@ export default function HomePage() {
           <a href="/pricing" style={{ padding: '12px 24px', background: '#22c55e', borderRadius: '6px', color: '#fff', fontWeight: 600, fontSize: '14px' }}>
             Get Access - £9/mo
           </a>
-          {user && hasAccess ? (
-            <a href="/dashboard" style={{ padding: '12px 24px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '6px', color: '#fff', fontWeight: 600, fontSize: '14px' }}>
-              Enter Journal
-            </a>
-          ) : (
-            <a href="/login" style={{ padding: '12px 24px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '6px', color: '#fff', fontWeight: 600, fontSize: '14px' }}>
-              Member Login
-            </a>
-          )}
+          <a href="/login" style={{ padding: '12px 24px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '6px', color: '#fff', fontWeight: 600, fontSize: '14px' }}>
+            Member Log In
+          </a>
         </div>
       </header>
 

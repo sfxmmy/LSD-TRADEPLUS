@@ -539,8 +539,8 @@ export default function DashboardPage() {
             </button>
           </div>
           <button onClick={() => setShowModal(true)} style={{ padding: isMobile ? '8px 12px' : '12px 24px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '6px', color: '#fff', fontSize: isMobile ? '12px' : '14px', cursor: 'pointer' }}>{isMobile ? '+ Add' : '+ Add Journal Account'}</button>
-          <button onClick={handleManageSubscription} style={{ padding: isMobile ? '8px 12px' : '12px 20px', background: 'transparent', border: 'none', color: '#888', fontSize: isMobile ? '12px' : '14px', cursor: 'pointer' }}>{isMobile ? 'Billing' : 'Manage Subscription'}</button>
-          <button onClick={handleSignOut} style={{ padding: isMobile ? '8px 12px' : '12px 20px', background: 'transparent', border: 'none', color: '#999', fontSize: isMobile ? '12px' : '14px', cursor: 'pointer' }}>Sign Out</button>
+          <a href="/settings" style={{ padding: isMobile ? '8px 12px' : '12px 20px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '6px', color: '#999', fontSize: isMobile ? '12px' : '14px', textDecoration: 'none', cursor: 'pointer' }}>Settings</a>
+          <button onClick={handleSignOut} style={{ padding: isMobile ? '8px 12px' : '12px 20px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '6px', color: '#999', fontSize: isMobile ? '12px' : '14px', cursor: 'pointer' }}>Sign Out</button>
         </div>
       </header>
 
