@@ -109,8 +109,8 @@ export async function GET(request) {
       .eq('id', user.id)
       .single()
 
-    // Determine subscription status (preserve existing, default to free for new users)
-    let subscriptionStatus = existingProfile?.subscription_status || 'free'
+    // Determine subscription status (preserve existing, default to 'none' for new users - no access until they pay)
+    let subscriptionStatus = existingProfile?.subscription_status || 'none'
 
     // Upsert profile (preserve is_admin if exists)
     await serviceSupabase

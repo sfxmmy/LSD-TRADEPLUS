@@ -105,7 +105,7 @@ CREATE POLICY "trades_all" ON trades
 CREATE OR REPLACE FUNCTION handle_new_user()
 RETURNS TRIGGER AS $$
 BEGIN
-  INSERT INTO profiles (id, email, username, subscription_status)
+  INSERT INTO profiles (id, email, username, subscription_status, is_admin)
   VALUES (
     NEW.id,
     NEW.email,
@@ -113,10 +113,8 @@ BEGIN
       NEW.raw_user_meta_data->>'full_name',
       split_part(NEW.email, '@', 1)
     ),
-    CASE 
-      WHEN NEW.email = 'ssiagos@hotmail.com' THEN 'active' 
-      ELSE 'free' 
-    END
+    'none',  -- New users have no subscription, must pay to access
+    FALSE
   )
   ON CONFLICT (id) DO UPDATE SET
     email = EXCLUDED.email,

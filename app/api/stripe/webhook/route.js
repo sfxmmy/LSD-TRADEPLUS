@@ -117,13 +117,13 @@ export async function POST(request) {
         }
 
         if (userId) {
+          // Set to 'none' - no longer paying, no access
           const { error } = await supabase
             .from('profiles')
             .update({
-              subscription_status: 'cancelled',
+              subscription_status: 'none',
               subscription_id: null,
               cancelled_at: new Date().toISOString(),
-              // Keep subscription_end so grace period works
               subscription_end: new Date().toISOString()
             })
             .eq('id', userId)
