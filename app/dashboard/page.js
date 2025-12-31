@@ -368,8 +368,9 @@ export default function DashboardPage() {
     }
 
     const svgW = 100, svgH = 100
+    const padX = 1 // Padding to prevent stroke clipping at edges
     const chartPoints = points.map((p, i) => {
-      const x = points.length > 1 ? (i / (points.length - 1)) * svgW : svgW / 2
+      const x = points.length > 1 ? padX + (i / (points.length - 1)) * (svgW - 2 * padX) : svgW / 2
       const y = svgH - ((p.balance - yMin) / yRange) * svgH
       return { x, y, ...p }
     })
@@ -448,7 +449,7 @@ export default function DashboardPage() {
                 <span style={{ position: 'absolute', right: '4px', top: '-12px', fontSize: '9px', color: '#999' }}>Start</span>
               </div>
             )}
-            <svg ref={svgRef} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%' }} viewBox={`0 0 ${svgW} ${svgH}`} preserveAspectRatio="none" onMouseMove={handleMouseMove} onMouseLeave={() => setHoverPoint(null)}>
+            <svg ref={svgRef} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', overflow: 'visible' }} viewBox={`0 0 ${svgW} ${svgH}`} preserveAspectRatio="none" onMouseMove={handleMouseMove} onMouseLeave={() => setHoverPoint(null)}>
               <defs>
                 <linearGradient id="areaGradGreen" x1="0%" y1="0%" x2="0%" y2="100%">
                   <stop offset="0%" stopColor="#22c55e" stopOpacity="0.3" />
@@ -736,19 +737,26 @@ export default function DashboardPage() {
                 </div>
                 <div>
                   <label style={{ display: 'block', fontSize: '9px', color: '#666', marginBottom: '4px', textTransform: 'uppercase' }}>Rating</label>
-                  <div style={{ display: 'flex', gap: '2px', padding: '6px 10px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px' }}>
+                  <div style={{ position: 'relative', display: 'inline-flex', gap: '2px', padding: '6px 10px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px' }} onMouseLeave={() => setHoverRating(0)}>
                     {[1, 2, 3, 4, 5].map(star => {
-                      const currentRating = parseFloat(quickTradeRating) || 0
-                      const isFullStar = currentRating >= star
-                      const isHalfStar = currentRating >= star - 0.5 && currentRating < star
+                      const displayRating = hoverRating || parseFloat(quickTradeRating) || 0
+                      const isFullStar = displayRating >= star
+                      const isHalfStar = displayRating >= star - 0.5 && displayRating < star
                       return (
-                        <div key={star} style={{ position: 'relative', width: '18px', height: '18px', cursor: 'pointer' }} onClick={(e) => { const rect = e.currentTarget.getBoundingClientRect(); const clickX = e.clientX - rect.left; const isLeftHalf = clickX < rect.width / 2; setQuickTradeRating(String(isLeftHalf ? star - 0.5 : star)) }}>
-                          <span style={{ position: 'absolute', color: '#2a2a35', fontSize: '18px', lineHeight: 1 }}>★</span>
-                          {isHalfStar && <span style={{ position: 'absolute', color: '#22c55e', fontSize: '18px', lineHeight: 1, width: '9px', overflow: 'hidden' }}>★</span>}
-                          {isFullStar && <span style={{ position: 'absolute', color: '#22c55e', fontSize: '18px', lineHeight: 1 }}>★</span>}
+                        <div key={star} style={{ position: 'relative', width: '24px', height: '24px', cursor: 'pointer' }}
+                          onMouseMove={(e) => { const rect = e.currentTarget.getBoundingClientRect(); const x = e.clientX - rect.left; setHoverRating(x < rect.width / 2 ? star - 0.5 : star) }}
+                          onClick={(e) => { const rect = e.currentTarget.getBoundingClientRect(); const x = e.clientX - rect.left; setQuickTradeRating(String(x < rect.width / 2 ? star - 0.5 : star)) }}>
+                          <span style={{ position: 'absolute', color: '#2a2a35', fontSize: '24px', lineHeight: 1 }}>★</span>
+                          {isHalfStar && <span style={{ position: 'absolute', color: '#22c55e', fontSize: '24px', lineHeight: 1, width: '12px', overflow: 'hidden' }}>★</span>}
+                          {isFullStar && <span style={{ position: 'absolute', color: '#22c55e', fontSize: '24px', lineHeight: 1 }}>★</span>}
                         </div>
                       )
                     })}
+                    {(hoverRating > 0 || parseFloat(quickTradeRating) > 0) && (
+                      <div style={{ position: 'absolute', top: '-28px', left: '50%', transform: 'translateX(-50%)', background: '#1a1a22', padding: '4px 8px', borderRadius: '4px', fontSize: '12px', color: '#fff', whiteSpace: 'nowrap', pointerEvents: 'none' }}>
+                        {hoverRating || parseFloat(quickTradeRating)} / 5
+                      </div>
+                    )}
                   </div>
                 </div>
                 <div>
@@ -1494,14 +1502,27 @@ export default function DashboardPage() {
                 </div>
                 <div>
                   <label style={{ display: 'block', fontSize: '11px', color: '#666', marginBottom: '6px', textTransform: 'uppercase' }}>Rating</label>
-                  <select value={quickTradeRating} onChange={e => setQuickTradeRating(e.target.value)} style={{ width: '100%', padding: '14px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '8px', color: '#fff', fontSize: '15px' }}>
-                    <option value="">-</option>
-                    <option value="1">1 Star</option>
-                    <option value="2">2 Stars</option>
-                    <option value="3">3 Stars</option>
-                    <option value="4">4 Stars</option>
-                    <option value="5">5 Stars</option>
-                  </select>
+                  <div style={{ position: 'relative', display: 'inline-flex', gap: '4px', padding: '10px 14px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '8px' }} onMouseLeave={() => setHoverRating(0)}>
+                    {[1, 2, 3, 4, 5].map(star => {
+                      const displayRating = hoverRating || parseFloat(quickTradeRating) || 0
+                      const isFullStar = displayRating >= star
+                      const isHalfStar = displayRating >= star - 0.5 && displayRating < star
+                      return (
+                        <div key={star} style={{ position: 'relative', width: '28px', height: '28px', cursor: 'pointer' }}
+                          onMouseMove={(e) => { const rect = e.currentTarget.getBoundingClientRect(); const x = e.clientX - rect.left; setHoverRating(x < rect.width / 2 ? star - 0.5 : star) }}
+                          onClick={(e) => { const rect = e.currentTarget.getBoundingClientRect(); const x = e.clientX - rect.left; setQuickTradeRating(String(x < rect.width / 2 ? star - 0.5 : star)) }}>
+                          <span style={{ position: 'absolute', color: '#2a2a35', fontSize: '28px', lineHeight: 1 }}>★</span>
+                          {isHalfStar && <span style={{ position: 'absolute', color: '#22c55e', fontSize: '28px', lineHeight: 1, width: '14px', overflow: 'hidden' }}>★</span>}
+                          {isFullStar && <span style={{ position: 'absolute', color: '#22c55e', fontSize: '28px', lineHeight: 1 }}>★</span>}
+                        </div>
+                      )
+                    })}
+                    {(hoverRating > 0 || parseFloat(quickTradeRating) > 0) && (
+                      <div style={{ position: 'absolute', top: '-32px', left: '50%', transform: 'translateX(-50%)', background: '#1a1a22', padding: '6px 10px', borderRadius: '6px', fontSize: '13px', color: '#fff', whiteSpace: 'nowrap', pointerEvents: 'none' }}>
+                        {hoverRating || parseFloat(quickTradeRating)} / 5
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
 
