@@ -137,6 +137,27 @@ export default function DashboardPage() {
     window.location.href = '/'
   }
 
+  async function handleManageSubscription() {
+    const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY)
+    const { data: { session } } = await supabase.auth.getSession()
+    if (!session) { alert('Please log in'); return }
+
+    try {
+      const res = await fetch('/api/stripe/create-portal', {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${session.access_token}` }
+      })
+      const data = await res.json()
+      if (data.url) {
+        window.location.href = data.url
+      } else {
+        alert(data.error || 'Could not open subscription management')
+      }
+    } catch (err) {
+      alert('Error opening subscription portal')
+    }
+  }
+
   async function createJournal() {
     if (!name.trim() || !balance) return
     setCreating(true)
@@ -512,6 +533,7 @@ export default function DashboardPage() {
             </button>
           </div>
           <button onClick={() => setShowModal(true)} style={{ padding: isMobile ? '8px 12px' : '12px 24px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '6px', color: '#fff', fontSize: isMobile ? '12px' : '14px', cursor: 'pointer' }}>{isMobile ? '+ Add' : '+ Add Journal Account'}</button>
+          <button onClick={handleManageSubscription} style={{ padding: isMobile ? '8px 12px' : '12px 20px', background: 'transparent', border: 'none', color: '#888', fontSize: isMobile ? '12px' : '14px', cursor: 'pointer' }}>{isMobile ? 'Billing' : 'Manage Subscription'}</button>
           <button onClick={handleSignOut} style={{ padding: isMobile ? '8px 12px' : '12px 20px', background: 'transparent', border: 'none', color: '#999', fontSize: isMobile ? '12px' : '14px', cursor: 'pointer' }}>Sign Out</button>
         </div>
       </header>
