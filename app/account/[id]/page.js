@@ -1660,7 +1660,7 @@ export default function AccountPage() {
                                   <div style={{ height: '22px', position: 'relative', marginLeft: '1px' }}>
                                     {xLabels.map((l, i) => (
                                       <div key={i} style={{ position: 'absolute', left: `${l.pct}%`, transform: 'translateX(-50%)', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                                        <div style={{ width: '1px', height: '6px', background: '#444' }} />
+                                        <div style={{ width: '1px', height: '6px', background: '#1a1a22' }} />
                                         <span style={{ fontSize: '9px', color: '#999', marginTop: '2px' }}>{l.label}</span>
                                       </div>
                                     ))}
@@ -1790,10 +1790,13 @@ export default function AccountPage() {
                                 })}
                               </div>
                             </div>
-                            <div style={{ paddingTop: '6px', marginLeft: '1px' }}>
+                            <div style={{ marginLeft: '1px' }}>
                               <div style={{ display: 'flex', gap: '6px', padding: '0 4px' }}>
                                 {entries.map((item, i) => (
-                                  <div key={i} style={{ flex: 1, textAlign: 'center', fontSize: '10px', color: '#ccc', fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', background: '#0d0d12', padding: '2px 4px', borderRadius: '3px', border: '1px solid #2a2a35' }}>{item.name}</div>
+                                  <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                                    <div style={{ width: '1px', height: '6px', background: '#1a1a22' }} />
+                                    <div style={{ marginTop: '4px', textAlign: 'center', fontSize: '10px', color: '#ccc', fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', background: '#0d0d12', padding: '2px 4px', borderRadius: '3px', border: '1px solid #2a2a35', width: '100%', boxSizing: 'border-box' }}>{item.name}</div>
+                                  </div>
                                 ))}
                               </div>
                             </div>
@@ -1925,7 +1928,7 @@ export default function AccountPage() {
                           <div style={{ height: '22px', position: 'relative', marginLeft: '1px' }}>
                             {xLabels.map((l, i) => (
                               <div key={i} style={{ position: 'absolute', left: `${l.pct}%`, transform: 'translateX(-50%)', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                                <div style={{ width: '1px', height: '6px', background: '#444' }} />
+                                <div style={{ width: '1px', height: '6px', background: '#1a1a22' }} />
                                 <span style={{ fontSize: '9px', color: '#999', marginTop: '2px' }}>{l.label}</span>
                               </div>
                             ))}
@@ -3534,7 +3537,7 @@ export default function AccountPage() {
                         <div style={{ height: '26px', position: 'relative' }}>
                           {xLabels.map((l, i) => (
                             <div key={i} style={{ position: 'absolute', left: `${l.pct}%`, transform: 'translateX(-50%)', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                              <div style={{ width: '1px', height: '8px', background: '#444' }} />
+                              <div style={{ width: '1px', height: '8px', background: '#1a1a22' }} />
                               <span style={{ fontSize: '10px', color: '#999', marginTop: '2px' }}>{l.label}</span>
                             </div>
                           ))}
