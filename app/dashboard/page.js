@@ -509,7 +509,21 @@ export default function DashboardPage() {
     )
   }
 
-  function getExtraData(trade) { try { return JSON.parse(trade.extra_data || '{}') } catch { return {} } }
+  function getExtraData(t) {
+    // First get extra_data (from JSONB)
+    let extra = {}
+    if (t.extra_data) {
+      if (typeof t.extra_data === 'object') extra = t.extra_data
+      else try { extra = JSON.parse(t.extra_data) } catch {}
+    }
+    // Fallback to direct columns if not in extra_data
+    if (!extra.confidence && t.confidence) extra.confidence = t.confidence
+    if (!extra.rating && t.rating) extra.rating = String(t.rating)
+    if (!extra.timeframe && t.timeframe) extra.timeframe = t.timeframe
+    if (!extra.session && t.session) extra.session = t.session
+    if (!extra.riskPercent && t.risk) extra.riskPercent = String(t.risk)
+    return extra
+  }
   function formatDate(dateStr) { 
     const d = new Date(dateStr)
     return `${d.getDate()}/${d.getMonth()+1}/${String(d.getFullYear()).slice(-2)}`
