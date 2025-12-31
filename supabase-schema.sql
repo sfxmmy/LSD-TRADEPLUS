@@ -45,6 +45,7 @@ CREATE TABLE IF NOT EXISTS accounts (
   user_id UUID REFERENCES profiles(id) ON DELETE CASCADE NOT NULL,
   name TEXT NOT NULL,
   starting_balance DECIMAL(12,2) DEFAULT 0,
+  custom_inputs TEXT DEFAULT '[]',
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
@@ -65,6 +66,25 @@ CREATE TABLE IF NOT EXISTS trades (
   direction TEXT CHECK (direction IN ('long', 'short')),
   notes TEXT,
   image_url TEXT,
+  confidence TEXT,
+  rating INTEGER,
+  timeframe TEXT,
+  session TEXT,
+  extra_data JSONB DEFAULT '{}',
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- =====================================================
+-- CUSTOM INPUTS TABLE
+-- Stores user-defined custom input definitions per account
+-- =====================================================
+CREATE TABLE IF NOT EXISTS custom_inputs (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  account_id UUID REFERENCES accounts(id) ON DELETE CASCADE NOT NULL,
+  name TEXT NOT NULL,
+  type TEXT DEFAULT 'text' CHECK (type IN ('text', 'number', 'select', 'rating')),
+  options JSONB DEFAULT '[]',
+  display_order INTEGER DEFAULT 0,
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
@@ -75,6 +95,7 @@ CREATE TABLE IF NOT EXISTS trades (
 ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
 ALTER TABLE accounts ENABLE ROW LEVEL SECURITY;
 ALTER TABLE trades ENABLE ROW LEVEL SECURITY;
+ALTER TABLE custom_inputs ENABLE ROW LEVEL SECURITY;
 
 -- Drop existing policies (to avoid conflicts)
 DROP POLICY IF EXISTS "profiles_select" ON profiles;
@@ -91,6 +112,7 @@ DROP POLICY IF EXISTS "trades_insert" ON trades;
 DROP POLICY IF EXISTS "trades_update" ON trades;
 DROP POLICY IF EXISTS "trades_delete" ON trades;
 DROP POLICY IF EXISTS "trades_all" ON trades;
+DROP POLICY IF EXISTS "custom_inputs_all" ON custom_inputs;
 
 -- Create new policies
 CREATE POLICY "profiles_all" ON profiles
@@ -102,6 +124,14 @@ CREATE POLICY "accounts_all" ON accounts
   USING (auth.uid() = user_id);
 
 CREATE POLICY "trades_all" ON trades
+  FOR ALL
+  USING (
+    account_id IN (
+      SELECT id FROM accounts WHERE user_id = auth.uid()
+    )
+  );
+
+CREATE POLICY "custom_inputs_all" ON custom_inputs
   FOR ALL
   USING (
     account_id IN (
@@ -154,6 +184,7 @@ CREATE INDEX IF NOT EXISTS idx_trades_account_id ON trades(account_id);
 CREATE INDEX IF NOT EXISTS idx_trades_date ON trades(date);
 CREATE INDEX IF NOT EXISTS idx_profiles_email ON profiles(email);
 CREATE INDEX IF NOT EXISTS idx_profiles_customer ON profiles(customer_id);
+CREATE INDEX IF NOT EXISTS idx_custom_inputs_account_id ON custom_inputs(account_id);
 
 -- =====================================================
 -- HELPER FUNCTION: Update updated_at timestamp

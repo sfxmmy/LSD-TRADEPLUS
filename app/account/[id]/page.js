@@ -1652,15 +1652,14 @@ export default function AccountPage() {
                                     )}
                                   </div>
                                   {/* X-axis with tick marks and date labels */}
-                                  <div style={{ height: '22px', position: 'relative', marginLeft: '1px', overflow: 'visible' }}>
+                                  <div style={{ height: '22px', position: 'relative', marginLeft: '1px', overflow: 'hidden' }}>
                                     {xLabels.map((l, i) => {
                                       const isFirst = i === 0
                                       const isLast = i === xLabels.length - 1
-                                      const transform = isFirst ? 'translateX(0)' : isLast ? 'translateX(-100%)' : 'translateX(-50%)'
                                       return (
-                                        <div key={i} style={{ position: 'absolute', left: `${l.pct}%`, transform, display: 'flex', flexDirection: 'column', alignItems: isFirst ? 'flex-start' : isLast ? 'flex-end' : 'center' }}>
+                                        <div key={i} style={{ position: 'absolute', left: `${l.pct}%`, transform: 'translateX(-50%)', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                                           <div style={{ width: '1px', height: '6px', background: '#333' }} />
-                                          <span style={{ fontSize: '9px', color: '#999', marginTop: '2px', whiteSpace: 'nowrap' }}>{l.label}</span>
+                                          <span style={{ fontSize: '9px', color: '#999', marginTop: '2px', whiteSpace: 'nowrap', transform: isFirst ? 'translateX(25%)' : isLast ? 'translateX(-25%)' : 'none' }}>{l.label}</span>
                                         </div>
                                       )
                                     })}
@@ -1925,15 +1924,14 @@ export default function AccountPage() {
                             </div>
                           </div>
                           {/* X-axis with tick marks and date labels */}
-                          <div style={{ height: '22px', position: 'relative', marginLeft: '1px', overflow: 'visible' }}>
+                          <div style={{ height: '22px', position: 'relative', marginLeft: '1px', overflow: 'hidden' }}>
                             {xLabels.map((l, i) => {
                               const isFirst = i === 0
                               const isLast = i === xLabels.length - 1
-                              const transform = isFirst ? 'translateX(0)' : isLast ? 'translateX(-100%)' : 'translateX(-50%)'
                               return (
-                                <div key={i} style={{ position: 'absolute', left: `${l.pct}%`, transform, display: 'flex', flexDirection: 'column', alignItems: isFirst ? 'flex-start' : isLast ? 'flex-end' : 'center' }}>
+                                <div key={i} style={{ position: 'absolute', left: `${l.pct}%`, transform: 'translateX(-50%)', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                                   <div style={{ width: '1px', height: '6px', background: '#333' }} />
-                                  <span style={{ fontSize: '9px', color: '#999', marginTop: '2px', whiteSpace: 'nowrap' }}>{l.label}</span>
+                                  <span style={{ fontSize: '9px', color: '#999', marginTop: '2px', whiteSpace: 'nowrap', transform: isFirst ? 'translateX(25%)' : isLast ? 'translateX(-25%)' : 'none' }}>{l.label}</span>
                                 </div>
                               )
                             })}
@@ -3539,15 +3537,14 @@ export default function AccountPage() {
                           )}
                         </div>
                         {/* X-axis with tick marks and labels */}
-                        <div style={{ height: '26px', position: 'relative', overflow: 'visible' }}>
+                        <div style={{ height: '26px', position: 'relative', overflow: 'hidden' }}>
                           {xLabels.map((l, i) => {
                             const isFirst = i === 0
                             const isLast = i === xLabels.length - 1
-                            const transform = isFirst ? 'translateX(0)' : isLast ? 'translateX(-100%)' : 'translateX(-50%)'
                             return (
-                              <div key={i} style={{ position: 'absolute', left: `${l.pct}%`, transform, display: 'flex', flexDirection: 'column', alignItems: isFirst ? 'flex-start' : isLast ? 'flex-end' : 'center' }}>
+                              <div key={i} style={{ position: 'absolute', left: `${l.pct}%`, transform: 'translateX(-50%)', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                                 <div style={{ width: '1px', height: '8px', background: '#333' }} />
-                                <span style={{ fontSize: '10px', color: '#999', marginTop: '2px', whiteSpace: 'nowrap' }}>{l.label}</span>
+                                <span style={{ fontSize: '10px', color: '#999', marginTop: '2px', whiteSpace: 'nowrap', transform: isFirst ? 'translateX(25%)' : isLast ? 'translateX(-25%)' : 'none' }}>{l.label}</span>
                               </div>
                             )
                           })}
