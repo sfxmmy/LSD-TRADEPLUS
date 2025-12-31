@@ -4,6 +4,9 @@ import Stripe from 'stripe'
 
 export async function POST(request) {
   try {
+    // Get site URL - fallback to production URL if env var not set
+    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://lsdtradeplus.com'
+
     // Get auth token from Authorization header
     const authHeader = request.headers.get('Authorization')
     const token = authHeader?.replace('Bearer ', '')
@@ -55,13 +58,13 @@ export async function POST(request) {
     // Create checkout session
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
-      line_items: [{ 
-        price: process.env.STRIPE_PRICE_ID, 
-        quantity: 1 
+      line_items: [{
+        price: process.env.STRIPE_PRICE_ID,
+        quantity: 1
       }],
       mode: 'subscription',
-      success_url: `${process.env.NEXT_PUBLIC_SITE_URL}/dashboard?success=true`,
-      cancel_url: `${process.env.NEXT_PUBLIC_SITE_URL}/pricing`,
+      success_url: `${siteUrl}/dashboard?success=true`,
+      cancel_url: `${siteUrl}/pricing`,
       subscription_data: {
         metadata: { supabase_user_id: user.id }
       }
