@@ -2871,7 +2871,7 @@ export default function AccountPage() {
       {/* MODALS */}
       {showAddTrade && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.9)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100 }} onClick={() => setShowAddTrade(false)}>
-          <div style={{ background: 'linear-gradient(180deg, #0f0f14 0%, #0a0a0f 100%)', border: '1px solid #1a1a22', borderRadius: '12px', padding: '24px', width: customInputs.filter(i => !['symbol', 'outcome', 'pnl', 'riskPercent', 'rr', 'date', 'direction'].includes(i.id) && !i.hidden).length > 4 ? '560px' : customInputs.filter(i => !['symbol', 'outcome', 'pnl', 'riskPercent', 'rr', 'date', 'direction'].includes(i.id) && !i.hidden).length > 2 ? '500px' : '440px', maxHeight: '90vh', overflowY: 'auto' }} onClick={e => e.stopPropagation()}>
+          <div style={{ background: 'linear-gradient(180deg, #0f0f14 0%, #0a0a0f 100%)', border: '1px solid #1a1a22', borderRadius: '12px', padding: '24px', width: customInputs.filter(i => !['symbol', 'outcome', 'pnl', 'riskPercent', 'rr', 'date', 'direction', 'rating'].includes(i.id) && !i.hidden).length > 4 ? '560px' : customInputs.filter(i => !['symbol', 'outcome', 'pnl', 'riskPercent', 'rr', 'date', 'direction', 'rating'].includes(i.id) && !i.hidden).length > 2 ? '500px' : '440px', maxHeight: '90vh', overflowY: 'auto' }} onClick={e => e.stopPropagation()}>
             {/* Header */}
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px', paddingBottom: '12px', borderBottom: '1px solid #1a1a22' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -2923,16 +2923,37 @@ export default function AccountPage() {
               </div>
             </div>
 
-            {/* Date */}
-            <div style={{ marginBottom: '12px' }}>
-              <label style={{ display: 'block', fontSize: '10px', color: '#666', marginBottom: '5px', textTransform: 'uppercase' }}>Date</label>
-              <input type="date" value={tradeForm.date || ''} onChange={e => setTradeForm({...tradeForm, date: e.target.value})} style={{ width: '100%', padding: '10px 12px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '13px', boxSizing: 'border-box' }} />
+            {/* Date + Rating Row */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '12px' }}>
+              <div>
+                <label style={{ display: 'block', fontSize: '10px', color: '#666', marginBottom: '5px', textTransform: 'uppercase' }}>Date</label>
+                <input type="date" value={tradeForm.date || ''} onChange={e => setTradeForm({...tradeForm, date: e.target.value})} style={{ width: '100%', padding: '10px 12px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '13px', boxSizing: 'border-box' }} />
+              </div>
+              <div>
+                <label style={{ display: 'block', fontSize: '10px', color: '#666', marginBottom: '5px', textTransform: 'uppercase' }}>Rating</label>
+                <div style={{ display: 'flex', gap: '2px', padding: '8px 10px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px', alignItems: 'center', justifyContent: 'center' }} onMouseLeave={() => setHoverRating(0)}>
+                  {[1, 2, 3, 4, 5].map(star => {
+                    const displayRating = hoverRating || parseFloat(tradeForm.rating || 0)
+                    const isFullStar = displayRating >= star
+                    const isHalfStar = displayRating >= star - 0.5 && displayRating < star
+                    return (
+                      <div key={star} style={{ position: 'relative', width: '24px', height: '24px', cursor: 'pointer' }}
+                        onMouseMove={(e) => { const rect = e.currentTarget.getBoundingClientRect(); const x = e.clientX - rect.left; setHoverRating(x < rect.width / 2 ? star - 0.5 : star) }}
+                        onClick={(e) => { const rect = e.currentTarget.getBoundingClientRect(); const x = e.clientX - rect.left; setTradeForm({...tradeForm, rating: String(x < rect.width / 2 ? star - 0.5 : star)}) }}>
+                        <span style={{ position: 'absolute', color: '#2a2a35', fontSize: '24px', lineHeight: 1 }}>★</span>
+                        {isHalfStar && <span style={{ position: 'absolute', color: '#22c55e', fontSize: '24px', lineHeight: 1, width: '12px', overflow: 'hidden' }}>★</span>}
+                        {isFullStar && <span style={{ position: 'absolute', color: '#22c55e', fontSize: '24px', lineHeight: 1 }}>★</span>}
+                      </div>
+                    )
+                  })}
+                </div>
+              </div>
             </div>
 
             {/* Custom inputs - render dynamically in grid */}
-            {customInputs.filter(i => !['symbol', 'outcome', 'pnl', 'riskPercent', 'rr', 'date', 'direction'].includes(i.id)).length > 0 && (
+            {customInputs.filter(i => !['symbol', 'outcome', 'pnl', 'riskPercent', 'rr', 'date', 'direction', 'rating'].includes(i.id)).length > 0 && (
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '12px' }}>
-                {customInputs.filter(i => !['symbol', 'outcome', 'pnl', 'riskPercent', 'rr', 'date', 'direction'].includes(i.id)).map(input => (
+                {customInputs.filter(i => !['symbol', 'outcome', 'pnl', 'riskPercent', 'rr', 'date', 'direction', 'rating'].includes(i.id)).map(input => (
                   <div key={input.id} style={{ gridColumn: input.type === 'textarea' || input.type === 'file' ? 'span 2' : 'span 1' }}>
                     <label style={{ display: 'block', fontSize: '10px', color: '#666', marginBottom: '5px', textTransform: 'uppercase' }}>{input.label}</label>
                     {input.type === 'select' ? (
