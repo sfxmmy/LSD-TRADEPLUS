@@ -3,128 +3,98 @@
 -- Run this in Supabase SQL Editor
 -- =============================================
 
--- Step 1: Add new columns to profiles table
+-- Step 1: Add columns to profiles table
 ALTER TABLE profiles ADD COLUMN IF NOT EXISTS is_admin BOOLEAN DEFAULT FALSE;
-ALTER TABLE profiles ADD COLUMN IF NOT EXISTS plan TEXT DEFAULT 'free';
+ALTER TABLE profiles ADD COLUMN IF NOT EXISTS plan TEXT DEFAULT 'none';
 ALTER TABLE profiles ADD COLUMN IF NOT EXISTS subscription_start TIMESTAMPTZ;
 ALTER TABLE profiles ADD COLUMN IF NOT EXISTS subscription_end TIMESTAMPTZ;
 
--- Step 2: Set existing admin
+-- =============================================
+-- SUBSCRIPTION STATUS VALUES:
+-- =============================================
+-- 'active'  = Paying subscriber (has access)
+-- 'free'    = Free entry/giveaway (has access)
+-- 'none'    = No subscription (NO access, must pay)
+-- NULL      = New user, no subscription yet (NO access)
+--
+-- is_admin = TRUE means full access regardless of subscription
+-- =============================================
+
+-- Step 2: Set ssiagos as admin
 UPDATE profiles SET is_admin = TRUE WHERE email = 'ssiagos@hotmail.com';
 
 -- =============================================
--- VIEW ALL USERS (Easy Dashboard)
+-- VIEW ALL USERS
 -- =============================================
 
--- Full user overview with subscription duration
 SELECT
   email,
+  CASE
+    WHEN is_admin = TRUE THEN 'ADMIN'
+    WHEN subscription_status = 'active' THEN 'PAYING'
+    WHEN subscription_status = 'free' THEN 'FREE ACCESS'
+    ELSE 'NO ACCESS'
+  END as access_level,
   subscription_status,
-  plan,
   is_admin,
   subscription_start,
-  subscription_end,
-  -- Calculate days subscribed
   CASE
     WHEN subscription_start IS NOT NULL THEN
       EXTRACT(DAY FROM (COALESCE(subscription_end, NOW()) - subscription_start))::INT
     ELSE 0
   END as days_subscribed,
-  -- Calculate months subscribed
-  CASE
-    WHEN subscription_start IS NOT NULL THEN
-      ROUND(EXTRACT(DAY FROM (COALESCE(subscription_end, NOW()) - subscription_start)) / 30.0, 1)
-    ELSE 0
-  END as months_subscribed,
-  created_at as account_created,
-  stripe_customer_id
+  created_at
 FROM profiles
-ORDER BY created_at DESC;
+ORDER BY
+  is_admin DESC,
+  subscription_status = 'active' DESC,
+  subscription_status = 'free' DESC,
+  created_at DESC;
 
 -- =============================================
--- QUICK FILTERS
--- =============================================
-
--- Only paying subscribers
-SELECT email, plan, subscription_status, subscription_start,
-  EXTRACT(DAY FROM (NOW() - subscription_start))::INT as days_subscribed
-FROM profiles
-WHERE subscription_status = 'active' AND is_admin = FALSE
-ORDER BY subscription_start DESC;
-
--- Only admins
-SELECT email, is_admin, created_at FROM profiles WHERE is_admin = TRUE;
-
--- Free users (potential conversions)
-SELECT email, created_at,
-  EXTRACT(DAY FROM (NOW() - created_at))::INT as days_since_signup
-FROM profiles
-WHERE subscription_status = 'free' OR subscription_status IS NULL
-ORDER BY created_at DESC;
-
--- Churned users (cancelled/expired)
-SELECT email, plan, subscription_status, subscription_end,
-  EXTRACT(DAY FROM (NOW() - subscription_end))::INT as days_since_cancelled
-FROM profiles
-WHERE subscription_status IN ('cancelled', 'expired')
-ORDER BY subscription_end DESC;
-
--- =============================================
--- STATS SUMMARY
+-- QUICK COUNTS
 -- =============================================
 
 SELECT
   COUNT(*) as total_users,
-  COUNT(*) FILTER (WHERE subscription_status = 'active') as active_subscribers,
-  COUNT(*) FILTER (WHERE subscription_status = 'free' OR subscription_status IS NULL) as free_users,
-  COUNT(*) FILTER (WHERE subscription_status IN ('cancelled', 'expired')) as churned,
   COUNT(*) FILTER (WHERE is_admin = TRUE) as admins,
-  COUNT(*) FILTER (WHERE plan = 'lifetime') as lifetime_members
+  COUNT(*) FILTER (WHERE subscription_status = 'active') as paying_subscribers,
+  COUNT(*) FILTER (WHERE subscription_status = 'free') as free_access,
+  COUNT(*) FILTER (WHERE subscription_status = 'none' OR subscription_status IS NULL) as no_access
 FROM profiles;
 
 -- =============================================
 -- MANAGE USERS
 -- =============================================
 
--- Make a user an admin:
+-- MAKE ADMIN (full access, no payment needed):
 -- UPDATE profiles SET is_admin = TRUE WHERE email = 'user@example.com';
 
--- Remove admin access:
+-- REMOVE ADMIN:
 -- UPDATE profiles SET is_admin = FALSE WHERE email = 'user@example.com';
 
--- Give a user paid access (lifetime):
--- UPDATE profiles SET
---   subscription_status = 'active',
---   plan = 'lifetime',
---   subscription_start = NOW()
--- WHERE email = 'user@example.com';
+-- GIVE PAYING ACCESS (subscription_status = 'active'):
+-- UPDATE profiles SET subscription_status = 'active', subscription_start = NOW() WHERE email = 'user@example.com';
 
--- Give a user paid access (monthly):
--- UPDATE profiles SET
---   subscription_status = 'active',
---   plan = 'monthly',
---   subscription_start = NOW(),
---   subscription_end = NOW() + INTERVAL '1 month'
--- WHERE email = 'user@example.com';
+-- GIVE FREE ACCESS (giveaway/promo):
+-- UPDATE profiles SET subscription_status = 'free', subscription_start = NOW() WHERE email = 'user@example.com';
 
--- Remove paid access:
--- UPDATE profiles SET
---   subscription_status = 'free',
---   plan = 'free',
---   subscription_end = NOW()
--- WHERE email = 'user@example.com';
+-- REMOVE ACCESS:
+-- UPDATE profiles SET subscription_status = 'none', subscription_end = NOW() WHERE email = 'user@example.com';
 
 -- =============================================
--- ADD NEW USER (after creating in Auth)
+-- SETUP INITIAL ADMINS
 -- =============================================
 
--- Add benmw2020@gmail.com as admin with active subscription:
-INSERT INTO profiles (id, email, subscription_status, plan, is_admin, subscription_start)
-SELECT id, email, 'active', 'lifetime', TRUE, NOW()
+-- Set ssiagos as admin
+UPDATE profiles SET is_admin = TRUE WHERE email = 'ssiagos@hotmail.com';
+
+-- Add benmw2020 as admin with free access (after creating in Auth → Users)
+INSERT INTO profiles (id, email, subscription_status, is_admin, subscription_start)
+SELECT id, email, 'free', TRUE, NOW()
 FROM auth.users
 WHERE email = 'benmw2020@gmail.com'
 ON CONFLICT (id) DO UPDATE SET
-  subscription_status = 'active',
-  plan = 'lifetime',
+  subscription_status = 'free',
   is_admin = TRUE,
   subscription_start = COALESCE(profiles.subscription_start, NOW());

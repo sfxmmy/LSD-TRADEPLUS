@@ -124,8 +124,9 @@ export async function GET(request) {
         updated_at: new Date().toISOString()
       }, { onConflict: 'id' })
 
-    // Redirect based on access (admin or active subscription goes to dashboard)
-    if (existingProfile?.is_admin || subscriptionStatus === 'active') {
+    // Redirect based on access
+    // is_admin = full access, 'active' = paying, 'free' = giveaway
+    if (existingProfile?.is_admin || subscriptionStatus === 'active' || subscriptionStatus === 'free') {
       return NextResponse.redirect(`${origin}/dashboard`)
     } else {
       return NextResponse.redirect(`${origin}/pricing`)

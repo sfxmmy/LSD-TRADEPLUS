@@ -13,16 +13,14 @@ export default function PricingPage() {
     checkAuth()
   }, [])
 
-  // Check if user has valid subscription (including grace period)
+  // Check if user has valid subscription
+  // 'active' = paying subscriber, 'free' = giveaway/free entry, both get access
+  // 'none'/null = no subscription, no access
   function hasValidSubscription(profile) {
     if (!profile) return false
-    const { subscription_status, subscription_end, plan } = profile
+    const { subscription_status } = profile
     if (subscription_status === 'active') return true
-    if (plan === 'lifetime') return true
-    if (['cancelled', 'expired', 'past_due'].includes(subscription_status) && subscription_end) {
-      const gracePeriodEnd = new Date(new Date(subscription_end).getTime() + 7 * 24 * 60 * 60 * 1000)
-      if (new Date() < gracePeriodEnd) return true
-    }
+    if (subscription_status === 'free') return true
     return false
   }
 

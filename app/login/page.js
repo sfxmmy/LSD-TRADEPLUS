@@ -45,16 +45,12 @@ export default function LoginPage() {
         .single()
 
       // Check if user has valid subscription or is admin
+      // is_admin = full access, 'active' = paying, 'free' = giveaway
       const hasAccess = (() => {
         if (!profile) return false
         if (profile.is_admin) return true
-        const { subscription_status, subscription_end, plan } = profile
-        if (subscription_status === 'active') return true
-        if (plan === 'lifetime') return true
-        if (['cancelled', 'expired', 'past_due'].includes(subscription_status) && subscription_end) {
-          const gracePeriodEnd = new Date(new Date(subscription_end).getTime() + 7 * 24 * 60 * 60 * 1000)
-          if (new Date() < gracePeriodEnd) return true
-        }
+        if (profile.subscription_status === 'active') return true
+        if (profile.subscription_status === 'free') return true
         return false
       })()
 

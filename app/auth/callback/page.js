@@ -45,7 +45,8 @@ export default function AuthCallbackPage() {
           .eq('id', session.user.id)
           .single()
 
-        if (profileData?.is_admin || profileData?.subscription_status === 'active') {
+        // is_admin = full access, 'active' = paying, 'free' = giveaway
+        if (profileData?.is_admin || profileData?.subscription_status === 'active' || profileData?.subscription_status === 'free') {
           window.location.href = '/dashboard'
         } else {
           window.location.href = '/pricing'

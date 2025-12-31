@@ -62,23 +62,18 @@ export default function DashboardPage() {
 
   useEffect(() => { loadData() }, [])
 
-  // Check if user has valid subscription (including grace period)
+  // Check if user has valid subscription
+  // 'active' = paying subscriber, 'free' = giveaway/free entry, both get access
+  // 'none'/null = no subscription, no access
   function hasValidSubscription(profile) {
     if (!profile) return false
-    const { subscription_status, subscription_end, plan } = profile
+    const { subscription_status } = profile
 
-    // Active subscription
+    // Active paying subscription
     if (subscription_status === 'active') return true
 
-    // Lifetime plan
-    if (plan === 'lifetime') return true
-
-    // Grace period: 7 days after cancellation/expiry
-    if (['cancelled', 'expired', 'past_due'].includes(subscription_status) && subscription_end) {
-      const endDate = new Date(subscription_end)
-      const gracePeriodEnd = new Date(endDate.getTime() + 7 * 24 * 60 * 60 * 1000)
-      if (new Date() < gracePeriodEnd) return true
-    }
+    // Free subscription (giveaway, promo, etc.)
+    if (subscription_status === 'free') return true
 
     return false
   }
