@@ -18,7 +18,10 @@
       "Bash(head:*)",
       "Bash(timeout 15 npm run dev:*)",
       "Bash(node --check:*)",
-      "Bash(git diff:*)"
+      "Bash(git diff:*)",
+      "Bash(powershell -Command \"\\(Get-Content seed-trades.sql\\) -replace \"\"'', 1\\\\.0, ''\"\", \"\"'', ''\"\" | Set-Content seed-trades.sql\")",
+      "Bash(powershell:*)",
+      "Bash(del \"c:\\\\Users\\\\Asus\\\\Desktop\\\\trading-journal\\\\fix-seed.ps1\")"
     ]
   }
 }
