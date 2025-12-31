@@ -27,6 +27,7 @@ export default function DashboardPage() {
   const [quickTradeDate, setQuickTradeDate] = useState(new Date().toISOString().split('T')[0])
   const [quickTradeDirection, setQuickTradeDirection] = useState('long')
   const [quickTradeRating, setQuickTradeRating] = useState('')
+  const [hoverRating, setHoverRating] = useState(0)
   const [quickTradeRiskPercent, setQuickTradeRiskPercent] = useState('')
   const [quickTradeConfidence, setQuickTradeConfidence] = useState('')
   const [quickTradeTimeframe, setQuickTradeTimeframe] = useState('')

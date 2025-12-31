@@ -155,13 +155,28 @@ export default function AccountPage() {
       }
       setAllAccountsTrades(tradesMap)
     }
-    if (accountData.custom_inputs) { 
-      try { 
+    if (accountData.custom_inputs) {
+      try {
         const parsed = JSON.parse(accountData.custom_inputs)
-        setInputs(parsed)
-        const customInputs = parsed.filter(i => !defaultInputs.find(d => d.id === i.id))
+        // Convert legacy string options to {value, color} format
+        const convertedInputs = parsed.map(inp => {
+          if (inp.options && inp.options.length > 0) {
+            const defaultInput = defaultInputs.find(d => d.id === inp.id)
+            const convertedOptions = inp.options.map((opt, idx) => {
+              if (typeof opt === 'object') return opt
+              // Try to find color from defaultInputs
+              const defaultOpt = defaultInput?.options?.find(o => getOptVal(o).toLowerCase() === opt.toLowerCase())
+              const color = defaultOpt ? getOptColor(defaultOpt) : '#888888'
+              return { value: opt, color }
+            })
+            return { ...inp, options: convertedOptions }
+          }
+          return inp
+        })
+        setInputs(convertedInputs)
+        const customInputs = convertedInputs.filter(i => !defaultInputs.find(d => d.id === i.id))
         if (customInputs.length > 0) setHasNewInputs(true)
-      } catch {} 
+      } catch {}
     }
     if (accountData.notes_data) { try { setNotes(JSON.parse(accountData.notes_data)) } catch {} }
     const { data: tradesData } = await supabase.from('trades').select('*').eq('account_id', accountId).order('date', { ascending: false })
