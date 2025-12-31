@@ -21,7 +21,8 @@
       "Bash(git diff:*)",
       "Bash(powershell -Command \"\\(Get-Content seed-trades.sql\\) -replace \"\"'', 1\\\\.0, ''\"\", \"\"'', ''\"\" | Set-Content seed-trades.sql\")",
       "Bash(powershell:*)",
-      "Bash(del \"c:\\\\Users\\\\Asus\\\\Desktop\\\\trading-journal\\\\fix-seed.ps1\")"
+      "Bash(del \"c:\\\\Users\\\\Asus\\\\Desktop\\\\trading-journal\\\\fix-seed.ps1\")",
+      "Bash(grep:*)"
     ]
   }
 }
