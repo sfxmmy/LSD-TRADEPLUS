@@ -2000,7 +2000,7 @@ export default function AccountPage() {
 
               {/* Right column - wider, all boxes equal height */}
               <div style={{ width: '420px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                {/* Top row: Average Rating + PnL by Day */}
+                {/* Top row: Average Rating + Streaks & Consistency */}
                 <div style={{ display: 'flex', gap: '8px', flex: 1 }}>
                   {/* Average Rating - title on left side */}
                   <div style={{ flex: 1, background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '14px', display: 'flex', flexDirection: 'column' }}>
@@ -2024,59 +2024,88 @@ export default function AccountPage() {
                     </div>
                   </div>
 
-                  {/* PnL by Day - bars proportionate to PnL */}
+                  {/* Streaks & Consistency - compact */}
                   <div style={{ flex: 1, background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '14px', display: 'flex', flexDirection: 'column' }}>
-                    <div style={{ fontSize: '11px', color: '#999', textTransform: 'uppercase', marginBottom: '10px' }}>PnL by Day</div>
-                    {(() => {
-                      const dayNames = ['M', 'T', 'W', 'T', 'F']
-                      const dayPnL = [0, 0, 0, 0, 0]
-                      displayTrades.forEach(t => {
-                        const day = new Date(t.date).getDay()
-                        if (day >= 1 && day <= 5) dayPnL[day - 1] += parseFloat(t.pnl) || 0
-                      })
-                      const maxPnL = Math.max(...dayPnL.map(p => Math.abs(p)), 1)
-                      return (
-                        <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
-                          <div style={{ flex: 1, display: 'flex', gap: '4px', alignItems: 'flex-end', marginBottom: '4px' }}>
-                            {dayPnL.map((pnl, i) => {
-                              const heightPct = Math.max((Math.abs(pnl) / maxPnL) * 100, 10)
-                              return (
-                                <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', height: '100%', justifyContent: 'flex-end' }}>
-                                  <div style={{ fontSize: '10px', color: pnl >= 0 ? '#22c55e' : '#ef4444', fontWeight: 600, marginBottom: '2px' }}>
-                                    {pnl >= 0 ? '+' : ''}{Math.round(pnl)}
-                                  </div>
-                                  <div style={{ width: '100%', height: `${heightPct}%`, background: pnl >= 0 ? '#22c55e' : '#ef4444', borderRadius: '3px 3px 0 0', minHeight: '4px' }} />
-                                </div>
-                              )
-                            })}
-                          </div>
-                          <div style={{ display: 'flex', gap: '4px' }}>
-                            {dayNames.map((name, i) => (
-                              <div key={i} style={{ flex: 1, textAlign: 'center', fontSize: '11px', fontWeight: 600, color: '#999' }}>{name}</div>
-                            ))}
-                          </div>
+                    <div style={{ fontSize: '11px', color: '#999', textTransform: 'uppercase', marginBottom: '8px' }}>Streaks & Consistency</div>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '6px', flex: 1 }}>
+                      {[
+                        { l: 'Max Wins', v: streaks.mw, c: '#22c55e' },
+                        { l: 'Max Losses', v: streaks.ml, c: '#ef4444' },
+                        { l: 'Days', v: tradingDays, c: '#fff' },
+                        { l: 'Trades/Day', v: avgTradesPerDay, c: '#fff' },
+                      ].map((item, i) => (
+                        <div key={i} style={{ padding: '6px', background: '#0a0a0e', borderRadius: '4px', border: '1px solid #1a1a22', textAlign: 'center', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+                          <div style={{ fontSize: '9px', color: '#999', marginBottom: '2px' }}>{item.l}</div>
+                          <div style={{ fontSize: '14px', fontWeight: 700, color: item.c }}>{item.v}</div>
                         </div>
-                      )
-                    })()}
+                      ))}
+                    </div>
                   </div>
                 </div>
 
-                {/* Streaks & Consistency - taller */}
+                {/* PnL by Day - horizontal proportional bar */}
                 <div style={{ flex: 1, background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '14px', display: 'flex', flexDirection: 'column' }}>
-                  <div style={{ fontSize: '11px', color: '#999', textTransform: 'uppercase', marginBottom: '12px' }}>Streaks & Consistency</div>
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px', flex: 1 }}>
-                    {[
-                      { l: 'Max Wins', v: streaks.mw, c: '#22c55e' },
-                      { l: 'Max Losses', v: streaks.ml, c: '#ef4444' },
-                      { l: 'Days', v: tradingDays, c: '#fff' },
-                      { l: 'Trades/Day', v: avgTradesPerDay, c: '#fff' },
-                    ].map((item, i) => (
-                      <div key={i} style={{ padding: '10px', background: '#0a0a0e', borderRadius: '6px', border: '1px solid #1a1a22', textAlign: 'center', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-                        <div style={{ fontSize: '10px', color: '#999', marginBottom: '4px' }}>{item.l}</div>
-                        <div style={{ fontSize: '18px', fontWeight: 700, color: item.c }}>{item.v}</div>
+                  <div style={{ fontSize: '11px', color: '#999', textTransform: 'uppercase', marginBottom: '10px' }}>PnL by Day</div>
+                  {(() => {
+                    const dayNames = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri']
+                    const dayPnL = [0, 0, 0, 0, 0]
+                    displayTrades.forEach(t => {
+                      const day = new Date(t.date).getDay()
+                      if (day >= 1 && day <= 5) dayPnL[day - 1] += parseFloat(t.pnl) || 0
+                    })
+                    const totalAbs = dayPnL.reduce((sum, p) => sum + Math.abs(p), 0) || 1
+                    return (
+                      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+                        {/* Proportional bar */}
+                        <div style={{ display: 'flex', height: '32px', borderRadius: '6px', overflow: 'hidden', boxShadow: '0 0 20px rgba(34,197,94,0.15), 0 0 40px rgba(34,197,94,0.08)' }}>
+                          {dayPnL.map((pnl, i) => {
+                            const widthPct = Math.max((Math.abs(pnl) / totalAbs) * 100, 0.5)
+                            const isPositive = pnl >= 0
+                            const color = isPositive ? '#22c55e' : '#ef4444'
+                            const glowColor = isPositive ? 'rgba(34,197,94,0.4)' : 'rgba(239,68,68,0.4)'
+                            return (
+                              <div
+                                key={i}
+                                style={{
+                                  width: `${widthPct}%`,
+                                  background: `linear-gradient(180deg, ${color} 0%, ${isPositive ? '#1a7a3a' : '#991b1b'} 100%)`,
+                                  boxShadow: `inset 0 1px 0 rgba(255,255,255,0.2), 0 0 12px ${glowColor}`,
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                  borderRight: i < 4 ? '1px solid rgba(0,0,0,0.3)' : 'none',
+                                  position: 'relative',
+                                  minWidth: pnl !== 0 ? '30px' : '0'
+                                }}
+                              >
+                                {Math.abs(pnl) > 0 && widthPct > 8 && (
+                                  <span style={{ fontSize: '10px', fontWeight: 700, color: '#fff', textShadow: '0 1px 2px rgba(0,0,0,0.5)' }}>
+                                    {pnl >= 0 ? '+' : ''}{Math.round(pnl)}
+                                  </span>
+                                )}
+                              </div>
+                            )
+                          })}
+                        </div>
+                        {/* Day labels below */}
+                        <div style={{ display: 'flex', marginTop: '8px' }}>
+                          {dayPnL.map((pnl, i) => {
+                            const widthPct = Math.max((Math.abs(pnl) / totalAbs) * 100, 0.5)
+                            return (
+                              <div key={i} style={{ width: `${widthPct}%`, textAlign: 'center', minWidth: pnl !== 0 ? '30px' : '0' }}>
+                                <div style={{ fontSize: '10px', fontWeight: 600, color: '#999' }}>{dayNames[i]}</div>
+                                {widthPct <= 8 && Math.abs(pnl) > 0 && (
+                                  <div style={{ fontSize: '9px', color: pnl >= 0 ? '#22c55e' : '#ef4444', fontWeight: 600 }}>
+                                    {pnl >= 0 ? '+' : ''}{Math.round(pnl)}
+                                  </div>
+                                )}
+                              </div>
+                            )
+                          })}
+                        </div>
                       </div>
-                    ))}
-                  </div>
+                    )
+                  })()}
                 </div>
               </div>
             </div>
