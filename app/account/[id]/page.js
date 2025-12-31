@@ -7,15 +7,15 @@ import { createClient } from '@supabase/supabase-js'
 const defaultInputs = [
   { id: 'symbol', label: 'Symbol', type: 'text', required: true, enabled: true, fixed: true, color: '#22c55e' },
   { id: 'pnl', label: 'PnL ($)', type: 'number', required: true, enabled: true, fixed: true, color: '#22c55e' },
-  { id: 'direction', label: 'Direction', type: 'select', options: ['Long', 'Short'], required: true, enabled: true, fixed: true, color: '#3b82f6' },
-  { id: 'outcome', label: 'Outcome', type: 'select', options: ['Win', 'Loss', 'Breakeven'], required: true, enabled: true, fixed: true, color: '#22c55e' },
+  { id: 'direction', label: 'Direction', type: 'select', options: [{value: 'Long', color: '#22c55e'}, {value: 'Short', color: '#ef4444'}], required: true, enabled: true, fixed: true, color: '#3b82f6' },
+  { id: 'outcome', label: 'Outcome', type: 'select', options: [{value: 'Win', color: '#22c55e'}, {value: 'Loss', color: '#ef4444'}, {value: 'Breakeven', color: '#f59e0b'}], required: true, enabled: true, fixed: true, color: '#22c55e' },
   { id: 'rr', label: 'RR', type: 'number', required: false, enabled: true, fixed: true, color: '#f59e0b' },
   { id: 'riskPercent', label: '% Risk', type: 'number', required: false, enabled: true, fixed: true, color: '#ef4444' },
   { id: 'date', label: 'Date', type: 'date', required: true, enabled: true, fixed: true, color: '#8b5cf6' },
-  { id: 'confidence', label: 'Confidence', type: 'select', options: ['High', 'Medium', 'Low'], required: false, enabled: true, fixed: true, color: '#f59e0b' },
+  { id: 'confidence', label: 'Confidence', type: 'select', options: [{value: 'High', color: '#22c55e'}, {value: 'Medium', color: '#f59e0b'}, {value: 'Low', color: '#ef4444'}], required: false, enabled: true, fixed: true, color: '#f59e0b' },
   { id: 'rating', label: 'Rating', type: 'rating', required: false, enabled: true, fixed: true, color: '#fbbf24' },
-  { id: 'timeframe', label: 'Timeframe', type: 'select', options: ['1m', '5m', '15m', '30m', '1H', '4H', 'Daily'], required: false, enabled: true, fixed: true, color: '#06b6d4' },
-  { id: 'session', label: 'Session', type: 'select', options: ['London', 'New York', 'Asian', 'Overlap'], required: false, enabled: true, fixed: true, color: '#ec4899' },
+  { id: 'timeframe', label: 'Timeframe', type: 'select', options: [{value: '1m', color: '#06b6d4'}, {value: '5m', color: '#06b6d4'}, {value: '15m', color: '#06b6d4'}, {value: '30m', color: '#06b6d4'}, {value: '1H', color: '#06b6d4'}, {value: '4H', color: '#06b6d4'}, {value: 'Daily', color: '#06b6d4'}], required: false, enabled: true, fixed: true, color: '#06b6d4' },
+  { id: 'session', label: 'Session', type: 'select', options: [{value: 'London', color: '#3b82f6'}, {value: 'New York', color: '#22c55e'}, {value: 'Asian', color: '#f59e0b'}, {value: 'Overlap', color: '#a855f7'}], required: false, enabled: true, fixed: true, color: '#ec4899' },
   { id: 'image', label: 'Image', type: 'file', required: false, enabled: true, fixed: true, color: '#64748b' },
   { id: 'notes', label: 'Notes', type: 'textarea', required: false, enabled: true, fixed: true, color: '#64748b' },
 ]
@@ -631,7 +631,7 @@ export default function AccountPage() {
       <Tooltip data={tooltip} />
 
       {/* FIXED HEADER - same structure as dashboard */}
-      <header style={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 50, padding: isMobile ? '10px 16px' : '16px 14px 16px 40px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#0a0a0f', borderBottom: '1px solid #1a1a22' }}>
+      <header style={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 50, padding: isMobile ? '12px 16px' : '16px 40px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#0a0a0f', borderBottom: '1px solid #1a1a22' }}>
         <a href="/" style={{ fontSize: isMobile ? '20px' : '28px', fontWeight: 700, textDecoration: 'none', letterSpacing: '-0.5px' }}><span style={{ color: '#22c55e' }}>LSD</span><span style={{ color: '#fff' }}>TRADE</span><span style={{ color: '#22c55e' }}>+</span></a>
         {!isMobile && (
           <>
@@ -942,8 +942,8 @@ export default function AccountPage() {
                             </span>
                           </td>
                           <td style={{ padding: '14px 12px', textAlign: 'center', fontWeight: 600, fontSize: '16px', color: pnlValue >= 0 ? '#22c55e' : '#ef4444' }}>{pnlValue >= 0 ? '+' : ''}${pnlValue.toFixed(0)}</td>
-                          <td style={{ padding: '14px 12px', textAlign: 'center', fontSize: '14px', color: '#fff' }}>{extra.riskPercent || '1'}%</td>
-                          <td style={{ padding: '14px 12px', textAlign: 'center', fontSize: '14px', color: '#fff' }}>{trade.rr || '-'}</td>
+                          <td style={{ padding: '14px 12px', textAlign: 'center', fontSize: '14px', color: parseFloat(extra.riskPercent || '1') > 0 ? '#22c55e' : parseFloat(extra.riskPercent || '1') < 0 ? '#ef4444' : '#f59e0b' }}>{extra.riskPercent || '1'}%</td>
+                          <td style={{ padding: '14px 12px', textAlign: 'center', fontSize: '14px', color: parseFloat(trade.rr) > 0 ? '#22c55e' : parseFloat(trade.rr) < 0 ? '#ef4444' : '#f59e0b' }}>{trade.rr || '-'}</td>
                           {customInputs.map(inp => (
                             <td key={inp.id} style={{ padding: '14px 12px', textAlign: 'center', fontSize: '14px', color: '#fff', verticalAlign: 'middle' }}>
                               {inp.type === 'rating' ? (
@@ -969,9 +969,19 @@ export default function AccountPage() {
                                 noteContent ? (
                                   <div onClick={() => setShowExpandedNote(noteContent)} style={{ cursor: 'pointer', color: '#999', fontSize: '12px', maxWidth: '160px', margin: '0 auto', lineHeight: '1.4', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', textAlign: 'left' }}>{noteContent}</div>
                                 ) : <span style={{ color: '#444' }}>-</span>
-                              ) : (
-                                <span style={{ color: inp.id === 'confidence' && extra[inp.id] === 'High' ? '#22c55e' : inp.id === 'confidence' && extra[inp.id] === 'Low' ? '#ef4444' : inp.id === 'direction' ? (trade.direction === 'long' ? '#22c55e' : '#ef4444') : '#fff' }}>
+                              ) : inp.type === 'number' ? (
+                                (() => {
+                                  const numVal = parseFloat(extra[inp.id]) || 0
+                                  const numColor = numVal > 0 ? '#22c55e' : numVal < 0 ? '#ef4444' : '#f59e0b'
+                                  return <span style={{ color: numColor }}>{extra[inp.id] || '-'}</span>
+                                })()
+                              ) : inp.type === 'select' ? (
+                                <span style={{ color: findOptColor(inp.options, extra[inp.id], inp.id === 'direction' ? (trade.direction === 'long' ? '#22c55e' : '#ef4444') : '#fff') }}>
                                   {inp.id === 'direction' ? trade.direction?.toUpperCase() : extra[inp.id] || '-'}
+                                </span>
+                              ) : (
+                                <span style={{ color: '#fff' }}>
+                                  {extra[inp.id] || '-'}
                                 </span>
                               )}
                             </td>
