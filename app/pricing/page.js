@@ -60,11 +60,29 @@ export default function PricingPage() {
     }
 
     setSubscribing(true)
-    
+
     try {
-      const res = await fetch('/api/stripe/create-checkout', { method: 'POST' })
+      const supabase = createClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL,
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+      )
+      const { data: { session } } = await supabase.auth.getSession()
+
+      if (!session) {
+        alert('Please log in to subscribe')
+        window.location.href = '/login'
+        return
+      }
+
+      const res = await fetch('/api/stripe/create-checkout', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`
+        }
+      })
       const data = await res.json()
-      
+
       if (data.url) {
         window.location.href = data.url
       } else {

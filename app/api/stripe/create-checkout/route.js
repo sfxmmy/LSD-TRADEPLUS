@@ -4,22 +4,20 @@ import Stripe from 'stripe'
 
 export async function POST(request) {
   try {
-    // Get auth token from cookies
-    const authHeader = request.headers.get('cookie')
-    
+    // Get auth token from Authorization header
+    const authHeader = request.headers.get('Authorization')
+    const token = authHeader?.replace('Bearer ', '')
+
+    if (!token) {
+      return NextResponse.json({ error: 'No token provided' }, { status: 401 })
+    }
+
     const supabase = createClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
-      {
-        global: {
-          headers: {
-            cookie: authHeader || ''
-          }
-        }
-      }
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
     )
 
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
+    const { data: { user }, error: authError } = await supabase.auth.getUser(token)
 
     if (authError || !user) {
       return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })

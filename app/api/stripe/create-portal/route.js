@@ -4,19 +4,20 @@ import Stripe from 'stripe'
 
 export async function POST(request) {
   try {
-    const authHeader = request.headers.get('cookie')
-    
+    // Get auth token from Authorization header
+    const authHeader = request.headers.get('Authorization')
+    const token = authHeader?.replace('Bearer ', '')
+
+    if (!token) {
+      return NextResponse.json({ error: 'No token provided' }, { status: 401 })
+    }
+
     const supabase = createClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
-      {
-        global: {
-          headers: { cookie: authHeader || '' }
-        }
-      }
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
     )
 
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
+    const { data: { user }, error: authError } = await supabase.auth.getUser(token)
 
     if (authError || !user) {
       return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
@@ -29,18 +30,20 @@ export async function POST(request) {
 
     const { data: profile } = await serviceSupabase
       .from('profiles')
-      .select('stripe_customer_id')
+      .select('customer_id, stripe_customer_id')
       .eq('id', user.id)
       .single()
 
-    if (!profile?.stripe_customer_id) {
+    // Check both field names for compatibility
+    const customerId = profile?.customer_id || profile?.stripe_customer_id
+    if (!customerId) {
       return NextResponse.json({ error: 'No subscription found' }, { status: 400 })
     }
 
     const stripe = new Stripe(process.env.STRIPE_SECRET_KEY)
 
     const session = await stripe.billingPortal.sessions.create({
-      customer: profile.stripe_customer_id,
+      customer: customerId,
       return_url: `${process.env.NEXT_PUBLIC_SITE_URL}/dashboard`,
     })
 
