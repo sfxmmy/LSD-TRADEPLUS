@@ -1098,7 +1098,7 @@ export default function DashboardPage() {
                         <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: isMobile ? '600px' : 'auto' }}>
                           <thead style={{ position: 'sticky', top: 0, background: '#0d0d12' }}>
                             <tr>
-                              {['Symbol', 'W/L', 'PnL', 'RR', '%', 'Emotion', 'Rating', 'Image', 'Placed', 'Date'].map((h, i) => (
+                              {['Symbol', 'W/L', 'PnL', 'RR', '%', 'Dir', 'Confidence', 'Session', 'TF', 'Rating', 'Placed'].map((h, i) => (
                                 <th key={i} style={{ padding: '10px', textAlign: 'center', color: '#999', fontSize: '11px', fontWeight: 600, textTransform: 'uppercase' }}>{h}</th>
                               ))}
                             </tr>
@@ -1115,11 +1115,26 @@ export default function DashboardPage() {
                                     </span>
                                   </td>
                                   <td style={{ padding: '12px', textAlign: 'center', fontWeight: 600, fontSize: '14px', color: parseFloat(trade.pnl) >= 0 ? '#22c55e' : '#ef4444' }}>{parseFloat(trade.pnl) >= 0 ? '+' : ''}${parseFloat(trade.pnl || 0).toFixed(0)}</td>
-                                  <td style={{ padding: '12px', textAlign: 'center', fontSize: '14px', color: '#999' }}>{trade.rr || '-'}</td>
-                                  <td style={{ padding: '12px', textAlign: 'center', fontSize: '14px', color: '#999' }}>{extra.riskPercent || '1'}%</td>
+                                  <td style={{ padding: '12px', textAlign: 'center', fontSize: '14px', color: parseFloat(trade.rr) > 0 ? '#22c55e' : parseFloat(trade.rr) < 0 ? '#ef4444' : '#f59e0b' }}>{trade.rr || '-'}</td>
+                                  <td style={{ padding: '12px', textAlign: 'center', fontSize: '14px', color: parseFloat(extra.riskPercent || 1) > 0 ? '#22c55e' : '#f59e0b' }}>{extra.riskPercent || '1'}%</td>
+                                  <td style={{ padding: '12px', textAlign: 'center' }}>
+                                    {trade.direction ? (
+                                      <span style={{ padding: '4px 10px', borderRadius: '4px', fontSize: '12px', background: 'transparent', border: `1px solid ${getOptionColor('direction', trade.direction)}`, color: getOptionColor('direction', trade.direction) }}>{trade.direction?.toUpperCase()}</span>
+                                    ) : <span style={{ fontSize: '14px', color: '#444' }}>-</span>}
+                                  </td>
                                   <td style={{ padding: '12px', textAlign: 'center' }}>
                                     {extra.confidence ? (
                                       <span style={{ padding: '4px 10px', borderRadius: '4px', fontSize: '12px', background: 'transparent', border: `1px solid ${getOptionColor('confidence', extra.confidence)}`, color: getOptionColor('confidence', extra.confidence) }}>{extra.confidence}</span>
+                                    ) : <span style={{ fontSize: '14px', color: '#444' }}>-</span>}
+                                  </td>
+                                  <td style={{ padding: '12px', textAlign: 'center' }}>
+                                    {extra.session ? (
+                                      <span style={{ padding: '4px 10px', borderRadius: '4px', fontSize: '12px', background: 'transparent', border: `1px solid ${getOptionColor('session', extra.session)}`, color: getOptionColor('session', extra.session) }}>{extra.session}</span>
+                                    ) : <span style={{ fontSize: '14px', color: '#444' }}>-</span>}
+                                  </td>
+                                  <td style={{ padding: '12px', textAlign: 'center' }}>
+                                    {extra.timeframe ? (
+                                      <span style={{ padding: '4px 10px', borderRadius: '4px', fontSize: '12px', background: 'transparent', border: `1px solid ${getOptionColor('timeframe', extra.timeframe)}`, color: getOptionColor('timeframe', extra.timeframe) }}>{extra.timeframe}</span>
                                     ) : <span style={{ fontSize: '14px', color: '#444' }}>-</span>}
                                   </td>
                                   <td style={{ padding: '12px', textAlign: 'center' }}>
@@ -1138,13 +1153,7 @@ export default function DashboardPage() {
                                       })}
                                     </div>
                                   </td>
-                                  <td style={{ padding: '12px', textAlign: 'center' }}>
-                                    <div style={{ width: '24px', height: '24px', background: extra.image ? '#1a1a22' : '#141418', borderRadius: '4px', margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke={extra.image ? '#22c55e' : '#333'} strokeWidth="2"><rect x="3" y="3" width="18" height="18" rx="2" /><circle cx="8.5" cy="8.5" r="1.5" /><polyline points="21 15 16 10 5 21" /></svg>
-                                    </div>
-                                  </td>
                                   <td style={{ padding: '12px', textAlign: 'center', fontSize: '14px', color: '#999' }}>{getDaysAgo(trade.date)}</td>
-                                  <td style={{ padding: '12px', textAlign: 'center', fontSize: '14px', color: '#999' }}>{formatDate(trade.date)}</td>
                                 </tr>
                               )
                             })}
