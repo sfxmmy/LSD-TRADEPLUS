@@ -63,11 +63,16 @@ export default function DashboardPage() {
   useEffect(() => { loadData() }, [])
 
   // Check if user has valid subscription
-  // 'subscribing' = paying subscriber, 'free subscription' = giveaway/free entry, both get access
-  // 'not subscribing'/null = no subscription, no access
+  // 'admin' = admin user (ssiagos@hotmail.com)
+  // 'subscribing' = paying subscriber
+  // 'free subscription' = free access without paying
+  // 'not subscribing' = no subscription, no access
   function hasValidSubscription(profile) {
     if (!profile) return false
     const { subscription_status } = profile
+
+    // Admin has full access
+    if (subscription_status === 'admin') return true
 
     // Active paying subscription
     if (subscription_status === 'subscribing') return true
@@ -82,8 +87,8 @@ export default function DashboardPage() {
     const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY)
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) { window.location.href = '/login'; return }
-    const { data: profile } = await supabase.from('profiles').select('subscription_status, subscription_end, plan, is_admin').eq('id', user.id).single()
-    if (!profile?.is_admin && !hasValidSubscription(profile)) { window.location.href = '/pricing'; return }
+    const { data: profile } = await supabase.from('profiles').select('subscription_status, subscription_end').eq('id', user.id).single()
+    if (!hasValidSubscription(profile)) { window.location.href = '/pricing'; return }
     setUser(user)
     const { data: accountsData } = await supabase.from('accounts').select('*').eq('user_id', user.id).order('created_at', { ascending: true })
     setAccounts(accountsData || [])
@@ -94,10 +99,9 @@ export default function DashboardPage() {
         // Get count first
         const { count } = await supabase.from('trades').select('*', { count: 'exact', head: true }).eq('account_id', acc.id)
         countsMap[acc.id] = count || 0
-        // Load first page of trades (most recent first for display, then sort ascending for charts)
-        const { data: tradesData } = await supabase.from('trades').select('*').eq('account_id', acc.id).order('date', { ascending: false }).limit(TRADES_PER_PAGE)
-        // Reverse to get ascending order for charts
-        tradesMap[acc.id] = (tradesData || []).reverse()
+        // Load all trades for charts (sorted ascending by date)
+        const { data: tradesData } = await supabase.from('trades').select('*').eq('account_id', acc.id).order('date', { ascending: true })
+        tradesMap[acc.id] = tradesData || []
       }
       setTrades(tradesMap)
       setTradeCounts(countsMap)
@@ -488,10 +492,16 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          <div style={{ height: '26px', position: 'relative', overflow: 'hidden', display: 'flex', alignItems: 'center' }}>
-            {xLabels.map((l, i) => (
-              <span key={i} style={{ position: 'absolute', left: `${l.pct}%`, transform: 'translateX(-50%)', fontSize: '10px', color: '#999' }}>{l.label}</span>
-            ))}
+          <div style={{ height: '26px', position: 'relative', overflow: 'visible', display: 'flex', alignItems: 'center' }}>
+            {xLabels.map((l, i) => {
+              // Adjust transform for edge labels to prevent cutoff
+              const isFirst = i === 0
+              const isLast = i === xLabels.length - 1
+              const transform = isFirst ? 'translateX(0)' : isLast ? 'translateX(-100%)' : 'translateX(-50%)'
+              return (
+                <span key={i} style={{ position: 'absolute', left: `${l.pct}%`, transform, fontSize: '10px', color: '#999', whiteSpace: 'nowrap' }}>{l.label}</span>
+              )
+            })}
           </div>
         </div>
       </div>

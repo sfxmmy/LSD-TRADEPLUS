@@ -41,12 +41,15 @@ export default function AuthCallbackPage() {
         // Redirect to dashboard or pricing based on subscription
         const { data: profileData } = await supabase
           .from('profiles')
-          .select('subscription_status, is_admin')
+          .select('subscription_status')
           .eq('id', session.user.id)
           .single()
 
-        // is_admin = full access, 'subscribing' = paying, 'free subscription' = giveaway
-        if (profileData?.is_admin || profileData?.subscription_status === 'subscribing' || profileData?.subscription_status === 'free subscription') {
+        // 'admin' = admin user, 'subscribing' = paying, 'free subscription' = free access
+        const hasAccess = profileData?.subscription_status === 'admin' ||
+                          profileData?.subscription_status === 'subscribing' ||
+                          profileData?.subscription_status === 'free subscription'
+        if (hasAccess) {
           window.location.href = '/dashboard'
         } else {
           window.location.href = '/pricing'

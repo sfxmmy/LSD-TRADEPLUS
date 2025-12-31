@@ -18,7 +18,6 @@ CREATE TABLE IF NOT EXISTS profiles (
   email TEXT,
   username TEXT,
   subscription_status TEXT DEFAULT 'not subscribing',
-  is_admin BOOLEAN DEFAULT FALSE,
   customer_id TEXT,
   subscription_id TEXT,
   subscription_start TIMESTAMPTZ,
@@ -31,12 +30,10 @@ CREATE TABLE IF NOT EXISTS profiles (
 -- =====================================================
 -- SUBSCRIPTION STATUS VALUES:
 -- =====================================================
--- 'subscribing'      = Paying subscriber (has access)
--- 'free subscription' = Free entry/giveaway (has access)
+-- 'admin'            = Admin user (ssiagos@hotmail.com only)
+-- 'subscribing'      = Paying monthly subscriber (has access)
+-- 'free subscription' = Free access without paying (has access)
 -- 'not subscribing'  = No subscription (NO access, must pay)
---
--- is_admin = TRUE means full access regardless of subscription
--- Only ssiagos@hotmail.com should be admin
 -- =====================================================
 
 -- =====================================================
@@ -119,7 +116,7 @@ CREATE POLICY "trades_all" ON trades
 CREATE OR REPLACE FUNCTION handle_new_user()
 RETURNS TRIGGER AS $$
 BEGIN
-  INSERT INTO profiles (id, email, username, subscription_status, is_admin)
+  INSERT INTO profiles (id, email, username, subscription_status)
   VALUES (
     NEW.id,
     NEW.email,
@@ -127,8 +124,7 @@ BEGIN
       NEW.raw_user_meta_data->>'full_name',
       split_part(NEW.email, '@', 1)
     ),
-    'not subscribing',
-    FALSE
+    'not subscribing'
   )
   ON CONFLICT (id) DO UPDATE SET
     email = EXCLUDED.email,
@@ -148,7 +144,7 @@ CREATE TRIGGER on_auth_user_created
 -- =====================================================
 -- SET ADMIN (only ssiagos@hotmail.com)
 -- =====================================================
-UPDATE profiles SET is_admin = TRUE WHERE email = 'ssiagos@hotmail.com';
+UPDATE profiles SET subscription_status = 'admin' WHERE email = 'ssiagos@hotmail.com';
 
 -- =====================================================
 -- INDEXES FOR BETTER PERFORMANCE

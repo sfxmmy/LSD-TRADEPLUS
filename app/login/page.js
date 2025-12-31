@@ -40,15 +40,15 @@ export default function LoginPage() {
       // Check subscription status before redirecting
       const { data: profile } = await supabase
         .from('profiles')
-        .select('subscription_status, subscription_end, plan, is_admin')
+        .select('subscription_status, subscription_end')
         .eq('id', data.user.id)
         .single()
 
-      // Check if user has valid subscription or is admin
-      // is_admin = full access, 'subscribing' = paying, 'free subscription' = giveaway
+      // Check if user has valid subscription
+      // 'admin' = admin user, 'subscribing' = paying, 'free subscription' = free access
       const hasAccess = (() => {
         if (!profile) return false
-        if (profile.is_admin) return true
+        if (profile.subscription_status === 'admin') return true
         if (profile.subscription_status === 'subscribing') return true
         if (profile.subscription_status === 'free subscription') return true
         return false

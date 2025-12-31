@@ -14,11 +14,12 @@ export default function PricingPage() {
   }, [])
 
   // Check if user has valid subscription
-  // 'subscribing' = paying subscriber, 'free subscription' = giveaway/free entry, both get access
-  // 'not subscribing'/null = no subscription, no access
+  // 'admin' = admin user, 'subscribing' = paying, 'free subscription' = free access
+  // 'not subscribing' = no subscription, no access
   function hasValidSubscription(profile) {
     if (!profile) return false
     const { subscription_status } = profile
+    if (subscription_status === 'admin') return true
     if (subscription_status === 'subscribing') return true
     if (subscription_status === 'free subscription') return true
     return false
@@ -36,14 +37,10 @@ export default function PricingPage() {
       if (user) {
         const { data: profile } = await supabase
           .from('profiles')
-          .select('subscription_status, subscription_end, plan, is_admin')
+          .select('subscription_status, subscription_end')
           .eq('id', user.id)
           .single()
-        if (profile?.is_admin) {
-          setHasAccess(true)
-        } else {
-          setHasAccess(hasValidSubscription(profile))
-        }
+        setHasAccess(hasValidSubscription(profile))
       }
     } catch (err) {
       console.error('Auth check:', err)
