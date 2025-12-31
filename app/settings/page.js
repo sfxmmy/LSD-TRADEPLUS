@@ -148,14 +148,9 @@ export default function SettingsPage() {
         <a href="/" style={{ fontSize: '28px', fontWeight: 700, textDecoration: 'none', letterSpacing: '-0.5px' }}>
           <span style={{ color: '#22c55e' }}>LSD</span><span style={{ color: '#fff' }}>TRADE</span><span style={{ color: '#22c55e' }}>+</span>
         </a>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <a href="/dashboard" style={{ padding: '12px 24px', background: '#22c55e', borderRadius: '8px', color: '#fff', fontWeight: 600, fontSize: '14px', textDecoration: 'none' }}>
+        <a href="/dashboard" style={{ padding: '12px 24px', background: '#22c55e', borderRadius: '8px', color: '#fff', fontWeight: 600, fontSize: '14px', textDecoration: 'none' }}>
             Back to Journal
           </a>
-          <button onClick={handleSignOut} style={{ padding: '12px 20px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '8px', color: '#999', fontSize: '14px', cursor: 'pointer' }}>
-            Sign Out
-          </button>
-        </div>
       </header>
 
       {/* Main Content */}
@@ -268,6 +263,27 @@ export default function SettingsPage() {
               You have free access to LSDTRADE+
             </div>
           )}
+        </div>
+
+        {/* Sign Out Section */}
+        <div style={{ background: '#14141a', border: '1px solid #222230', borderRadius: '16px', padding: '24px', marginTop: '24px' }}>
+          <h2 style={{ fontSize: '16px', fontWeight: 600, marginBottom: '12px', color: '#fff' }}>Account</h2>
+          <p style={{ color: '#666', fontSize: '14px', marginBottom: '20px' }}>Sign out of your LSDTRADE+ account</p>
+          <button
+            onClick={handleSignOut}
+            style={{
+              padding: '12px 24px',
+              background: 'transparent',
+              border: '1px solid #ef4444',
+              borderRadius: '10px',
+              color: '#ef4444',
+              fontWeight: 600,
+              fontSize: '14px',
+              cursor: 'pointer'
+            }}
+          >
+            Sign Out
+          </button>
         </div>
       </div>
     </div>

@@ -330,9 +330,19 @@ export default function AccountPage() {
   function addOption() { setOptionsList([...optionsList, { value: '', color: '#888888' }]) }
   function removeOption(idx) { setOptionsList(optionsList.filter((_, i) => i !== idx)) }
   function getExtraData(t) {
-    if (!t.extra_data) return {}
-    if (typeof t.extra_data === 'object') return t.extra_data
-    try { return JSON.parse(t.extra_data) } catch { return {} }
+    // First get extra_data (from JSONB)
+    let extra = {}
+    if (t.extra_data) {
+      if (typeof t.extra_data === 'object') extra = t.extra_data
+      else try { extra = JSON.parse(t.extra_data) } catch {}
+    }
+    // Fallback to direct columns if not in extra_data
+    if (!extra.confidence && t.confidence) extra.confidence = t.confidence
+    if (!extra.rating && t.rating) extra.rating = String(t.rating)
+    if (!extra.timeframe && t.timeframe) extra.timeframe = t.timeframe
+    if (!extra.session && t.session) extra.session = t.session
+    if (!extra.riskPercent && t.risk) extra.riskPercent = String(t.risk)
+    return extra
   }
   function getDaysAgo(d) { const diff = Math.floor((new Date() - new Date(d)) / 86400000); return diff === 0 ? 'Today' : diff === 1 ? '1d ago' : `${diff}d ago` }
 
