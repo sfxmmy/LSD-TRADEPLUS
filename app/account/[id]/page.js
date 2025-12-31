@@ -2931,21 +2931,28 @@ export default function AccountPage() {
               </div>
               <div>
                 <label style={{ display: 'block', fontSize: '10px', color: '#666', marginBottom: '5px', textTransform: 'uppercase' }}>Rating</label>
-                <div style={{ display: 'flex', gap: '2px', padding: '8px 10px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px', alignItems: 'center', justifyContent: 'center' }} onMouseLeave={() => setHoverRating(0)}>
-                  {[1, 2, 3, 4, 5].map(star => {
-                    const displayRating = hoverRating || parseFloat(tradeForm.rating || 0)
-                    const isFullStar = displayRating >= star
-                    const isHalfStar = displayRating >= star - 0.5 && displayRating < star
-                    return (
-                      <div key={star} style={{ position: 'relative', width: '24px', height: '24px', cursor: 'pointer' }}
-                        onMouseMove={(e) => { const rect = e.currentTarget.getBoundingClientRect(); const x = e.clientX - rect.left; setHoverRating(x < rect.width / 2 ? star - 0.5 : star) }}
-                        onClick={(e) => { const rect = e.currentTarget.getBoundingClientRect(); const x = e.clientX - rect.left; setTradeForm({...tradeForm, rating: String(x < rect.width / 2 ? star - 0.5 : star)}) }}>
-                        <span style={{ position: 'absolute', color: '#2a2a35', fontSize: '24px', lineHeight: 1 }}>★</span>
-                        {isHalfStar && <span style={{ position: 'absolute', color: '#22c55e', fontSize: '24px', lineHeight: 1, width: '12px', overflow: 'hidden' }}>★</span>}
-                        {isFullStar && <span style={{ position: 'absolute', color: '#22c55e', fontSize: '24px', lineHeight: 1 }}>★</span>}
-                      </div>
-                    )
-                  })}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <div style={{ display: 'flex', gap: '2px', padding: '8px 10px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px', alignItems: 'center' }} onMouseLeave={() => setHoverRating(0)}>
+                    {[1, 2, 3, 4, 5].map(star => {
+                      const displayRating = hoverRating || parseFloat(tradeForm.rating || 0)
+                      const isFullStar = displayRating >= star
+                      const isHalfStar = displayRating >= star - 0.5 && displayRating < star
+                      return (
+                        <div key={star} style={{ position: 'relative', width: '24px', height: '24px', cursor: 'pointer' }}
+                          onMouseMove={(e) => { const rect = e.currentTarget.getBoundingClientRect(); const x = e.clientX - rect.left; setHoverRating(x < rect.width / 2 ? star - 0.5 : star) }}
+                          onClick={(e) => { const rect = e.currentTarget.getBoundingClientRect(); const x = e.clientX - rect.left; setTradeForm({...tradeForm, rating: String(x < rect.width / 2 ? star - 0.5 : star)}) }}>
+                          <span style={{ position: 'absolute', color: '#2a2a35', fontSize: '24px', lineHeight: 1 }}>★</span>
+                          {isHalfStar && <span style={{ position: 'absolute', color: '#22c55e', fontSize: '24px', lineHeight: 1, width: '12px', overflow: 'hidden' }}>★</span>}
+                          {isFullStar && <span style={{ position: 'absolute', color: '#22c55e', fontSize: '24px', lineHeight: 1 }}>★</span>}
+                        </div>
+                      )
+                    })}
+                  </div>
+                  {(hoverRating > 0 || parseFloat(tradeForm.rating || 0) > 0) && (
+                    <span style={{ background: '#1a1a22', padding: '4px 8px', borderRadius: '4px', fontSize: '12px', color: '#fff', whiteSpace: 'nowrap' }}>
+                      {hoverRating || parseFloat(tradeForm.rating)} / 5
+                    </span>
+                  )}
                 </div>
               </div>
             </div>
@@ -2964,25 +2971,27 @@ export default function AccountPage() {
                     ) : input.type === 'textarea' ? (
                       <input type="text" value={tradeForm[input.id] || ''} onChange={e => setTradeForm({...tradeForm, [input.id]: e.target.value})} placeholder="..." style={{ width: '100%', padding: '10px 12px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '13px', boxSizing: 'border-box' }} />
                     ) : input.type === 'rating' ? (
-                      <div style={{ position: 'relative', display: 'inline-flex', gap: '4px', padding: '10px 14px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px', alignItems: 'center' }} onMouseLeave={() => setHoverRating(0)}>
-                        {[1, 2, 3, 4, 5].map(star => {
-                          const displayRating = hoverRating || parseFloat(tradeForm[input.id] || 0)
-                          const isFullStar = displayRating >= star
-                          const isHalfStar = displayRating >= star - 0.5 && displayRating < star
-                          return (
-                            <div key={star} style={{ position: 'relative', width: '28px', height: '28px', cursor: 'pointer' }}
-                              onMouseMove={(e) => { const rect = e.currentTarget.getBoundingClientRect(); const x = e.clientX - rect.left; setHoverRating(x < rect.width / 2 ? star - 0.5 : star) }}
-                              onClick={(e) => { const rect = e.currentTarget.getBoundingClientRect(); const x = e.clientX - rect.left; setTradeForm({...tradeForm, [input.id]: String(x < rect.width / 2 ? star - 0.5 : star)}) }}>
-                              <span style={{ position: 'absolute', color: '#2a2a35', fontSize: '28px', lineHeight: 1 }}>★</span>
-                              {isHalfStar && <span style={{ position: 'absolute', color: '#22c55e', fontSize: '28px', lineHeight: 1, width: '14px', overflow: 'hidden' }}>★</span>}
-                              {isFullStar && <span style={{ position: 'absolute', color: '#22c55e', fontSize: '28px', lineHeight: 1 }}>★</span>}
-                            </div>
-                          )
-                        })}
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                        <div style={{ display: 'inline-flex', gap: '4px', padding: '10px 14px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px', alignItems: 'center' }} onMouseLeave={() => setHoverRating(0)}>
+                          {[1, 2, 3, 4, 5].map(star => {
+                            const displayRating = hoverRating || parseFloat(tradeForm[input.id] || 0)
+                            const isFullStar = displayRating >= star
+                            const isHalfStar = displayRating >= star - 0.5 && displayRating < star
+                            return (
+                              <div key={star} style={{ position: 'relative', width: '28px', height: '28px', cursor: 'pointer' }}
+                                onMouseMove={(e) => { const rect = e.currentTarget.getBoundingClientRect(); const x = e.clientX - rect.left; setHoverRating(x < rect.width / 2 ? star - 0.5 : star) }}
+                                onClick={(e) => { const rect = e.currentTarget.getBoundingClientRect(); const x = e.clientX - rect.left; setTradeForm({...tradeForm, [input.id]: String(x < rect.width / 2 ? star - 0.5 : star)}) }}>
+                                <span style={{ position: 'absolute', color: '#2a2a35', fontSize: '28px', lineHeight: 1 }}>★</span>
+                                {isHalfStar && <span style={{ position: 'absolute', color: '#22c55e', fontSize: '28px', lineHeight: 1, width: '14px', overflow: 'hidden' }}>★</span>}
+                                {isFullStar && <span style={{ position: 'absolute', color: '#22c55e', fontSize: '28px', lineHeight: 1 }}>★</span>}
+                              </div>
+                            )
+                          })}
+                        </div>
                         {(hoverRating > 0 || parseFloat(tradeForm[input.id] || 0) > 0) && (
-                          <div style={{ position: 'absolute', top: '-32px', left: '50%', transform: 'translateX(-50%)', background: '#1a1a22', padding: '6px 10px', borderRadius: '6px', fontSize: '13px', color: '#fff', whiteSpace: 'nowrap', pointerEvents: 'none' }}>
+                          <span style={{ background: '#1a1a22', padding: '6px 10px', borderRadius: '6px', fontSize: '13px', color: '#fff', whiteSpace: 'nowrap' }}>
                             {hoverRating || tradeForm[input.id]} / 5
-                          </div>
+                          </span>
                         )}
                       </div>
                     ) : input.type === 'file' ? (
