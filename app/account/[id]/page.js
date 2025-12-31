@@ -1405,10 +1405,10 @@ export default function AccountPage() {
                                   {yLabels.map((v, i) => <span key={i} style={{ fontSize: '8px', color: '#999', lineHeight: 1, textAlign: 'right' }}>{equityCurveGroupBy === 'total' ? `$${(v/1000).toFixed(v >= 1000 ? 0 : 1)}k` : `$${v}`}</span>)}
                                 </div>
                                 <div style={{ flex: 1, display: 'flex', flexDirection: 'column', position: 'relative' }}>
-                                  <div style={{ flex: 1, position: 'relative', borderLeft: '1px solid #1a1a22', borderBottom: hasNegative ? 'none' : '1px solid #1a1a22' }}>
+                                  <div style={{ flex: 1, position: 'relative', borderLeft: '1px solid #333', borderBottom: hasNegative ? 'none' : '1px solid #333' }}>
                                     {/* Horizontal grid lines */}
                                     <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', pointerEvents: 'none' }}>
-                                      {yLabels.map((_, i) => <div key={i} style={{ borderTop: '1px solid #1a1a22' }} />)}
+                                      {yLabels.map((_, i) => <div key={i} style={{ borderTop: '1px solid #252525' }} />)}
                                     </div>
                                     {/* Zero line if negative */}
                                     {zeroY !== null && (
@@ -1659,7 +1659,7 @@ export default function AccountPage() {
                                       const transform = isFirst ? 'translateX(0)' : isLast ? 'translateX(-100%)' : 'translateX(-50%)'
                                       return (
                                         <div key={i} style={{ position: 'absolute', left: `${l.pct}%`, transform, display: 'flex', flexDirection: 'column', alignItems: isFirst ? 'flex-start' : isLast ? 'flex-end' : 'center' }}>
-                                          <div style={{ width: '1px', height: '6px', background: '#1a1a22' }} />
+                                          <div style={{ width: '1px', height: '6px', background: '#333' }} />
                                           <span style={{ fontSize: '9px', color: '#999', marginTop: '2px', whiteSpace: 'nowrap' }}>{l.label}</span>
                                         </div>
                                       )
@@ -1757,10 +1757,10 @@ export default function AccountPage() {
                             {yLabels.map((v, i) => <span key={i} style={{ fontSize: '8px', color: '#999', lineHeight: 1, textAlign: 'right' }}>{v}</span>)}
                           </div>
                           <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
-                            <div style={{ flex: 1, position: 'relative', borderLeft: '1px solid #1a1a22', borderBottom: '1px solid #1a1a22' }}>
+                            <div style={{ flex: 1, position: 'relative', borderLeft: '1px solid #333', borderBottom: '1px solid #333' }}>
                               {/* Horizontal grid lines */}
                               <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', pointerEvents: 'none' }}>
-                                {yLabels.map((_, i) => <div key={i} style={{ borderTop: '1px solid #1a1a22' }} />)}
+                                {yLabels.map((_, i) => <div key={i} style={{ borderTop: '1px solid #252525' }} />)}
                               </div>
                               {/* Bars */}
                               <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'flex-end', gap: '6px', padding: '0 4px' }}>
@@ -1794,7 +1794,7 @@ export default function AccountPage() {
                               <div style={{ display: 'flex', gap: '6px', padding: '0 4px' }}>
                                 {entries.map((item, i) => (
                                   <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                                    <div style={{ width: '1px', height: '6px', background: '#1a1a22' }} />
+                                    <div style={{ width: '1px', height: '6px', background: '#333' }} />
                                     <div style={{ marginTop: '4px', textAlign: 'center', fontSize: '10px', color: '#ccc', fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', background: '#0d0d12', padding: '2px 4px', borderRadius: '3px', border: '1px solid #2a2a35', width: '100%', boxSizing: 'border-box' }}>{item.name}</div>
                                   </div>
                                 ))}
@@ -1891,10 +1891,10 @@ export default function AccountPage() {
                           {yLabels.map((v, i) => <span key={i} style={{ fontSize: '8px', color: '#999', textAlign: 'right' }}>{i === yLabels.length - 1 ? '$0' : `$${v}`}</span>)}
                         </div>
                         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', position: 'relative' }}>
-                          <div style={{ flex: 1, position: 'relative', borderLeft: '1px solid #1a1a22', borderBottom: '1px solid #1a1a22' }}>
+                          <div style={{ flex: 1, position: 'relative', borderLeft: '1px solid #333', borderBottom: '1px solid #333' }}>
                             {/* Horizontal grid lines */}
                             <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', pointerEvents: 'none' }}>
-                              {yLabels.map((_, i) => <div key={i} style={{ borderTop: '1px solid #1a1a22' }} />)}
+                              {yLabels.map((_, i) => <div key={i} style={{ borderTop: '1px solid #252525' }} />)}
                             </div>
                             {/* Bars */}
                             <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'flex-end', gap: '1px', padding: '0 2px' }}>
@@ -1932,7 +1932,7 @@ export default function AccountPage() {
                               const transform = isFirst ? 'translateX(0)' : isLast ? 'translateX(-100%)' : 'translateX(-50%)'
                               return (
                                 <div key={i} style={{ position: 'absolute', left: `${l.pct}%`, transform, display: 'flex', flexDirection: 'column', alignItems: isFirst ? 'flex-start' : isLast ? 'flex-end' : 'center' }}>
-                                  <div style={{ width: '1px', height: '6px', background: '#1a1a22' }} />
+                                  <div style={{ width: '1px', height: '6px', background: '#333' }} />
                                   <span style={{ fontSize: '9px', color: '#999', marginTop: '2px', whiteSpace: 'nowrap' }}>{l.label}</span>
                                 </div>
                               )
@@ -3331,10 +3331,10 @@ export default function AccountPage() {
                         {yLabels.map((v, i) => <span key={i} style={{ fontSize: '10px', color: '#999', textAlign: 'right' }}>{equityCurveGroupBy === 'total' ? `$${(v/1000).toFixed(v >= 1000 ? 0 : 1)}k` : `$${v}`}</span>)}
                       </div>
                       <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
-                        <div style={{ flex: 1, position: 'relative', borderLeft: '1px solid #1a1a22', borderBottom: hasNegative ? 'none' : '1px solid #1a1a22' }}>
+                        <div style={{ flex: 1, position: 'relative', borderLeft: '1px solid #333', borderBottom: hasNegative ? 'none' : '1px solid #333' }}>
                           {/* Horizontal grid lines */}
                           <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', pointerEvents: 'none' }}>
-                            {yLabels.map((_, i) => <div key={i} style={{ borderTop: '1px solid #1a1a22' }} />)}
+                            {yLabels.map((_, i) => <div key={i} style={{ borderTop: '1px solid #252525' }} />)}
                           </div>
                           {zeroY !== null && <div style={{ position: 'absolute', left: 0, right: 0, top: `${zeroY}%`, borderTop: '2px solid #666', zIndex: 1 }}><span style={{ position: 'absolute', left: '-60px', top: '-8px', fontSize: '11px', color: '#999' }}>$0</span></div>}
                           <svg style={{ position: 'absolute', inset: 0, width: '100%', height: '100%' }} viewBox={`0 0 ${svgW} ${svgH}`} preserveAspectRatio="none"
@@ -3546,7 +3546,7 @@ export default function AccountPage() {
                             const transform = isFirst ? 'translateX(0)' : isLast ? 'translateX(-100%)' : 'translateX(-50%)'
                             return (
                               <div key={i} style={{ position: 'absolute', left: `${l.pct}%`, transform, display: 'flex', flexDirection: 'column', alignItems: isFirst ? 'flex-start' : isLast ? 'flex-end' : 'center' }}>
-                                <div style={{ width: '1px', height: '8px', background: '#1a1a22' }} />
+                                <div style={{ width: '1px', height: '8px', background: '#333' }} />
                                 <span style={{ fontSize: '10px', color: '#999', marginTop: '2px', whiteSpace: 'nowrap' }}>{l.label}</span>
                               </div>
                             )

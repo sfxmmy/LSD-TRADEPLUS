@@ -430,10 +430,10 @@ export default function DashboardPage() {
         </div>
         
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, overflow: 'hidden' }}>
-          <div style={{ flex: 1, position: 'relative', borderLeft: '1px solid #1a1a22', borderBottom: hasNegative ? 'none' : '1px solid #1a1a22' }}>
+          <div style={{ flex: 1, position: 'relative', borderLeft: '1px solid #333', borderBottom: hasNegative ? 'none' : '1px solid #333' }}>
             {/* Horizontal grid lines */}
             <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', pointerEvents: 'none' }}>
-              {yLabels.map((_, i) => <div key={i} style={{ borderTop: '1px solid #1a1a22' }} />)}
+              {yLabels.map((_, i) => <div key={i} style={{ borderTop: '1px solid #252525' }} />)}
             </div>
             {/* Zero line if negative values exist */}
             {zeroY !== null && (
@@ -500,7 +500,7 @@ export default function DashboardPage() {
               const transform = isFirst ? 'translateX(0)' : isLast ? 'translateX(-100%)' : 'translateX(-50%)'
               return (
                 <div key={i} style={{ position: 'absolute', left: `${l.pct}%`, transform, display: 'flex', flexDirection: 'column', alignItems: isFirst ? 'flex-start' : isLast ? 'flex-end' : 'center' }}>
-                  <div style={{ width: '1px', height: '6px', background: '#1a1a22' }} />
+                  <div style={{ width: '1px', height: '6px', background: '#333' }} />
                   <span style={{ fontSize: '10px', color: '#999', whiteSpace: 'nowrap', marginTop: '2px' }}>{l.label}</span>
                 </div>
               )
