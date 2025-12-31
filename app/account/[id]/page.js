@@ -705,7 +705,7 @@ export default function AccountPage() {
           </div>
           <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
             {activeTab === 'trades' && trades.length > 0 && !selectMode && (
-              <button onClick={() => setSelectMode(true)} style={{ padding: '10px 16px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '8px', color: '#888', fontSize: '13px', cursor: 'pointer' }}>Select</button>
+              <button onClick={() => setSelectMode(true)} style={{ padding: '10px 16px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '6px', color: '#fff', fontSize: '13px', cursor: 'pointer' }}>Select</button>
             )}
             {activeTab === 'trades' && selectMode && (
               <>
@@ -717,15 +717,15 @@ export default function AccountPage() {
               </>
             )}
             {!selectMode && (
-              <button onClick={() => { setDraftFilters({...filters, quickSelect: ''}); setShowFilters(true) }} style={{ padding: '10px 16px', background: hasActiveFilters ? 'rgba(34,197,94,0.15)' : 'transparent', border: hasActiveFilters ? '1px solid #22c55e' : '1px solid #2a2a35', borderRadius: '8px', color: hasActiveFilters ? '#22c55e' : '#888', fontSize: '13px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <button onClick={() => { setDraftFilters({...filters, quickSelect: ''}); setShowFilters(true) }} style={{ padding: '10px 16px', background: hasActiveFilters ? 'rgba(34,197,94,0.15)' : 'transparent', border: hasActiveFilters ? '1px solid #22c55e' : '1px solid #2a2a35', borderRadius: '6px', color: hasActiveFilters ? '#22c55e' : '#fff', fontSize: '13px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}>
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
                 Filters{hasActiveFilters && ` (${Object.values(filters).filter(Boolean).length})`}
               </button>
             )}
             {activeTab === 'trades' && !selectMode && (
-              <button onClick={() => setShowEditInputs(true)} style={{ padding: '10px 16px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '8px', color: '#888', fontSize: '13px', cursor: 'pointer' }}>Edit Columns</button>
+              <button onClick={() => setShowEditInputs(true)} style={{ padding: '10px 16px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '6px', color: '#fff', fontSize: '13px', cursor: 'pointer' }}>Edit Columns</button>
             )}
-            {!selectMode && <button onClick={() => setShowAddTrade(true)} style={{ padding: '10px 24px', background: '#22c55e', border: 'none', borderRadius: '8px', color: '#fff', fontWeight: 600, fontSize: '14px', cursor: 'pointer' }}>+ LOG TRADE</button>}
+            {!selectMode && <button onClick={() => setShowAddTrade(true)} style={{ padding: '10px 24px', background: '#22c55e', border: 'none', borderRadius: '6px', color: '#fff', fontWeight: 600, fontSize: '14px', cursor: 'pointer' }}>+ LOG TRADE</button>}
           </div>
         </div>
       )}
@@ -992,9 +992,15 @@ export default function AccountPage() {
                                   return <span style={{ color: numColor }}>{extra[inp.id] || '-'}</span>
                                 })()
                               ) : inp.type === 'select' ? (
-                                <span style={{ color: findOptColor(inp.options, extra[inp.id], inp.id === 'direction' ? (trade.direction === 'long' ? '#22c55e' : '#ef4444') : '#fff') }}>
-                                  {inp.id === 'direction' ? trade.direction?.toUpperCase() : extra[inp.id] || '-'}
-                                </span>
+                                (() => {
+                                  const val = inp.id === 'direction' ? trade.direction : extra[inp.id]
+                                  const color = findOptColor(inp.options, val, inp.id === 'direction' ? (trade.direction === 'long' ? '#22c55e' : '#ef4444') : '#888')
+                                  return val ? (
+                                    <span style={{ padding: '4px 10px', borderRadius: '4px', fontSize: '12px', background: 'transparent', border: `1px solid ${color}`, color: color }}>
+                                      {inp.id === 'direction' ? trade.direction?.toUpperCase() : val}
+                                    </span>
+                                  ) : <span style={{ color: '#444' }}>-</span>
+                                })()
                               ) : (
                                 <span style={{ color: '#fff' }}>
                                   {extra[inp.id] || '-'}
@@ -2989,7 +2995,7 @@ export default function AccountPage() {
                     </select>
                     {input.type === 'select' && (
                       <button onClick={() => openOptionsEditor(i)} style={{ padding: '6px 10px', background: '#0a0a0e', border: '1px solid #2a2a35', borderRadius: '4px', color: '#888', fontSize: '10px', cursor: 'pointer', whiteSpace: 'nowrap' }}>
-                        {(input.options || []).length} opts
+                        {(input.options || []).length} options
                       </button>
                     )}
                   </div>
@@ -3021,7 +3027,7 @@ export default function AccountPage() {
                       </select>
                       {input.type === 'select' && (
                         <button onClick={() => openOptionsEditor(i)} style={{ padding: '6px 10px', background: '#0a0a0e', border: '1px solid #2a2a35', borderRadius: '4px', color: '#888', fontSize: '10px', cursor: 'pointer', whiteSpace: 'nowrap' }}>
-                          {(input.options || []).length} opts
+                          {(input.options || []).length} options
                         </button>
                       )}
                       <button onClick={() => setDeleteInputConfirm({ index: i, label: input.label || input.id, id: input.id })} style={{ padding: '4px 8px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '4px', color: '#555', cursor: 'pointer', fontSize: '12px' }}>×</button>

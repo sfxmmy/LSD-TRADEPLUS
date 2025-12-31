@@ -3,6 +3,20 @@
 import { useState, useEffect, useRef } from 'react'
 import { createClient } from '@supabase/supabase-js'
 
+// Color mappings for select options (same as account page)
+const optionColors = {
+  confidence: { High: '#22c55e', Medium: '#f59e0b', Low: '#ef4444' },
+  session: { London: '#3b82f6', 'New York': '#22c55e', Asian: '#f59e0b', Overlap: '#a855f7' },
+  timeframe: { '1m': '#06b6d4', '5m': '#06b6d4', '15m': '#06b6d4', '30m': '#06b6d4', '1H': '#06b6d4', '4H': '#06b6d4', 'Daily': '#06b6d4' },
+  direction: { Long: '#22c55e', Short: '#ef4444', long: '#22c55e', short: '#ef4444' }
+}
+function getOptionColor(field, value, fallback = '#888') {
+  if (!value) return fallback
+  const fieldColors = optionColors[field]
+  if (fieldColors && fieldColors[value]) return fieldColors[value]
+  return fallback
+}
+
 export default function DashboardPage() {
   const [user, setUser] = useState(null)
   const [accounts, setAccounts] = useState([])
@@ -1105,7 +1119,7 @@ export default function DashboardPage() {
                                   <td style={{ padding: '12px', textAlign: 'center', fontSize: '14px', color: '#999' }}>{extra.riskPercent || '1'}%</td>
                                   <td style={{ padding: '12px', textAlign: 'center' }}>
                                     {extra.confidence ? (
-                                      <span style={{ padding: '4px 10px', borderRadius: '4px', fontSize: '12px', background: extra.confidence === 'High' ? 'rgba(34,197,94,0.1)' : extra.confidence === 'Low' ? 'rgba(239,68,68,0.1)' : 'rgba(255,255,255,0.05)', color: extra.confidence === 'High' ? '#22c55e' : extra.confidence === 'Low' ? '#ef4444' : '#888' }}>{extra.confidence}</span>
+                                      <span style={{ padding: '4px 10px', borderRadius: '4px', fontSize: '12px', background: 'transparent', border: `1px solid ${getOptionColor('confidence', extra.confidence)}`, color: getOptionColor('confidence', extra.confidence) }}>{extra.confidence}</span>
                                     ) : <span style={{ fontSize: '14px', color: '#444' }}>-</span>}
                                   </td>
                                   <td style={{ padding: '12px', textAlign: 'center' }}>
