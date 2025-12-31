@@ -37,7 +37,39 @@ export default function LoginPage() {
         return
       }
 
-      window.location.href = '/dashboard'
+      // Check if admin
+      const isAdmin = data.user.email === process.env.NEXT_PUBLIC_ADMIN_EMAIL || data.user.email === 'ssiagos@hotmail.com'
+
+      if (isAdmin) {
+        window.location.href = '/dashboard'
+        return
+      }
+
+      // Check subscription status before redirecting
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('subscription_status, subscription_end, plan')
+        .eq('id', data.user.id)
+        .single()
+
+      // Check if user has valid subscription
+      const hasAccess = (() => {
+        if (!profile) return false
+        const { subscription_status, subscription_end, plan } = profile
+        if (subscription_status === 'active') return true
+        if (plan === 'lifetime') return true
+        if (['cancelled', 'expired', 'past_due'].includes(subscription_status) && subscription_end) {
+          const gracePeriodEnd = new Date(new Date(subscription_end).getTime() + 7 * 24 * 60 * 60 * 1000)
+          if (new Date() < gracePeriodEnd) return true
+        }
+        return false
+      })()
+
+      if (hasAccess) {
+        window.location.href = '/dashboard'
+      } else {
+        window.location.href = '/pricing'
+      }
 
     } catch (err) {
       console.error('Login error:', err)
