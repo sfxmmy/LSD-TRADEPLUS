@@ -1511,19 +1511,19 @@ export default function AccountPage() {
                                   <div style={{ flex: 1, position: 'relative', borderLeft: '1px solid #333', borderBottom: hasNegative ? 'none' : '1px solid #333' }}>
                                     {/* Horizontal grid lines */}
                                     <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', pointerEvents: 'none' }}>
-                                      {yLabels.map((_, i) => <div key={i} style={{ borderTop: '1px solid #252525' }} />)}
+                                      {yLabels.map((_, i) => <div key={i} style={{ borderTop: '1px solid #1a1a22' }} />)}
                                     </div>
                                     {/* Zero line if negative */}
                                     {zeroY !== null && (
-                                      <div style={{ position: 'absolute', left: 0, right: 0, top: `${zeroY}%`, borderTop: '1px solid #333', zIndex: 1 }} />
+                                      <div style={{ position: 'absolute', left: 0, right: 0, top: `${zeroY}%`, borderTop: '1px solid #2a2a35', zIndex: 1 }} />
                                     )}
                                     {/* Starting balance dotted line */}
                                     {startLineY !== null && (
-                                      <div style={{ position: 'absolute', left: 0, right: 0, top: `${startLineY}%`, borderTop: '1px dashed #444', zIndex: 1 }}>
-                                        <span style={{ position: 'absolute', right: '4px', top: '-10px', fontSize: '8px', color: '#999' }}>Start</span>
+                                      <div style={{ position: 'absolute', left: 0, right: 0, top: `${startLineY}%`, borderTop: '1px dashed #333', zIndex: 1 }}>
+                                        <span style={{ position: 'absolute', right: '4px', top: '-10px', fontSize: '8px', color: '#666' }}>Start</span>
                                       </div>
                                     )}
-                                    <svg style={{ position: 'absolute', inset: 0, width: '100%', height: '100%' }} viewBox={`0 0 ${svgW} ${svgH}`} preserveAspectRatio="none"
+                                    <svg style={{ position: 'absolute', inset: '2px', width: 'calc(100% - 4px)', height: 'calc(100% - 4px)' }} viewBox={`0 0 ${svgW} ${svgH}`} preserveAspectRatio="none"
                                       onMouseMove={e => {
                                         const rect = e.currentTarget.getBoundingClientRect()
                                         const mouseX = ((e.clientX - rect.left) / rect.width) * svgW
@@ -1755,14 +1755,14 @@ export default function AccountPage() {
                                     )}
                                   </div>
                                   {/* X-axis with tick marks and date labels */}
-                                  <div style={{ height: '22px', position: 'relative', marginLeft: '1px', overflow: 'hidden' }}>
+                                  <div style={{ height: '24px', position: 'relative', marginLeft: '1px' }}>
                                     {xLabels.map((l, i) => {
                                       const isFirst = i === 0
                                       const isLast = i === xLabels.length - 1
                                       return (
                                         <div key={i} style={{ position: 'absolute', left: `${l.pct}%`, transform: 'translateX(-50%)', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                                          <div style={{ width: '1px', height: '6px', background: '#333' }} />
-                                          <span style={{ fontSize: '9px', color: '#999', marginTop: '2px', whiteSpace: 'nowrap', transform: isFirst ? 'translateX(25%)' : isLast ? 'translateX(-25%)' : 'none' }}>{l.label}</span>
+                                          <div style={{ width: '1px', height: '5px', background: '#2a2a35' }} />
+                                          <span style={{ fontSize: '9px', color: '#666', marginTop: '3px', whiteSpace: 'nowrap', transform: isFirst ? 'translateX(30%)' : isLast ? 'translateX(-30%)' : 'none' }}>{l.label}</span>
                                         </div>
                                       )
                                     })}
@@ -1859,13 +1859,13 @@ export default function AccountPage() {
                             {yLabels.map((v, i) => <span key={i} style={{ fontSize: '8px', color: '#999', lineHeight: 1, textAlign: 'right' }}>{v}</span>)}
                           </div>
                           <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
-                            <div style={{ flex: 1, position: 'relative', borderLeft: '1px solid #333', borderBottom: '1px solid #333' }}>
+                            <div style={{ flex: 1, position: 'relative', borderLeft: '1px solid #2a2a35', borderBottom: '1px solid #2a2a35' }}>
                               {/* Horizontal grid lines */}
                               <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', pointerEvents: 'none' }}>
-                                {yLabels.map((_, i) => <div key={i} style={{ borderTop: '1px solid #252525' }} />)}
+                                {yLabels.map((_, i) => <div key={i} style={{ borderTop: '1px solid #1a1a22' }} />)}
                               </div>
                               {/* Bars */}
-                              <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'flex-end', gap: '6px', padding: '0 4px' }}>
+                              <div style={{ position: 'absolute', inset: '2px 0 0 0', display: 'flex', alignItems: 'flex-end', gap: '6px', padding: '0 4px' }}>
                                 {entries.map((item, i) => {
                                   const hPct = Math.max((Math.abs(item.val) / niceMax) * 100, 5)
                                   const isGreen = barGraphMetric === 'winrate' ? item.val >= 50 : item.val >= 0
@@ -1875,7 +1875,7 @@ export default function AccountPage() {
                                       onMouseEnter={() => setBarHover(i)}
                                       onMouseLeave={() => setBarHover(null)}
                                     >
-                                      <div style={{ width: '100%', maxWidth: '50px', height: `${hPct}%`, background: `linear-gradient(to bottom, ${isGreen ? `rgba(34, 197, 94, ${0.1 + (hPct / 100) * 0.25})` : `rgba(239, 68, 68, ${0.1 + (hPct / 100) * 0.25})`} 0%, transparent 100%)`, border: `2px solid ${isGreen ? '#22c55e' : '#ef4444'}`, borderBottom: 'none', borderRadius: '3px 3px 0 0', position: 'relative', cursor: 'pointer' }}>
+                                      <div style={{ width: '100%', maxWidth: '50px', height: `${hPct}%`, background: `linear-gradient(to bottom, ${isGreen ? `rgba(34, 197, 94, ${0.15 + (hPct / 100) * 0.2})` : `rgba(239, 68, 68, ${0.15 + (hPct / 100) * 0.2})`} 0%, transparent 100%)`, border: `1px solid ${isGreen ? '#22c55e' : '#ef4444'}`, borderBottom: 'none', borderRadius: '3px 3px 0 0', position: 'relative', cursor: 'pointer' }}>
                                         {/* Price label at top of bar */}
                                         <div style={{ position: 'absolute', top: '-16px', left: '50%', transform: 'translateX(-50%)', fontSize: '10px', color: isGreen ? '#22c55e' : '#ef4444', fontWeight: 600, whiteSpace: 'nowrap' }}>{item.disp}</div>
                                         {isHovered && (
@@ -3116,8 +3116,8 @@ export default function AccountPage() {
                       <option value="file">Image</option>
                     </select>
                     {input.type === 'select' && (
-                      <button onClick={() => openOptionsEditor(i)} style={{ padding: '8px 12px', background: '#141418', border: '1px solid #2a2a35', borderRadius: '6px', color: '#fff', fontSize: '12px', cursor: 'pointer', whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                        Options <span style={{ color: '#666' }}>▾</span>
+                      <button onClick={() => openOptionsEditor(i)} style={{ padding: '6px 8px', background: '#0a0a0e', border: '1px solid #2a2a35', borderRadius: '4px', color: '#fff', fontSize: '11px', cursor: 'pointer', whiteSpace: 'nowrap' }}>
+                        Options ▾
                       </button>
                     )}
                   </div>
@@ -3127,12 +3127,11 @@ export default function AccountPage() {
 
             {/* Custom Fields Section - in bordered container */}
             <div style={{ marginBottom: '20px', padding: '16px', background: '#0a0a0e', borderRadius: '10px', border: '1px solid #1a1a22' }}>
-              <div style={{ fontSize: '12px', color: '#888', marginBottom: '14px', fontWeight: 600 }}>Custom Fields</div>
-              {inputs.filter(inp => !inp.fixed && !inp.hidden).length === 0 ? (
-                <div style={{ padding: '16px', textAlign: 'center', color: '#555', fontSize: '12px' }}>
-                  No custom fields yet
-                </div>
-              ) : (
+              <div style={{ fontSize: '12px', color: '#888', marginBottom: inputs.filter(inp => !inp.fixed && !inp.hidden).length === 0 ? '0' : '14px', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                Custom Fields
+                {inputs.filter(inp => !inp.fixed && !inp.hidden).length === 0 && <span style={{ color: '#555', fontWeight: 400 }}>— none yet</span>}
+              </div>
+              {inputs.filter(inp => !inp.fixed && !inp.hidden).length > 0 && (
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px' }}>
                   {inputs.map((input, i) => !input.fixed && !input.hidden && (
                     <div key={input.id} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 12px', background: '#141418', borderRadius: '6px' }}>
@@ -3148,8 +3147,8 @@ export default function AccountPage() {
                         <option value="file">Image</option>
                       </select>
                       {input.type === 'select' && (
-                        <button onClick={() => openOptionsEditor(i)} style={{ padding: '8px 12px', background: '#141418', border: '1px solid #2a2a35', borderRadius: '6px', color: '#fff', fontSize: '12px', cursor: 'pointer', whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                          Options <span style={{ color: '#666' }}>▾</span>
+                        <button onClick={() => openOptionsEditor(i)} style={{ padding: '6px 8px', background: '#0a0a0e', border: '1px solid #2a2a35', borderRadius: '4px', color: '#fff', fontSize: '11px', cursor: 'pointer', whiteSpace: 'nowrap' }}>
+                          Options ▾
                         </button>
                       )}
                       <button onClick={() => setDeleteInputConfirm({ index: i, label: input.label || input.id, id: input.id })} style={{ padding: '4px 8px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '4px', color: '#555', cursor: 'pointer', fontSize: '12px' }}>×</button>
