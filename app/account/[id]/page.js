@@ -1197,7 +1197,7 @@ export default function AccountPage() {
           const displayAvgRating = displayTrades.length > 0 ? (displayTrades.reduce((s, t) => s + (parseInt(getExtraData(t).rating) || 0), 0) / displayTrades.length).toFixed(1) : '0'
 
           return (
-          <div style={{ padding: isMobile ? '0' : '12px' }}>
+          <div style={{ padding: isMobile ? '0' : '16px' }}>
             {/* Stats View Indicator Banner */}
             {viewingSelectedStats && selectedTrades.size > 0 ? (
               <div style={{ marginBottom: '12px', padding: '12px 16px', background: 'rgba(34,197,94,0.1)', border: '1px solid #22c55e', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', boxShadow: '0 0 12px rgba(34,197,94,0.15)' }}>
@@ -2048,9 +2048,9 @@ export default function AccountPage() {
               </div>
 
               {/* Right column - wider, all boxes equal height */}
-              <div style={{ width: '420px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              <div style={{ width: '420px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
                 {/* Top row: Average Rating + Streaks */}
-                <div style={{ display: 'flex', gap: '8px', flex: 1 }}>
+                <div style={{ display: 'flex', gap: '12px', flex: 1 }}>
                   {/* Average Rating - glowing stars */}
                   <div style={{ flex: 1, background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '14px', display: 'flex', flexDirection: 'column' }}>
                     <div style={{ fontSize: '11px', color: '#666', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '12px' }}>Average Rating</div>
@@ -2719,7 +2719,7 @@ export default function AccountPage() {
 
         {/* NOTES TAB */}
         {activeTab === 'notes' && (
-          <div style={{ padding: isMobile ? '0' : '12px' }}>
+          <div style={{ padding: isMobile ? '0' : '16px' }}>
             <div style={{ display: 'flex', gap: '12px', marginBottom: '12px' }}>
               {['daily', 'weekly', 'custom'].map(sub => (
                 <button key={sub} onClick={() => setNotesSubTab(sub)} style={{ padding: '12px 24px', background: notesSubTab === sub ? '#22c55e' : 'transparent', border: notesSubTab === sub ? 'none' : '1px solid #2a2a35', borderRadius: '8px', color: notesSubTab === sub ? '#fff' : '#888', fontSize: '14px', fontWeight: 600, cursor: 'pointer', textTransform: 'capitalize' }}>{sub}</button>
