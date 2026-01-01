@@ -2049,22 +2049,24 @@ export default function AccountPage() {
 
               {/* Right column - wider, all boxes equal height */}
               <div style={{ width: '420px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                {/* Top row: Average Rating + Streaks & Consistency */}
+                {/* Top row: Average Rating + Streaks */}
                 <div style={{ display: 'flex', gap: '8px', flex: 1 }}>
-                  {/* Average Rating - title on left side */}
+                  {/* Average Rating - glowing stars */}
                   <div style={{ flex: 1, background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '14px', display: 'flex', flexDirection: 'column' }}>
-                    <div style={{ fontSize: '11px', color: '#999', textTransform: 'uppercase', marginBottom: '8px' }}>Average Rating</div>
+                    <div style={{ fontSize: '11px', color: '#666', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '10px' }}>Average Rating</div>
                     <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-                      <div style={{ display: 'flex', gap: '2px', marginBottom: '4px' }}>
+                      <div style={{ display: 'flex', gap: '4px', marginBottom: '6px' }}>
                         {[1,2,3,4,5].map(star => {
                           const rating = parseFloat(displayAvgRating)
                           const isFullStar = rating >= star
                           const isHalfStar = rating >= star - 0.5 && rating < star
+                          const starColor = star <= 2 ? '#f59e0b' : star <= 3 ? '#eab308' : '#22c55e'
+                          const glowColor = star <= 2 ? 'rgba(245,158,11,0.5)' : star <= 3 ? 'rgba(234,179,8,0.5)' : 'rgba(34,197,94,0.5)'
                           return (
-                            <div key={star} style={{ position: 'relative', width: '28px', height: '28px' }}>
-                              <span style={{ position: 'absolute', color: '#2a2a35', fontSize: '28px', lineHeight: 1 }}>★</span>
-                              {isHalfStar && <span style={{ position: 'absolute', color: '#22c55e', fontSize: '28px', lineHeight: 1, width: '14px', overflow: 'hidden' }}>★</span>}
-                              {isFullStar && <span style={{ position: 'absolute', color: '#22c55e', fontSize: '28px', lineHeight: 1 }}>★</span>}
+                            <div key={star} style={{ position: 'relative', width: '24px', height: '24px' }}>
+                              <span style={{ position: 'absolute', color: '#1a1a22', fontSize: '24px', lineHeight: 1 }}>★</span>
+                              {isHalfStar && <span style={{ position: 'absolute', color: starColor, fontSize: '24px', lineHeight: 1, width: '12px', overflow: 'hidden', filter: `drop-shadow(0 0 4px ${glowColor})` }}>★</span>}
+                              {isFullStar && <span style={{ position: 'absolute', color: starColor, fontSize: '24px', lineHeight: 1, filter: `drop-shadow(0 0 6px ${glowColor})` }}>★</span>}
                             </div>
                           )
                         })}
@@ -2073,28 +2075,30 @@ export default function AccountPage() {
                     </div>
                   </div>
 
-                  {/* Streaks & Consistency - compact */}
+                  {/* Streaks - cleaner design */}
                   <div style={{ flex: 1, background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '14px', display: 'flex', flexDirection: 'column' }}>
-                    <div style={{ fontSize: '11px', color: '#999', textTransform: 'uppercase', marginBottom: '8px' }}>Streaks & Consistency</div>
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '6px', flex: 1 }}>
-                      {[
-                        { l: 'Max Wins', v: streaks.mw, c: '#22c55e' },
-                        { l: 'Max Losses', v: streaks.ml, c: '#ef4444' },
-                        { l: 'Days', v: tradingDays, c: '#fff' },
-                        { l: 'Trades/Day', v: avgTradesPerDay, c: '#fff' },
-                      ].map((item, i) => (
-                        <div key={i} style={{ padding: '6px', background: '#0a0a0e', borderRadius: '4px', border: '1px solid #1a1a22', textAlign: 'center', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-                          <div style={{ fontSize: '9px', color: '#999', marginBottom: '2px' }}>{item.l}</div>
-                          <div style={{ fontSize: '14px', fontWeight: 700, color: item.c }}>{item.v}</div>
-                        </div>
-                      ))}
+                    <div style={{ fontSize: '11px', color: '#666', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '10px' }}>Streaks</div>
+                    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: '6px' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <span style={{ fontSize: '11px', color: '#666' }}>Best Win Streak</span>
+                        <span style={{ fontSize: '16px', fontWeight: 700, color: '#22c55e' }}>{streaks.mw}</span>
+                      </div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <span style={{ fontSize: '11px', color: '#666' }}>Worst Loss Streak</span>
+                        <span style={{ fontSize: '16px', fontWeight: 700, color: '#ef4444' }}>{streaks.ml}</span>
+                      </div>
+                      <div style={{ height: '1px', background: '#1a1a22', margin: '2px 0' }} />
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <span style={{ fontSize: '11px', color: '#666' }}>Trading Days</span>
+                        <span style={{ fontSize: '14px', fontWeight: 600, color: '#fff' }}>{tradingDays}</span>
+                      </div>
                     </div>
                   </div>
                 </div>
 
-                {/* PnL by Day - horizontal proportional bar */}
+                {/* PnL by Day - modern vertical bars */}
                 <div style={{ flex: 1, background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '14px', display: 'flex', flexDirection: 'column' }}>
-                  <div style={{ fontSize: '11px', color: '#999', textTransform: 'uppercase', marginBottom: '10px' }}>PnL by Day</div>
+                  <div style={{ fontSize: '11px', color: '#666', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '10px' }}>PnL by Day</div>
                   {(() => {
                     const dayNames = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri']
                     const dayPnL = [0, 0, 0, 0, 0]
@@ -2102,56 +2106,32 @@ export default function AccountPage() {
                       const day = new Date(t.date).getDay()
                       if (day >= 1 && day <= 5) dayPnL[day - 1] += parseFloat(t.pnl) || 0
                     })
-                    const totalAbs = dayPnL.reduce((sum, p) => sum + Math.abs(p), 0) || 1
+                    const maxAbs = Math.max(...dayPnL.map(p => Math.abs(p)), 1)
                     return (
-                      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-                        {/* Proportional bar */}
-                        <div style={{ display: 'flex', height: '32px', borderRadius: '6px', overflow: 'hidden', boxShadow: '0 0 20px rgba(34,197,94,0.15), 0 0 40px rgba(34,197,94,0.08)' }}>
-                          {dayPnL.map((pnl, i) => {
-                            const widthPct = Math.max((Math.abs(pnl) / totalAbs) * 100, 0.5)
-                            const isPositive = pnl >= 0
-                            const color = isPositive ? '#22c55e' : '#ef4444'
-                            const glowColor = isPositive ? 'rgba(34,197,94,0.4)' : 'rgba(239,68,68,0.4)'
-                            return (
-                              <div
-                                key={i}
-                                style={{
-                                  width: `${widthPct}%`,
-                                  background: `linear-gradient(180deg, ${color} 0%, ${isPositive ? '#1a7a3a' : '#991b1b'} 100%)`,
-                                  boxShadow: `inset 0 1px 0 rgba(255,255,255,0.2), 0 0 12px ${glowColor}`,
-                                  display: 'flex',
-                                  alignItems: 'center',
-                                  justifyContent: 'center',
-                                  borderRight: i < 4 ? '1px solid rgba(0,0,0,0.3)' : 'none',
-                                  position: 'relative',
-                                  minWidth: pnl !== 0 ? '30px' : '0'
-                                }}
-                              >
-                                {Math.abs(pnl) > 0 && widthPct > 8 && (
-                                  <span style={{ fontSize: '10px', fontWeight: 700, color: '#fff', textShadow: '0 1px 2px rgba(0,0,0,0.5)' }}>
-                                    {pnl >= 0 ? '+' : ''}{Math.round(pnl)}
-                                  </span>
-                                )}
+                      <div style={{ flex: 1, display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: '6px' }}>
+                        {dayPnL.map((pnl, i) => {
+                          const heightPct = Math.max((Math.abs(pnl) / maxAbs) * 100, 8)
+                          const isPositive = pnl >= 0
+                          const color = isPositive ? '#22c55e' : '#ef4444'
+                          return (
+                            <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
+                              <span style={{ fontSize: '10px', fontWeight: 600, color: pnl === 0 ? '#444' : color }}>
+                                {pnl !== 0 ? (pnl >= 0 ? '+' : '') + Math.round(pnl) : '0'}
+                              </span>
+                              <div style={{ width: '100%', height: '36px', display: 'flex', alignItems: 'flex-end', justifyContent: 'center' }}>
+                                <div style={{
+                                  width: '100%',
+                                  maxWidth: '32px',
+                                  height: `${heightPct}%`,
+                                  background: pnl === 0 ? '#1a1a22' : `linear-gradient(180deg, ${color} 0%, ${isPositive ? 'rgba(34,197,94,0.4)' : 'rgba(239,68,68,0.4)'} 100%)`,
+                                  borderRadius: '3px 3px 0 0',
+                                  boxShadow: pnl !== 0 ? `0 0 8px ${isPositive ? 'rgba(34,197,94,0.25)' : 'rgba(239,68,68,0.25)'}` : 'none'
+                                }} />
                               </div>
-                            )
-                          })}
-                        </div>
-                        {/* Day labels below */}
-                        <div style={{ display: 'flex', marginTop: '8px' }}>
-                          {dayPnL.map((pnl, i) => {
-                            const widthPct = Math.max((Math.abs(pnl) / totalAbs) * 100, 0.5)
-                            return (
-                              <div key={i} style={{ width: `${widthPct}%`, textAlign: 'center', minWidth: pnl !== 0 ? '30px' : '0' }}>
-                                <div style={{ fontSize: '10px', fontWeight: 600, color: '#999' }}>{dayNames[i]}</div>
-                                {widthPct <= 8 && Math.abs(pnl) > 0 && (
-                                  <div style={{ fontSize: '9px', color: pnl >= 0 ? '#22c55e' : '#ef4444', fontWeight: 600 }}>
-                                    {pnl >= 0 ? '+' : ''}{Math.round(pnl)}
-                                  </div>
-                                )}
-                              </div>
-                            )
-                          })}
-                        </div>
+                              <span style={{ fontSize: '10px', fontWeight: 600, color: '#666' }}>{dayNames[i]}</span>
+                            </div>
+                          )
+                        })}
                       </div>
                     )
                   })()}
