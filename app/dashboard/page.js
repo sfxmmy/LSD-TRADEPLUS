@@ -386,7 +386,7 @@ export default function DashboardPage() {
     // Calculate zero line position (percentage from top) - for when actual balance goes negative
     const zeroY = hasNegative ? ((yMax - 0) / yRange) * 100 : null
     // Calculate starting balance line - always show if start is within range
-    const startLineY = !hasNegative && start >= yMin && start <= yMax ? ((yMax - start) / yRange) * 100 : null
+    const startLineY = start >= yMin && start <= yMax ? ((yMax - start) / yRange) * 100 : null
 
     const yLabels = []
     for (let v = yMax; v >= yMin; v -= yStep) {
@@ -470,8 +470,8 @@ export default function DashboardPage() {
           ))}
         </div>
         
-        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, overflow: 'visible', borderLeft: '1px solid #2a2a35' }}>
-          <div style={{ flex: 1, position: 'relative', borderBottom: hasNegative ? 'none' : '1px solid #2a2a35', overflow: 'visible' }}>
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, overflow: 'visible' }}>
+          <div style={{ flex: 1, position: 'relative', borderLeft: '1px solid #2a2a35', borderBottom: hasNegative ? 'none' : '1px solid #2a2a35', overflow: 'visible' }}>
             {/* Horizontal grid lines */}
             <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', pointerEvents: 'none' }}>
               {yLabels.map((_, i) => <div key={i} style={{ borderTop: '1px solid #1a1a22' }} />)}
@@ -482,10 +482,10 @@ export default function DashboardPage() {
                 <span style={{ position: 'absolute', left: '-44px', top: '-8px', fontSize: '9px', color: '#666' }}>$0</span>
               </div>
             )}
-            {/* Starting balance line if balance dropped below start */}
+            {/* Starting balance line - always show with initial balance */}
             {startLineY !== null && (
-              <div style={{ position: 'absolute', left: 0, right: 0, top: `${startLineY}%`, borderTop: '1px dashed #333', zIndex: 1 }}>
-                <span style={{ position: 'absolute', right: '4px', top: '-12px', fontSize: '9px', color: '#666' }}>Start</span>
+              <div style={{ position: 'absolute', left: 0, right: 0, top: `${startLineY}%`, borderTop: '1px dashed #444', zIndex: 1 }}>
+                <span style={{ position: 'absolute', right: '4px', top: '-12px', fontSize: '9px', color: '#666' }}>{start >= 1000 ? `$${(start/1000).toFixed(0)}k` : `$${start}`} Start</span>
               </div>
             )}
             <svg ref={svgRef} style={{ position: 'absolute', inset: '4px 0 4px 0', width: '100%', height: 'calc(100% - 8px)', overflow: 'visible' }} viewBox={`0 0 ${svgW} ${svgH}`} preserveAspectRatio="none" onMouseMove={handleMouseMove} onMouseLeave={() => setHoverPoint(null)}>
@@ -525,9 +525,9 @@ export default function DashboardPage() {
               const isFirst = i === 0
               const isLast = i === xLabels.length - 1
               return (
-                <div key={i} style={{ position: 'absolute', left: `${l.pct}%`, transform: 'translateX(-50%)', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                <div key={i} style={{ position: 'absolute', left: `${l.pct}%`, transform: isFirst ? 'translateX(0%)' : isLast ? 'translateX(-100%)' : 'translateX(-50%)', display: 'flex', flexDirection: 'column', alignItems: isFirst ? 'flex-start' : isLast ? 'flex-end' : 'center' }}>
                   <div style={{ width: '1px', height: '5px', background: '#2a2a35' }} />
-                  <span style={{ fontSize: '10px', color: '#666', whiteSpace: 'nowrap', marginTop: '3px', transform: isFirst ? 'translateX(50%)' : isLast ? 'translateX(-50%)' : 'none' }}>{l.label}</span>
+                  <span style={{ fontSize: '10px', color: '#999', whiteSpace: 'nowrap', marginTop: '3px' }}>{l.label}</span>
                 </div>
               )
             })}
@@ -565,12 +565,12 @@ export default function DashboardPage() {
   return (
     <div style={{ minHeight: '100vh', background: '#0a0a0f' }}>
       {/* Header */}
-      <header style={{ padding: isMobile ? '12px 16px' : '16px 24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #1a1a22', flexWrap: isMobile ? 'wrap' : 'nowrap', gap: isMobile ? '8px' : '0' }}>
+      <header style={{ padding: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #1a1a22', flexWrap: isMobile ? 'wrap' : 'nowrap', gap: '16px' }}>
         <a href="/" style={{ fontSize: isMobile ? '22px' : '28px', fontWeight: 700, textDecoration: 'none' }}>
           <span style={{ color: '#22c55e' }}>LSD</span><span style={{ color: '#fff' }}>TRADE</span><span style={{ color: '#22c55e' }}>+</span>
         </a>
         {!isMobile && <div style={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)', fontSize: '32px', fontWeight: 700, letterSpacing: '-0.5px', color: '#fff' }}>JOURNAL DASHBOARD</div>}
-        <div style={{ display: 'flex', alignItems: 'center', gap: isMobile ? '8px' : '12px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
           {/* View Toggle - Grid/List */}
           <div style={{ display: 'flex', background: '#0a0a0f', borderRadius: '6px', overflow: 'hidden', border: '1px solid #1a1a22' }}>
             <button onClick={() => setViewMode('cards')} style={{ padding: '8px 10px', background: viewMode === 'cards' ? '#22c55e' : 'transparent', border: 'none', color: viewMode === 'cards' ? '#fff' : '#666', cursor: 'pointer', display: 'flex', alignItems: 'center' }}>
@@ -587,10 +587,10 @@ export default function DashboardPage() {
         </div>
       </header>
 
-      <div style={{ display: 'flex', gap: '16px', maxWidth: '1800px', margin: '0 auto', padding: isMobile ? '16px' : '24px', minHeight: 'calc(100vh - 80px)' }}>
+      <div style={{ display: 'flex', gap: '16px', maxWidth: '1800px', margin: '0 auto', padding: '16px', minHeight: 'calc(100vh - 80px)' }}>
         {/* Fixed Left Sidebar - Journal a Trade + Stats */}
         {!isMobile && accounts.length > 0 && (
-          <div style={{ width: sidebarExpanded ? '320px' : '260px', flexShrink: 0, display: 'flex', flexDirection: 'column', gap: '12px', transition: 'width 0.2s ease' }}>
+          <div style={{ width: sidebarExpanded ? '320px' : '260px', flexShrink: 0, display: 'flex', flexDirection: 'column', gap: '16px', transition: 'width 0.2s ease' }}>
             {/* Trade Entry Card */}
             <div style={{ background: 'linear-gradient(180deg, #0f0f14 0%, #0a0a0f 100%)', border: '1px solid #1a1a22', borderRadius: '12px', padding: '16px', flex: sidebarExpanded ? '1' : 'none' }}>
               {/* Header */}
@@ -830,7 +830,7 @@ export default function DashboardPage() {
               </div>
 
               {/* Action Buttons */}
-              <div style={{ display: 'flex', gap: '8px' }}>
+              <div style={{ display: 'flex', gap: '16px' }}>
                 <button onClick={submitQuickTrade} disabled={submittingTrade || !quickTradeSymbol.trim() || !quickTradePnl} style={{ flex: 1, padding: '12px', background: (submittingTrade || !quickTradeSymbol.trim() || !quickTradePnl) ? '#1a1a22' : 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)', border: 'none', borderRadius: '8px', color: (submittingTrade || !quickTradeSymbol.trim() || !quickTradePnl) ? '#666' : '#fff', fontWeight: 600, fontSize: '13px', cursor: (submittingTrade || !quickTradeSymbol.trim() || !quickTradePnl) ? 'not-allowed' : 'pointer', transition: 'all 0.2s' }}>
                   {submittingTrade ? 'Adding...' : 'Log Trade'}
                 </button>
@@ -842,7 +842,7 @@ export default function DashboardPage() {
             </div>
 
             {/* Stats Card - Below Trade Entry */}
-            <div style={{ background: '#0f0f14', border: '1px solid #1a1a22', borderRadius: '12px', padding: '14px' }}>
+            <div style={{ background: '#0f0f14', border: '1px solid #1a1a22', borderRadius: '12px', padding: '16px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#22c55e" strokeWidth="2"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg>
                 <span style={{ fontSize: '12px', color: '#fff', fontWeight: 600, letterSpacing: '0.5px' }}>ALL STATS</span>
@@ -1102,7 +1102,7 @@ export default function DashboardPage() {
 
                   {/* Recent Trades */}
                   <div style={{ padding: isMobile ? '0 16px 16px' : '0 24px 16px' }}>
-                    <div style={{ fontSize: '12px', color: '#999', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '8px', paddingBottom: '8px', borderBottom: '1px solid #1a1a22' }}>Recent Trades</div>
+                    <div style={{ fontSize: '12px', color: '#999', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '8px', paddingBottom: '8px', borderBottom: '1px solid #1a1a22', marginLeft: isMobile ? '0' : '42px' }}>Recent Trades</div>
                     {recentTrades.length === 0 ? (
                       <div style={{ padding: '20px', textAlign: 'center', color: '#999', fontSize: '14px' }}>No trades yet</div>
                     ) : (
@@ -1149,18 +1149,14 @@ export default function DashboardPage() {
                                       (() => { const s = getOptionStyles('timeframe', extra.timeframe); return <span style={{ padding: '5px 12px', borderRadius: '6px', fontSize: '13px', fontWeight: 600, background: s.bgColor || 'transparent', color: s.textColor }}>{extra.timeframe}</span> })()
                                     ) : <span style={{ fontWeight: 600, fontSize: '14px', color: '#444' }}>-</span>}
                                   </td>
-                                  <td style={{ padding: '12px', textAlign: 'center' }}>
-                                    <div style={{ display: 'flex', justifyContent: 'center', gap: '1px' }}>
+                                  <td style={{ padding: '12px', textAlign: 'center', minWidth: '80px' }}>
+                                    <div style={{ display: 'inline-flex', justifyContent: 'center', gap: '1px' }}>
                                       {[1,2,3,4,5].map(star => {
                                         const rating = parseFloat(extra.rating || 0)
                                         const isFullStar = rating >= star
                                         const isHalfStar = rating >= star - 0.5 && rating < star
                                         return (
-                                          <div key={star} style={{ position: 'relative', width: '14px', height: '14px' }}>
-                                            <span style={{ position: 'absolute', color: '#2a2a35', fontSize: '14px', lineHeight: 1 }}>★</span>
-                                            {isHalfStar && <span style={{ position: 'absolute', color: '#22c55e', fontSize: '14px', lineHeight: 1, width: '7px', overflow: 'hidden' }}>★</span>}
-                                            {isFullStar && <span style={{ position: 'absolute', color: '#22c55e', fontSize: '14px', lineHeight: 1 }}>★</span>}
-                                          </div>
+                                          <span key={star} style={{ color: isFullStar ? '#22c55e' : isHalfStar ? '#22c55e' : '#2a2a35', fontSize: '12px' }}>★</span>
                                         )
                                       })}
                                     </div>
