@@ -575,7 +575,7 @@ export default function DashboardPage() {
   return (
     <div style={{ minHeight: '100vh', background: '#0a0a0f' }}>
       {/* Header */}
-      <header style={{ padding: isMobile ? '12px 16px' : '16px 40px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #1a1a22', flexWrap: isMobile ? 'wrap' : 'nowrap', gap: isMobile ? '8px' : '0' }}>
+      <header style={{ padding: isMobile ? '12px 16px' : '16px 24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #1a1a22', flexWrap: isMobile ? 'wrap' : 'nowrap', gap: isMobile ? '8px' : '0' }}>
         <a href="/" style={{ fontSize: isMobile ? '22px' : '28px', fontWeight: 700, textDecoration: 'none' }}>
           <span style={{ color: '#22c55e' }}>LSD</span><span style={{ color: '#fff' }}>TRADE</span><span style={{ color: '#22c55e' }}>+</span>
         </a>
@@ -597,7 +597,7 @@ export default function DashboardPage() {
         </div>
       </header>
 
-      <div style={{ display: 'flex', gap: '16px', maxWidth: '1800px', margin: '0 auto', padding: isMobile ? '16px' : '20px 24px', minHeight: 'calc(100vh - 80px)' }}>
+      <div style={{ display: 'flex', gap: '16px', maxWidth: '1800px', margin: '0 auto', padding: isMobile ? '16px' : '24px', minHeight: 'calc(100vh - 80px)' }}>
         {/* Fixed Left Sidebar - Journal a Trade + Stats */}
         {!isMobile && accounts.length > 0 && (
           <div style={{ width: sidebarExpanded ? '320px' : '260px', flexShrink: 0, display: 'flex', flexDirection: 'column', gap: '12px', transition: 'width 0.2s ease' }}>

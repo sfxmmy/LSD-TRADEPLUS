@@ -1508,7 +1508,7 @@ export default function AccountPage() {
                                   {yLabels.map((v, i) => <span key={i} style={{ fontSize: '8px', color: '#999', lineHeight: 1, textAlign: 'right' }}>{equityCurveGroupBy === 'total' ? `$${(v/1000).toFixed(v >= 1000 ? 0 : 1)}k` : `$${v}`}</span>)}
                                 </div>
                                 <div style={{ flex: 1, display: 'flex', flexDirection: 'column', position: 'relative' }}>
-                                  <div style={{ flex: 1, position: 'relative', borderLeft: '1px solid #333', borderBottom: hasNegative ? 'none' : '1px solid #333' }}>
+                                  <div style={{ flex: 1, position: 'relative', borderLeft: '1px solid #2a2a35', borderBottom: hasNegative ? 'none' : '1px solid #2a2a35' }}>
                                     {/* Horizontal grid lines */}
                                     <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', pointerEvents: 'none' }}>
                                       {yLabels.map((_, i) => <div key={i} style={{ borderTop: '1px solid #1a1a22' }} />)}
@@ -3558,13 +3558,13 @@ export default function AccountPage() {
                         {yLabels.map((v, i) => <span key={i} style={{ fontSize: '10px', color: '#999', textAlign: 'right' }}>{equityCurveGroupBy === 'total' ? `$${(v/1000).toFixed(v >= 1000 ? 0 : 1)}k` : `$${v}`}</span>)}
                       </div>
                       <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
-                        <div style={{ flex: 1, position: 'relative', borderLeft: '1px solid #333', borderBottom: hasNegative ? 'none' : '1px solid #333' }}>
+                        <div style={{ flex: 1, position: 'relative', borderLeft: '1px solid #2a2a35', borderBottom: hasNegative ? 'none' : '1px solid #2a2a35' }}>
                           {/* Horizontal grid lines */}
                           <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', pointerEvents: 'none' }}>
-                            {yLabels.map((_, i) => <div key={i} style={{ borderTop: '1px solid #252525' }} />)}
+                            {yLabels.map((_, i) => <div key={i} style={{ borderTop: '1px solid #1a1a22' }} />)}
                           </div>
-                          {zeroY !== null && <div style={{ position: 'absolute', left: 0, right: 0, top: `${zeroY}%`, borderTop: '1px solid #333', zIndex: 1 }}><span style={{ position: 'absolute', left: '-60px', top: '-8px', fontSize: '11px', color: '#999' }}>$0</span></div>}
-                          <svg style={{ position: 'absolute', inset: 0, width: '100%', height: '100%' }} viewBox={`0 0 ${svgW} ${svgH}`} preserveAspectRatio="none"
+                          {zeroY !== null && <div style={{ position: 'absolute', left: 0, right: 0, top: `${zeroY}%`, borderTop: '1px solid #2a2a35', zIndex: 1 }}><span style={{ position: 'absolute', left: '-60px', top: '-8px', fontSize: '11px', color: '#666' }}>$0</span></div>}
+                          <svg style={{ position: 'absolute', inset: '2px', width: 'calc(100% - 4px)', height: 'calc(100% - 4px)' }} viewBox={`0 0 ${svgW} ${svgH}`} preserveAspectRatio="none"
                             onMouseMove={e => {
                               const rect = e.currentTarget.getBoundingClientRect()
                               const mouseX = ((e.clientX - rect.left) / rect.width) * svgW
@@ -3655,7 +3655,7 @@ export default function AccountPage() {
                                   })}
                                   {/* Draw all lines on top */}
                                   {lineData.map((line, idx) => (
-                                    <path key={`line${idx}`} d={line.pathD} fill="none" stroke={line.color} strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />
+                                    <path key={`line${idx}`} d={line.pathD} fill="none" stroke={line.color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />
                                   ))}
                                 </>
                               )
@@ -3856,7 +3856,7 @@ export default function AccountPage() {
                                   onMouseEnter={() => setBarHover(i)}
                                   onMouseLeave={() => setBarHover(null)}
                                 >
-                                  <div style={{ width: '100%', maxWidth: '80px', height: `${hPct}%`, background: `linear-gradient(to bottom, ${isGreen ? `rgba(34, 197, 94, ${0.1 + (hPct / 100) * 0.25})` : `rgba(239, 68, 68, ${0.1 + (hPct / 100) * 0.25})`} 0%, transparent 100%)`, border: `2px solid ${isGreen ? '#22c55e' : '#ef4444'}`, borderBottom: 'none', borderRadius: '6px 6px 0 0', minHeight: '20px', position: 'relative', cursor: 'pointer' }}>
+                                  <div style={{ width: '100%', maxWidth: '80px', height: `${hPct}%`, background: `linear-gradient(to bottom, ${isGreen ? `rgba(34, 197, 94, ${0.15 + (hPct / 100) * 0.2})` : `rgba(239, 68, 68, ${0.15 + (hPct / 100) * 0.2})`} 0%, transparent 100%)`, border: `1px solid ${isGreen ? '#22c55e' : '#ef4444'}`, borderBottom: 'none', borderRadius: '6px 6px 0 0', minHeight: '20px', position: 'relative', cursor: 'pointer' }}>
                                     {/* Price label at top of bar */}
                                     <div style={{ position: 'absolute', top: '-20px', left: '50%', transform: 'translateX(-50%)', fontSize: '14px', color: isGreen ? '#22c55e' : '#ef4444', fontWeight: 600, whiteSpace: 'nowrap' }}>{item.disp}</div>
                                     {isHovered && (
