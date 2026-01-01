@@ -157,7 +157,7 @@ export default function SignupPage() {
           </button>
 
           {/* Divider */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '16px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}>
             <div style={{ flex: 1, height: '1px', background: '#222230' }} />
             <span style={{ color: '#999', fontSize: '13px' }}>or</span>
             <div style={{ flex: 1, height: '1px', background: '#222230' }} />

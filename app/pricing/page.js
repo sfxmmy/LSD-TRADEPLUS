@@ -96,7 +96,7 @@ export default function PricingPage() {
         <a href="/" style={{ fontSize: '28px', fontWeight: 700, textDecoration: 'none' }}>
           <span style={{ color: '#22c55e' }}>LSD</span><span style={{ color: '#fff' }}>TRADE</span><span style={{ color: '#22c55e' }}>+</span>
         </a>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
           {!loading && hasAccess ? (
             <a href="/dashboard" style={{ padding: '12px 24px', background: '#22c55e', borderRadius: '8px', color: '#fff', fontWeight: 600, fontSize: '14px', textDecoration: 'none' }}>Enter Journal</a>
           ) : (
@@ -120,7 +120,7 @@ export default function PricingPage() {
             <div style={{ fontSize: '52px', fontWeight: 700, marginBottom: '8px' }}>£9<span style={{ fontSize: '20px', color: '#999' }}>/month</span></div>
             <div style={{ color: '#999', marginBottom: '32px' }}>Cancel anytime</div>
 
-            <ul style={{ listStyle: 'none', padding: 0, display: 'flex', flexDirection: 'column', gap: '16px', marginBottom: '32px' }}>
+            <ul style={{ listStyle: 'none', padding: 0, display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '32px' }}>
               {['Unlimited Journals', 'Unlimited Trades', 'Advanced Statistics', 'Trade Screenshots', 'Equity Curves', 'Cloud Storage'].map((f, i) => (
                 <li key={i} style={{ display: 'flex', alignItems: 'center', gap: '12px', color: '#999', fontSize: '15px' }}>
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#22c55e" strokeWidth="3"><polyline points="20 6 9 17 4 12" /></svg>
