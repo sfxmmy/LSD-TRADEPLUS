@@ -754,11 +754,11 @@ export default function AccountPage() {
       {!isMobile && (
         <div style={{ position: 'fixed', top: '65px', left: '180px', right: 0, zIndex: 46, padding: '16px', background: '#0a0a0f', borderBottom: '1px solid #1a1a22', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <span style={{ fontSize: '24px', fontWeight: 700, color: '#fff' }}>{account?.name}</span>
+            <span style={{ fontSize: '24px', fontWeight: 700, color: '#fff', lineHeight: 1 }}>{account?.name}</span>
           </div>
           <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
             {activeTab === 'trades' && trades.length > 0 && !selectMode && (
-              <button onClick={() => setSelectMode(true)} style={{ padding: '10px 16px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '6px', color: '#fff', fontSize: '13px', cursor: 'pointer' }}>Select</button>
+              <button onClick={() => setSelectMode(true)} style={{ padding: '12px 16px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '6px', color: '#fff', fontSize: '13px', cursor: 'pointer', lineHeight: 1 }}>Select</button>
             )}
             {activeTab === 'trades' && selectMode && (
               <>
@@ -770,15 +770,15 @@ export default function AccountPage() {
               </>
             )}
             {!selectMode && (
-              <button onClick={() => { setDraftFilters({...filters, quickSelect: ''}); setShowFilters(true) }} style={{ padding: '10px 16px', background: hasActiveFilters ? 'rgba(34,197,94,0.15)' : 'transparent', border: hasActiveFilters ? '1px solid #22c55e' : '1px solid #2a2a35', borderRadius: '6px', color: hasActiveFilters ? '#22c55e' : '#fff', fontSize: '13px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <button onClick={() => { setDraftFilters({...filters, quickSelect: ''}); setShowFilters(true) }} style={{ padding: '12px 16px', background: hasActiveFilters ? 'rgba(34,197,94,0.15)' : 'transparent', border: hasActiveFilters ? '1px solid #22c55e' : '1px solid #2a2a35', borderRadius: '6px', color: hasActiveFilters ? '#22c55e' : '#fff', fontSize: '13px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', lineHeight: 1 }}>
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
                 Filters{hasActiveFilters && ` (${Object.values(filters).filter(Boolean).length})`}
               </button>
             )}
             {activeTab === 'trades' && !selectMode && (
-              <button onClick={() => setShowEditInputs(true)} style={{ padding: '10px 16px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '6px', color: '#fff', fontSize: '13px', cursor: 'pointer' }}>Edit Columns</button>
+              <button onClick={() => setShowEditInputs(true)} style={{ padding: '12px 16px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '6px', color: '#fff', fontSize: '13px', cursor: 'pointer', lineHeight: 1 }}>Edit Columns</button>
             )}
-            {!selectMode && <button onClick={() => setShowAddTrade(true)} style={{ padding: '10px 24px', background: '#22c55e', border: 'none', borderRadius: '6px', color: '#fff', fontWeight: 600, fontSize: '14px', cursor: 'pointer' }}>+ LOG TRADE</button>}
+            {!selectMode && <button onClick={() => setShowAddTrade(true)} style={{ padding: '12px 24px', background: '#22c55e', border: 'none', borderRadius: '6px', color: '#fff', fontWeight: 600, fontSize: '14px', cursor: 'pointer', lineHeight: 1 }}>+ LOG TRADE</button>}
           </div>
         </div>
       )}
