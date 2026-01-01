@@ -96,7 +96,7 @@ export default function PricingPage() {
         <a href="/" style={{ fontSize: '28px', fontWeight: 700, textDecoration: 'none' }}>
           <span style={{ color: '#22c55e' }}>LSD</span><span style={{ color: '#fff' }}>TRADE</span><span style={{ color: '#22c55e' }}>+</span>
         </a>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
           {!loading && hasAccess ? (
             <a href="/dashboard" style={{ padding: '12px 24px', background: '#22c55e', borderRadius: '8px', color: '#fff', fontWeight: 600, fontSize: '14px', textDecoration: 'none' }}>Enter Journal</a>
           ) : (
