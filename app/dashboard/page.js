@@ -39,6 +39,9 @@ function getOptionStyles(field, value) {
   return { textColor: '#888', bgColor: null }
 }
 
+// Helper to extract value from option (supports both string and {value, textColor, bgColor} formats)
+function getOptVal(o) { return typeof o === 'object' ? o.value : o }
+
 export default function DashboardPage() {
   const [user, setUser] = useState(null)
   const [accounts, setAccounts] = useState([])
@@ -813,7 +816,7 @@ export default function DashboardPage() {
                       <label style={{ display: 'block', fontSize: '9px', color: '#666', marginBottom: '4px', textTransform: 'uppercase' }}>{(input.label || input.id).slice(0, 10)}</label>
                       <select value={quickTradeExtraData[input.id] || ''} onChange={e => setQuickTradeExtraData(prev => ({ ...prev, [input.id]: e.target.value }))} style={{ width: '100%', padding: '8px 10px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '12px' }}>
                         <option value="">-</option>
-                        {(input.options || []).map(opt => <option key={opt} value={opt}>{opt}</option>)}
+                        {(input.options || []).map(opt => <option key={getOptVal(opt)} value={getOptVal(opt)}>{getOptVal(opt)}</option>)}
                       </select>
                     </div>
                   ))}
@@ -1572,7 +1575,7 @@ export default function DashboardPage() {
                       <label style={{ display: 'block', fontSize: '11px', color: '#666', marginBottom: '6px', textTransform: 'uppercase', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{input.label || input.id}</label>
                       <select value={quickTradeExtraData[input.id] || ''} onChange={e => setQuickTradeExtraData(prev => ({ ...prev, [input.id]: e.target.value }))} style={{ width: '100%', padding: '14px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '8px', color: '#fff', fontSize: '15px' }}>
                         <option value="">-</option>
-                        {(input.options || []).map(opt => <option key={opt} value={opt}>{opt}</option>)}
+                        {(input.options || []).map(opt => <option key={getOptVal(opt)} value={getOptVal(opt)}>{getOptVal(opt)}</option>)}
                       </select>
                     </div>
                   ))}
