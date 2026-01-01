@@ -700,7 +700,7 @@ export default function AccountPage() {
       <Tooltip data={tooltip} />
 
       {/* FIXED HEADER - same structure as dashboard */}
-      <header style={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 50, padding: isMobile ? '12px 16px' : '16px 40px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#0a0a0f', borderBottom: '1px solid #1a1a22' }}>
+      <header style={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 50, padding: isMobile ? '12px 16px' : '14px 40px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#0a0a0f', borderBottom: '1px solid #1a1a22' }}>
         <a href="/" style={{ fontSize: isMobile ? '20px' : '28px', fontWeight: 700, textDecoration: 'none', letterSpacing: '-0.5px' }}><span style={{ color: '#22c55e' }}>LSD</span><span style={{ color: '#fff' }}>TRADE</span><span style={{ color: '#22c55e' }}>+</span></a>
         {!isMobile && (
           <>
@@ -752,7 +752,7 @@ export default function AccountPage() {
 
       {/* FIXED SUBHEADER - starts at sidebar edge */}
       {!isMobile && (
-        <div style={{ position: 'fixed', top: '71px', left: '180px', right: 0, zIndex: 46, padding: '16px 24px', background: '#0a0a0f', borderBottom: '1px solid #1a1a22', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div style={{ position: 'fixed', top: '67px', left: '180px', right: 0, zIndex: 46, padding: '12px 24px', background: '#0a0a0f', borderBottom: '1px solid #1a1a22', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
             <span style={{ fontSize: '26px', fontWeight: 700, color: '#fff' }}>{account?.name}</span>
           </div>
@@ -793,14 +793,14 @@ export default function AccountPage() {
 
       {/* FIXED SIDEBAR - desktop only, starts under header */}
       {!isMobile && (
-        <div style={{ position: 'fixed', top: '71px', left: 0, bottom: 0, width: '180px', padding: '16px', background: '#0a0a0f', zIndex: 45, display: 'flex', flexDirection: 'column', borderRight: '1px solid #1a1a22' }}>
-        <div>
+        <div style={{ position: 'fixed', top: '67px', left: 0, bottom: 0, width: '180px', padding: '12px', background: '#0a0a0f', zIndex: 45, display: 'flex', flexDirection: 'column', borderRight: '1px solid #1a1a22' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
           {['trades', 'statistics', 'notes'].map((tab) => (
             <button
               key={tab}
               onClick={() => { setActiveTab(tab); if (tab === 'statistics') setHasNewInputs(false) }}
               style={{
-                width: '100%', padding: '14px 16px', marginBottom: '8px',
+                width: '100%', padding: '14px 12px',
                 background: activeTab === tab ? '#22c55e' : 'transparent',
                 border: activeTab === tab ? 'none' : '1px solid #2a2a35',
                 borderRadius: '8px', color: activeTab === tab ? '#fff' : '#888',
