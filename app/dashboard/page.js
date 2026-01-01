@@ -401,15 +401,15 @@ export default function DashboardPage() {
         const dataIdx = Math.floor(i * (datesWithTrades.length - 1) / Math.max(1, numLabels - 1))
         const item = datesWithTrades[dataIdx]
         const date = new Date(item.date)
-        const pct = points.length > 1 ? (item.pointIdx / (points.length - 1)) * 100 : 50
+        // Evenly space labels from 0% to 100%
+        const pct = numLabels > 1 ? (i / (numLabels - 1)) * 100 : 50
         xLabels.push({ label: `${String(date.getDate()).padStart(2, '0')}/${String(date.getMonth() + 1).padStart(2, '0')}/${String(date.getFullYear()).slice(-2)}`, pct })
       }
     }
 
     const svgW = 100, svgH = 100
-    const padX = 2 // Padding to keep stroke (2.5px) fully inside viewBox
     const chartPoints = points.map((p, i) => {
-      const x = points.length > 1 ? padX + (i / (points.length - 1)) * (svgW - 2 * padX) : svgW / 2
+      const x = points.length > 1 ? (i / (points.length - 1)) * svgW : svgW / 2
       const y = svgH - ((p.balance - yMin) / yRange) * svgH
       return { x, y, ...p }
     })
@@ -470,8 +470,8 @@ export default function DashboardPage() {
           ))}
         </div>
         
-        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, overflow: 'visible' }}>
-          <div style={{ flex: 1, position: 'relative', borderLeft: '1px solid #2a2a35', borderBottom: hasNegative ? 'none' : '1px solid #2a2a35', overflow: 'visible' }}>
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, overflow: 'visible', borderLeft: '1px solid #2a2a35' }}>
+          <div style={{ flex: 1, position: 'relative', borderBottom: hasNegative ? 'none' : '1px solid #2a2a35', overflow: 'visible' }}>
             {/* Horizontal grid lines */}
             <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', pointerEvents: 'none' }}>
               {yLabels.map((_, i) => <div key={i} style={{ borderTop: '1px solid #1a1a22' }} />)}
@@ -1102,7 +1102,7 @@ export default function DashboardPage() {
 
                   {/* Recent Trades */}
                   <div style={{ padding: isMobile ? '0 16px 16px' : '0 24px 16px' }}>
-                    <div style={{ fontSize: '12px', color: '#999', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '8px', paddingBottom: '8px', borderBottom: '1px solid #1a1a22', marginLeft: isMobile ? '0' : '38px' }}>Recent Trades</div>
+                    <div style={{ fontSize: '12px', color: '#999', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '8px', paddingBottom: '8px', borderBottom: '1px solid #1a1a22' }}>Recent Trades</div>
                     {recentTrades.length === 0 ? (
                       <div style={{ padding: '20px', textAlign: 'center', color: '#999', fontSize: '14px' }}>No trades yet</div>
                     ) : (
