@@ -1897,8 +1897,8 @@ export default function AccountPage() {
                               <div style={{ display: 'flex', gap: '6px', padding: '0 4px' }}>
                                 {entries.map((item, i) => (
                                   <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                                    <div style={{ width: '1px', height: '6px', background: '#333' }} />
-                                    <div style={{ marginTop: '4px', textAlign: 'center', fontSize: '10px', color: '#ccc', fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', background: '#0d0d12', padding: '2px 4px', borderRadius: '3px', border: '1px solid #2a2a35', width: '100%', boxSizing: 'border-box' }}>{item.name}</div>
+                                    <div style={{ width: '1px', height: '5px', background: '#2a2a35' }} />
+                                    <div style={{ marginTop: '4px', textAlign: 'center', fontSize: '10px', color: '#999', fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', background: '#0d0d12', padding: '2px 4px', borderRadius: '3px', border: '1px solid #1a1a22', width: '100%', boxSizing: 'border-box' }}>{item.name}</div>
                                   </div>
                                 ))}
                               </div>
@@ -1994,13 +1994,13 @@ export default function AccountPage() {
                           {yLabels.map((v, i) => <span key={i} style={{ fontSize: '8px', color: '#999', textAlign: 'right' }}>{i === yLabels.length - 1 ? '$0' : `$${v}`}</span>)}
                         </div>
                         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', position: 'relative' }}>
-                          <div style={{ flex: 1, position: 'relative', borderLeft: '1px solid #333', borderBottom: '1px solid #333' }}>
+                          <div style={{ flex: 1, position: 'relative', borderLeft: '1px solid #2a2a35', borderBottom: '1px solid #2a2a35' }}>
                             {/* Horizontal grid lines */}
                             <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', pointerEvents: 'none' }}>
-                              {yLabels.map((_, i) => <div key={i} style={{ borderTop: '1px solid #252525' }} />)}
+                              {yLabels.map((_, i) => <div key={i} style={{ borderTop: '1px solid #1a1a22' }} />)}
                             </div>
                             {/* Bars */}
-                            <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'flex-end', gap: '1px', padding: '0 2px' }}>
+                            <div style={{ position: 'absolute', inset: '2px 0 0 0', display: 'flex', alignItems: 'flex-end', gap: '1px', padding: '0 2px' }}>
                               {sortedData.map((d, i) => {
                                 const hPct = yMax > 0 ? (Math.abs(d.pnl) / yMax) * 100 : 0
                                 const isPositive = d.pnl >= 0
@@ -2011,7 +2011,7 @@ export default function AccountPage() {
                                     onMouseEnter={() => setDailyPnlHover(i)}
                                     onMouseLeave={() => setDailyPnlHover(null)}
                                   >
-                                    <div style={{ width: '100%', height: hasData ? `${Math.max(hPct, 2)}%` : '2px', background: hasData ? (isPositive ? '#22c55e' : '#ef4444') : '#333', borderRadius: '2px 2px 0 0', position: 'relative' }}>
+                                    <div style={{ width: '100%', height: hasData ? `${Math.max(hPct, 2)}%` : '2px', background: hasData ? (isPositive ? '#22c55e' : '#ef4444') : '#2a2a35', borderRadius: '2px 2px 0 0', position: 'relative' }}>
                                       {isHovered && (
                                         <>
                                           <div style={{ position: 'absolute', bottom: hasData ? '4px' : '-2px', left: '50%', transform: 'translateX(-50%)', width: '8px', height: '8px', borderRadius: '50%', background: '#22c55e', border: '2px solid #fff', zIndex: 5 }} />
@@ -2028,14 +2028,14 @@ export default function AccountPage() {
                             </div>
                           </div>
                           {/* X-axis with tick marks and date labels */}
-                          <div style={{ height: '22px', position: 'relative', marginLeft: '1px', overflow: 'hidden' }}>
+                          <div style={{ height: '24px', position: 'relative', marginLeft: '1px' }}>
                             {xLabels.map((l, i) => {
                               const isFirst = i === 0
                               const isLast = i === xLabels.length - 1
                               return (
                                 <div key={i} style={{ position: 'absolute', left: `${l.pct}%`, transform: 'translateX(-50%)', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                                  <div style={{ width: '1px', height: '6px', background: '#333' }} />
-                                  <span style={{ fontSize: '9px', color: '#999', marginTop: '2px', whiteSpace: 'nowrap', transform: isFirst ? 'translateX(25%)' : isLast ? 'translateX(-25%)' : 'none' }}>{l.label}</span>
+                                  <div style={{ width: '1px', height: '5px', background: '#2a2a35' }} />
+                                  <span style={{ fontSize: '9px', color: '#666', marginTop: '3px', whiteSpace: 'nowrap', transform: isFirst ? 'translateX(30%)' : isLast ? 'translateX(-30%)' : 'none' }}>{l.label}</span>
                                 </div>
                               )
                             })}
@@ -2868,7 +2868,7 @@ export default function AccountPage() {
               <select value={draftFilters.confidence} onChange={e => setDraftFilters({...draftFilters, confidence: e.target.value})} style={{ width: '100%', padding: '10px 12px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '13px', boxSizing: 'border-box', appearance: 'none', backgroundImage: 'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'12\' height=\'12\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'%23666\' stroke-width=\'2\'%3E%3Cpath d=\'M6 9l6 6 6-6\'/%3E%3C/svg%3E")', backgroundRepeat: 'no-repeat', backgroundPosition: 'right 12px center' }}>
                 <option value="">-</option>
                 {(inputs.find(i => i.id === 'confidence')?.options || ['high', 'medium', 'low']).map(c => (
-                  <option key={c} value={c}>{c}</option>
+                  <option key={getOptVal(c)} value={getOptVal(c)}>{getOptVal(c)}</option>
                 ))}
               </select>
             </div>
@@ -2890,7 +2890,7 @@ export default function AccountPage() {
                 <select value={draftFilters.timeframe} onChange={e => setDraftFilters({...draftFilters, timeframe: e.target.value})} style={{ width: '100%', padding: '10px 12px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '13px', boxSizing: 'border-box', appearance: 'none', backgroundImage: 'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'12\' height=\'12\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'%23666\' stroke-width=\'2\'%3E%3Cpath d=\'M6 9l6 6 6-6\'/%3E%3C/svg%3E")', backgroundRepeat: 'no-repeat', backgroundPosition: 'right 12px center' }}>
                   <option value="">-</option>
                   {(inputs.find(i => i.id === 'timeframe')?.options || ['1m', '5m', '15m', '1h', '4h', 'daily']).map(t => (
-                    <option key={t} value={t}>{t}</option>
+                    <option key={getOptVal(t)} value={getOptVal(t)}>{getOptVal(t)}</option>
                   ))}
                 </select>
               </div>
@@ -2899,7 +2899,7 @@ export default function AccountPage() {
                 <select value={draftFilters.session} onChange={e => setDraftFilters({...draftFilters, session: e.target.value})} style={{ width: '100%', padding: '10px 12px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '13px', boxSizing: 'border-box', appearance: 'none', backgroundImage: 'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'12\' height=\'12\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'%23666\' stroke-width=\'2\'%3E%3Cpath d=\'M6 9l6 6 6-6\'/%3E%3C/svg%3E")', backgroundRepeat: 'no-repeat', backgroundPosition: 'right 12px center' }}>
                   <option value="">-</option>
                   {(inputs.find(i => i.id === 'session')?.options || ['london', 'new york', 'asian', 'other']).map(s => (
-                    <option key={s} value={s}>{s}</option>
+                    <option key={getOptVal(s)} value={getOptVal(s)}>{getOptVal(s)}</option>
                   ))}
                 </select>
               </div>
