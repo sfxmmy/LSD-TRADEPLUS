@@ -1508,7 +1508,7 @@ export default function AccountPage() {
                                   {yLabels.map((v, i) => <span key={i} style={{ fontSize: '8px', color: '#999', lineHeight: 1, textAlign: 'right' }}>{equityCurveGroupBy === 'total' ? `$${(v/1000).toFixed(v >= 1000 ? 0 : 1)}k` : `$${v}`}</span>)}
                                 </div>
                                 <div style={{ flex: 1, display: 'flex', flexDirection: 'column', position: 'relative' }}>
-                                  <div style={{ flex: 1, position: 'relative', borderLeft: '1px solid #2a2a35', borderBottom: hasNegative ? 'none' : '1px solid #2a2a35' }}>
+                                  <div style={{ flex: 1, position: 'relative', borderLeft: '1px solid #2a2a35', borderBottom: hasNegative ? 'none' : '1px solid #2a2a35', overflow: 'visible' }}>
                                     {/* Horizontal grid lines */}
                                     <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', pointerEvents: 'none' }}>
                                       {yLabels.map((_, i) => <div key={i} style={{ borderTop: '1px solid #1a1a22' }} />)}
@@ -1523,7 +1523,7 @@ export default function AccountPage() {
                                         <span style={{ position: 'absolute', right: '4px', top: '-10px', fontSize: '8px', color: '#666' }}>Start</span>
                                       </div>
                                     )}
-                                    <svg style={{ position: 'absolute', inset: '2px', width: 'calc(100% - 4px)', height: 'calc(100% - 4px)' }} viewBox={`0 0 ${svgW} ${svgH}`} preserveAspectRatio="none"
+                                    <svg style={{ position: 'absolute', inset: '4px 8px 4px 4px', width: 'calc(100% - 12px)', height: 'calc(100% - 8px)', overflow: 'visible' }} viewBox={`0 0 ${svgW} ${svgH}`} preserveAspectRatio="none"
                                       onMouseMove={e => {
                                         const rect = e.currentTarget.getBoundingClientRect()
                                         const mouseX = ((e.clientX - rect.left) / rect.width) * svgW
@@ -3538,13 +3538,13 @@ export default function AccountPage() {
                         {yLabels.map((v, i) => <span key={i} style={{ fontSize: '10px', color: '#999', textAlign: 'right' }}>{equityCurveGroupBy === 'total' ? `$${(v/1000).toFixed(v >= 1000 ? 0 : 1)}k` : `$${v}`}</span>)}
                       </div>
                       <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
-                        <div style={{ flex: 1, position: 'relative', borderLeft: '1px solid #2a2a35', borderBottom: hasNegative ? 'none' : '1px solid #2a2a35' }}>
+                        <div style={{ flex: 1, position: 'relative', borderLeft: '1px solid #2a2a35', borderBottom: hasNegative ? 'none' : '1px solid #2a2a35', overflow: 'visible' }}>
                           {/* Horizontal grid lines */}
                           <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', pointerEvents: 'none' }}>
                             {yLabels.map((_, i) => <div key={i} style={{ borderTop: '1px solid #1a1a22' }} />)}
                           </div>
                           {zeroY !== null && <div style={{ position: 'absolute', left: 0, right: 0, top: `${zeroY}%`, borderTop: '1px solid #2a2a35', zIndex: 1 }}><span style={{ position: 'absolute', left: '-60px', top: '-8px', fontSize: '11px', color: '#666' }}>$0</span></div>}
-                          <svg style={{ position: 'absolute', inset: '2px', width: 'calc(100% - 4px)', height: 'calc(100% - 4px)' }} viewBox={`0 0 ${svgW} ${svgH}`} preserveAspectRatio="none"
+                          <svg style={{ position: 'absolute', inset: '4px 8px 4px 4px', width: 'calc(100% - 12px)', height: 'calc(100% - 8px)', overflow: 'visible' }} viewBox={`0 0 ${svgW} ${svgH}`} preserveAspectRatio="none"
                             onMouseMove={e => {
                               const rect = e.currentTarget.getBoundingClientRect()
                               const mouseX = ((e.clientX - rect.left) / rect.width) * svgW
@@ -3746,7 +3746,7 @@ export default function AccountPage() {
                           )}
                         </div>
                         {/* X-axis with tick marks and labels */}
-                        <div style={{ height: '26px', position: 'relative', overflow: 'hidden' }}>
+                        <div style={{ height: '28px', position: 'relative' }}>
                           {xLabels.map((l, i) => {
                             const isFirst = i === 0
                             const isLast = i === xLabels.length - 1
