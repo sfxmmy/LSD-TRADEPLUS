@@ -60,35 +60,35 @@ export default function HomePage() {
     <div style={{ minHeight: '100vh', background: '#0a0a0f' }}>
       {/* Header */}
       <header style={{ padding: '16px 24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #1a1a22' }}>
-        <a href="/" style={{ fontSize: '28px', fontWeight: 700 }}>
+        <a href="/" style={{ fontSize: '28px', fontWeight: 700, textDecoration: 'none' }}>
           <span style={{ color: '#22c55e' }}>LSD</span><span style={{ color: '#fff' }}>TRADE</span><span style={{ color: '#22c55e' }}>+</span>
         </a>
         <div style={{ display: 'flex', gap: '12px' }}>
-          <a href="/pricing" style={{ padding: '12px 24px', background: '#22c55e', borderRadius: '6px', color: '#fff', fontWeight: 600, fontSize: '14px' }}>
+          <a href="/pricing" style={{ padding: '12px 24px', background: '#22c55e', borderRadius: '8px', color: '#fff', fontWeight: 600, fontSize: '14px', textDecoration: 'none' }}>
             Get Access - £9/mo
           </a>
-          <a href="/login" style={{ padding: '12px 24px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '6px', color: '#fff', fontWeight: 600, fontSize: '14px' }}>
+          <a href="/login" style={{ padding: '12px 24px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '8px', color: '#fff', fontWeight: 600, fontSize: '14px', textDecoration: 'none' }}>
             Member Log In
           </a>
         </div>
       </header>
 
       {/* Hero */}
-      <section style={{ padding: '100px 48px', textAlign: 'center' }}>
+      <section style={{ padding: '80px 24px', textAlign: 'center' }}>
         <div style={{ maxWidth: '800px', margin: '0 auto' }}>
           <h1 style={{ fontSize: '56px', fontWeight: 800, lineHeight: 1.1, marginBottom: '16px' }}>The Trading Journal</h1>
           <h2 style={{ fontSize: '56px', fontWeight: 800, color: '#22c55e', marginBottom: '24px' }}>Built for Serious Traders</h2>
           <p style={{ fontSize: '20px', color: '#999', marginBottom: '40px', lineHeight: 1.6 }}>
             Track your trades, analyze your performance, and discover patterns that make you profitable.
           </p>
-          <a href="/signup" style={{ display: 'inline-block', padding: '18px 40px', background: '#22c55e', borderRadius: '12px', color: '#fff', fontWeight: 700, fontSize: '18px' }}>
+          <a href="/signup" style={{ display: 'inline-block', padding: '16px 40px', background: '#22c55e', borderRadius: '8px', color: '#fff', fontWeight: 700, fontSize: '18px', textDecoration: 'none' }}>
             Get Started - £9/month
           </a>
         </div>
       </section>
 
       {/* Features */}
-      <section style={{ padding: '60px 48px', background: '#0d0d12' }}>
+      <section style={{ padding: '60px 24px', background: '#0d0d12' }}>
         <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
           <h2 style={{ fontSize: '36px', fontWeight: 700, textAlign: 'center', marginBottom: '48px' }}>Everything You Need</h2>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '24px' }}>
@@ -110,7 +110,7 @@ export default function HomePage() {
       </section>
 
       {/* Pricing */}
-      <section style={{ padding: '60px 48px' }}>
+      <section style={{ padding: '60px 24px' }}>
         <div style={{ maxWidth: '500px', margin: '0 auto', textAlign: 'center' }}>
           <h2 style={{ fontSize: '36px', fontWeight: 700, marginBottom: '32px' }}>Simple Pricing</h2>
           <div style={{ background: 'linear-gradient(135deg, #14141a 0%, #1a2a1a 100%)', border: '2px solid #22c55e', borderRadius: '16px', padding: '32px' }}>
@@ -119,7 +119,7 @@ export default function HomePage() {
               £9<span style={{ fontSize: '18px', color: '#999' }}>/mo</span>
             </div>
             <p style={{ color: '#999', fontSize: '14px', marginBottom: '24px' }}>Everything included. Cancel anytime.</p>
-            <a href="/signup" style={{ display: 'block', padding: '16px', background: '#22c55e', borderRadius: '10px', color: '#fff', fontWeight: 700, fontSize: '16px' }}>
+            <a href="/signup" style={{ display: 'block', padding: '16px', background: '#22c55e', borderRadius: '8px', color: '#fff', fontWeight: 700, fontSize: '16px', textDecoration: 'none' }}>
               Subscribe Now
             </a>
           </div>
@@ -127,7 +127,7 @@ export default function HomePage() {
       </section>
 
       {/* Footer */}
-      <footer style={{ padding: '24px 48px', borderTop: '1px solid #1a1a22', textAlign: 'center' }}>
+      <footer style={{ padding: '24px', borderTop: '1px solid #1a1a22', textAlign: 'center' }}>
         <p style={{ color: '#555', fontSize: '14px' }}>© 2024 LSDTRADE+. All rights reserved.</p>
       </footer>
     </div>
