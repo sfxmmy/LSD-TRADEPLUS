@@ -467,25 +467,25 @@ export default function DashboardPage() {
           ))}
         </div>
         
-        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, overflow: 'hidden' }}>
-          <div style={{ flex: 1, position: 'relative', borderLeft: '1px solid #333', borderBottom: hasNegative ? 'none' : '1px solid #333' }}>
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, overflow: 'visible' }}>
+          <div style={{ flex: 1, position: 'relative', borderLeft: '1px solid #2a2a35', borderBottom: hasNegative ? 'none' : '1px solid #2a2a35', overflow: 'visible' }}>
             {/* Horizontal grid lines */}
             <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', pointerEvents: 'none' }}>
-              {yLabels.map((_, i) => <div key={i} style={{ borderTop: '1px solid #252525' }} />)}
+              {yLabels.map((_, i) => <div key={i} style={{ borderTop: '1px solid #1a1a22' }} />)}
             </div>
             {/* Zero line if negative values exist */}
             {zeroY !== null && (
-              <div style={{ position: 'absolute', left: 0, right: 0, top: `${zeroY}%`, borderTop: '1px solid #333', zIndex: 1 }}>
-                <span style={{ position: 'absolute', left: '-44px', top: '-8px', fontSize: '9px', color: '#999' }}>$0</span>
+              <div style={{ position: 'absolute', left: 0, right: 0, top: `${zeroY}%`, borderTop: '1px solid #2a2a35', zIndex: 1 }}>
+                <span style={{ position: 'absolute', left: '-44px', top: '-8px', fontSize: '9px', color: '#666' }}>$0</span>
               </div>
             )}
             {/* Starting balance line if balance dropped below start */}
             {startLineY !== null && (
-              <div style={{ position: 'absolute', left: 0, right: 0, top: `${startLineY}%`, borderTop: '1px dashed #444', zIndex: 1 }}>
-                <span style={{ position: 'absolute', right: '4px', top: '-12px', fontSize: '9px', color: '#999' }}>Start</span>
+              <div style={{ position: 'absolute', left: 0, right: 0, top: `${startLineY}%`, borderTop: '1px dashed #333', zIndex: 1 }}>
+                <span style={{ position: 'absolute', right: '4px', top: '-12px', fontSize: '9px', color: '#666' }}>Start</span>
               </div>
             )}
-            <svg ref={svgRef} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%' }} viewBox={`0 0 ${svgW} ${svgH}`} preserveAspectRatio="none" onMouseMove={handleMouseMove} onMouseLeave={() => setHoverPoint(null)}>
+            <svg ref={svgRef} style={{ position: 'absolute', inset: '4px 8px 4px 4px', width: 'calc(100% - 12px)', height: 'calc(100% - 8px)', overflow: 'visible' }} viewBox={`0 0 ${svgW} ${svgH}`} preserveAspectRatio="none" onMouseMove={handleMouseMove} onMouseLeave={() => setHoverPoint(null)}>
               <defs>
                 <linearGradient id="areaGradGreen" x1="0%" y1="0%" x2="0%" y2="100%">
                   <stop offset="0%" stopColor="#22c55e" stopOpacity="0.3" />
@@ -530,14 +530,14 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          <div style={{ height: '26px', position: 'relative', overflow: 'hidden' }}>
+          <div style={{ height: '26px', position: 'relative' }}>
             {xLabels.map((l, i) => {
               const isFirst = i === 0
               const isLast = i === xLabels.length - 1
               return (
                 <div key={i} style={{ position: 'absolute', left: `${l.pct}%`, transform: 'translateX(-50%)', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                  <div style={{ width: '1px', height: '6px', background: '#333' }} />
-                  <span style={{ fontSize: '10px', color: '#999', whiteSpace: 'nowrap', marginTop: '2px', transform: isFirst ? 'translateX(25%)' : isLast ? 'translateX(-25%)' : 'none' }}>{l.label}</span>
+                  <div style={{ width: '1px', height: '5px', background: '#2a2a35' }} />
+                  <span style={{ fontSize: '10px', color: '#666', whiteSpace: 'nowrap', marginTop: '3px', transform: isFirst ? 'translateX(30%)' : isLast ? 'translateX(-30%)' : 'none' }}>{l.label}</span>
                 </div>
               )
             })}
@@ -1112,7 +1112,7 @@ export default function DashboardPage() {
 
                   {/* Recent Trades */}
                   <div style={{ padding: isMobile ? '0 16px 16px' : '0 24px 16px' }}>
-                    <div style={{ fontSize: '12px', color: '#999', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '8px', paddingBottom: '8px', borderBottom: '1px solid #1a1a22', marginLeft: isMobile ? '0' : '45px' }}>Recent Trades</div>
+                    <div style={{ fontSize: '12px', color: '#999', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '8px', paddingBottom: '8px', borderBottom: '1px solid #1a1a22', marginLeft: isMobile ? '0' : '42px' }}>Recent Trades</div>
                     {recentTrades.length === 0 ? (
                       <div style={{ padding: '20px', textAlign: 'center', color: '#999', fontSize: '14px' }}>No trades yet</div>
                     ) : (
