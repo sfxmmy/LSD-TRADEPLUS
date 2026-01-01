@@ -7,26 +7,34 @@ import { createClient } from '@supabase/supabase-js'
 const defaultInputs = [
   { id: 'symbol', label: 'Symbol', type: 'text', required: true, enabled: true, fixed: true, color: '#22c55e' },
   { id: 'pnl', label: 'PnL ($)', type: 'number', required: true, enabled: true, fixed: true, color: '#22c55e' },
-  { id: 'direction', label: 'Direction', type: 'select', options: [{value: 'Long', color: '#22c55e'}, {value: 'Short', color: '#ef4444'}], required: true, enabled: true, fixed: true, color: '#3b82f6' },
-  { id: 'outcome', label: 'Outcome', type: 'select', options: [{value: 'Win', color: '#22c55e'}, {value: 'Loss', color: '#ef4444'}, {value: 'Breakeven', color: '#f59e0b'}], required: true, enabled: true, fixed: true, color: '#22c55e' },
+  { id: 'direction', label: 'Direction', type: 'select', options: [{value: 'Long', textColor: '#22c55e', bgColor: 'rgba(34,197,94,0.15)'}, {value: 'Short', textColor: '#ef4444', bgColor: 'rgba(239,68,68,0.15)'}], required: true, enabled: true, fixed: true, color: '#3b82f6' },
+  { id: 'outcome', label: 'Outcome', type: 'select', options: [{value: 'Win', textColor: '#22c55e', bgColor: 'rgba(34,197,94,0.15)'}, {value: 'Loss', textColor: '#ef4444', bgColor: 'rgba(239,68,68,0.15)'}, {value: 'Breakeven', textColor: '#f59e0b', bgColor: 'rgba(245,158,11,0.15)'}], required: true, enabled: true, fixed: true, color: '#22c55e' },
   { id: 'rr', label: 'RR', type: 'number', required: false, enabled: true, fixed: true, color: '#f59e0b' },
   { id: 'riskPercent', label: '% Risk', type: 'number', required: false, enabled: true, fixed: true, color: '#ef4444' },
   { id: 'date', label: 'Date', type: 'date', required: true, enabled: true, fixed: true, color: '#8b5cf6' },
-  { id: 'confidence', label: 'Confidence', type: 'select', options: [{value: 'High', color: '#22c55e'}, {value: 'Medium', color: '#f59e0b'}, {value: 'Low', color: '#ef4444'}], required: false, enabled: true, fixed: true, color: '#f59e0b' },
+  { id: 'confidence', label: 'Confidence', type: 'select', options: [{value: 'High', textColor: '#22c55e', bgColor: 'rgba(34,197,94,0.15)'}, {value: 'Medium', textColor: '#f59e0b', bgColor: 'rgba(245,158,11,0.15)'}, {value: 'Low', textColor: '#ef4444', bgColor: 'rgba(239,68,68,0.15)'}], required: false, enabled: true, fixed: true, color: '#f59e0b' },
   { id: 'rating', label: 'Rating', type: 'rating', required: false, enabled: true, fixed: true, color: '#fbbf24' },
-  { id: 'timeframe', label: 'Timeframe', type: 'select', options: [{value: '1m', color: '#06b6d4'}, {value: '5m', color: '#06b6d4'}, {value: '15m', color: '#06b6d4'}, {value: '30m', color: '#06b6d4'}, {value: '1H', color: '#06b6d4'}, {value: '4H', color: '#06b6d4'}, {value: 'Daily', color: '#06b6d4'}], required: false, enabled: true, fixed: true, color: '#06b6d4' },
-  { id: 'session', label: 'Session', type: 'select', options: [{value: 'London', color: '#3b82f6'}, {value: 'New York', color: '#22c55e'}, {value: 'Asian', color: '#f59e0b'}, {value: 'Overlap', color: '#a855f7'}], required: false, enabled: true, fixed: true, color: '#ec4899' },
+  { id: 'timeframe', label: 'Timeframe', type: 'select', options: [{value: '1m', textColor: '#06b6d4', bgColor: 'rgba(6,182,212,0.15)'}, {value: '5m', textColor: '#06b6d4', bgColor: 'rgba(6,182,212,0.15)'}, {value: '15m', textColor: '#06b6d4', bgColor: 'rgba(6,182,212,0.15)'}, {value: '30m', textColor: '#06b6d4', bgColor: 'rgba(6,182,212,0.15)'}, {value: '1H', textColor: '#06b6d4', bgColor: 'rgba(6,182,212,0.15)'}, {value: '4H', textColor: '#06b6d4', bgColor: 'rgba(6,182,212,0.15)'}, {value: 'Daily', textColor: '#06b6d4', bgColor: 'rgba(6,182,212,0.15)'}], required: false, enabled: true, fixed: true, color: '#06b6d4' },
+  { id: 'session', label: 'Session', type: 'select', options: [{value: 'London', textColor: '#3b82f6', bgColor: 'rgba(59,130,246,0.15)'}, {value: 'New York', textColor: '#22c55e', bgColor: 'rgba(34,197,94,0.15)'}, {value: 'Asian', textColor: '#f59e0b', bgColor: 'rgba(245,158,11,0.15)'}, {value: 'Overlap', textColor: '#a855f7', bgColor: 'rgba(168,85,247,0.15)'}], required: false, enabled: true, fixed: true, color: '#ec4899' },
   { id: 'image', label: 'Image', type: 'file', required: false, enabled: true, fixed: true, color: '#64748b' },
   { id: 'notes', label: 'Notes', type: 'textarea', required: false, enabled: true, fixed: true, color: '#64748b' },
 ]
 
-// Helper functions for handling options (string or {value, color} object)
+// Helper functions for handling options - supports legacy {value, color} and new {value, textColor, bgColor}
 function getOptVal(o) { return typeof o === 'object' ? o.value : o }
-function getOptColor(o, fallback = '#888') { return typeof o === 'object' ? (o.color || fallback) : fallback }
-function findOptColor(opts, val, fallback = '#888') {
-  if (!opts || !val) return fallback
+function getOptTextColor(o, fallback = '#fff') {
+  if (typeof o !== 'object') return fallback
+  return o.textColor || o.color || fallback
+}
+function getOptBgColor(o) {
+  if (typeof o !== 'object') return null
+  return o.bgColor || null
+}
+function findOptStyles(opts, val) {
+  if (!opts || !val) return { textColor: '#fff', bgColor: null }
   const o = opts.find(x => getOptVal(x).toLowerCase() === val.toLowerCase())
-  return o ? getOptColor(o, fallback) : fallback
+  if (!o) return { textColor: '#fff', bgColor: null }
+  return { textColor: getOptTextColor(o), bgColor: getOptBgColor(o) }
 }
 
 export default function AccountPage() {
@@ -47,7 +55,7 @@ export default function AccountPage() {
   const [showExpandedNote, setShowExpandedNote] = useState(null)
   const [showExpandedImage, setShowExpandedImage] = useState(null)
   const [editingOptions, setEditingOptions] = useState(null)
-  const [optionsList, setOptionsList] = useState([])  // [{value, color}]
+  const [optionsList, setOptionsList] = useState([])  // [{value, textColor, bgColor}]
   const [saving, setSaving] = useState(false)
   const [inputs, setInputs] = useState(defaultInputs)
   const [tradeForm, setTradeForm] = useState({})
@@ -159,18 +167,39 @@ export default function AccountPage() {
     if (accountData.custom_inputs) {
       try {
         const parsed = JSON.parse(accountData.custom_inputs)
-        // Convert legacy string options to {value, color} format
+        // Convert legacy inputs and merge with defaultInputs to ensure options with colors
         const convertedInputs = parsed.map(inp => {
-          if (inp.options && inp.options.length > 0) {
-            const defaultInput = defaultInputs.find(d => d.id === inp.id)
-            const convertedOptions = inp.options.map((opt, idx) => {
-              if (typeof opt === 'object') return opt
-              // Try to find color from defaultInputs
-              const defaultOpt = defaultInput?.options?.find(o => getOptVal(o).toLowerCase() === opt.toLowerCase())
-              const color = defaultOpt ? getOptColor(defaultOpt) : '#888888'
-              return { value: opt, color }
-            })
-            return { ...inp, options: convertedOptions }
+          const defaultInput = defaultInputs.find(d => d.id === inp.id)
+          // For select types, ensure options with textColor/bgColor exist
+          if (inp.type === 'select') {
+            if (inp.options && inp.options.length > 0) {
+              const convertedOptions = inp.options.map((opt) => {
+                if (typeof opt === 'string') {
+                  // Legacy string option - find from defaults or use gray
+                  const defaultOpt = defaultInput?.options?.find(o => getOptVal(o).toLowerCase() === opt.toLowerCase())
+                  if (defaultOpt) return defaultOpt
+                  return { value: opt, textColor: '#888', bgColor: null }
+                }
+                // Object option - check if it has new format or legacy format
+                if (opt.textColor) return opt // Already new format
+                // Legacy {value, color} format - convert to new format
+                if (opt.color) {
+                  const defaultOpt = defaultInput?.options?.find(o => getOptVal(o).toLowerCase() === opt.value.toLowerCase())
+                  if (defaultOpt) return defaultOpt
+                  // Generate bgColor from color (hex to rgba)
+                  const hex = opt.color.replace('#', '')
+                  const r = parseInt(hex.substr(0, 2), 16)
+                  const g = parseInt(hex.substr(2, 2), 16)
+                  const b = parseInt(hex.substr(4, 2), 16)
+                  return { value: opt.value, textColor: opt.color, bgColor: `rgba(${r},${g},${b},0.15)` }
+                }
+                return opt
+              })
+              return { ...inp, options: convertedOptions }
+            } else if (defaultInput?.options) {
+              // No options saved, use default options with colors
+              return { ...inp, options: defaultInput.options }
+            }
           }
           return inp
         })
@@ -331,8 +360,17 @@ export default function AccountPage() {
   function openOptionsEditor(i) {
     setEditingOptions(i)
     const opts = inputs[i].options || []
-    // Convert to [{value, color}] format, handle both string and object options
-    setOptionsList(opts.map(o => typeof o === 'object' ? { ...o } : { value: o, color: '#888888' }))
+    // Convert to [{value, textColor, bgColor}] format, handle legacy formats
+    setOptionsList(opts.map(o => {
+      if (typeof o === 'string') return { value: o, textColor: '#888', bgColor: null }
+      if (o.textColor) return { ...o } // Already new format
+      // Legacy {value, color} - convert
+      const hex = (o.color || '#888888').replace('#', '')
+      const r = parseInt(hex.substr(0, 2), 16) || 136
+      const g = parseInt(hex.substr(2, 2), 16) || 136
+      const b = parseInt(hex.substr(4, 2), 16) || 136
+      return { value: o.value, textColor: o.color || '#888', bgColor: `rgba(${r},${g},${b},0.15)` }
+    }))
   }
   function saveOptions() {
     if (editingOptions === null) return
@@ -342,8 +380,23 @@ export default function AccountPage() {
     setOptionsList([])
   }
   function updateOptionValue(idx, val) { const n = [...optionsList]; n[idx] = { ...n[idx], value: val }; setOptionsList(n) }
-  function updateOptionColor(idx, col) { const n = [...optionsList]; n[idx] = { ...n[idx], color: col }; setOptionsList(n) }
-  function addOption() { setOptionsList([...optionsList, { value: '', color: '#888888' }]) }
+  function updateOptionTextColor(idx, col) { const n = [...optionsList]; n[idx] = { ...n[idx], textColor: col }; setOptionsList(n) }
+  function updateOptionBgColor(idx, col) { const n = [...optionsList]; n[idx] = { ...n[idx], bgColor: col }; setOptionsList(n) }
+  function toggleOptionBg(idx) {
+    const n = [...optionsList]
+    if (n[idx].bgColor) {
+      n[idx] = { ...n[idx], bgColor: null }
+    } else {
+      // Generate bg from text color
+      const hex = (n[idx].textColor || '#888').replace('#', '')
+      const r = parseInt(hex.substr(0, 2), 16) || 136
+      const g = parseInt(hex.substr(2, 2), 16) || 136
+      const b = parseInt(hex.substr(4, 2), 16) || 136
+      n[idx] = { ...n[idx], bgColor: `rgba(${r},${g},${b},0.15)` }
+    }
+    setOptionsList(n)
+  }
+  function addOption() { setOptionsList([...optionsList, { value: '', textColor: '#888', bgColor: null }]) }
   function removeOption(idx) { setOptionsList(optionsList.filter((_, i) => i !== idx)) }
   function getExtraData(t) {
     // First get extra_data (from JSONB)
@@ -958,10 +1011,10 @@ export default function AccountPage() {
                             </span>
                           </td>
                           <td style={{ padding: '14px 12px', textAlign: 'center', fontWeight: 600, fontSize: '16px', color: pnlValue >= 0 ? '#22c55e' : '#ef4444' }}>{pnlValue >= 0 ? '+' : ''}${pnlValue.toFixed(0)}</td>
-                          <td style={{ padding: '14px 12px', textAlign: 'center', fontSize: '14px', color: parseFloat(extra.riskPercent || '1') > 0 ? '#22c55e' : parseFloat(extra.riskPercent || '1') < 0 ? '#ef4444' : '#f59e0b' }}>{extra.riskPercent || '1'}%</td>
-                          <td style={{ padding: '14px 12px', textAlign: 'center', fontSize: '14px', color: parseFloat(trade.rr) > 0 ? '#22c55e' : parseFloat(trade.rr) < 0 ? '#ef4444' : '#f59e0b' }}>{trade.rr || '-'}</td>
+                          <td style={{ padding: '14px 12px', textAlign: 'center', fontWeight: 600, fontSize: '14px', color: '#fff' }}>{extra.riskPercent || '1'}%</td>
+                          <td style={{ padding: '14px 12px', textAlign: 'center', fontWeight: 600, fontSize: '14px', color: '#fff' }}>{trade.rr || '-'}</td>
                           {customInputs.map(inp => (
-                            <td key={inp.id} style={{ padding: '14px 12px', textAlign: 'center', fontSize: '14px', color: '#fff', verticalAlign: 'middle' }}>
+                            <td key={inp.id} style={{ padding: '14px 12px', textAlign: 'center', fontSize: '14px', fontWeight: 600, color: '#fff', verticalAlign: 'middle' }}>
                               {inp.type === 'rating' ? (
                                 <div style={{ display: 'flex', justifyContent: 'center', gap: '1px' }}>
                                   {[1,2,3,4,5].map(star => {
@@ -983,32 +1036,28 @@ export default function AccountPage() {
                                 </button>
                               ) : inp.id === 'notes' ? (
                                 noteContent ? (
-                                  <div onClick={() => setShowExpandedNote(noteContent)} style={{ cursor: 'pointer', color: '#999', fontSize: '12px', maxWidth: '160px', margin: '0 auto', lineHeight: '1.4', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', textAlign: 'left' }}>{noteContent}</div>
+                                  <div onClick={() => setShowExpandedNote(noteContent)} style={{ cursor: 'pointer', color: '#999', fontSize: '12px', fontWeight: 400, maxWidth: '160px', margin: '0 auto', lineHeight: '1.4', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', textAlign: 'left' }}>{noteContent}</div>
                                 ) : <span style={{ color: '#444' }}>-</span>
                               ) : inp.type === 'number' ? (
-                                (() => {
-                                  const numVal = parseFloat(extra[inp.id]) || 0
-                                  const numColor = numVal > 0 ? '#22c55e' : numVal < 0 ? '#ef4444' : '#f59e0b'
-                                  return <span style={{ color: numColor }}>{extra[inp.id] || '-'}</span>
-                                })()
+                                <span style={{ fontWeight: 600, color: '#fff' }}>{extra[inp.id] || '-'}</span>
                               ) : inp.type === 'select' ? (
                                 (() => {
                                   const val = inp.id === 'direction' ? trade.direction : extra[inp.id]
-                                  const color = findOptColor(inp.options, val, inp.id === 'direction' ? (trade.direction === 'long' ? '#22c55e' : '#ef4444') : '#888')
+                                  const styles = findOptStyles(inp.options, val)
                                   return val ? (
-                                    <span style={{ padding: '4px 10px', borderRadius: '4px', fontSize: '12px', background: 'transparent', border: `1px solid ${color}`, color: color }}>
+                                    <span style={{ padding: '5px 12px', borderRadius: '6px', fontSize: '13px', fontWeight: 600, background: styles.bgColor || 'transparent', color: styles.textColor }}>
                                       {inp.id === 'direction' ? trade.direction?.toUpperCase() : val}
                                     </span>
                                   ) : <span style={{ color: '#444' }}>-</span>
                                 })()
                               ) : (
-                                <span style={{ color: '#fff' }}>
+                                <span style={{ fontWeight: 600, color: '#fff' }}>
                                   {extra[inp.id] || '-'}
                                 </span>
                               )}
                             </td>
                           ))}
-                          <td style={{ padding: '14px 12px', textAlign: 'center', fontSize: '14px', color: '#fff' }}>{new Date(trade.date).toLocaleDateString()}</td>
+                          <td style={{ padding: '14px 12px', textAlign: 'center', fontSize: '14px', fontWeight: 600, color: '#fff' }}>{new Date(trade.date).toLocaleDateString()}</td>
                           <td style={{ padding: '14px 12px', textAlign: 'center' }}>
                             <button onClick={() => setDeleteConfirmId(trade.id)} style={{ background: 'transparent', border: 'none', color: '#999', cursor: 'pointer', fontSize: '18px' }}>×</button>
                           </td>
@@ -2193,28 +2242,28 @@ export default function AccountPage() {
               </div>
 
               {/* Performance - compact */}
-              <div style={{ width: '280px', background: 'linear-gradient(145deg, #0d0d12 0%, #0a0a0e 100%)', border: '1px solid rgba(34,197,94,0.2)', borderRadius: '8px', padding: '12px', position: 'relative', zIndex: 2, boxShadow: '0 4px 20px rgba(0,0,0,0.4), 0 0 30px rgba(34,197,94,0.08)' }}>
-                <div style={{ fontSize: '11px', color: '#999', textTransform: 'uppercase', marginBottom: '10px' }}>Performance</div>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px' }}>
+              <div style={{ width: '260px', background: 'linear-gradient(145deg, #0d0d12 0%, #0a0a0e 100%)', border: '1px solid rgba(34,197,94,0.2)', borderRadius: '8px', padding: '14px', position: 'relative', zIndex: 2, boxShadow: '0 4px 20px rgba(0,0,0,0.4), 0 0 30px rgba(34,197,94,0.08)' }}>
+                <div style={{ fontSize: '11px', color: '#999', textTransform: 'uppercase', marginBottom: '12px' }}>Performance</div>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '10px' }}>
                   {[
                     { l: 'Best Day', v: bestDay ? `+$${Math.round(bestDay.pnl)}` : '-', c: '#22c55e' },
                     { l: 'Worst Day', v: worstDay ? `$${Math.round(worstDay.pnl)}` : '-', c: '#ef4444' },
                     { l: 'Biggest Win', v: `+$${biggestWin}`, c: '#22c55e' },
                     { l: 'Biggest Loss', v: `$${biggestLoss}`, c: '#ef4444' },
                   ].map((item, i) => (
-                    <div key={i} style={{ padding: '8px', background: '#0a0a0e', borderRadius: '4px', border: '1px solid #1a1a22', textAlign: 'center' }}>
-                      <div style={{ fontSize: '10px', color: '#999', marginBottom: '3px' }}>{item.l}</div>
-                      <div style={{ fontSize: '16px', fontWeight: 700, color: item.c }}>{item.v}</div>
+                    <div key={i} style={{ padding: '10px 8px', background: '#0a0a0e', borderRadius: '6px', border: '1px solid #1a1a22', textAlign: 'center' }}>
+                      <div style={{ fontSize: '10px', color: '#999', marginBottom: '4px' }}>{item.l}</div>
+                      <div style={{ fontSize: '18px', fontWeight: 700, color: item.c }}>{item.v}</div>
                     </div>
                   ))}
                 </div>
               </div>
 
               {/* Trade Analysis - with green glow effect */}
-              <div style={{ flex: 1.2, position: 'relative', zIndex: 0 }}>
+              <div style={{ flex: 1.5, position: 'relative', zIndex: 0 }}>
                 {/* Outer glow layer - subtle */}
                 <div style={{ position: 'absolute', inset: '-30px', background: 'radial-gradient(ellipse at center, rgba(34,197,94,0.2) 0%, rgba(34,197,94,0.08) 40%, transparent 70%)', borderRadius: '40px', pointerEvents: 'none', filter: 'blur(10px)' }} />
-                <div style={{ position: 'relative', background: 'linear-gradient(145deg, #0d0d12 0%, #0a0a0e 100%)', border: '2px solid #22c55e', borderRadius: '10px', padding: '14px', boxShadow: '0 0 25px rgba(34,197,94,0.3), inset 0 1px 0 rgba(34,197,94,0.2)' }}>
+                <div style={{ position: 'relative', background: 'linear-gradient(145deg, #0d0d12 0%, #0a0a0e 100%)', border: '2px solid #22c55e', borderRadius: '10px', padding: '16px', boxShadow: '0 0 25px rgba(34,197,94,0.3), inset 0 1px 0 rgba(34,197,94,0.2)' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
                     <div style={{ fontSize: '12px', color: '#22c55e', textTransform: 'uppercase', fontWeight: 700, textShadow: '0 0 10px rgba(34,197,94,0.5)', letterSpacing: '1px' }}>Trade Analysis</div>
                     <div style={{ fontSize: '9px', color: '#999' }}>{displayTrades.length} trades</div>
@@ -2226,8 +2275,9 @@ export default function AccountPage() {
                       <option value="confidence">Confidence</option>
                       <option value="session">Session</option>
                       <option value="timeframe">Timeframe</option>
+                      <option value="rating">Rating</option>
                       <option value="outcome">Outcome</option>
-                      {getCustomSelectInputs().filter(i => !['direction', 'session', 'confidence', 'timeframe', 'outcome', 'symbol'].includes(i.id)).map(inp => (
+                      {getCustomSelectInputs().filter(i => !['direction', 'session', 'confidence', 'timeframe', 'outcome', 'symbol', 'rating'].includes(i.id)).map(inp => (
                         <option key={inp.id} value={inp.id}>{inp.label}</option>
                       ))}
                     </select>
@@ -2250,6 +2300,11 @@ export default function AccountPage() {
                         if (analysisGroupBy === 'direction') key = t.direction?.toUpperCase()
                         else if (analysisGroupBy === 'symbol') key = t.symbol
                         else if (analysisGroupBy === 'outcome') key = t.outcome?.toUpperCase()
+                        else if (analysisGroupBy === 'rating') {
+                          const rating = parseFloat(getExtraData(t).rating) || 0
+                          if (rating === 0) return
+                          key = rating % 1 === 0 ? `${rating}★` : `${rating}★`
+                        }
                         else key = getExtraData(t)[analysisGroupBy]
                         if (!key) return
                         if (!groups[key]) groups[key] = { w: 0, l: 0, pnl: 0, count: 0, rr: 0, maxWin: -Infinity, maxLoss: Infinity, winPnl: 0, lossPnl: 0 }
@@ -2262,8 +2317,15 @@ export default function AccountPage() {
                         if (t.outcome === 'win') { groups[key].w++; groups[key].winPnl += pnl }
                         else if (t.outcome === 'loss') { groups[key].l++; groups[key].lossPnl += pnl }
                       })
-                      const entries = Object.entries(groups).slice(0, 4)
+                      // Sort entries by rating value (descending) if rating is selected
+                      let entries = Object.entries(groups)
+                      if (analysisGroupBy === 'rating') {
+                        entries = entries.sort((a, b) => parseFloat(b[0]) - parseFloat(a[0])).slice(0, 6)
+                      } else {
+                        entries = entries.slice(0, 4)
+                      }
                       if (entries.length === 0) return <div style={{ color: '#999', textAlign: 'center', padding: '20px' }}>No data</div>
+                      const maxCount = Math.max(...entries.map(e => e[1].count))
                       return entries.map(([name, data]) => {
                         let val, disp
                         const avgWin = data.w > 0 ? data.winPnl / data.w : 0
@@ -2279,13 +2341,18 @@ export default function AccountPage() {
                         else { val = data.count; disp = data.count.toString() }
                         const isPositive = analysisMetric === 'maxloss' ? val < 0 : val >= 0
                         const wr = (data.w + data.l) > 0 ? Math.round((data.w / (data.w + data.l)) * 100) : 0
+                        const barWidth = (data.count / maxCount) * 100
                         return (
-                          <div key={name} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 10px', background: 'linear-gradient(90deg, rgba(34,197,94,0.08) 0%, rgba(34,197,94,0.02) 100%)', borderRadius: '6px', border: '1px solid rgba(34,197,94,0.15)' }}>
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-                              <span style={{ fontSize: '13px', color: '#fff', fontWeight: 600 }}>{name}</span>
-                              <span style={{ fontSize: '9px', color: '#999' }}>{data.count} trades • {wr}% WR</span>
+                          <div key={name} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '6px 10px', background: 'linear-gradient(90deg, rgba(34,197,94,0.08) 0%, rgba(34,197,94,0.02) 100%)', borderRadius: '6px', border: '1px solid rgba(34,197,94,0.15)', position: 'relative', overflow: 'hidden' }}>
+                            {/* Background bar showing trade count proportion */}
+                            <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: `${barWidth}%`, background: isPositive ? 'rgba(34,197,94,0.15)' : 'rgba(239,68,68,0.15)', borderRadius: '6px', transition: 'width 0.3s ease' }} />
+                            <div style={{ position: 'relative', display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
+                              <div style={{ display: 'flex', flexDirection: 'column', gap: '1px' }}>
+                                <span style={{ fontSize: '13px', color: analysisGroupBy === 'rating' ? '#f59e0b' : '#fff', fontWeight: 600 }}>{name}</span>
+                                <span style={{ fontSize: '9px', color: '#999' }}>{data.count} trades • {wr}% WR</span>
+                              </div>
+                              <span style={{ fontSize: '15px', fontWeight: 700, color: isPositive ? '#22c55e' : '#ef4444' }}>{disp}</span>
                             </div>
-                            <span style={{ fontSize: '15px', fontWeight: 700, color: isPositive ? '#22c55e' : '#ef4444' }}>{disp}</span>
                           </div>
                         )
                       })
@@ -2295,15 +2362,15 @@ export default function AccountPage() {
               </div>
 
               {/* Expectancy widgets - compact */}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', width: '110px', position: 'relative', zIndex: 2 }}>
-                <div style={{ flex: 1, background: 'linear-gradient(145deg, #0d0d12 0%, #0a0a0e 100%)', border: '1px solid rgba(34,197,94,0.2)', borderRadius: '8px', padding: '8px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 20px rgba(0,0,0,0.4), 0 0 30px rgba(34,197,94,0.08)' }}>
-                  <div style={{ fontSize: '9px', color: '#999', textTransform: 'uppercase', marginBottom: '2px' }}>Avg Loss Exp.</div>
-                  <div style={{ fontSize: '18px', fontWeight: 700, color: '#ef4444' }}>-${avgLoss}</div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', width: '130px', position: 'relative', zIndex: 2 }}>
+                <div style={{ flex: 1, background: 'linear-gradient(145deg, #0d0d12 0%, #0a0a0e 100%)', border: '1px solid rgba(34,197,94,0.2)', borderRadius: '8px', padding: '10px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 20px rgba(0,0,0,0.4), 0 0 30px rgba(34,197,94,0.08)' }}>
+                  <div style={{ fontSize: '9px', color: '#999', textTransform: 'uppercase', marginBottom: '4px' }}>Avg Loss Exp.</div>
+                  <div style={{ fontSize: '20px', fontWeight: 700, color: '#ef4444' }}>-${avgLoss}</div>
                   <div style={{ fontSize: '8px', color: '#999' }}>per trade</div>
                 </div>
-                <div style={{ flex: 1, background: 'linear-gradient(145deg, #0d0d12 0%, #0a0a0e 100%)', border: '1px solid rgba(34,197,94,0.2)', borderRadius: '8px', padding: '8px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 20px rgba(0,0,0,0.4), 0 0 30px rgba(34,197,94,0.08)' }}>
-                  <div style={{ fontSize: '9px', color: '#999', textTransform: 'uppercase', marginBottom: '2px' }}>Expectancy</div>
-                  <div style={{ fontSize: '18px', fontWeight: 700, color: expectancy === '-' ? '#666' : parseFloat(expectancy) >= 0 ? '#22c55e' : '#ef4444' }}>{expectancy === '-' ? '-' : `$${expectancy}`}</div>
+                <div style={{ flex: 1, background: 'linear-gradient(145deg, #0d0d12 0%, #0a0a0e 100%)', border: '1px solid rgba(34,197,94,0.2)', borderRadius: '8px', padding: '10px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 20px rgba(0,0,0,0.4), 0 0 30px rgba(34,197,94,0.08)' }}>
+                  <div style={{ fontSize: '9px', color: '#999', textTransform: 'uppercase', marginBottom: '4px' }}>Expectancy</div>
+                  <div style={{ fontSize: '20px', fontWeight: 700, color: expectancy === '-' ? '#666' : parseFloat(expectancy) >= 0 ? '#22c55e' : '#ef4444' }}>{expectancy === '-' ? '-' : `$${expectancy}`}</div>
                   <div style={{ fontSize: '8px', color: '#999' }}>per trade</div>
                 </div>
               </div>
@@ -2512,9 +2579,9 @@ export default function AccountPage() {
 
             {/* Auto-generated widgets for ALL custom inputs */}
             {(() => {
-              const selectInputs = getCustomSelectInputs().filter(i => !['direction', 'session', 'confidence', 'timeframe', 'symbol'].includes(i.id))
+              const selectInputs = getCustomSelectInputs().filter(i => !['direction', 'session', 'confidence', 'timeframe', 'symbol', 'rating'].includes(i.id))
               const numberInputs = getCustomNumberInputs()
-              const ratingInputs = getCustomRatingInputs()
+              const ratingInputs = getCustomRatingInputs().filter(i => i.id !== 'rating')
 
               if (selectInputs.length === 0 && numberInputs.length === 0 && ratingInputs.length === 0) return null
 
@@ -2940,7 +3007,7 @@ export default function AccountPage() {
                       return (
                         <div key={star} style={{ position: 'relative', width: '24px', height: '24px', cursor: 'pointer' }}
                           onMouseMove={(e) => { const rect = e.currentTarget.getBoundingClientRect(); const x = e.clientX - rect.left; setHoverRating(x < rect.width / 2 ? star - 0.5 : star) }}
-                          onClick={(e) => { const rect = e.currentTarget.getBoundingClientRect(); const x = e.clientX - rect.left; setTradeForm({...tradeForm, rating: String(x < rect.width / 2 ? star - 0.5 : star)}) }}>
+                          onClick={(e) => { const rect = e.currentTarget.getBoundingClientRect(); const x = e.clientX - rect.left; const newRating = x < rect.width / 2 ? star - 0.5 : star; setTradeForm({...tradeForm, rating: parseFloat(tradeForm.rating) === newRating ? '' : String(newRating)}) }}>
                           <span style={{ position: 'absolute', color: '#2a2a35', fontSize: '24px', lineHeight: 1 }}>★</span>
                           {isHalfStar && <span style={{ position: 'absolute', color: '#22c55e', fontSize: '24px', lineHeight: 1, width: '12px', overflow: 'hidden' }}>★</span>}
                           {isFullStar && <span style={{ position: 'absolute', color: '#22c55e', fontSize: '24px', lineHeight: 1 }}>★</span>}
@@ -2948,11 +3015,9 @@ export default function AccountPage() {
                       )
                     })}
                   </div>
-                  {(hoverRating > 0 || parseFloat(tradeForm.rating || 0) > 0) && (
-                    <span style={{ background: '#1a1a22', padding: '4px 8px', borderRadius: '4px', fontSize: '12px', color: '#fff', whiteSpace: 'nowrap' }}>
-                      {hoverRating || parseFloat(tradeForm.rating)} / 5
-                    </span>
-                  )}
+                  <span style={{ background: '#1a1a22', padding: '4px 8px', borderRadius: '4px', fontSize: '12px', color: '#fff', whiteSpace: 'nowrap', minWidth: '40px', textAlign: 'center' }}>
+                    {hoverRating || parseFloat(tradeForm.rating) || 0} / 5
+                  </span>
                 </div>
               </div>
             </div>
@@ -2980,7 +3045,7 @@ export default function AccountPage() {
                             return (
                               <div key={star} style={{ position: 'relative', width: '28px', height: '28px', cursor: 'pointer' }}
                                 onMouseMove={(e) => { const rect = e.currentTarget.getBoundingClientRect(); const x = e.clientX - rect.left; setHoverRating(x < rect.width / 2 ? star - 0.5 : star) }}
-                                onClick={(e) => { const rect = e.currentTarget.getBoundingClientRect(); const x = e.clientX - rect.left; setTradeForm({...tradeForm, [input.id]: String(x < rect.width / 2 ? star - 0.5 : star)}) }}>
+                                onClick={(e) => { const rect = e.currentTarget.getBoundingClientRect(); const x = e.clientX - rect.left; const newRating = x < rect.width / 2 ? star - 0.5 : star; setTradeForm({...tradeForm, [input.id]: parseFloat(tradeForm[input.id]) === newRating ? '' : String(newRating)}) }}>
                                 <span style={{ position: 'absolute', color: '#2a2a35', fontSize: '28px', lineHeight: 1 }}>★</span>
                                 {isHalfStar && <span style={{ position: 'absolute', color: '#22c55e', fontSize: '28px', lineHeight: 1, width: '14px', overflow: 'hidden' }}>★</span>}
                                 {isFullStar && <span style={{ position: 'absolute', color: '#22c55e', fontSize: '28px', lineHeight: 1 }}>★</span>}
@@ -2988,11 +3053,9 @@ export default function AccountPage() {
                             )
                           })}
                         </div>
-                        {(hoverRating > 0 || parseFloat(tradeForm[input.id] || 0) > 0) && (
-                          <span style={{ background: '#1a1a22', padding: '6px 10px', borderRadius: '6px', fontSize: '13px', color: '#fff', whiteSpace: 'nowrap' }}>
-                            {hoverRating || tradeForm[input.id]} / 5
-                          </span>
-                        )}
+                        <span style={{ background: '#1a1a22', padding: '6px 10px', borderRadius: '6px', fontSize: '13px', color: '#fff', whiteSpace: 'nowrap', minWidth: '45px', textAlign: 'center' }}>
+                          {hoverRating || parseFloat(tradeForm[input.id]) || 0} / 5
+                        </span>
                       </div>
                     ) : input.type === 'file' ? (
                       <div>
@@ -3122,24 +3185,55 @@ export default function AccountPage() {
 
       {editingOptions !== null && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.9)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 102 }} onClick={() => { setEditingOptions(null); setOptionsList([]) }}>
-          <div style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '12px', padding: '24px', width: '420px', maxHeight: '80vh', overflowY: 'auto' }} onClick={e => e.stopPropagation()}>
+          <div style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '12px', padding: '24px', width: '480px', maxHeight: '80vh', overflowY: 'auto' }} onClick={e => e.stopPropagation()}>
             <h2 style={{ fontSize: '18px', fontWeight: 700, marginBottom: '4px', color: '#fff' }}>Edit Options</h2>
-            <p style={{ fontSize: '12px', color: '#555', marginBottom: '16px' }}>Set option values and their colors</p>
+            <p style={{ fontSize: '12px', color: '#555', marginBottom: '16px' }}>Customize option values, text color, and background</p>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '12px' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '12px' }}>
               {optionsList.map((opt, idx) => (
-                <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '10px 12px', background: '#0a0a0e', borderRadius: '6px', border: '1px solid #1a1a22' }}>
-                  <div style={{ position: 'relative', width: '32px', height: '32px', flexShrink: 0 }}>
-                    <div style={{ width: '32px', height: '32px', borderRadius: '6px', background: opt.color, border: '2px solid #2a2a35', cursor: 'pointer' }} />
-                    <input type="color" value={opt.color} onChange={e => updateOptionColor(idx, e.target.value)} style={{ position: 'absolute', inset: 0, opacity: 0, width: '100%', height: '100%', cursor: 'pointer' }} />
+                <div key={idx} style={{ padding: '12px', background: '#0a0a0e', borderRadius: '8px', border: '1px solid #1a1a22' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px' }}>
+                    <input type="text" value={opt.value} onChange={e => updateOptionValue(idx, e.target.value)} placeholder="Option name" style={{ flex: 1, padding: '10px 12px', background: '#141418', border: '1px solid #2a2a35', borderRadius: '6px', color: '#fff', fontSize: '14px', fontWeight: 600 }} />
+                    <button onClick={() => removeOption(idx)} style={{ padding: '8px 12px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '6px', color: '#666', cursor: 'pointer', fontSize: '14px' }}>×</button>
                   </div>
-                  <input type="text" value={opt.value} onChange={e => updateOptionValue(idx, e.target.value)} placeholder="Option name" style={{ flex: 1, padding: '8px 10px', background: '#141418', border: '1px solid #2a2a35', borderRadius: '4px', color: '#fff', fontSize: '13px' }} />
-                  <button onClick={() => removeOption(idx)} style={{ padding: '6px 10px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '4px', color: '#666', cursor: 'pointer', fontSize: '12px' }}>×</button>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <span style={{ fontSize: '11px', color: '#666', textTransform: 'uppercase' }}>Text</span>
+                      <div style={{ position: 'relative', width: '28px', height: '28px' }}>
+                        <div style={{ width: '28px', height: '28px', borderRadius: '4px', background: opt.textColor, border: '2px solid #2a2a35', cursor: 'pointer' }} />
+                        <input type="color" value={opt.textColor || '#888888'} onChange={e => updateOptionTextColor(idx, e.target.value)} style={{ position: 'absolute', inset: 0, opacity: 0, width: '100%', height: '100%', cursor: 'pointer' }} />
+                      </div>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <span style={{ fontSize: '11px', color: '#666', textTransform: 'uppercase' }}>BG</span>
+                      <button onClick={() => toggleOptionBg(idx)} style={{ width: '28px', height: '28px', borderRadius: '4px', background: opt.bgColor || '#1a1a22', border: opt.bgColor ? '2px solid #2a2a35' : '2px dashed #333', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#444', fontSize: '10px' }}>
+                        {!opt.bgColor && '∅'}
+                      </button>
+                      {opt.bgColor && (
+                        <div style={{ position: 'relative', width: '28px', height: '28px' }}>
+                          <div style={{ width: '28px', height: '28px', borderRadius: '4px', background: opt.bgColor, border: '2px solid #2a2a35', cursor: 'pointer' }} />
+                          <input type="color" value={opt.textColor || '#888888'} onChange={e => {
+                            const hex = e.target.value.replace('#', '')
+                            const r = parseInt(hex.substr(0, 2), 16)
+                            const g = parseInt(hex.substr(2, 2), 16)
+                            const b = parseInt(hex.substr(4, 2), 16)
+                            updateOptionBgColor(idx, `rgba(${r},${g},${b},0.15)`)
+                          }} style={{ position: 'absolute', inset: 0, opacity: 0, width: '100%', height: '100%', cursor: 'pointer' }} />
+                        </div>
+                      )}
+                    </div>
+                    <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <span style={{ fontSize: '11px', color: '#555' }}>Preview:</span>
+                      <span style={{ padding: '5px 12px', borderRadius: '6px', fontSize: '13px', fontWeight: 600, background: opt.bgColor || 'transparent', color: opt.textColor || '#888' }}>
+                        {opt.value || 'Sample'}
+                      </span>
+                    </div>
+                  </div>
                 </div>
               ))}
             </div>
 
-            <button onClick={addOption} style={{ width: '100%', padding: '10px', marginBottom: '16px', background: 'transparent', border: '1px dashed #2a2a35', borderRadius: '6px', color: '#555', fontSize: '12px', cursor: 'pointer' }}>+ Add Option</button>
+            <button onClick={addOption} style={{ width: '100%', padding: '12px', marginBottom: '16px', background: 'transparent', border: '1px dashed #2a2a35', borderRadius: '6px', color: '#555', fontSize: '13px', cursor: 'pointer' }}>+ Add Option</button>
 
             <div style={{ display: 'flex', gap: '10px' }}>
               <button onClick={saveOptions} style={{ flex: 1, padding: '12px', background: '#22c55e', border: 'none', borderRadius: '8px', color: '#fff', fontWeight: 600, fontSize: '13px', cursor: 'pointer' }}>Save</button>

@@ -3,18 +3,40 @@
 import { useState, useEffect, useRef } from 'react'
 import { createClient } from '@supabase/supabase-js'
 
-// Color mappings for select options (same as account page)
-const optionColors = {
-  confidence: { High: '#22c55e', Medium: '#f59e0b', Low: '#ef4444' },
-  session: { London: '#3b82f6', 'New York': '#22c55e', Asian: '#f59e0b', Overlap: '#a855f7' },
-  timeframe: { '1m': '#06b6d4', '5m': '#06b6d4', '15m': '#06b6d4', '30m': '#06b6d4', '1H': '#06b6d4', '4H': '#06b6d4', 'Daily': '#06b6d4' },
-  direction: { Long: '#22c55e', Short: '#ef4444', long: '#22c55e', short: '#ef4444' }
+// Color mappings for select options (same as account page) - textColor and bgColor
+const optionStyles = {
+  confidence: {
+    High: { textColor: '#22c55e', bgColor: 'rgba(34,197,94,0.15)' },
+    Medium: { textColor: '#f59e0b', bgColor: 'rgba(245,158,11,0.15)' },
+    Low: { textColor: '#ef4444', bgColor: 'rgba(239,68,68,0.15)' }
+  },
+  session: {
+    London: { textColor: '#3b82f6', bgColor: 'rgba(59,130,246,0.15)' },
+    'New York': { textColor: '#22c55e', bgColor: 'rgba(34,197,94,0.15)' },
+    Asian: { textColor: '#f59e0b', bgColor: 'rgba(245,158,11,0.15)' },
+    Overlap: { textColor: '#a855f7', bgColor: 'rgba(168,85,247,0.15)' }
+  },
+  timeframe: {
+    '1m': { textColor: '#06b6d4', bgColor: 'rgba(6,182,212,0.15)' },
+    '5m': { textColor: '#06b6d4', bgColor: 'rgba(6,182,212,0.15)' },
+    '15m': { textColor: '#06b6d4', bgColor: 'rgba(6,182,212,0.15)' },
+    '30m': { textColor: '#06b6d4', bgColor: 'rgba(6,182,212,0.15)' },
+    '1H': { textColor: '#06b6d4', bgColor: 'rgba(6,182,212,0.15)' },
+    '4H': { textColor: '#06b6d4', bgColor: 'rgba(6,182,212,0.15)' },
+    'Daily': { textColor: '#06b6d4', bgColor: 'rgba(6,182,212,0.15)' }
+  },
+  direction: {
+    Long: { textColor: '#22c55e', bgColor: 'rgba(34,197,94,0.15)' },
+    Short: { textColor: '#ef4444', bgColor: 'rgba(239,68,68,0.15)' },
+    long: { textColor: '#22c55e', bgColor: 'rgba(34,197,94,0.15)' },
+    short: { textColor: '#ef4444', bgColor: 'rgba(239,68,68,0.15)' }
+  }
 }
-function getOptionColor(field, value, fallback = '#888') {
-  if (!value) return fallback
-  const fieldColors = optionColors[field]
-  if (fieldColors && fieldColors[value]) return fieldColors[value]
-  return fallback
+function getOptionStyles(field, value) {
+  if (!value) return { textColor: '#888', bgColor: null }
+  const fieldStyles = optionStyles[field]
+  if (fieldStyles && fieldStyles[value]) return fieldStyles[value]
+  return { textColor: '#888', bgColor: null }
 }
 
 export default function DashboardPage() {
@@ -760,7 +782,7 @@ export default function DashboardPage() {
                         return (
                           <div key={star} style={{ position: 'relative', width: '24px', height: '24px', cursor: 'pointer' }}
                             onMouseMove={(e) => { const rect = e.currentTarget.getBoundingClientRect(); const x = e.clientX - rect.left; setHoverRating(x < rect.width / 2 ? star - 0.5 : star) }}
-                            onClick={(e) => { const rect = e.currentTarget.getBoundingClientRect(); const x = e.clientX - rect.left; setQuickTradeRating(String(x < rect.width / 2 ? star - 0.5 : star)) }}>
+                            onClick={(e) => { const rect = e.currentTarget.getBoundingClientRect(); const x = e.clientX - rect.left; const newRating = x < rect.width / 2 ? star - 0.5 : star; setQuickTradeRating(parseFloat(quickTradeRating) === newRating ? '' : String(newRating)) }}>
                             <span style={{ position: 'absolute', color: '#2a2a35', fontSize: '24px', lineHeight: 1 }}>★</span>
                             {isHalfStar && <span style={{ position: 'absolute', color: '#22c55e', fontSize: '24px', lineHeight: 1, width: '12px', overflow: 'hidden' }}>★</span>}
                             {isFullStar && <span style={{ position: 'absolute', color: '#22c55e', fontSize: '24px', lineHeight: 1 }}>★</span>}
@@ -768,11 +790,9 @@ export default function DashboardPage() {
                         )
                       })}
                     </div>
-                    {(hoverRating > 0 || parseFloat(quickTradeRating) > 0) && (
-                      <span style={{ background: '#1a1a22', padding: '4px 8px', borderRadius: '4px', fontSize: '12px', color: '#fff', whiteSpace: 'nowrap' }}>
-                        {hoverRating || parseFloat(quickTradeRating)} / 5
-                      </span>
-                    )}
+                    <span style={{ background: '#1a1a22', padding: '4px 8px', borderRadius: '4px', fontSize: '12px', color: '#fff', whiteSpace: 'nowrap', minWidth: '35px', textAlign: 'center' }}>
+                      {hoverRating || parseFloat(quickTradeRating) || 0} / 5
+                    </span>
                   </div>
                 </div>
                 <div>
@@ -1110,34 +1130,34 @@ export default function DashboardPage() {
                               const extra = getExtraData(trade)
                               return (
                                 <tr key={trade.id} style={{ borderBottom: '1px solid #1a1a22' }}>
-                                  <td style={{ padding: '12px', fontWeight: 600, fontSize: '14px', textAlign: 'center' }}>{trade.symbol}</td>
+                                  <td style={{ padding: '12px', fontWeight: 600, fontSize: '14px', textAlign: 'center', color: '#fff' }}>{trade.symbol}</td>
                                   <td style={{ padding: '12px', textAlign: 'center' }}>
-                                    <span style={{ padding: '5px 12px', borderRadius: '4px', fontSize: '12px', fontWeight: 600, background: trade.outcome === 'win' ? 'rgba(34,197,94,0.15)' : trade.outcome === 'loss' ? 'rgba(239,68,68,0.15)' : 'rgba(255,255,255,0.1)', color: trade.outcome === 'win' ? '#22c55e' : trade.outcome === 'loss' ? '#ef4444' : '#888' }}>
+                                    <span style={{ padding: '5px 12px', borderRadius: '6px', fontSize: '13px', fontWeight: 600, background: trade.outcome === 'win' ? 'rgba(34,197,94,0.15)' : trade.outcome === 'loss' ? 'rgba(239,68,68,0.15)' : 'rgba(255,255,255,0.1)', color: trade.outcome === 'win' ? '#22c55e' : trade.outcome === 'loss' ? '#ef4444' : '#888' }}>
                                       {trade.outcome === 'win' ? 'WIN' : trade.outcome === 'loss' ? 'LOSS' : 'BE'}
                                     </span>
                                   </td>
                                   <td style={{ padding: '12px', textAlign: 'center', fontWeight: 600, fontSize: '14px', color: parseFloat(trade.pnl) >= 0 ? '#22c55e' : '#ef4444' }}>{parseFloat(trade.pnl) >= 0 ? '+' : ''}${parseFloat(trade.pnl || 0).toFixed(0)}</td>
-                                  <td style={{ padding: '12px', textAlign: 'center', fontSize: '14px', color: parseFloat(trade.rr) > 0 ? '#22c55e' : parseFloat(trade.rr) < 0 ? '#ef4444' : '#f59e0b' }}>{trade.rr || '-'}</td>
-                                  <td style={{ padding: '12px', textAlign: 'center', fontSize: '14px', color: parseFloat(extra.riskPercent || 1) > 0 ? '#22c55e' : '#f59e0b' }}>{extra.riskPercent || '1'}%</td>
+                                  <td style={{ padding: '12px', textAlign: 'center', fontWeight: 600, fontSize: '14px', color: '#fff' }}>{trade.rr || '-'}</td>
+                                  <td style={{ padding: '12px', textAlign: 'center', fontWeight: 600, fontSize: '14px', color: '#fff' }}>{extra.riskPercent || '1'}%</td>
                                   <td style={{ padding: '12px', textAlign: 'center' }}>
                                     {trade.direction ? (
-                                      <span style={{ padding: '4px 10px', borderRadius: '4px', fontSize: '12px', background: 'transparent', border: `1px solid ${getOptionColor('direction', trade.direction)}`, color: getOptionColor('direction', trade.direction) }}>{trade.direction?.toUpperCase()}</span>
-                                    ) : <span style={{ fontSize: '14px', color: '#444' }}>-</span>}
+                                      (() => { const s = getOptionStyles('direction', trade.direction); return <span style={{ padding: '5px 12px', borderRadius: '6px', fontSize: '13px', fontWeight: 600, background: s.bgColor || 'transparent', color: s.textColor }}>{trade.direction?.toUpperCase()}</span> })()
+                                    ) : <span style={{ fontWeight: 600, fontSize: '14px', color: '#444' }}>-</span>}
                                   </td>
                                   <td style={{ padding: '12px', textAlign: 'center' }}>
                                     {extra.confidence ? (
-                                      <span style={{ padding: '4px 10px', borderRadius: '4px', fontSize: '12px', background: 'transparent', border: `1px solid ${getOptionColor('confidence', extra.confidence)}`, color: getOptionColor('confidence', extra.confidence) }}>{extra.confidence}</span>
-                                    ) : <span style={{ fontSize: '14px', color: '#444' }}>-</span>}
+                                      (() => { const s = getOptionStyles('confidence', extra.confidence); return <span style={{ padding: '5px 12px', borderRadius: '6px', fontSize: '13px', fontWeight: 600, background: s.bgColor || 'transparent', color: s.textColor }}>{extra.confidence}</span> })()
+                                    ) : <span style={{ fontWeight: 600, fontSize: '14px', color: '#444' }}>-</span>}
                                   </td>
                                   <td style={{ padding: '12px', textAlign: 'center' }}>
                                     {extra.session ? (
-                                      <span style={{ padding: '4px 10px', borderRadius: '4px', fontSize: '12px', background: 'transparent', border: `1px solid ${getOptionColor('session', extra.session)}`, color: getOptionColor('session', extra.session) }}>{extra.session}</span>
-                                    ) : <span style={{ fontSize: '14px', color: '#444' }}>-</span>}
+                                      (() => { const s = getOptionStyles('session', extra.session); return <span style={{ padding: '5px 12px', borderRadius: '6px', fontSize: '13px', fontWeight: 600, background: s.bgColor || 'transparent', color: s.textColor }}>{extra.session}</span> })()
+                                    ) : <span style={{ fontWeight: 600, fontSize: '14px', color: '#444' }}>-</span>}
                                   </td>
                                   <td style={{ padding: '12px', textAlign: 'center' }}>
                                     {extra.timeframe ? (
-                                      <span style={{ padding: '4px 10px', borderRadius: '4px', fontSize: '12px', background: 'transparent', border: `1px solid ${getOptionColor('timeframe', extra.timeframe)}`, color: getOptionColor('timeframe', extra.timeframe) }}>{extra.timeframe}</span>
-                                    ) : <span style={{ fontSize: '14px', color: '#444' }}>-</span>}
+                                      (() => { const s = getOptionStyles('timeframe', extra.timeframe); return <span style={{ padding: '5px 12px', borderRadius: '6px', fontSize: '13px', fontWeight: 600, background: s.bgColor || 'transparent', color: s.textColor }}>{extra.timeframe}</span> })()
+                                    ) : <span style={{ fontWeight: 600, fontSize: '14px', color: '#444' }}>-</span>}
                                   </td>
                                   <td style={{ padding: '12px', textAlign: 'center' }}>
                                     <div style={{ display: 'flex', justifyContent: 'center', gap: '1px' }}>
@@ -1155,7 +1175,7 @@ export default function DashboardPage() {
                                       })}
                                     </div>
                                   </td>
-                                  <td style={{ padding: '12px', textAlign: 'center', fontSize: '14px', color: '#999' }}>{getDaysAgo(trade.date)}</td>
+                                  <td style={{ padding: '12px', textAlign: 'center', fontWeight: 600, fontSize: '14px', color: '#999' }}>{getDaysAgo(trade.date)}</td>
                                 </tr>
                               )
                             })}
@@ -1536,7 +1556,7 @@ export default function DashboardPage() {
                         return (
                           <div key={star} style={{ position: 'relative', width: '28px', height: '28px', cursor: 'pointer' }}
                             onMouseMove={(e) => { const rect = e.currentTarget.getBoundingClientRect(); const x = e.clientX - rect.left; setHoverRating(x < rect.width / 2 ? star - 0.5 : star) }}
-                            onClick={(e) => { const rect = e.currentTarget.getBoundingClientRect(); const x = e.clientX - rect.left; setQuickTradeRating(String(x < rect.width / 2 ? star - 0.5 : star)) }}>
+                            onClick={(e) => { const rect = e.currentTarget.getBoundingClientRect(); const x = e.clientX - rect.left; const newRating = x < rect.width / 2 ? star - 0.5 : star; setQuickTradeRating(parseFloat(quickTradeRating) === newRating ? '' : String(newRating)) }}>
                             <span style={{ position: 'absolute', color: '#2a2a35', fontSize: '28px', lineHeight: 1 }}>★</span>
                             {isHalfStar && <span style={{ position: 'absolute', color: '#22c55e', fontSize: '28px', lineHeight: 1, width: '14px', overflow: 'hidden' }}>★</span>}
                             {isFullStar && <span style={{ position: 'absolute', color: '#22c55e', fontSize: '28px', lineHeight: 1 }}>★</span>}
@@ -1544,11 +1564,9 @@ export default function DashboardPage() {
                         )
                       })}
                     </div>
-                    {(hoverRating > 0 || parseFloat(quickTradeRating) > 0) && (
-                      <span style={{ background: '#1a1a22', padding: '6px 10px', borderRadius: '6px', fontSize: '13px', color: '#fff', whiteSpace: 'nowrap' }}>
-                        {hoverRating || parseFloat(quickTradeRating)} / 5
-                      </span>
-                    )}
+                    <span style={{ background: '#1a1a22', padding: '6px 10px', borderRadius: '6px', fontSize: '13px', color: '#fff', whiteSpace: 'nowrap', minWidth: '45px', textAlign: 'center' }}>
+                      {hoverRating || parseFloat(quickTradeRating) || 0} / 5
+                    </span>
                   </div>
                 </div>
               </div>

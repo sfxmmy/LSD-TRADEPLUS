@@ -22,7 +22,11 @@
       "Bash(powershell -Command \"\\(Get-Content seed-trades.sql\\) -replace \"\"'', 1\\\\.0, ''\"\", \"\"'', ''\"\" | Set-Content seed-trades.sql\")",
       "Bash(powershell:*)",
       "Bash(del \"c:\\\\Users\\\\Asus\\\\Desktop\\\\trading-journal\\\\fix-seed.ps1\")",
-      "Bash(grep:*)"
+      "Bash(grep:*)",
+      "Bash(timeout 30 npm run build:*)",
+      "Bash(timeout 10 npm run dev:*)",
+      "Bash(git pull:*)",
+      "Bash(git fetch:*)"
     ]
   }
 }
