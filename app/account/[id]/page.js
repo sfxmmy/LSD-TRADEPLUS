@@ -1503,7 +1503,7 @@ export default function AccountPage() {
                               const trade = sorted[idx]
                               if (trade?.date) {
                                 const d = new Date(trade.date)
-                                xLabels.push({ label: `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}`, pct: (i / (xLabelCount - 1)) * 100 })
+                                xLabels.push({ label: `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}`, pct: xLabelCount > 1 ? 5 + (i / (xLabelCount - 1)) * 90 : 50 })
                               }
                             }
 
@@ -1524,11 +1524,15 @@ export default function AccountPage() {
                                     )}
                                     {/* Starting balance dotted line */}
                                     {startLineY !== null && (
-                                      <div style={{ position: 'absolute', left: 0, right: 0, top: `${startLineY}%`, borderTop: '1px dashed #333', zIndex: 1 }}>
-                                        <span style={{ position: 'absolute', right: '4px', top: '-10px', fontSize: '8px', color: '#666' }}>Start</span>
-                                      </div>
+                                      <div style={{ position: 'absolute', left: 0, right: 0, top: `${startLineY}%`, borderTop: '1px dashed #666', zIndex: 1 }} />
                                     )}
-                                    <svg style={{ position: 'absolute', inset: '4px 8px 4px 4px', width: 'calc(100% - 12px)', height: 'calc(100% - 8px)', overflow: 'visible' }} viewBox={`0 0 ${svgW} ${svgH}`} preserveAspectRatio="none"
+                                    {/* Start label at end of line like dashboard */}
+                                    {startLineY !== null && (
+                                      <span style={{ position: 'absolute', right: '4px', top: `${startLineY}%`, transform: 'translateY(-50%)', fontSize: '9px', color: '#888', background: '#0d0d12', padding: '0 4px' }}>
+                                        {displayStartingBalance >= 1000 ? `$${(displayStartingBalance/1000).toFixed(0)}k` : `$${displayStartingBalance}`} Start
+                                      </span>
+                                    )}
+                                    <svg style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', overflow: 'visible' }} viewBox={`0 0 ${svgW} ${svgH}`} preserveAspectRatio="none"
                                       onMouseMove={e => {
                                         const rect = e.currentTarget.getBoundingClientRect()
                                         const mouseX = ((e.clientX - rect.left) / rect.width) * svgW
@@ -1767,7 +1771,7 @@ export default function AccountPage() {
                                       return (
                                         <div key={i} style={{ position: 'absolute', left: `${l.pct}%`, transform: 'translateX(-50%)', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                                           <div style={{ width: '1px', height: '5px', background: '#2a2a35' }} />
-                                          <span style={{ fontSize: '9px', color: '#666', marginTop: '3px', whiteSpace: 'nowrap', transform: isFirst ? 'translateX(30%)' : isLast ? 'translateX(-30%)' : 'none' }}>{l.label}</span>
+                                          <span style={{ fontSize: '9px', color: '#666', marginTop: '3px', whiteSpace: 'nowrap' }}>{l.label}</span>
                                         </div>
                                       )
                                     })}
@@ -2040,7 +2044,7 @@ export default function AccountPage() {
                               return (
                                 <div key={i} style={{ position: 'absolute', left: `${l.pct}%`, transform: 'translateX(-50%)', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                                   <div style={{ width: '1px', height: '5px', background: '#2a2a35' }} />
-                                  <span style={{ fontSize: '9px', color: '#666', marginTop: '3px', whiteSpace: 'nowrap', transform: isFirst ? 'translateX(30%)' : isLast ? 'translateX(-30%)' : 'none' }}>{l.label}</span>
+                                  <span style={{ fontSize: '9px', color: '#666', marginTop: '3px', whiteSpace: 'nowrap' }}>{l.label}</span>
                                 </div>
                               )
                             })}
@@ -2838,7 +2842,7 @@ export default function AccountPage() {
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.9)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100 }} onClick={() => setShowAddTrade(false)}>
           <div style={{ background: 'linear-gradient(180deg, #0f0f14 0%, #0a0a0f 100%)', border: '1px solid #1a1a22', borderRadius: '12px', padding: '24px', width: customInputs.filter(i => !['symbol', 'outcome', 'pnl', 'riskPercent', 'rr', 'date', 'direction', 'rating'].includes(i.id) && !i.hidden).length > 4 ? '560px' : customInputs.filter(i => !['symbol', 'outcome', 'pnl', 'riskPercent', 'rr', 'date', 'direction', 'rating'].includes(i.id) && !i.hidden).length > 2 ? '500px' : '440px', maxHeight: '90vh', overflowY: 'auto' }} onClick={e => e.stopPropagation()}>
             {/* Header */}
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px', paddingBottom: '12px', borderBottom: '1px solid #1a1a22' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#9333ea' }} />
                 <span style={{ fontSize: '13px', color: '#fff', fontWeight: 600, letterSpacing: '0.5px' }}>LOG TRADE</span>
@@ -2980,25 +2984,25 @@ export default function AccountPage() {
               </div>
             )}
 
+            {/* Buttons */}
+            <div style={{ display: 'flex', gap: '12px', marginTop: '12px' }}>
+              <button onClick={() => setShowAddTrade(false)} style={{ flex: 1, padding: '12px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '8px', color: '#888', fontWeight: 600, fontSize: '13px', cursor: 'pointer' }}>Cancel</button>
+              <button onClick={addTrade} disabled={saving || !tradeForm.symbol || !tradeForm.pnl} style={{ flex: 1, padding: '12px', background: (saving || !tradeForm.symbol || !tradeForm.pnl) ? '#1a1a22' : 'linear-gradient(135deg, #9333ea 0%, #7c3aed 100%)', border: 'none', borderRadius: '8px', color: (saving || !tradeForm.symbol || !tradeForm.pnl) ? '#666' : '#fff', fontWeight: 600, fontSize: '14px', cursor: (saving || !tradeForm.symbol || !tradeForm.pnl) ? 'not-allowed' : 'pointer' }}>{saving ? '...' : 'Log Trade'}</button>
             </div>
+          </div>
         </div>
       )}
 
       {showEditInputs && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.9)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 101 }} onClick={() => setShowEditInputs(false)}>
-          <div style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '12px', padding: '28px', width: '1100px', maxHeight: '90vh', overflowY: 'auto' }} onClick={e => e.stopPropagation()}>
+          <div style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '12px', padding: '28px', width: '700px', maxHeight: '90vh', overflowY: 'auto' }} onClick={e => e.stopPropagation()}>
             {/* Header */}
-            <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '20px', paddingBottom: '16px', borderBottom: '1px solid #1a1a22' }}>
+            <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '20px' }}>
               <div>
                 <h2 style={{ fontSize: '20px', fontWeight: 700, color: '#fff', marginBottom: '4px' }}>Edit Columns</h2>
                 <p style={{ fontSize: '12px', color: '#555', margin: 0 }}>Configure fields for {account?.name}</p>
               </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <button onClick={() => setShowRestoreDefaults(true)} style={{ padding: '6px 12px', background: 'transparent', border: '1px solid #f59e0b', borderRadius: '6px', color: '#f59e0b', fontSize: '12px', cursor: 'pointer' }}>Restore Defaults</button>
-                <button onClick={() => setShowEditInputs(false)} style={{ padding: '6px 12px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '6px', color: '#888', fontSize: '12px', cursor: 'pointer' }}>Cancel</button>
-                <button onClick={saveInputs} style={{ padding: '6px 12px', background: '#22c55e', border: 'none', borderRadius: '6px', color: '#fff', fontWeight: 600, fontSize: '12px', cursor: 'pointer' }}>Save</button>
-                <button onClick={() => setShowEditInputs(false)} style={{ padding: '6px 8px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '6px', color: '#666', fontSize: '14px', cursor: 'pointer', lineHeight: 1 }}>×</button>
-              </div>
+              <button onClick={() => setShowEditInputs(false)} style={{ padding: '6px 8px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '6px', color: '#666', fontSize: '14px', cursor: 'pointer', lineHeight: 1 }}>×</button>
             </div>
 
             {/* Core Fields Section - in bordered container */}
@@ -3008,8 +3012,8 @@ export default function AccountPage() {
                 {inputs.map((input, i) => input.fixed && !input.hidden && (
                   <div key={input.id} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 12px', background: '#141418', borderRadius: '6px' }}>
                     <input type="checkbox" checked={input.enabled} onChange={e => updateInput(i, 'enabled', e.target.checked)} style={{ width: '15px', height: '15px', accentColor: '#22c55e' }} />
-                    <input type="text" value={input.label} onChange={e => updateInput(i, 'label', e.target.value)} style={{ minWidth: '80px', width: '100px', padding: '6px 8px', background: '#0a0a0e', border: '1px solid #2a2a35', borderRadius: '4px', color: input.enabled ? '#fff' : '#555', fontSize: '12px' }} />
-                    <select value={input.type} onChange={e => updateInput(i, 'type', e.target.value)} style={{ padding: '6px 8px', background: '#0a0a0e', border: '1px solid #2a2a35', borderRadius: '4px', color: '#fff', fontSize: '11px', flex: 1 }}>
+                    <input type="text" value={input.label} onChange={e => updateInput(i, 'label', e.target.value)} style={{ flex: 1, minWidth: '60px', padding: '6px 8px', background: '#0a0a0e', border: '1px solid #2a2a35', borderRadius: '4px', color: input.enabled ? '#fff' : '#555', fontSize: '12px' }} />
+                    <select value={input.type} onChange={e => updateInput(i, 'type', e.target.value)} style={{ padding: '6px 8px', background: '#0a0a0e', border: '1px solid #2a2a35', borderRadius: '4px', color: '#fff', fontSize: '11px', minWidth: '90px' }}>
                       <option value="text">Text</option>
                       <option value="number">Number</option>
                       <option value="select">Dropdown</option>
@@ -3078,7 +3082,13 @@ export default function AccountPage() {
               </div>
             )}
 
+            {/* Action buttons */}
+            <div style={{ display: 'flex', gap: '12px' }}>
+              <button onClick={() => setShowRestoreDefaults(true)} style={{ padding: '12px 16px', background: 'transparent', border: '1px solid #f59e0b', borderRadius: '8px', color: '#f59e0b', fontWeight: 600, fontSize: '13px', cursor: 'pointer' }}>Restore Defaults</button>
+              <button onClick={() => setShowEditInputs(false)} style={{ flex: 1, padding: '12px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '8px', color: '#888', fontWeight: 600, fontSize: '13px', cursor: 'pointer' }}>Cancel</button>
+              <button onClick={saveInputs} style={{ flex: 1, padding: '12px', background: '#22c55e', border: 'none', borderRadius: '8px', color: '#fff', fontWeight: 600, fontSize: '13px', cursor: 'pointer' }}>Save</button>
             </div>
+          </div>
         </div>
       )}
 
@@ -3422,7 +3432,7 @@ export default function AccountPage() {
                   const trade = sorted[idx]
                   if (trade?.date) {
                     const d = new Date(trade.date)
-                    xLabels.push({ label: `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}`, pct: (i / (xLabelCount - 1)) * 100 })
+                    xLabels.push({ label: `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}`, pct: xLabelCount > 1 ? 5 + (i / (xLabelCount - 1)) * 90 : 50 })
                   }
                 }
 
@@ -3484,7 +3494,7 @@ export default function AccountPage() {
                             {yLabels.map((_, i) => <div key={i} style={{ borderTop: '1px solid #1a1a22' }} />)}
                           </div>
                           {zeroY !== null && <div style={{ position: 'absolute', left: 0, right: 0, top: `${zeroY}%`, borderTop: '1px solid #2a2a35', zIndex: 1 }}><span style={{ position: 'absolute', left: '-60px', top: '-8px', fontSize: '11px', color: '#666' }}>$0</span></div>}
-                          <svg style={{ position: 'absolute', inset: '4px 8px 4px 4px', width: 'calc(100% - 12px)', height: 'calc(100% - 8px)', overflow: 'visible' }} viewBox={`0 0 ${svgW} ${svgH}`} preserveAspectRatio="none"
+                          <svg style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', overflow: 'visible' }} viewBox={`0 0 ${svgW} ${svgH}`} preserveAspectRatio="none"
                             onMouseMove={e => {
                               const rect = e.currentTarget.getBoundingClientRect()
                               const mouseX = ((e.clientX - rect.left) / rect.width) * svgW
@@ -3693,7 +3703,7 @@ export default function AccountPage() {
                             return (
                               <div key={i} style={{ position: 'absolute', left: `${l.pct}%`, transform: 'translateX(-50%)', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                                 <div style={{ width: '1px', height: '8px', background: '#333' }} />
-                                <span style={{ fontSize: '10px', color: '#999', marginTop: '2px', whiteSpace: 'nowrap', transform: isFirst ? 'translateX(25%)' : isLast ? 'translateX(-25%)' : 'none' }}>{l.label}</span>
+                                <span style={{ fontSize: '10px', color: '#999', marginTop: '2px', whiteSpace: 'nowrap' }}>{l.label}</span>
                               </div>
                             )
                           })}

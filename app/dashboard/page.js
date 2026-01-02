@@ -542,7 +542,7 @@ export default function DashboardPage() {
               return (
                 <div key={i} style={{ position: 'absolute', left: `${l.pct}%`, transform: 'translateX(-50%)', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                   <div style={{ width: '1px', height: '5px', background: '#2a2a35' }} />
-                  <span style={{ fontSize: '10px', color: '#999', whiteSpace: 'nowrap', marginTop: '3px', transform: isFirst ? 'translateX(25%)' : isLast ? 'translateX(-25%)' : 'none' }}>{l.label}</span>
+                  <span style={{ fontSize: '10px', color: '#999', whiteSpace: 'nowrap', marginTop: '3px' }}>{l.label}</span>
                 </div>
               )
             })}
@@ -1089,7 +1089,7 @@ export default function DashboardPage() {
                   {/* Chart + Stats Row */}
                   <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', padding: isMobile ? '0 16px 16px' : '0 24px 16px', gap: '12px' }}>
                     {/* Chart */}
-                    <div style={{ flex: 1, height: isMobile ? '250px' : '420px', overflow: 'visible' }}>
+                    <div style={{ flex: 1, height: isMobile ? '250px' : '348px', overflow: 'visible' }}>
                       <EquityCurve accountTrades={accTrades} startingBalance={account.starting_balance} />
                     </div>
 
