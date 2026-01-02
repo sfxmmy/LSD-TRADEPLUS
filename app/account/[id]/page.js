@@ -700,7 +700,7 @@ export default function AccountPage() {
       <Tooltip data={tooltip} />
 
       {/* FIXED HEADER - same structure as dashboard */}
-      <header style={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 50, padding: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#0a0a0f', borderBottom: '1px solid #1a1a22' }}>
+      <header style={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 50, padding: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#0a0a0f', borderBottom: '1px solid rgba(34,197,94,0.2)', boxShadow: '0 1px 15px rgba(34,197,94,0.08)' }}>
         <a href="/" style={{ fontSize: isMobile ? '24px' : '32px', fontWeight: 700, textDecoration: 'none', letterSpacing: '-0.5px' }}><span style={{ color: '#22c55e' }}>LSD</span><span style={{ color: '#fff' }}>TRADE</span><span style={{ color: '#22c55e' }}>+</span></a>
         {!isMobile && (
           <>
@@ -752,7 +752,7 @@ export default function AccountPage() {
 
       {/* FIXED SUBHEADER - starts at sidebar edge */}
       {!isMobile && (
-        <div style={{ position: 'fixed', top: '65px', left: '180px', right: 0, zIndex: 46, padding: '20px 16px 12px', background: '#0a0a0f', borderBottom: '1px solid #1a1a22', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div style={{ position: 'fixed', top: '65px', left: '180px', right: 0, zIndex: 46, padding: '20px 16px 12px', background: '#0a0a0f', borderBottom: '1px solid rgba(34,197,94,0.2)', boxShadow: '0 1px 15px rgba(34,197,94,0.08)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
             <span style={{ fontSize: '28px', fontWeight: 700, color: '#fff', lineHeight: 1 }}>{account?.name}</span>
           </div>
@@ -792,7 +792,7 @@ export default function AccountPage() {
 
       {/* FIXED SIDEBAR - desktop only, starts under header */}
       {!isMobile && (
-        <div style={{ position: 'fixed', top: '65px', left: 0, bottom: 0, width: '180px', padding: '12px', background: '#0a0a0f', zIndex: 45, display: 'flex', flexDirection: 'column', borderRight: '1px solid #1a1a22' }}>
+        <div style={{ position: 'fixed', top: '65px', left: 0, bottom: 0, width: '180px', padding: '12px', background: '#0a0a0f', zIndex: 45, display: 'flex', flexDirection: 'column', borderRight: '1px solid rgba(34,197,94,0.3)', boxShadow: '1px 0 15px rgba(34,197,94,0.1)' }}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginTop: '12px' }}>
           {['trades', 'statistics', 'notes'].map((tab) => (
             <button
@@ -961,7 +961,7 @@ export default function AccountPage() {
         {activeTab === 'trades' && (
           <div style={{ position: 'relative', height: 'calc(100vh - 134px)' }}>
             {/* LOG TRADE Row */}
-            <div style={{ padding: '12px 16px', display: 'flex', justifyContent: 'flex-end', borderBottom: '1px solid #1a1a22' }}>
+            <div style={{ padding: '12px 16px', display: 'flex', justifyContent: 'flex-end', borderBottom: '1px solid rgba(147,51,234,0.3)', boxShadow: '0 1px 15px rgba(147,51,234,0.1)' }}>
               <button onClick={() => setShowAddTrade(true)} style={{ padding: '14px 32px', background: 'linear-gradient(135deg, #9333ea 0%, #7c3aed 100%)', border: 'none', borderRadius: '8px', color: '#fff', fontWeight: 700, fontSize: '15px', cursor: 'pointer', lineHeight: 1, boxShadow: '0 0 25px rgba(147,51,234,0.6), 0 0 50px rgba(147,51,234,0.4)' }}>+ LOG TRADE</button>
             </div>
             {/* Green glow from bottom */}
@@ -990,11 +990,11 @@ export default function AccountPage() {
                   scrollbarColor: '#2a2a35 #0a0a0f'
                 }}>
                 <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: '1200px' }}>
-                  <thead style={{ position: 'sticky', top: 0, zIndex: 10, background: '#0a0a0f', boxShadow: '0 1px 0 #1a1a22' }}>
+                  <thead style={{ position: 'sticky', top: 0, zIndex: 10, background: '#0a0a0f', boxShadow: '0 1px 0 rgba(34,197,94,0.2), 0 2px 10px rgba(34,197,94,0.05)' }}>
                     <tr>
                       {selectMode && <th style={{ padding: '14px 6px', width: '32px', borderBottom: '1px solid #1a1a22', background: '#0a0a0f' }}><input type="checkbox" checked={filteredTrades.length > 0 && filteredTrades.every(t => selectedTrades.has(t.id))} onChange={() => { const allSelected = filteredTrades.every(t => selectedTrades.has(t.id)); if (allSelected) { const newSet = new Set(selectedTrades); filteredTrades.forEach(t => newSet.delete(t.id)); setSelectedTrades(newSet) } else { const newSet = new Set(selectedTrades); filteredTrades.forEach(t => newSet.add(t.id)); setSelectedTrades(newSet) } }} style={{ width: '14px', height: '14px', accentColor: '#22c55e', cursor: 'pointer' }} /></th>}
                       {['Symbol', 'W/L', 'PnL', '%', 'RR', ...customInputs.map(i => i.label), 'Date', ''].map((h, i) => (
-                        <th key={i} style={{ padding: isMobile ? '10px 8px' : '14px 12px', textAlign: 'center', color: '#999', fontSize: isMobile ? '11px' : '12px', fontWeight: 600, textTransform: 'uppercase', borderBottom: '1px solid #1a1a22', background: '#0a0a0f' }}>{h}</th>
+                        <th key={i} style={{ padding: isMobile ? '10px 8px' : '14px 12px', textAlign: 'center', color: '#999', fontSize: isMobile ? '11px' : '12px', fontWeight: 600, textTransform: 'uppercase', borderBottom: '1px solid rgba(34,197,94,0.15)', background: '#0a0a0f' }}>{h}</th>
                       ))}
                     </tr>
                   </thead>
