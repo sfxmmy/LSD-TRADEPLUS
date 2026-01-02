@@ -419,31 +419,42 @@ export default function DashboardPage() {
     const areaBottom = hasNegative ? svgH - ((0 - yMin) / yRange) * svgH : svgH
     const areaD = pathD + ` L ${chartPoints[chartPoints.length - 1].x} ${areaBottom} L ${chartPoints[0].x} ${areaBottom} Z`
 
-    // Split coloring: green above start, red below
+    // Split coloring: green above start, red below - only if balance actually went below start
     const startY = svgH - ((start - yMin) / yRange) * svgH
     const greenSegments = [], redSegments = []
-    for (let i = 0; i < chartPoints.length - 1; i++) {
-      const p1 = chartPoints[i], p2 = chartPoints[i + 1]
-      const above1 = p1.balance >= start, above2 = p2.balance >= start
-      if (above1 === above2) {
-        (above1 ? greenSegments : redSegments).push({ x1: p1.x, y1: p1.y, x2: p2.x, y2: p2.y })
-      } else {
-        const t = (start - p1.balance) / (p2.balance - p1.balance)
-        const ix = p1.x + t * (p2.x - p1.x), iy = startY
-        if (above1) {
-          greenSegments.push({ x1: p1.x, y1: p1.y, x2: ix, y2: iy })
-          redSegments.push({ x1: ix, y1: iy, x2: p2.x, y2: p2.y })
+
+    // Only calculate red segments if balance actually dropped below start
+    if (belowStart) {
+      for (let i = 0; i < chartPoints.length - 1; i++) {
+        const p1 = chartPoints[i], p2 = chartPoints[i + 1]
+        const above1 = p1.balance >= start, above2 = p2.balance >= start
+        if (above1 === above2) {
+          (above1 ? greenSegments : redSegments).push({ x1: p1.x, y1: p1.y, x2: p2.x, y2: p2.y })
         } else {
-          redSegments.push({ x1: p1.x, y1: p1.y, x2: ix, y2: iy })
-          greenSegments.push({ x1: ix, y1: iy, x2: p2.x, y2: p2.y })
+          const t = (start - p1.balance) / (p2.balance - p1.balance)
+          const ix = p1.x + t * (p2.x - p1.x), iy = startY
+          if (above1) {
+            greenSegments.push({ x1: p1.x, y1: p1.y, x2: ix, y2: iy })
+            redSegments.push({ x1: ix, y1: iy, x2: p2.x, y2: p2.y })
+          } else {
+            redSegments.push({ x1: p1.x, y1: p1.y, x2: ix, y2: iy })
+            greenSegments.push({ x1: ix, y1: iy, x2: p2.x, y2: p2.y })
+          }
         }
       }
+    } else {
+      // All green if never went below start
+      for (let i = 0; i < chartPoints.length - 1; i++) {
+        const p1 = chartPoints[i], p2 = chartPoints[i + 1]
+        greenSegments.push({ x1: p1.x, y1: p1.y, x2: p2.x, y2: p2.y })
+      }
     }
+
     const greenPath = greenSegments.map(s => `M ${s.x1} ${s.y1} L ${s.x2} ${s.y2}`).join(' ')
-    const redPath = redSegments.map(s => `M ${s.x1} ${s.y1} L ${s.x2} ${s.y2}`).join(' ')
+    const redPath = belowStart ? redSegments.map(s => `M ${s.x1} ${s.y1} L ${s.x2} ${s.y2}`).join(' ') : ''
     // Build area fills for each segment (closed polygons to startY line)
     const greenAreaPath = greenSegments.map(s => `M ${s.x1} ${s.y1} L ${s.x2} ${s.y2} L ${s.x2} ${startY} L ${s.x1} ${startY} Z`).join(' ')
-    const redAreaPath = redSegments.map(s => `M ${s.x1} ${s.y1} L ${s.x2} ${s.y2} L ${s.x2} ${startY} L ${s.x1} ${startY} Z`).join(' ')
+    const redAreaPath = belowStart ? redSegments.map(s => `M ${s.x1} ${s.y1} L ${s.x2} ${s.y2} L ${s.x2} ${startY} L ${s.x1} ${startY} Z`).join(' ') : ''
 
     function handleMouseMove(e) {
       if (!svgRef.current) return
@@ -1072,14 +1083,14 @@ export default function DashboardPage() {
                   </div>
 
                   {/* Chart + Stats Row */}
-                  <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', padding: isMobile ? '0 16px 16px' : '0 24px 16px', gap: '12px' }}>
+                  <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', padding: isMobile ? '0 16px 16px' : '0 24px 16px', gap: '12px', alignItems: isMobile ? 'stretch' : 'stretch' }}>
                     {/* Chart */}
-                    <div style={{ flex: 1, height: isMobile ? '200px' : '350px', overflow: 'hidden' }}>
+                    <div style={{ flex: 1, minHeight: isMobile ? '200px' : '350px', overflow: 'hidden' }}>
                       <EquityCurve accountTrades={accTrades} startingBalance={account.starting_balance} />
                     </div>
 
                     {/* Stats */}
-                    <div style={{ width: isMobile ? '100%' : '200px', display: 'flex', flexDirection: isMobile ? 'row' : 'column', flexWrap: isMobile ? 'wrap' : 'nowrap', gap: '12px' }}>
+                    <div style={{ width: isMobile ? '100%' : '200px', display: 'flex', flexDirection: isMobile ? 'row' : 'column', flexWrap: isMobile ? 'wrap' : 'nowrap', gap: '12px', justifyContent: 'space-between' }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: isMobile ? '8px 10px' : '10px 14px', background: '#0a0a0e', borderRadius: '6px', border: '1px solid #1a1a22', flex: isMobile ? '1 1 100%' : 'none' }}>
                         <span style={{ fontSize: isMobile ? '11px' : '12px', color: '#999' }}>Account Balance</span>
                         <span style={{ fontSize: isMobile ? '14px' : '16px', fontWeight: 700, color: currentBalance >= (parseFloat(account.starting_balance) || 0) ? '#22c55e' : '#ef4444' }}>${currentBalance.toLocaleString()}</span>

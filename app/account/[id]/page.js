@@ -801,11 +801,11 @@ export default function AccountPage() {
               onClick={() => { setActiveTab(tab); if (tab === 'statistics') setHasNewInputs(false) }}
               style={{
                 width: '100%', padding: '12px',
-                background: activeTab === tab ? '#22c55e' : 'transparent',
-                border: activeTab === tab ? 'none' : '1px solid #2a2a35',
-                borderRadius: '8px', color: activeTab === tab ? '#fff' : '#888',
+                background: activeTab === tab ? 'transparent' : 'transparent',
+                border: activeTab === tab ? '1px solid #22c55e' : '1px solid #2a2a35',
+                borderRadius: '8px', color: activeTab === tab ? '#22c55e' : '#888',
                 fontSize: '13px', fontWeight: 600, textTransform: 'uppercase', cursor: 'pointer', textAlign: 'center',
-                boxShadow: activeTab === tab ? '0 0 20px rgba(34,197,94,0.5), 0 0 40px rgba(34,197,94,0.3)' : 'none'
+                boxShadow: activeTab === tab ? '0 0 15px rgba(34,197,94,0.4), 0 0 30px rgba(34,197,94,0.2)' : 'none'
               }}
             >
               {tab}
@@ -849,14 +849,15 @@ export default function AccountPage() {
                     style={{
                       width: '100%',
                       padding: '8px 10px',
-                      background: !showCumulativeStats ? 'rgba(34,197,94,0.1)' : 'transparent',
-                      border: `1px solid ${!showCumulativeStats ? 'rgba(34,197,94,0.3)' : '#1a1a22'}`,
+                      background: !showCumulativeStats ? '#22c55e' : 'transparent',
+                      border: !showCumulativeStats ? 'none' : '1px solid #1a1a22',
                       borderRadius: '6px',
-                      color: !showCumulativeStats ? '#22c55e' : '#666',
+                      color: !showCumulativeStats ? '#fff' : '#666',
                       fontSize: '11px',
-                      fontWeight: 500,
+                      fontWeight: 600,
                       cursor: 'pointer',
-                      textAlign: 'left'
+                      textAlign: 'left',
+                      boxShadow: !showCumulativeStats ? '0 0 12px rgba(34,197,94,0.5), 0 0 24px rgba(34,197,94,0.3)' : 'none'
                     }}
                   >
                     <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
@@ -864,7 +865,7 @@ export default function AccountPage() {
                         width: '5px',
                         height: '5px',
                         borderRadius: '50%',
-                        background: !showCumulativeStats ? '#22c55e' : '#444'
+                        background: !showCumulativeStats ? '#fff' : '#444'
                       }} />
                       This Journal
                     </div>
@@ -875,14 +876,15 @@ export default function AccountPage() {
                       style={{
                         width: '100%',
                         padding: '8px 10px',
-                        background: showCumulativeStats ? 'rgba(34,197,94,0.1)' : 'transparent',
-                        border: `1px solid ${showCumulativeStats ? 'rgba(34,197,94,0.3)' : '#1a1a22'}`,
+                        background: showCumulativeStats ? '#22c55e' : 'transparent',
+                        border: showCumulativeStats ? 'none' : '1px solid #1a1a22',
                         borderRadius: '6px',
-                        color: showCumulativeStats ? '#22c55e' : '#666',
+                        color: showCumulativeStats ? '#fff' : '#666',
                         fontSize: '11px',
-                        fontWeight: 500,
+                        fontWeight: 600,
                         cursor: 'pointer',
-                        textAlign: 'left'
+                        textAlign: 'left',
+                        boxShadow: showCumulativeStats ? '0 0 12px rgba(34,197,94,0.5), 0 0 24px rgba(34,197,94,0.3)' : 'none'
                       }}
                     >
                       <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
@@ -890,7 +892,7 @@ export default function AccountPage() {
                           width: '5px',
                           height: '5px',
                           borderRadius: '50%',
-                          background: showCumulativeStats ? '#22c55e' : '#444'
+                          background: showCumulativeStats ? '#fff' : '#444'
                         }} />
                         All Journals
                       </div>
