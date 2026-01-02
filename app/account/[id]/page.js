@@ -754,7 +754,7 @@ export default function AccountPage() {
       {!isMobile && (
         <div style={{ position: 'fixed', top: '65px', left: '180px', right: 0, zIndex: 46, padding: '20px 16px 12px', background: '#0a0a0f', borderBottom: '1px solid #1a1a22', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <span style={{ fontSize: '24px', fontWeight: 700, color: '#fff', lineHeight: 1 }}>{account?.name}</span>
+            <span style={{ fontSize: '28px', fontWeight: 700, color: '#fff', lineHeight: 1, padding: '8px 14px', border: '1px solid #2a2a35', borderRadius: '8px' }}>{account?.name}</span>
           </div>
           <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
             {activeTab === 'trades' && trades.length > 0 && !selectMode && (
