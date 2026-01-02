@@ -754,7 +754,7 @@ export default function AccountPage() {
       {!isMobile && (
         <div style={{ position: 'fixed', top: '65px', left: '180px', right: 0, zIndex: 46, padding: '20px 16px 12px', background: '#0a0a0f', borderBottom: '1px solid #1a1a22', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <span style={{ fontSize: '28px', fontWeight: 700, color: '#fff', lineHeight: 1, padding: '8px 14px', border: '1px solid #2a2a35', borderRadius: '8px' }}>{account?.name}</span>
+            <span style={{ fontSize: '28px', fontWeight: 700, color: '#fff', lineHeight: 1 }}>{account?.name}</span>
           </div>
           <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
             {activeTab === 'trades' && trades.length > 0 && !selectMode && (
@@ -778,7 +778,6 @@ export default function AccountPage() {
             {activeTab === 'trades' && !selectMode && (
               <button onClick={() => setShowEditInputs(true)} style={{ padding: '12px 16px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '6px', color: '#fff', fontSize: '13px', cursor: 'pointer', lineHeight: 1 }}>Edit Columns</button>
             )}
-            {!selectMode && <button onClick={() => setShowAddTrade(true)} style={{ padding: '12px 24px', background: 'linear-gradient(135deg, #9333ea 0%, #7c3aed 100%)', border: 'none', borderRadius: '6px', color: '#fff', fontWeight: 600, fontSize: '14px', cursor: 'pointer', lineHeight: 1, boxShadow: '0 0 20px rgba(147,51,234,0.5), 0 0 40px rgba(147,51,234,0.3)' }}>+ LOG TRADE</button>}
           </div>
         </div>
       )}
@@ -794,7 +793,7 @@ export default function AccountPage() {
       {/* FIXED SIDEBAR - desktop only, starts under header */}
       {!isMobile && (
         <div style={{ position: 'fixed', top: '65px', left: 0, bottom: 0, width: '180px', padding: '12px', background: '#0a0a0f', zIndex: 45, display: 'flex', flexDirection: 'column', borderRight: '1px solid #1a1a22' }}>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginTop: '4px' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginTop: '12px' }}>
           {['trades', 'statistics', 'notes'].map((tab) => (
             <button
               key={tab}
@@ -961,6 +960,10 @@ export default function AccountPage() {
         {/* TRADES TAB */}
         {activeTab === 'trades' && (
           <div style={{ position: 'relative', height: 'calc(100vh - 134px)' }}>
+            {/* LOG TRADE Row */}
+            <div style={{ padding: '12px 16px', display: 'flex', justifyContent: 'flex-end', borderBottom: '1px solid #1a1a22' }}>
+              <button onClick={() => setShowAddTrade(true)} style={{ padding: '14px 32px', background: 'linear-gradient(135deg, #9333ea 0%, #7c3aed 100%)', border: 'none', borderRadius: '8px', color: '#fff', fontWeight: 700, fontSize: '15px', cursor: 'pointer', lineHeight: 1, boxShadow: '0 0 25px rgba(147,51,234,0.6), 0 0 50px rgba(147,51,234,0.4)' }}>+ LOG TRADE</button>
+            </div>
             {/* Green glow from bottom */}
             <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: '200px', background: 'linear-gradient(to top, rgba(34,197,94,0.08) 0%, rgba(34,197,94,0.03) 40%, transparent 100%)', pointerEvents: 'none', zIndex: 1 }} />
             {trades.length === 0 ? (
@@ -977,7 +980,7 @@ export default function AccountPage() {
                 className="trades-scroll"
                 style={{
                   position: 'absolute',
-                  top: 0,
+                  top: '56px',
                   left: 0,
                   right: 0,
                   bottom: '16px',

@@ -27,7 +27,8 @@
       "Bash(timeout 10 npm run dev:*)",
       "Bash(git pull:*)",
       "Bash(git fetch:*)",
-      "Bash(timeout 60 npm run build:*)"
+      "Bash(timeout 60 npm run build:*)",
+      "Bash(git revert:*)"
     ]
   }
 }
