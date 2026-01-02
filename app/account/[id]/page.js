@@ -94,6 +94,8 @@ export default function AccountPage() {
   const [filters, setFilters] = useState({ dateFrom: '', dateTo: '', outcome: '', direction: '', symbol: '', session: '', timeframe: '', confidence: '', rr: '', rating: '' })
   const [draftFilters, setDraftFilters] = useState({ dateFrom: '', dateTo: '', outcome: '', direction: '', symbol: '', session: '', timeframe: '', confidence: '', rr: '', rating: '', quickSelect: '' })
   const [hoverRating, setHoverRating] = useState(0)
+  const [showEditAccount, setShowEditAccount] = useState(false)
+  const [editAccountName, setEditAccountName] = useState('')
 
   const tradesScrollRef = useRef(null)
   const fixedScrollRef = useRef(null)
@@ -752,33 +754,42 @@ export default function AccountPage() {
 
       {/* FIXED SUBHEADER - starts at sidebar edge */}
       {!isMobile && (
-        <div style={{ position: 'fixed', top: '65px', left: '180px', right: 0, zIndex: 46, padding: '20px 16px 12px', background: '#0a0a0f', borderBottom: '1px solid #1a1a22', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <span style={{ fontSize: '28px', fontWeight: 700, color: '#fff', lineHeight: 1, padding: '8px 14px', border: '1px solid #2a2a35', borderRadius: '8px' }}>{account?.name}</span>
+        <div style={{ position: 'fixed', top: '65px', left: '180px', right: 0, zIndex: 46, background: '#0a0a0f', borderBottom: '1px solid #1a1a22', display: 'flex', flexDirection: 'column' }}>
+          {/* Top Row - LOG TRADE button only */}
+          <div style={{ padding: '12px 16px', display: 'flex', justifyContent: 'flex-end', borderBottom: '1px solid #1a1a22' }}>
+            <button onClick={() => setShowAddTrade(true)} style={{ padding: '14px 32px', background: 'linear-gradient(135deg, #9333ea 0%, #7c3aed 100%)', border: 'none', borderRadius: '8px', color: '#fff', fontWeight: 700, fontSize: '15px', cursor: 'pointer', lineHeight: 1, boxShadow: '0 0 25px rgba(147,51,234,0.6), 0 0 50px rgba(147,51,234,0.4)' }}>+ LOG TRADE</button>
           </div>
-          <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-            {activeTab === 'trades' && trades.length > 0 && !selectMode && (
-              <button onClick={() => setSelectMode(true)} style={{ padding: '12px 16px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '6px', color: '#fff', fontSize: '13px', cursor: 'pointer', lineHeight: 1 }}>Select</button>
-            )}
-            {activeTab === 'trades' && selectMode && (
-              <>
-                <span style={{ fontSize: '12px', color: '#22c55e', fontWeight: 600 }}>{selectedTrades.size} selected</span>
-                <button onClick={() => { const allSelected = filteredTrades.every(t => selectedTrades.has(t.id)); if (allSelected) { const newSet = new Set(selectedTrades); filteredTrades.forEach(t => newSet.delete(t.id)); setSelectedTrades(newSet) } else { const newSet = new Set(selectedTrades); filteredTrades.forEach(t => newSet.add(t.id)); setSelectedTrades(newSet) } }} style={{ padding: '10px 16px', background: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.4)', borderRadius: '8px', color: '#22c55e', fontSize: '13px', cursor: 'pointer' }}>{filteredTrades.every(t => selectedTrades.has(t.id)) && filteredTrades.length > 0 ? 'Deselect All' : 'Select All'}</button>
-                {selectedTrades.size > 0 && <button onClick={() => { setViewingSelectedStats(true); setActiveTab('statistics') }} style={{ padding: '10px 16px', background: 'rgba(34,197,94,0.15)', border: '1px solid #22c55e', borderRadius: '8px', color: '#22c55e', fontSize: '13px', cursor: 'pointer' }}>View Stats</button>}
-                {selectedTrades.size > 0 && <button onClick={() => setDeleteSelectedConfirm(true)} style={{ padding: '10px 16px', background: 'rgba(239,68,68,0.15)', border: '1px solid #ef4444', borderRadius: '8px', color: '#ef4444', fontSize: '13px', cursor: 'pointer' }}>Delete</button>}
-                <button onClick={exitSelectMode} style={{ padding: '10px 16px', background: '#1a1a22', border: '1px solid #2a2a35', borderRadius: '8px', color: '#666', fontSize: '13px', cursor: 'pointer' }}>Cancel</button>
-              </>
-            )}
-            {!selectMode && (
-              <button onClick={() => { setDraftFilters({...filters, quickSelect: ''}); setShowFilters(true) }} style={{ padding: '12px 16px', background: hasActiveFilters ? 'rgba(34,197,94,0.15)' : 'transparent', border: hasActiveFilters ? '1px solid #22c55e' : '1px solid #2a2a35', borderRadius: '6px', color: hasActiveFilters ? '#22c55e' : '#fff', fontSize: '13px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', lineHeight: 1 }}>
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
-                Filters{hasActiveFilters && ` (${Object.values(filters).filter(Boolean).length})`}
+          {/* Bottom Row - Title and other buttons */}
+          <div style={{ padding: '12px 16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <span style={{ fontSize: '28px', fontWeight: 700, color: '#fff', lineHeight: 1 }}>{account?.name}</span>
+              <button onClick={() => { setEditAccountName(account?.name || ''); setShowEditAccount(true) }} style={{ padding: '6px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '6px', color: '#666', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" /><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" /></svg>
               </button>
-            )}
-            {activeTab === 'trades' && !selectMode && (
-              <button onClick={() => setShowEditInputs(true)} style={{ padding: '12px 16px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '6px', color: '#fff', fontSize: '13px', cursor: 'pointer', lineHeight: 1 }}>Edit Columns</button>
-            )}
-            {!selectMode && <button onClick={() => setShowAddTrade(true)} style={{ padding: '12px 24px', background: 'linear-gradient(135deg, #9333ea 0%, #7c3aed 100%)', border: 'none', borderRadius: '6px', color: '#fff', fontWeight: 600, fontSize: '14px', cursor: 'pointer', lineHeight: 1, boxShadow: '0 0 20px rgba(147,51,234,0.5), 0 0 40px rgba(147,51,234,0.3)' }}>+ LOG TRADE</button>}
+            </div>
+            <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+              {activeTab === 'trades' && trades.length > 0 && !selectMode && (
+                <button onClick={() => setSelectMode(true)} style={{ padding: '12px 16px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '6px', color: '#fff', fontSize: '13px', cursor: 'pointer', lineHeight: 1 }}>Select</button>
+              )}
+              {activeTab === 'trades' && selectMode && (
+                <>
+                  <span style={{ fontSize: '12px', color: '#22c55e', fontWeight: 600 }}>{selectedTrades.size} selected</span>
+                  <button onClick={() => { const allSelected = filteredTrades.every(t => selectedTrades.has(t.id)); if (allSelected) { const newSet = new Set(selectedTrades); filteredTrades.forEach(t => newSet.delete(t.id)); setSelectedTrades(newSet) } else { const newSet = new Set(selectedTrades); filteredTrades.forEach(t => newSet.add(t.id)); setSelectedTrades(newSet) } }} style={{ padding: '10px 16px', background: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.4)', borderRadius: '8px', color: '#22c55e', fontSize: '13px', cursor: 'pointer' }}>{filteredTrades.every(t => selectedTrades.has(t.id)) && filteredTrades.length > 0 ? 'Deselect All' : 'Select All'}</button>
+                  {selectedTrades.size > 0 && <button onClick={() => { setViewingSelectedStats(true); setActiveTab('statistics') }} style={{ padding: '10px 16px', background: 'rgba(34,197,94,0.15)', border: '1px solid #22c55e', borderRadius: '8px', color: '#22c55e', fontSize: '13px', cursor: 'pointer' }}>View Stats</button>}
+                  {selectedTrades.size > 0 && <button onClick={() => setDeleteSelectedConfirm(true)} style={{ padding: '10px 16px', background: 'rgba(239,68,68,0.15)', border: '1px solid #ef4444', borderRadius: '8px', color: '#ef4444', fontSize: '13px', cursor: 'pointer' }}>Delete</button>}
+                  <button onClick={exitSelectMode} style={{ padding: '10px 16px', background: '#1a1a22', border: '1px solid #2a2a35', borderRadius: '8px', color: '#666', fontSize: '13px', cursor: 'pointer' }}>Cancel</button>
+                </>
+              )}
+              {!selectMode && (
+                <button onClick={() => { setDraftFilters({...filters, quickSelect: ''}); setShowFilters(true) }} style={{ padding: '12px 16px', background: hasActiveFilters ? 'rgba(34,197,94,0.15)' : 'transparent', border: hasActiveFilters ? '1px solid #22c55e' : '1px solid #2a2a35', borderRadius: '6px', color: hasActiveFilters ? '#22c55e' : '#fff', fontSize: '13px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', lineHeight: 1 }}>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
+                  Filters{hasActiveFilters && ` (${Object.values(filters).filter(Boolean).length})`}
+                </button>
+              )}
+              {activeTab === 'trades' && !selectMode && (
+                <button onClick={() => setShowEditInputs(true)} style={{ padding: '12px 16px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '6px', color: '#fff', fontSize: '13px', cursor: 'pointer', lineHeight: 1 }}>Edit Columns</button>
+              )}
+            </div>
           </div>
         </div>
       )}
@@ -956,11 +967,11 @@ export default function AccountPage() {
       )}
 
       {/* MAIN CONTENT */}
-      <div style={{ marginLeft: isMobile ? 0 : '180px', marginTop: isMobile ? '100px' : '134px', padding: isMobile ? '12px' : '0' }}>
+      <div style={{ marginLeft: isMobile ? 0 : '180px', marginTop: isMobile ? '100px' : '185px', padding: isMobile ? '12px' : '0' }}>
 
         {/* TRADES TAB */}
         {activeTab === 'trades' && (
-          <div style={{ position: 'relative', height: 'calc(100vh - 134px)' }}>
+          <div style={{ position: 'relative', height: 'calc(100vh - 185px)' }}>
             {/* Green glow from bottom */}
             <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: '200px', background: 'linear-gradient(to top, rgba(34,197,94,0.08) 0%, rgba(34,197,94,0.03) 40%, transparent 100%)', pointerEvents: 'none', zIndex: 1 }} />
             {trades.length === 0 ? (
@@ -1516,13 +1527,7 @@ export default function AccountPage() {
                                     {zeroY !== null && (
                                       <div style={{ position: 'absolute', left: 0, right: 0, top: `${zeroY}%`, borderTop: '1px solid #2a2a35', zIndex: 1 }} />
                                     )}
-                                    {/* Starting balance dotted line */}
-                                    {startLineY !== null && (
-                                      <div style={{ position: 'absolute', left: 0, right: 0, top: `${startLineY}%`, borderTop: '1px dashed #333', zIndex: 1 }}>
-                                        <span style={{ position: 'absolute', right: '4px', top: '-10px', fontSize: '8px', color: '#666' }}>Start</span>
-                                      </div>
-                                    )}
-                                    <svg style={{ position: 'absolute', inset: '4px 8px 4px 4px', width: 'calc(100% - 12px)', height: 'calc(100% - 8px)', overflow: 'visible' }} viewBox={`0 0 ${svgW} ${svgH}`} preserveAspectRatio="none"
+                                    <svg style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', overflow: 'visible' }} viewBox={`0 0 ${svgW} ${svgH}`} preserveAspectRatio="none"
                                       onMouseMove={e => {
                                         const rect = e.currentTarget.getBoundingClientRect()
                                         const mouseX = ((e.clientX - rect.left) / rect.width) * svgW
@@ -1557,6 +1562,10 @@ export default function AccountPage() {
                                         <linearGradient id="eqGreen" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stopColor="#22c55e" stopOpacity="0.3" /><stop offset="100%" stopColor="#22c55e" stopOpacity="0" /></linearGradient>
                                         <linearGradient id="eqRed" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stopColor="#ef4444" stopOpacity="0.3" /><stop offset="100%" stopColor="#ef4444" stopOpacity="0" /></linearGradient>
                                       </defs>
+                                      {/* Start line inside SVG for correct alignment */}
+                                      {startLineY !== null && (
+                                        <line x1="0" y1={startY} x2={svgW} y2={startY} stroke="#444" strokeWidth="1" strokeDasharray="4,4" vectorEffect="non-scaling-stroke" />
+                                      )}
                                       {equityCurveGroupBy === 'total' && lineData[0] ? (
                                         <>
                                           {lineData[0].greenAreaPath && <path d={lineData[0].greenAreaPath} fill="url(#eqGreen)" />}
@@ -1636,6 +1645,12 @@ export default function AccountPage() {
                                         )
                                       })()}
                                     </svg>
+                                    {/* Start line label */}
+                                    {startLineY !== null && (
+                                      <div style={{ position: 'absolute', right: '4px', top: `${startLineY}%`, transform: 'translateY(-50%)', fontSize: '9px', color: '#666', background: '#0d0d12', padding: '0 4px' }}>
+                                        {displayStartingBalance >= 1000 ? `$${(displayStartingBalance/1000).toFixed(0)}k` : `$${displayStartingBalance}`} Start
+                                      </div>
+                                    )}
                                     {/* Line labels at end of each line - with collision detection */}
                                     {equityCurveGroupBy !== 'total' && (() => {
                                       const minYSpacing = 12 // Minimum Y pixels between labels
@@ -2915,6 +2930,39 @@ export default function AccountPage() {
       )}
 
       {/* MODALS */}
+      {/* Edit Account Modal */}
+      {showEditAccount && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.9)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100 }} onClick={() => setShowEditAccount(false)}>
+          <div style={{ background: 'linear-gradient(180deg, #0f0f14 0%, #0a0a0f 100%)', border: '1px solid #1a1a22', borderRadius: '12px', padding: '24px', width: '380px' }} onClick={e => e.stopPropagation()}>
+            <div style={{ marginBottom: '16px' }}>
+              <h3 style={{ fontSize: '18px', fontWeight: 600, color: '#fff', margin: 0 }}>Edit Journal</h3>
+            </div>
+            <div style={{ marginBottom: '16px' }}>
+              <label style={{ display: 'block', fontSize: '11px', color: '#666', marginBottom: '6px', textTransform: 'uppercase' }}>Journal Name</label>
+              <input
+                type="text"
+                value={editAccountName}
+                onChange={e => setEditAccountName(e.target.value)}
+                autoFocus
+                style={{ width: '100%', padding: '12px 14px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '14px', boxSizing: 'border-box' }}
+              />
+            </div>
+            <div style={{ display: 'flex', gap: '12px' }}>
+              <button onClick={() => setShowEditAccount(false)} style={{ flex: 1, padding: '12px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '8px', color: '#888', fontWeight: 600, fontSize: '13px', cursor: 'pointer' }}>Cancel</button>
+              <button
+                onClick={async () => {
+                  if (!editAccountName.trim()) return
+                  await supabase.from('accounts').update({ name: editAccountName.trim() }).eq('id', account.id)
+                  setAccount({ ...account, name: editAccountName.trim() })
+                  setShowEditAccount(false)
+                }}
+                style={{ flex: 1, padding: '12px', background: '#22c55e', border: 'none', borderRadius: '8px', color: '#fff', fontWeight: 600, fontSize: '13px', cursor: 'pointer' }}
+              >Save</button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {showAddTrade && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.9)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100 }} onClick={() => setShowAddTrade(false)}>
           <div style={{ background: 'linear-gradient(180deg, #0f0f14 0%, #0a0a0f 100%)', border: '1px solid #1a1a22', borderRadius: '12px', padding: '24px', width: customInputs.filter(i => !['symbol', 'outcome', 'pnl', 'riskPercent', 'rr', 'date', 'direction', 'rating'].includes(i.id) && !i.hidden).length > 4 ? '560px' : customInputs.filter(i => !['symbol', 'outcome', 'pnl', 'riskPercent', 'rr', 'date', 'direction', 'rating'].includes(i.id) && !i.hidden).length > 2 ? '500px' : '440px', maxHeight: '90vh', overflowY: 'auto' }} onClick={e => e.stopPropagation()}>
