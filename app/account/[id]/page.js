@@ -633,7 +633,7 @@ export default function AccountPage() {
     return (totalGrowth / monthsDiff).toFixed(1)
   })()
 
-  const tabTitles = { trades: 'TRADING AREA', statistics: 'STATISTICS AREA', notes: 'NOTES AREA' }
+  const tabTitles = { trades: 'JOURNAL AREA', statistics: 'STATISTICS AREA', notes: 'NOTES AREA' }
   const tabDescriptions = {
     trades: 'Log and manage all your trades. Track entries, exits, PnL, and custom metrics. Review your trading history and analyze individual trade performance.',
     statistics: 'Comprehensive statistics dashboard with equity curves, winrate breakdowns, profit factors, and performance analysis by pair, session, direction, and more.',
