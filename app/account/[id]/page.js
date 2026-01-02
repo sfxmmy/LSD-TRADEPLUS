@@ -12,6 +12,7 @@ const defaultInputs = [
   { id: 'rr', label: 'RR', type: 'number', required: false, enabled: true, fixed: true, color: '#f59e0b' },
   { id: 'riskPercent', label: '% Risk', type: 'number', required: false, enabled: true, fixed: true, color: '#ef4444' },
   { id: 'date', label: 'Date', type: 'date', required: true, enabled: true, fixed: true, color: '#8b5cf6' },
+  { id: 'time', label: 'Time', type: 'time', required: false, enabled: true, fixed: true, color: '#a855f7' },
   { id: 'confidence', label: 'Confidence', type: 'select', options: [{value: 'High', textColor: '#22c55e', bgColor: 'rgba(34,197,94,0.15)'}, {value: 'Medium', textColor: '#f59e0b', bgColor: 'rgba(245,158,11,0.15)'}, {value: 'Low', textColor: '#ef4444', bgColor: 'rgba(239,68,68,0.15)'}], required: false, enabled: true, fixed: true, color: '#f59e0b' },
   { id: 'rating', label: 'Rating', type: 'rating', required: false, enabled: true, fixed: true, color: '#fbbf24' },
   { id: 'timeframe', label: 'Timeframe', type: 'select', options: [{value: '1m', textColor: '#06b6d4', bgColor: 'rgba(6,182,212,0.15)'}, {value: '5m', textColor: '#06b6d4', bgColor: 'rgba(6,182,212,0.15)'}, {value: '15m', textColor: '#06b6d4', bgColor: 'rgba(6,182,212,0.15)'}, {value: '30m', textColor: '#06b6d4', bgColor: 'rgba(6,182,212,0.15)'}, {value: '1H', textColor: '#06b6d4', bgColor: 'rgba(6,182,212,0.15)'}, {value: '4H', textColor: '#06b6d4', bgColor: 'rgba(6,182,212,0.15)'}, {value: 'Daily', textColor: '#06b6d4', bgColor: 'rgba(6,182,212,0.15)'}], required: false, enabled: true, fixed: true, color: '#06b6d4' },
@@ -83,6 +84,7 @@ export default function AccountPage() {
   const [deleteConfirmId, setDeleteConfirmId] = useState(null)
   const [deleteInputConfirm, setDeleteInputConfirm] = useState(null)
   const [deleteSelectedConfirm, setDeleteSelectedConfirm] = useState(false)
+  const [showRestoreDefaults, setShowRestoreDefaults] = useState(false)
   const [showCumulativeStats, setShowCumulativeStats] = useState(searchParams.get('cumulative') === 'true')
   const [allAccountsTrades, setAllAccountsTrades] = useState({})
   const [selectMode, setSelectMode] = useState(false)
@@ -700,7 +702,7 @@ export default function AccountPage() {
       <Tooltip data={tooltip} />
 
       {/* FIXED HEADER - same structure as dashboard */}
-      <header style={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 50, padding: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#0a0a0f', borderBottom: '1px solid #1a1a22' }}>
+      <header style={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 50, padding: '16px 40px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#0a0a0f', borderBottom: '1px solid #1a1a22' }}>
         <a href="/" style={{ fontSize: isMobile ? '24px' : '32px', fontWeight: 700, textDecoration: 'none', letterSpacing: '-0.5px' }}><span style={{ color: '#22c55e' }}>LSD</span><span style={{ color: '#fff' }}>TRADE</span><span style={{ color: '#22c55e' }}>+</span></a>
         {!isMobile && (
           <>
@@ -708,8 +710,8 @@ export default function AccountPage() {
               <span style={{ fontSize: '32px', fontWeight: 700, color: '#fff' }}>{tabTitles[activeTab]}</span>
             </div>
             <div style={{ display: 'flex', gap: '12px' }}>
-              <a href="/dashboard" style={{ padding: '10px 20px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '8px', color: '#fff', fontSize: '14px', textDecoration: 'none', cursor: 'pointer' }}>← Dashboard</a>
-              <a href="/settings" style={{ padding: '10px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '8px', color: '#999', textDecoration: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }} title="Settings">
+              <a href="/dashboard" style={{ padding: '12px 24px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '6px', color: '#fff', fontSize: '14px', fontWeight: 600, textDecoration: 'none', cursor: 'pointer' }}>← Dashboard</a>
+              <a href="/settings" style={{ padding: '12px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '6px', color: '#fff', textDecoration: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }} title="Settings">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
               </a>
             </div>
@@ -719,7 +721,7 @@ export default function AccountPage() {
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
             <button onClick={() => setShowMobileMenu(!showMobileMenu)} style={{ padding: '8px 12px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '6px', color: '#fff', fontSize: '16px', cursor: 'pointer' }}>☰</button>
             <a href="/dashboard" style={{ padding: '8px 12px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '6px', color: '#fff', fontSize: '12px', textDecoration: 'none', cursor: 'pointer' }}>← Dashboard</a>
-            <a href="/settings" style={{ padding: '8px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '6px', color: '#999', textDecoration: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }} title="Settings">
+            <a href="/settings" style={{ padding: '8px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '6px', color: '#fff', textDecoration: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }} title="Settings">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
             </a>
           </div>
@@ -752,7 +754,7 @@ export default function AccountPage() {
 
       {/* FIXED SUBHEADER - starts at sidebar edge */}
       {!isMobile && (
-        <div style={{ position: 'fixed', top: '65px', left: '180px', right: 0, zIndex: 46, padding: '20px 16px 12px', background: '#0a0a0f', borderBottom: '1px solid #1a1a22', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div style={{ position: 'fixed', top: '69px', left: '180px', right: 0, zIndex: 46, padding: '16px 40px 12px', background: '#0a0a0f', borderBottom: '1px solid #1a1a22', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
             <span style={{ fontSize: '28px', fontWeight: 700, color: '#fff', lineHeight: 1 }}>{account?.name}</span>
           </div>
@@ -2142,10 +2144,10 @@ export default function AccountPage() {
               </div>
             </div>
 
-            {/* ROW 4: Stats + Donut + Performance + Trade Analysis + Expectancy */}
+            {/* ROW 4: Stats + Donut + Trade Analysis (simplified - removed redundant widgets) */}
             <div style={{ display: 'flex', gap: '12px', marginBottom: '12px', overflow: 'visible', position: 'relative' }}>
-              {/* Stats + Donut */}
-              <div style={{ width: '320px', background: 'linear-gradient(145deg, #0d0d12 0%, #0a0a0e 100%)', border: '1px solid rgba(34,197,94,0.2)', borderRadius: '8px', padding: '14px', display: 'flex', position: 'relative', zIndex: 2, boxShadow: '0 4px 20px rgba(0,0,0,0.4), 0 0 30px rgba(34,197,94,0.08)' }}>
+              {/* Stats + Donut + Best/Worst Day */}
+              <div style={{ width: '380px', background: 'linear-gradient(145deg, #0d0d12 0%, #0a0a0e 100%)', border: '1px solid rgba(34,197,94,0.2)', borderRadius: '8px', padding: '14px', display: 'flex', position: 'relative', zIndex: 2, boxShadow: '0 4px 20px rgba(0,0,0,0.4), 0 0 30px rgba(34,197,94,0.08)' }}>
                 <div style={{ flex: 1 }}>
                   {[
                     { l: 'Avg. Trend', v: avgTrend },
@@ -2154,10 +2156,12 @@ export default function AccountPage() {
                     { l: 'Most Traded', v: mostTradedPair },
                     { l: 'Most Used RR', v: mostUsedRR },
                     { l: 'Best RR', v: mostProfitableRR },
+                    { l: 'Best Day', v: bestDay ? `+$${Math.round(bestDay.pnl)}` : '-', c: '#22c55e' },
+                    { l: 'Worst Day', v: worstDay ? `$${Math.round(worstDay.pnl)}` : '-', c: '#ef4444' },
                   ].map((item, i) => (
-                    <div key={i} style={{ display: 'flex', justifyContent: 'space-between', padding: '4px 0', borderBottom: i < 5 ? '1px solid #1a1a22' : 'none' }}>
+                    <div key={i} style={{ display: 'flex', justifyContent: 'space-between', padding: '4px 0', borderBottom: i < 7 ? '1px solid #1a1a22' : 'none' }}>
                       <span style={{ fontSize: '12px', color: '#999' }}>{item.l}</span>
-                      <span style={{ fontSize: '12px', fontWeight: 600, color: '#fff' }}>{item.v}</span>
+                      <span style={{ fontSize: '12px', fontWeight: 600, color: item.c || '#fff' }}>{item.v}</span>
                     </div>
                   ))}
                 </div>
@@ -2224,26 +2228,8 @@ export default function AccountPage() {
                 </div>
               </div>
 
-              {/* Performance - compact */}
-              <div style={{ width: '260px', background: 'linear-gradient(145deg, #0d0d12 0%, #0a0a0e 100%)', border: '1px solid rgba(34,197,94,0.2)', borderRadius: '8px', padding: '14px', position: 'relative', zIndex: 2, boxShadow: '0 4px 20px rgba(0,0,0,0.4), 0 0 30px rgba(34,197,94,0.08)' }}>
-                <div style={{ fontSize: '11px', color: '#999', textTransform: 'uppercase', marginBottom: '12px' }}>Performance</div>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '12px' }}>
-                  {[
-                    { l: 'Best Day', v: bestDay ? `+$${Math.round(bestDay.pnl)}` : '-', c: '#22c55e' },
-                    { l: 'Worst Day', v: worstDay ? `$${Math.round(worstDay.pnl)}` : '-', c: '#ef4444' },
-                    { l: 'Biggest Win', v: `+$${biggestWin}`, c: '#22c55e' },
-                    { l: 'Biggest Loss', v: `$${biggestLoss}`, c: '#ef4444' },
-                  ].map((item, i) => (
-                    <div key={i} style={{ padding: '10px 8px', background: '#0a0a0e', borderRadius: '6px', border: '1px solid #1a1a22', textAlign: 'center' }}>
-                      <div style={{ fontSize: '10px', color: '#999', marginBottom: '4px' }}>{item.l}</div>
-                      <div style={{ fontSize: '18px', fontWeight: 700, color: item.c }}>{item.v}</div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Trade Analysis - with green glow effect */}
-              <div style={{ flex: 1.5, position: 'relative', zIndex: 0 }}>
+              {/* Trade Analysis - expanded (removed redundant Performance and Expectancy widgets) */}
+              <div style={{ flex: 1, position: 'relative', zIndex: 0 }}>
                 {/* Outer glow layer - subtle */}
                 <div style={{ position: 'absolute', inset: '-30px', background: 'radial-gradient(ellipse at center, rgba(34,197,94,0.2) 0%, rgba(34,197,94,0.08) 40%, transparent 70%)', borderRadius: '40px', pointerEvents: 'none', filter: 'blur(10px)' }} />
                 <div style={{ position: 'relative', background: 'linear-gradient(145deg, #0d0d12 0%, #0a0a0e 100%)', border: '2px solid #22c55e', borderRadius: '10px', padding: '16px', boxShadow: '0 0 25px rgba(34,197,94,0.3), inset 0 1px 0 rgba(34,197,94,0.2)' }}>
@@ -2322,7 +2308,7 @@ export default function AccountPage() {
                         else if (analysisMetric === 'maxloss') { val = data.maxLoss === Infinity ? 0 : data.maxLoss; disp = '$' + Math.round(val) }
                         else if (analysisMetric === 'profitfactor') { val = avgLoss > 0 && data.l > 0 ? (avgWin * data.w) / (avgLoss * data.l) : data.w > 0 ? 999 : 0; disp = val >= 999 ? '∞' : val.toFixed(2) }
                         else { val = data.count; disp = data.count.toString() }
-                        const isPositive = analysisMetric === 'maxloss' ? val < 0 : val >= 0
+                        const isPositive = data.pnl >= 0
                         const wr = (data.w + data.l) > 0 ? Math.round((data.w / (data.w + data.l)) * 100) : 0
                         const barWidth = (data.count / maxCount) * 100
                         return (
@@ -2344,19 +2330,6 @@ export default function AccountPage() {
                 </div>
               </div>
 
-              {/* Expectancy widgets - compact */}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', width: '130px', position: 'relative', zIndex: 2 }}>
-                <div style={{ flex: 1, background: 'linear-gradient(145deg, #0d0d12 0%, #0a0a0e 100%)', border: '1px solid rgba(34,197,94,0.2)', borderRadius: '8px', padding: '10px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 20px rgba(0,0,0,0.4), 0 0 30px rgba(34,197,94,0.08)' }}>
-                  <div style={{ fontSize: '9px', color: '#999', textTransform: 'uppercase', marginBottom: '4px' }}>Avg Loss Exp.</div>
-                  <div style={{ fontSize: '20px', fontWeight: 700, color: '#ef4444' }}>-${avgLoss}</div>
-                  <div style={{ fontSize: '8px', color: '#999' }}>per trade</div>
-                </div>
-                <div style={{ flex: 1, background: 'linear-gradient(145deg, #0d0d12 0%, #0a0a0e 100%)', border: '1px solid rgba(34,197,94,0.2)', borderRadius: '8px', padding: '10px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 20px rgba(0,0,0,0.4), 0 0 30px rgba(34,197,94,0.08)' }}>
-                  <div style={{ fontSize: '9px', color: '#999', textTransform: 'uppercase', marginBottom: '4px' }}>Expectancy</div>
-                  <div style={{ fontSize: '20px', fontWeight: 700, color: expectancy === '-' ? '#666' : parseFloat(expectancy) >= 0 ? '#22c55e' : '#ef4444' }}>{expectancy === '-' ? '-' : `$${expectancy}`}</div>
-                  <div style={{ fontSize: '8px', color: '#999' }}>per trade</div>
-                </div>
-              </div>
             </div>
 
             {/* ROW 5: Grouped stats sections */}
@@ -2368,6 +2341,16 @@ export default function AccountPage() {
                 return d >= weekAgo
               }).length
               const tradingDays = Object.keys(displayDailyPnL.reduce((acc, d) => { acc[d.date] = 1; return acc }, {})).length
+              const tradesThisMonth = displayTrades.filter(t => { const d = new Date(t.date), now = new Date(); return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear() }).length
+              const tradingWeeks = Math.max(1, Math.ceil(tradingDays / 5))
+              const avgPerWeek = (displayTrades.length / tradingWeeks).toFixed(1)
+              const dayCount = [0, 0, 0, 0, 0, 0, 0]; displayTrades.forEach(t => { dayCount[new Date(t.date).getDay()]++ })
+              const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
+              const mostCommonDay = dayNames[dayCount.indexOf(Math.max(...dayCount))]
+              const greenDays = displayDailyPnL.filter(d => d.pnl > 0).length
+              const redDays = displayDailyPnL.filter(d => d.pnl < 0).length
+              let bestGreenStreak = 0, currGreen = 0
+              ;[...displayDailyPnL].sort((a, b) => new Date(a.date) - new Date(b.date)).forEach(d => { if (d.pnl > 0) { currGreen++; bestGreenStreak = Math.max(bestGreenStreak, currGreen) } else { currGreen = 0 } })
               const localBiggestWin = Math.max(...displayTrades.filter(t => t.outcome === 'win').map(t => parseFloat(t.pnl) || 0), 0)
               const localBiggestLoss = Math.min(...displayTrades.filter(t => t.outcome === 'loss').map(t => parseFloat(t.pnl) || 0), 0)
               const localLongTrades = displayTrades.filter(t => t.direction === 'long')
@@ -2376,7 +2359,13 @@ export default function AccountPage() {
               const shortWins = localShortTrades.filter(t => t.outcome === 'win').length
               const longWr = localLongTrades.length > 0 ? Math.round((longWins / localLongTrades.length) * 100) : 0
               const shortWr = localShortTrades.length > 0 ? Math.round((shortWins / localShortTrades.length) * 100) : 0
+              const longPnl = localLongTrades.reduce((s, t) => s + (parseFloat(t.pnl) || 0), 0)
+              const shortPnl = localShortTrades.reduce((s, t) => s + (parseFloat(t.pnl) || 0), 0)
               const growth = ((displayCurrentBalance / displayStartingBalance - 1) * 100).toFixed(1)
+              const firstTradeDate = displayTrades.length > 0 ? new Date(Math.min(...displayTrades.map(t => new Date(t.date)))) : null
+              const accountAgeDays = firstTradeDate ? Math.floor((new Date() - firstTradeDate) / (1000 * 60 * 60 * 24)) : 0
+              const accountAge = accountAgeDays > 30 ? Math.floor(accountAgeDays / 30) + 'mo' : accountAgeDays + 'd'
+              const tradesWithNotes = displayTrades.filter(t => { const e = getExtraData(t); return e.notes && e.notes.trim().length > 0 }).length
 
               const StatBox = ({ label, value, color }) => (
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '7px 0' }}>
@@ -2394,6 +2383,7 @@ export default function AccountPage() {
                     <StatBox label="Net P&L" value={(displayTotalPnl >= 0 ? '+' : '-') + '$' + Math.abs(Math.round(displayTotalPnl)).toLocaleString()} color={displayTotalPnl >= 0 ? '#22c55e' : '#ef4444'} />
                     <StatBox label="Growth" value={growth + '%'} color={parseFloat(growth) >= 0 ? '#22c55e' : '#ef4444'} />
                     <StatBox label="Monthly" value={monthlyGrowth + '%'} color={parseFloat(monthlyGrowth) >= 0 ? '#22c55e' : '#ef4444'} />
+                    <StatBox label="Account Age" value={accountAge} color="#3b82f6" />
                   </div>
 
                   {/* Performance */}
@@ -2403,6 +2393,7 @@ export default function AccountPage() {
                     <StatBox label="Wins / Losses" value={displayWins + ' / ' + displayLosses} color="#fff" />
                     <StatBox label="Profit Factor" value={displayProfitFactor} color={displayProfitFactor === '-' ? '#666' : displayProfitFactor === '∞' ? '#22c55e' : parseFloat(displayProfitFactor) >= 1.5 ? '#22c55e' : parseFloat(displayProfitFactor) >= 1 ? '#f59e0b' : '#ef4444'} />
                     <StatBox label="Expectancy" value={'$' + displayExpectancy} color={parseFloat(displayExpectancy) >= 0 ? '#22c55e' : '#ef4444'} />
+                    <StatBox label="Consistency" value={displayConsistencyScore + '%'} color={displayConsistencyScore >= 60 ? '#22c55e' : displayConsistencyScore >= 40 ? '#f59e0b' : '#ef4444'} />
                   </div>
 
                   {/* Trade Analysis */}
@@ -2410,17 +2401,18 @@ export default function AccountPage() {
                     <div style={{ fontSize: '11px', color: '#aaa', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '8px', borderBottom: '1px solid #1a1a22', paddingBottom: '6px', fontWeight: 600 }}>Trades</div>
                     <StatBox label="Total" value={displayTrades.length} color="#fff" />
                     <StatBox label="Trading Days" value={tradingDays} color="#fff" />
-                    <StatBox label="Avg/Day" value={(tradingDays > 0 ? (displayTrades.length / tradingDays).toFixed(1) : 0)} color="#fff" />
-                    <StatBox label="This Week" value={tradesThisWeek} color="#3b82f6" />
+                    <StatBox label="Avg/Week" value={avgPerWeek} color="#fff" />
+                    <StatBox label="This Month" value={tradesThisMonth} color="#3b82f6" />
+                    <StatBox label="Best Day" value={mostCommonDay} color="#f59e0b" />
                   </div>
 
                   {/* Risk & Reward */}
                   <div style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '12px 14px' }}>
                     <div style={{ fontSize: '11px', color: '#aaa', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '8px', borderBottom: '1px solid #1a1a22', paddingBottom: '6px', fontWeight: 600 }}>Risk & Reward</div>
                     <StatBox label="Avg RR" value={displayAvgRR + 'R'} color={parseFloat(displayAvgRR) >= 1.5 ? '#22c55e' : '#fff'} />
-                    <StatBox label="Return/Risk" value={displayAvgRR + 'x'} color="#22c55e" />
-                    <StatBox label="Consistency" value={displayConsistencyScore + '%'} color={displayConsistencyScore >= 60 ? '#22c55e' : displayConsistencyScore >= 40 ? '#f59e0b' : '#ef4444'} />
-                    <StatBox label="Streak" value={(displayStreaks.cs >= 0 ? '+' : '') + displayStreaks.cs} color={displayStreaks.cs >= 0 ? '#22c55e' : '#ef4444'} />
+                    <StatBox label="Most Used RR" value={mostUsedRR} color="#fff" />
+                    <StatBox label="Best RR" value={mostProfitableRR} color="#22c55e" />
+                    <StatBox label="Win/Loss Ratio" value={(displayAvgWin / Math.max(displayAvgLoss, 1)).toFixed(2) + 'x'} color={displayAvgWin >= displayAvgLoss ? '#22c55e' : '#ef4444'} />
                   </div>
 
                   {/* Win/Loss Analysis */}
@@ -2436,9 +2428,9 @@ export default function AccountPage() {
                   <div style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '12px 14px' }}>
                     <div style={{ fontSize: '11px', color: '#aaa', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '8px', borderBottom: '1px solid #1a1a22', paddingBottom: '6px', fontWeight: 600 }}>Direction</div>
                     <StatBox label="Long WR" value={longWr + '%'} color={longWr >= 50 ? '#22c55e' : '#ef4444'} />
-                    <StatBox label="Long Trades" value={localLongTrades.length} color="#fff" />
+                    <StatBox label="Long P&L" value={(longPnl >= 0 ? '+' : '') + '$' + Math.round(longPnl).toLocaleString()} color={longPnl >= 0 ? '#22c55e' : '#ef4444'} />
                     <StatBox label="Short WR" value={shortWr + '%'} color={shortWr >= 50 ? '#22c55e' : '#ef4444'} />
-                    <StatBox label="Short Trades" value={localShortTrades.length} color="#fff" />
+                    <StatBox label="Short P&L" value={(shortPnl >= 0 ? '+' : '') + '$' + Math.round(shortPnl).toLocaleString()} color={shortPnl >= 0 ? '#22c55e' : '#ef4444'} />
                   </div>
 
                   {/* Streaks */}
@@ -2446,116 +2438,45 @@ export default function AccountPage() {
                     <div style={{ fontSize: '11px', color: '#aaa', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '8px', borderBottom: '1px solid #1a1a22', paddingBottom: '6px', fontWeight: 600 }}>Streaks</div>
                     <StatBox label="Current" value={(displayStreaks.cs >= 0 ? '+' : '') + displayStreaks.cs} color={displayStreaks.cs >= 0 ? '#22c55e' : '#ef4444'} />
                     <StatBox label="Best Win" value={'+' + displayStreaks.mw} color="#22c55e" />
-                    <StatBox label="Worst Loss" value={'-' + Math.abs(displayStreaks.ml)} color="#ef4444" />
+                    <StatBox label="Green Days" value={greenDays} color="#22c55e" />
+                    <StatBox label="Red Days" value={redDays} color="#ef4444" />
+                    <StatBox label="Day Streak" value={'+' + bestGreenStreak} color="#22c55e" />
                   </div>
 
-                  {/* AI Insights - Daily rotating */}
-                  <div style={{ background: 'linear-gradient(145deg, #0d0d14 0%, #0a0a10 100%)', border: '1px solid #8b5cf6', borderRadius: '8px', padding: '16px 18px', boxShadow: '0 0 25px rgba(139,92,246,0.2), inset 0 1px 0 rgba(139,92,246,0.15)' }}>
-                    <div style={{ fontSize: '13px', color: '#8b5cf6', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '12px', borderBottom: '1px solid rgba(139,92,246,0.2)', paddingBottom: '8px', fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                      <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><span>✨</span> AI Insight</span>
-                      <span style={{ fontSize: '10px', color: '#999', fontWeight: 400 }}>{new Date().toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}</span>
-                    </div>
-                    <div style={{ fontSize: '14px', color: '#eee', lineHeight: 1.7, fontWeight: 500 }}>
-                      {(() => {
-                        const dayOfYear = Math.floor((new Date() - new Date(new Date().getFullYear(), 0, 0)) / 86400000)
-                        const dayOfWeek = new Date().getDay()
-                        const isWeekend = dayOfWeek === 0 || dayOfWeek === 6
-
-                        if (trades.length < 5) return "Welcome! Add more trades to unlock personalized AI insights. I'll analyze your patterns, identify strengths, and suggest improvements based on your unique trading style."
-
-                        // Calculate additional metrics for insights
-                        const recentTrades = trades.slice(-10)
-                        const recentWins = recentTrades.filter(t => t.outcome === 'win').length
-                        const recentWinrate = recentTrades.length > 0 ? Math.round((recentWins / recentTrades.length) * 100) : 0
-                        const isImproving = recentWinrate > winrate
-                        const avgWinAmount = wins > 0 ? Math.round(trades.filter(t => t.outcome === 'win').reduce((s, t) => s + (parseFloat(t.pnl) || 0), 0) / wins) : 0
-                        const avgLossAmount = losses > 0 ? Math.abs(Math.round(trades.filter(t => t.outcome === 'loss').reduce((s, t) => s + (parseFloat(t.pnl) || 0), 0) / losses)) : 0
-                        const totalTrades = trades.length
-                        const pf = parseFloat(profitFactor) || 0
-                        const rr = parseFloat(avgRR) || 0
-
-                        // Build large pool of insights - always have enough for any day
-                        const insights = []
-
-                        // Performance tier insights (always add one)
-                        if (winrate >= 60 && pf >= 2) {
-                          insights.push(`Outstanding performance! Your ${winrate}% winrate combined with ${profitFactor} profit factor puts you in elite territory. ${mostTradedPair} setups are working well - consider sizing up on high-conviction trades.`)
-                          insights.push(`Elite stats: ${winrate}% winrate with ${profitFactor} PF. You've mastered your edge. Focus on protecting capital during drawdowns and scaling during hot streaks.`)
-                        } else if (winrate >= 50 && pf >= 1.5) {
-                          insights.push(`Solid trading! With ${winrate}% winrate and ${profitFactor} profit factor, you're profitable. ${isImproving ? 'Recent trades show improvement - keep this momentum.' : 'Focus on consistency and avoid overtrading.'}`)
-                          insights.push(`Profitable edge confirmed: ${profitFactor} profit factor means your winners outpace losers. Stick to your process and trust the math.`)
-                        } else if (winrate < 40) {
-                          insights.push(`Your ${winrate}% winrate needs attention. Review entry criteria - are you chasing moves? Consider paper trading new strategies first.`)
-                          insights.push(`At ${winrate}% winrate, you need minimum 2.5R average to breakeven. Focus on improving either winrate OR risk-reward ratio.`)
-                        } else {
-                          insights.push(`Your ${winrate}% winrate is decent. Focus on trade quality over quantity. ${mostTradedPair} is your most traded - don't overexpose.`)
-                          insights.push(`With ${winrate}% winrate, your edge comes from trade selection. Be patient and wait for A+ setups only.`)
-                        }
-
-                        // RR-based insights
-                        if (rr < 1 && rr > 0) {
-                          insights.push(`Your ${avgRR}R average suggests cutting winners short. Aim for minimum 1.5R. Review your exit strategy and give winners room to run.`)
-                        } else if (rr >= 2) {
-                          insights.push(`Excellent ${avgRR}R average! You can be profitable even with 40% winrate. This is a powerful edge - protect it.`)
-                          insights.push(`With ${avgRR}R, you're letting winners run. This is the hallmark of professional traders. Stay disciplined.`)
-                        } else if (rr >= 1) {
-                          insights.push(`${avgRR}R is solid. Combined with your ${winrate}% winrate, you have a mathematical edge. Trust the process.`)
-                        }
-
-                        // Streak insights
-                        if (streaks.cs < -3) {
-                          insights.push(`You're on a ${Math.abs(streaks.cs)}-trade losing streak. Reduce size, take only A+ setups. Your best was ${streaks.mw} wins - you'll get back there.`)
-                        } else if (streaks.cs >= 5) {
-                          insights.push(`${streaks.cs}-trade win streak! Stay disciplined. This is when traders give back profits by oversizing. Stick to your rules.`)
-                        } else if (streaks.cs >= 3) {
-                          insights.push(`Nice ${streaks.cs}-trade streak going! Confidence is good but don't get complacent. Same process, same sizing.`)
-                        }
-
-                        // Win/loss amount insight
-                        if (avgWinAmount > 0 && avgLossAmount > 0) {
-                          const ratio = (avgWinAmount / avgLossAmount).toFixed(1)
-                          if (parseFloat(ratio) < 1) {
-                            insights.push(`Average win ($${avgWinAmount}) is smaller than average loss ($${avgLossAmount}). Consider wider TPs or tighter SLs.`)
-                          } else if (parseFloat(ratio) >= 1.5) {
-                            insights.push(`Your $${avgWinAmount} avg win vs $${avgLossAmount} avg loss shows good risk management. Keep this ratio healthy.`)
-                          }
-                        }
-
-                        // Volume-based insights
-                        if (totalTrades >= 100) {
-                          insights.push(`With ${totalTrades} trades logged, your statistics are reliable. Your patterns are clear - trust what the data shows.`)
-                        } else if (totalTrades >= 50) {
-                          insights.push(`${totalTrades} trades gives decent sample size. Patterns are emerging - focus on what's consistently working.`)
-                        }
-
-                        // General wisdom insights (always available as fallbacks)
-                        const generalInsights = [
-                          `Review your best ${mostTradedPair} trades. What made them work? Look for common patterns in setup, timing, and execution.`,
-                          `Consistency beats perfection. Focus on executing your edge repeatedly rather than chasing the perfect trade.`,
-                          `Your trading journal is your edge. Regular review separates professionals from amateurs. Keep logging diligently.`,
-                          `Position sizing is the silent killer. Even great setups fail if you're risking too much. Protect your capital first.`,
-                          `The best traders lose often - they just lose small. Make sure your losses stay controlled and your wins run.`,
-                          `Market conditions change. What works now may not work later. Stay adaptable and keep testing your assumptions.`,
-                          `Emotional trades are expensive trades. If you're not calm, you're not ready. Walk away and come back fresh.`,
-                          `Your edge is in your process, not individual trades. Trust your system and let statistics play out.`,
-                          `Review your losing trades without judgment. Each loss is data. What can you learn and improve?`,
-                          `The goal isn't being right - it's making money. Sometimes the best trade is no trade at all.`
-                        ]
-
-                        // Add general insights based on day to ensure variety
-                        insights.push(generalInsights[dayOfYear % generalInsights.length])
-                        insights.push(generalInsights[(dayOfYear + 3) % generalInsights.length])
-
-                        // Weekend context
-                        if (isWeekend) {
-                          insights.push(`Weekend review: ${totalTrades} trades logged. Analyze your winners, understand your losers, and plan next week.`)
-                        }
-
-                        // Return rotated insight - always have enough
-                        return insights[dayOfYear % insights.length] || generalInsights[dayOfYear % generalInsights.length]
-                      })()}
-                    </div>
+                  {/* Notes Widget */}
+                  <div style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '12px 14px' }}>
+                    <div style={{ fontSize: '11px', color: '#aaa', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '8px', borderBottom: '1px solid #1a1a22', paddingBottom: '6px', fontWeight: 600 }}>Notes</div>
+                    <StatBox label="Trades w/ Notes" value={tradesWithNotes} color="#3b82f6" />
+                    <StatBox label="Notes Rate" value={displayTrades.length > 0 ? Math.round((tradesWithNotes / displayTrades.length) * 100) + '%' : '0%'} color={tradesWithNotes / Math.max(displayTrades.length, 1) >= 0.5 ? '#22c55e' : '#f59e0b'} />
+                    <StatBox label="This Week" value={tradesThisWeek} color="#fff" />
+                    <StatBox label="This Month" value={tradesThisMonth} color="#fff" />
                   </div>
+                </div>
+              )
+            })()}
+
+            {/* AI Insight Bar - spans full width */}
+            {trades.length >= 5 && (() => {
+              const dayOfYear = Math.floor((new Date() - new Date(new Date().getFullYear(), 0, 0)) / 86400000)
+              const pf = parseFloat(profitFactor) || 0
+              const rr = parseFloat(avgRR) || 0
+              const insights = []
+              if (winrate >= 60 && pf >= 2) insights.push(`Outstanding! ${winrate}% WR with ${profitFactor} PF puts you in elite territory.`)
+              else if (winrate >= 50 && pf >= 1.5) insights.push(`Solid edge: ${winrate}% WR, ${profitFactor} PF. Stay consistent.`)
+              else if (winrate < 40) insights.push(`${winrate}% WR needs work. Need 2.5R avg to breakeven at this rate.`)
+              else insights.push(`${winrate}% WR is decent. Focus on quality over quantity.`)
+              if (rr >= 2) insights.push(`Excellent ${avgRR}R avg! Profitable even at 40% WR.`)
+              if (streaks.cs < -3) insights.push(`On a ${Math.abs(streaks.cs)}-loss streak. Reduce size, A+ setups only.`)
+              if (streaks.cs >= 5) insights.push(`${streaks.cs}-win streak! Stay disciplined, don't oversize.`)
+              const generalInsights = [`Review your best ${mostTradedPair} trades for patterns.`, `Consistency beats perfection.`, `Your journal is your edge.`, `Position sizing is key.`, `Best traders lose small.`]
+              insights.push(generalInsights[dayOfYear % generalInsights.length])
+              const insight = insights[dayOfYear % insights.length]
+              return (
+                <div style={{ background: 'linear-gradient(90deg, rgba(139,92,246,0.1) 0%, rgba(139,92,246,0.05) 100%)', border: '1px solid rgba(139,92,246,0.3)', borderRadius: '8px', padding: '12px 16px', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <span style={{ fontSize: '16px' }}>✨</span>
+                  <span style={{ fontSize: '11px', color: '#8b5cf6', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px' }}>AI</span>
+                  <span style={{ fontSize: '13px', color: '#ccc', flex: 1 }}>{insight}</span>
+                  <span style={{ fontSize: '10px', color: '#666' }}>{new Date().toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}</span>
                 </div>
               )
             })()}
@@ -2786,6 +2707,11 @@ export default function AccountPage() {
                 <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#22c55e' }} />
                 <span style={{ fontSize: '13px', color: '#fff', fontWeight: 600, letterSpacing: '0.5px' }}>FILTER TRADES</span>
               </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <button onClick={() => setDraftFilters({ dateFrom: '', dateTo: '', outcome: '', direction: '', symbol: '', session: '', timeframe: '', confidence: '', rr: '', rating: '', quickSelect: '' })} style={{ padding: '6px 12px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '6px', color: '#888', fontSize: '12px', cursor: 'pointer' }}>Clear</button>
+                <button onClick={() => { setFilters({...draftFilters}); setShowFilters(false) }} style={{ padding: '6px 12px', background: '#22c55e', border: 'none', borderRadius: '6px', color: '#fff', fontWeight: 600, fontSize: '12px', cursor: 'pointer' }}>Apply</button>
+                <button onClick={() => setShowFilters(false)} style={{ padding: '6px 8px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '6px', color: '#666', fontSize: '14px', cursor: 'pointer', lineHeight: 1 }}>×</button>
+              </div>
             </div>
 
             {/* Date Range Row */}
@@ -2888,12 +2814,6 @@ export default function AccountPage() {
               </div>
             </div>
 
-            {/* Actions */}
-            <div style={{ display: 'flex', gap: '12px', marginTop: '12px' }}>
-              <button onClick={() => setDraftFilters({ dateFrom: '', dateTo: '', outcome: '', direction: '', symbol: '', session: '', timeframe: '', confidence: '', rr: '', rating: '', quickSelect: '' })} style={{ flex: 1, padding: '12px', background: '#141418', border: '1px solid #1a1a22', borderRadius: '8px', color: '#888', fontSize: '13px', cursor: 'pointer' }}>Clear All</button>
-              <button onClick={() => { setFilters({...draftFilters}); setShowFilters(false) }} style={{ flex: 1, padding: '12px', background: '#22c55e', border: 'none', borderRadius: '8px', color: '#fff', fontWeight: 600, fontSize: '13px', cursor: 'pointer' }}>Apply Filters</button>
-            </div>
-
             {/* Filter Preview */}
             {Object.values(draftFilters).some(v => v && v !== '') && (
               <div style={{ marginTop: '12px', padding: '10px', background: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.3)', borderRadius: '6px', textAlign: 'center' }}>
@@ -2927,6 +2847,15 @@ export default function AccountPage() {
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#22c55e' }} />
                 <span style={{ fontSize: '13px', color: '#fff', fontWeight: 600, letterSpacing: '0.5px' }}>LOG TRADE</span>
+                <button onClick={() => { setShowAddTrade(false); setShowEditInputs(true) }} style={{ padding: '4px 8px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '4px', color: '#666', fontSize: '11px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                  Edit
+                </button>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <button onClick={() => setShowAddTrade(false)} style={{ padding: '6px 12px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '6px', color: '#888', fontSize: '12px', cursor: 'pointer' }}>Cancel</button>
+                <button onClick={addTrade} disabled={saving || !tradeForm.symbol || !tradeForm.pnl} style={{ padding: '6px 12px', background: (saving || !tradeForm.symbol || !tradeForm.pnl) ? '#1a1a22' : '#22c55e', border: 'none', borderRadius: '6px', color: (saving || !tradeForm.symbol || !tradeForm.pnl) ? '#666' : '#fff', fontWeight: 600, fontSize: '12px', cursor: (saving || !tradeForm.symbol || !tradeForm.pnl) ? 'not-allowed' : 'pointer' }}>{saving ? '...' : 'Save'}</button>
+                <button onClick={() => setShowAddTrade(false)} style={{ padding: '6px 8px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '6px', color: '#666', fontSize: '14px', cursor: 'pointer', lineHeight: 1 }}>×</button>
               </div>
             </div>
 
@@ -3060,25 +2989,25 @@ export default function AccountPage() {
               </div>
             )}
 
-            {/* Buttons */}
-            <div style={{ display: 'flex', gap: '12px', marginTop: '12px' }}>
-              <button onClick={addTrade} disabled={saving || !tradeForm.symbol || !tradeForm.pnl} style={{ flex: 1, padding: '12px', background: (saving || !tradeForm.symbol || !tradeForm.pnl) ? '#1a1a22' : 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)', border: 'none', borderRadius: '8px', color: (saving || !tradeForm.symbol || !tradeForm.pnl) ? '#666' : '#fff', fontWeight: 600, fontSize: '14px', cursor: (saving || !tradeForm.symbol || !tradeForm.pnl) ? 'not-allowed' : 'pointer' }}>{saving ? '...' : 'Log Trade'}</button>
-              <button onClick={() => { setShowAddTrade(false); setShowEditInputs(true) }} style={{ padding: '12px 16px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '8px', color: '#888', fontWeight: 600, fontSize: '13px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-                Edit
-              </button>
-              <button onClick={() => setShowAddTrade(false)} style={{ padding: '12px 16px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '8px', color: '#888', fontWeight: 600, fontSize: '13px', cursor: 'pointer' }}>Cancel</button>
             </div>
-          </div>
         </div>
       )}
 
       {showEditInputs && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.9)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 101 }} onClick={() => setShowEditInputs(false)}>
-          <div style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '12px', padding: '28px', width: '900px', maxHeight: '85vh', overflowY: 'auto' }} onClick={e => e.stopPropagation()}>
-            <div style={{ marginBottom: '20px' }}>
-              <h2 style={{ fontSize: '20px', fontWeight: 700, color: '#fff', marginBottom: '4px' }}>Edit Columns</h2>
-              <p style={{ fontSize: '12px', color: '#555' }}>Configure fields for {account?.name}</p>
+          <div style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '12px', padding: '28px', width: '1100px', maxHeight: '90vh', overflowY: 'auto' }} onClick={e => e.stopPropagation()}>
+            {/* Header */}
+            <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '20px', paddingBottom: '16px', borderBottom: '1px solid #1a1a22' }}>
+              <div>
+                <h2 style={{ fontSize: '20px', fontWeight: 700, color: '#fff', marginBottom: '4px' }}>Edit Columns</h2>
+                <p style={{ fontSize: '12px', color: '#555', margin: 0 }}>Configure fields for {account?.name}</p>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <button onClick={() => setShowRestoreDefaults(true)} style={{ padding: '6px 12px', background: 'transparent', border: '1px solid #f59e0b', borderRadius: '6px', color: '#f59e0b', fontSize: '12px', cursor: 'pointer' }}>Restore Defaults</button>
+                <button onClick={() => setShowEditInputs(false)} style={{ padding: '6px 12px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '6px', color: '#888', fontSize: '12px', cursor: 'pointer' }}>Cancel</button>
+                <button onClick={saveInputs} style={{ padding: '6px 12px', background: '#22c55e', border: 'none', borderRadius: '6px', color: '#fff', fontWeight: 600, fontSize: '12px', cursor: 'pointer' }}>Save</button>
+                <button onClick={() => setShowEditInputs(false)} style={{ padding: '6px 8px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '6px', color: '#666', fontSize: '14px', cursor: 'pointer', lineHeight: 1 }}>×</button>
+              </div>
             </div>
 
             {/* Core Fields Section - in bordered container */}
@@ -3088,7 +3017,7 @@ export default function AccountPage() {
                 {inputs.map((input, i) => input.fixed && !input.hidden && (
                   <div key={input.id} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 12px', background: '#141418', borderRadius: '6px' }}>
                     <input type="checkbox" checked={input.enabled} onChange={e => updateInput(i, 'enabled', e.target.checked)} style={{ width: '15px', height: '15px', accentColor: '#22c55e' }} />
-                    <span style={{ minWidth: '70px', fontSize: '13px', color: input.enabled ? '#fff' : '#555' }}>{input.label}</span>
+                    <input type="text" value={input.label} onChange={e => updateInput(i, 'label', e.target.value)} style={{ minWidth: '80px', width: '100px', padding: '6px 8px', background: '#0a0a0e', border: '1px solid #2a2a35', borderRadius: '4px', color: input.enabled ? '#fff' : '#555', fontSize: '12px' }} />
                     <select value={input.type} onChange={e => updateInput(i, 'type', e.target.value)} style={{ padding: '6px 8px', background: '#0a0a0e', border: '1px solid #2a2a35', borderRadius: '4px', color: '#fff', fontSize: '11px', flex: 1 }}>
                       <option value="text">Text</option>
                       <option value="number">Number</option>
@@ -3096,6 +3025,7 @@ export default function AccountPage() {
                       <option value="textarea">Notes</option>
                       <option value="rating">Rating</option>
                       <option value="date">Date</option>
+                      <option value="time">Time</option>
                       <option value="file">Image</option>
                     </select>
                     {input.type === 'select' && (
@@ -3127,6 +3057,7 @@ export default function AccountPage() {
                         <option value="textarea">Notes</option>
                         <option value="rating">Rating</option>
                         <option value="date">Date</option>
+                        <option value="time">Time</option>
                         <option value="file">Image</option>
                       </select>
                       {input.type === 'select' && (
@@ -3156,10 +3087,25 @@ export default function AccountPage() {
               </div>
             )}
 
-            {/* Action buttons */}
+            </div>
+        </div>
+      )}
+
+      {/* Restore Defaults Confirmation */}
+      {showRestoreDefaults && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.9)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 103 }} onClick={() => setShowRestoreDefaults(false)}>
+          <div style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '12px', padding: '24px', width: '400px' }} onClick={e => e.stopPropagation()}>
+            <h2 style={{ fontSize: '18px', fontWeight: 700, color: '#fff', marginBottom: '8px' }}>Restore Defaults?</h2>
+            <p style={{ fontSize: '13px', color: '#888', marginBottom: '20px' }}>This will reset all default field names and settings to their original values. Custom fields will not be affected.</p>
             <div style={{ display: 'flex', gap: '12px' }}>
-              <button onClick={saveInputs} style={{ flex: 1, padding: '12px', background: '#22c55e', border: 'none', borderRadius: '8px', color: '#fff', fontWeight: 600, fontSize: '13px', cursor: 'pointer' }}>Save</button>
-              <button onClick={() => setShowEditInputs(false)} style={{ flex: 1, padding: '12px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '8px', color: '#888', fontWeight: 600, fontSize: '13px', cursor: 'pointer' }}>Cancel</button>
+              <button onClick={() => {
+                setInputs(prev => {
+                  const customFields = prev.filter(inp => !inp.fixed)
+                  return [...defaultInputs, ...customFields]
+                })
+                setShowRestoreDefaults(false)
+              }} style={{ flex: 1, padding: '12px', background: '#f59e0b', border: 'none', borderRadius: '8px', color: '#000', fontWeight: 600, fontSize: '13px', cursor: 'pointer' }}>Yes, Restore</button>
+              <button onClick={() => setShowRestoreDefaults(false)} style={{ flex: 1, padding: '12px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '8px', color: '#888', fontWeight: 600, fontSize: '13px', cursor: 'pointer' }}>Cancel</button>
             </div>
           </div>
         </div>
