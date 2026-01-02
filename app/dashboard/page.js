@@ -380,7 +380,8 @@ export default function DashboardPage() {
     const belowStart = minBal < start // Red if balance ever went below starting
     const yStep = Math.ceil((maxBal - minBal) / 6 / 1000) * 1000 || 1000
     const yMax = Math.ceil(maxBal / yStep) * yStep
-    const yMin = Math.floor(minBal / yStep) * yStep
+    // Don't show unnecessary space below - use actual min or start, whichever is lower
+    const yMin = minBal >= 0 ? Math.max(0, Math.floor(Math.min(minBal, start) / yStep) * yStep) : Math.floor(minBal / yStep) * yStep
     const yRange = yMax - yMin || yStep
     
     // Calculate zero line position (percentage from top) - for when actual balance goes negative
@@ -475,9 +476,12 @@ export default function DashboardPage() {
 
     return (
       <div style={{ position: 'relative', width: '100%', height: '100%', display: 'flex' }}>
-        <div style={{ width: '42px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', paddingBottom: '26px', flexShrink: 0, paddingRight: '4px', position: 'relative' }}>
+        <div style={{ width: '46px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', paddingBottom: '26px', flexShrink: 0, position: 'relative' }}>
           {yLabels.map((v, i) => (
-            <span key={i} style={{ fontSize: '10px', color: '#999', lineHeight: 1, textAlign: 'right' }}>{v >= 1000000 ? `$${(v/1000000).toFixed(1)}M` : v >= 1000 ? `$${(v/1000).toFixed(0)}k` : `$${v}`}</span>
+            <div key={i} style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end' }}>
+              <span style={{ fontSize: '10px', color: '#999', lineHeight: 1, textAlign: 'right' }}>{v >= 1000000 ? `$${(v/1000000).toFixed(1)}M` : v >= 1000 ? `$${(v/1000).toFixed(0)}k` : `$${v}`}</span>
+              <div style={{ width: '4px', height: '1px', background: '#2a2a35', marginLeft: '3px' }} />
+            </div>
           ))}
           {/* Start balance on Y-axis */}
           {startLineY !== null && !yLabels.some(v => Math.abs(v - start) < (yLabels[0] - yLabels[1]) * 0.3) && (
@@ -504,9 +508,9 @@ export default function DashboardPage() {
                   <stop offset="100%" stopColor="#ef4444" stopOpacity="0" />
                 </linearGradient>
               </defs>
-              {/* Start line inside SVG */}
+              {/* Start line inside SVG - stops before label */}
               {startLineY !== null && (
-                <line x1="0" y1={startY} x2={svgW} y2={startY} stroke="#666" strokeWidth="1" strokeDasharray="4,3" vectorEffect="non-scaling-stroke" />
+                <line x1="0" y1={startY} x2={svgW * 0.88} y2={startY} stroke="#666" strokeWidth="1" strokeDasharray="4,3" vectorEffect="non-scaling-stroke" />
               )}
               {greenAreaPath && <path d={greenAreaPath} fill="url(#areaGradGreen)" />}
               {redAreaPath && <path d={redAreaPath} fill="url(#areaGradRed)" />}
@@ -516,7 +520,7 @@ export default function DashboardPage() {
             {/* Start label */}
             {startLineY !== null && (
               <span style={{ position: 'absolute', right: '4px', top: `${startLineY}%`, transform: 'translateY(-50%)', fontSize: '9px', color: '#888', background: '#0d0d12', padding: '0 4px' }}>
-                {start >= 1000 ? `$${(start/1000).toFixed(0)}k` : `$${start}`} Start
+                Start
               </span>
             )}
 

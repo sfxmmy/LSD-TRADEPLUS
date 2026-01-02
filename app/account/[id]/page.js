@@ -1416,7 +1416,9 @@ export default function AccountPage() {
                             }
                             const yStep = getNiceStep(range, targetLabels) || 100
                             const yMax = Math.ceil(maxBal / yStep) * yStep
-                            const yMin = minBal >= 0 ? Math.floor(minBal / yStep) * yStep : Math.floor(minBal / yStep) * yStep
+                            // Don't show unnecessary space below - use actual min or starting balance, whichever is lower
+                            const effectiveMin = equityCurveGroupBy === 'total' ? Math.min(minBal, displayStartingBalance) : minBal
+                            const yMin = minBal >= 0 ? Math.max(0, Math.floor(effectiveMin / yStep) * yStep) : Math.floor(minBal / yStep) * yStep
                             const yRange = yMax - yMin || yStep
                             
                             const yLabels = []
@@ -1509,8 +1511,13 @@ export default function AccountPage() {
 
                             return (
                               <>
-                                <div style={{ width: '24px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', flexShrink: 0, paddingRight: '2px', paddingBottom: '22px' }}>
-                                  {yLabels.map((v, i) => <span key={i} style={{ fontSize: '8px', color: '#999', lineHeight: 1, textAlign: 'right' }}>{equityCurveGroupBy === 'total' ? `$${(v/1000).toFixed(v >= 1000 ? 0 : 1)}k` : `$${v}`}</span>)}
+                                <div style={{ width: '28px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', flexShrink: 0, paddingBottom: '22px' }}>
+                                  {yLabels.map((v, i) => (
+                                    <div key={i} style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end' }}>
+                                      <span style={{ fontSize: '8px', color: '#999', lineHeight: 1, textAlign: 'right' }}>{equityCurveGroupBy === 'total' ? `$${(v/1000).toFixed(v >= 1000 ? 0 : 1)}k` : `$${v}`}</span>
+                                      <div style={{ width: '3px', height: '1px', background: '#2a2a35', marginLeft: '2px' }} />
+                                    </div>
+                                  ))}
                                 </div>
                                 <div style={{ flex: 1, display: 'flex', flexDirection: 'column', position: 'relative' }}>
                                   <div style={{ flex: 1, position: 'relative', borderLeft: '1px solid #2a2a35', borderBottom: hasNegative ? 'none' : '1px solid #2a2a35', overflow: 'visible' }}>
@@ -1522,14 +1529,14 @@ export default function AccountPage() {
                                     {zeroY !== null && (
                                       <div style={{ position: 'absolute', left: 0, right: 0, top: `${zeroY}%`, borderTop: '1px solid #2a2a35', zIndex: 1 }} />
                                     )}
-                                    {/* Starting balance dotted line */}
+                                    {/* Starting balance dotted line - stops before label */}
                                     {startLineY !== null && (
-                                      <div style={{ position: 'absolute', left: 0, right: 0, top: `${startLineY}%`, borderTop: '1px dashed #666', zIndex: 1 }} />
+                                      <div style={{ position: 'absolute', left: 0, right: '40px', top: `${startLineY}%`, borderTop: '1px dashed #666', zIndex: 1 }} />
                                     )}
-                                    {/* Start label at end of line like dashboard */}
+                                    {/* Start label at end of line */}
                                     {startLineY !== null && (
                                       <span style={{ position: 'absolute', right: '4px', top: `${startLineY}%`, transform: 'translateY(-50%)', fontSize: '9px', color: '#888', background: '#0d0d12', padding: '0 4px' }}>
-                                        {displayStartingBalance >= 1000 ? `$${(displayStartingBalance/1000).toFixed(0)}k` : `$${displayStartingBalance}`} Start
+                                        Start
                                       </span>
                                     )}
                                     <svg style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', overflow: 'visible' }} viewBox={`0 0 ${svgW} ${svgH}`} preserveAspectRatio="none"
@@ -1771,7 +1778,7 @@ export default function AccountPage() {
                                       return (
                                         <div key={i} style={{ position: 'absolute', left: `${l.pct}%`, transform: 'translateX(-50%)', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                                           <div style={{ width: '1px', height: '5px', background: '#2a2a35' }} />
-                                          <span style={{ fontSize: '9px', color: '#666', marginTop: '3px', whiteSpace: 'nowrap' }}>{l.label}</span>
+                                          <span style={{ fontSize: '9px', color: '#999', marginTop: '3px', whiteSpace: 'nowrap' }}>{l.label}</span>
                                         </div>
                                       )
                                     })}
@@ -2044,7 +2051,7 @@ export default function AccountPage() {
                               return (
                                 <div key={i} style={{ position: 'absolute', left: `${l.pct}%`, transform: 'translateX(-50%)', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                                   <div style={{ width: '1px', height: '5px', background: '#2a2a35' }} />
-                                  <span style={{ fontSize: '9px', color: '#666', marginTop: '3px', whiteSpace: 'nowrap' }}>{l.label}</span>
+                                  <span style={{ fontSize: '9px', color: '#999', marginTop: '3px', whiteSpace: 'nowrap' }}>{l.label}</span>
                                 </div>
                               )
                             })}
@@ -3484,8 +3491,13 @@ export default function AccountPage() {
                 return (
                   <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
                     <div style={{ flex: 1, display: 'flex' }}>
-                      <div style={{ width: '40px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', flexShrink: 0, paddingBottom: '20px', paddingRight: '4px' }}>
-                        {yLabels.map((v, i) => <span key={i} style={{ fontSize: '10px', color: '#999', textAlign: 'right' }}>{equityCurveGroupBy === 'total' ? `$${(v/1000).toFixed(v >= 1000 ? 0 : 1)}k` : `$${v}`}</span>)}
+                      <div style={{ width: '44px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', flexShrink: 0, paddingBottom: '20px' }}>
+                        {yLabels.map((v, i) => (
+                          <div key={i} style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end' }}>
+                            <span style={{ fontSize: '10px', color: '#999', textAlign: 'right' }}>{equityCurveGroupBy === 'total' ? `$${(v/1000).toFixed(v >= 1000 ? 0 : 1)}k` : `$${v}`}</span>
+                            <div style={{ width: '4px', height: '1px', background: '#2a2a35', marginLeft: '3px' }} />
+                          </div>
+                        ))}
                       </div>
                       <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
                         <div style={{ flex: 1, position: 'relative', borderLeft: '1px solid #2a2a35', borderBottom: hasNegative ? 'none' : '1px solid #2a2a35', overflow: 'visible' }}>
