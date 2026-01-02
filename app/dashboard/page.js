@@ -831,7 +831,7 @@ export default function DashboardPage() {
 
               {/* Action Buttons */}
               <div style={{ display: 'flex', gap: '12px' }}>
-                <button onClick={submitQuickTrade} disabled={submittingTrade || !quickTradeSymbol.trim() || !quickTradePnl} style={{ flex: 1, padding: '12px', background: (submittingTrade || !quickTradeSymbol.trim() || !quickTradePnl) ? '#1a1a22' : 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)', border: 'none', borderRadius: '8px', color: (submittingTrade || !quickTradeSymbol.trim() || !quickTradePnl) ? '#666' : '#fff', fontWeight: 600, fontSize: '13px', cursor: (submittingTrade || !quickTradeSymbol.trim() || !quickTradePnl) ? 'not-allowed' : 'pointer', transition: 'all 0.2s' }}>
+                <button onClick={submitQuickTrade} disabled={submittingTrade || !quickTradeSymbol.trim() || !quickTradePnl} style={{ flex: 1, padding: '12px', background: (submittingTrade || !quickTradeSymbol.trim() || !quickTradePnl) ? '#1a1a22' : 'linear-gradient(135deg, #9333ea 0%, #7c3aed 100%)', border: 'none', borderRadius: '8px', color: (submittingTrade || !quickTradeSymbol.trim() || !quickTradePnl) ? '#666' : '#fff', fontWeight: 600, fontSize: '13px', cursor: (submittingTrade || !quickTradeSymbol.trim() || !quickTradePnl) ? 'not-allowed' : 'pointer', transition: 'all 0.2s', boxShadow: (submittingTrade || !quickTradeSymbol.trim() || !quickTradePnl) ? 'none' : '0 0 20px rgba(147,51,234,0.5), 0 0 40px rgba(147,51,234,0.3)' }}>
                   {submittingTrade ? 'Adding...' : 'Log Trade'}
                 </button>
                 <button onClick={() => setShowEditInputsModal(true)} style={{ padding: '12px 14px', background: '#0a0a0f', border: '1px solid #2a2a35', borderRadius: '8px', color: '#888', fontWeight: 500, fontSize: '12px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}>
@@ -1587,13 +1587,14 @@ export default function DashboardPage() {
                 style={{
                   width: '100%',
                   padding: '16px',
-                  background: (submittingTrade || !quickTradeSymbol.trim() || !quickTradePnl) ? '#1a1a22' : 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)',
+                  background: (submittingTrade || !quickTradeSymbol.trim() || !quickTradePnl) ? '#1a1a22' : 'linear-gradient(135deg, #9333ea 0%, #7c3aed 100%)',
                   border: 'none',
                   borderRadius: '12px',
                   color: (submittingTrade || !quickTradeSymbol.trim() || !quickTradePnl) ? '#666' : '#fff',
                   fontWeight: 700,
                   fontSize: '16px',
-                  cursor: (submittingTrade || !quickTradeSymbol.trim() || !quickTradePnl) ? 'not-allowed' : 'pointer'
+                  cursor: (submittingTrade || !quickTradeSymbol.trim() || !quickTradePnl) ? 'not-allowed' : 'pointer',
+                  boxShadow: (submittingTrade || !quickTradeSymbol.trim() || !quickTradePnl) ? 'none' : '0 0 20px rgba(147,51,234,0.5), 0 0 40px rgba(147,51,234,0.3)'
                 }}
               >
                 {submittingTrade ? 'Adding Trade...' : 'Log Trade'}

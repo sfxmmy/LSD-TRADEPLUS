@@ -778,7 +778,7 @@ export default function AccountPage() {
             {activeTab === 'trades' && !selectMode && (
               <button onClick={() => setShowEditInputs(true)} style={{ padding: '12px 16px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '6px', color: '#fff', fontSize: '13px', cursor: 'pointer', lineHeight: 1 }}>Edit Columns</button>
             )}
-            {!selectMode && <button onClick={() => setShowAddTrade(true)} style={{ padding: '12px 24px', background: '#22c55e', border: 'none', borderRadius: '6px', color: '#fff', fontWeight: 600, fontSize: '14px', cursor: 'pointer', lineHeight: 1 }}>+ LOG TRADE</button>}
+            {!selectMode && <button onClick={() => setShowAddTrade(true)} style={{ padding: '12px 24px', background: 'linear-gradient(135deg, #9333ea 0%, #7c3aed 100%)', border: 'none', borderRadius: '6px', color: '#fff', fontWeight: 600, fontSize: '14px', cursor: 'pointer', lineHeight: 1, boxShadow: '0 0 20px rgba(147,51,234,0.5), 0 0 40px rgba(147,51,234,0.3)' }}>+ LOG TRADE</button>}
           </div>
         </div>
       )}
@@ -787,13 +787,13 @@ export default function AccountPage() {
       {isMobile && (
         <div style={{ position: 'fixed', top: '53px', left: 0, right: 0, zIndex: 40, padding: '10px 16px', background: '#0a0a0f', borderBottom: '1px solid #1a1a22', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <span style={{ fontSize: '18px', fontWeight: 700, color: '#fff' }}>{account?.name}</span>
-          <button onClick={() => setShowAddTrade(true)} style={{ padding: '8px 16px', background: '#22c55e', border: 'none', borderRadius: '6px', color: '#fff', fontWeight: 600, fontSize: '12px', cursor: 'pointer' }}>+ ADD</button>
+          <button onClick={() => setShowAddTrade(true)} style={{ padding: '8px 16px', background: 'linear-gradient(135deg, #9333ea 0%, #7c3aed 100%)', border: 'none', borderRadius: '6px', color: '#fff', fontWeight: 600, fontSize: '12px', cursor: 'pointer', boxShadow: '0 0 15px rgba(147,51,234,0.5)' }}>+ ADD</button>
         </div>
       )}
 
       {/* FIXED SIDEBAR - desktop only, starts under header */}
       {!isMobile && (
-        <div style={{ position: 'fixed', top: '65px', left: 0, bottom: 0, width: '180px', padding: '16px', background: '#0a0a0f', zIndex: 45, display: 'flex', flexDirection: 'column', borderRight: '1px solid #1a1a22' }}>
+        <div style={{ position: 'fixed', top: '65px', left: 0, bottom: 0, width: '180px', padding: '12px', background: '#0a0a0f', zIndex: 45, display: 'flex', flexDirection: 'column', borderRight: '1px solid #1a1a22' }}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginTop: '4px' }}>
           {['trades', 'statistics', 'notes'].map((tab) => (
             <button
@@ -804,7 +804,8 @@ export default function AccountPage() {
                 background: activeTab === tab ? '#22c55e' : 'transparent',
                 border: activeTab === tab ? 'none' : '1px solid #2a2a35',
                 borderRadius: '8px', color: activeTab === tab ? '#fff' : '#888',
-                fontSize: '13px', fontWeight: 600, textTransform: 'uppercase', cursor: 'pointer', textAlign: 'center'
+                fontSize: '13px', fontWeight: 600, textTransform: 'uppercase', cursor: 'pointer', textAlign: 'center',
+                boxShadow: activeTab === tab ? '0 0 20px rgba(34,197,94,0.5), 0 0 40px rgba(34,197,94,0.3)' : 'none'
               }}
             >
               {tab}
@@ -847,25 +848,23 @@ export default function AccountPage() {
                     onClick={() => setShowCumulativeStats(false)}
                     style={{
                       width: '100%',
-                      padding: '10px 12px',
-                      background: !showCumulativeStats ? 'rgba(34,197,94,0.15)' : '#0a0a0f',
-                      border: `1px solid ${!showCumulativeStats ? 'rgba(34,197,94,0.5)' : '#1a1a22'}`,
+                      padding: '8px 10px',
+                      background: !showCumulativeStats ? 'rgba(34,197,94,0.1)' : 'transparent',
+                      border: `1px solid ${!showCumulativeStats ? 'rgba(34,197,94,0.3)' : '#1a1a22'}`,
                       borderRadius: '6px',
-                      color: !showCumulativeStats ? '#22c55e' : '#888',
-                      fontSize: '12px',
-                      fontWeight: 600,
+                      color: !showCumulativeStats ? '#22c55e' : '#666',
+                      fontSize: '11px',
+                      fontWeight: 500,
                       cursor: 'pointer',
-                      textAlign: 'left',
-                      boxShadow: !showCumulativeStats ? '0 0 10px rgba(34,197,94,0.2), inset 0 0 15px rgba(34,197,94,0.05)' : 'none'
+                      textAlign: 'left'
                     }}
                   >
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                       <div style={{
-                        width: '6px',
-                        height: '6px',
+                        width: '5px',
+                        height: '5px',
                         borderRadius: '50%',
-                        background: !showCumulativeStats ? '#22c55e' : '#444',
-                        boxShadow: !showCumulativeStats ? '0 0 4px #22c55e' : 'none'
+                        background: !showCumulativeStats ? '#22c55e' : '#444'
                       }} />
                       This Journal
                     </div>
@@ -875,25 +874,23 @@ export default function AccountPage() {
                       onClick={() => setShowCumulativeStats(true)}
                       style={{
                         width: '100%',
-                        padding: '10px 12px',
-                        background: showCumulativeStats ? 'rgba(34,197,94,0.15)' : '#0a0a0f',
-                        border: `1px solid ${showCumulativeStats ? 'rgba(34,197,94,0.5)' : '#1a1a22'}`,
+                        padding: '8px 10px',
+                        background: showCumulativeStats ? 'rgba(34,197,94,0.1)' : 'transparent',
+                        border: `1px solid ${showCumulativeStats ? 'rgba(34,197,94,0.3)' : '#1a1a22'}`,
                         borderRadius: '6px',
-                        color: showCumulativeStats ? '#22c55e' : '#888',
-                        fontSize: '12px',
-                        fontWeight: 600,
+                        color: showCumulativeStats ? '#22c55e' : '#666',
+                        fontSize: '11px',
+                        fontWeight: 500,
                         cursor: 'pointer',
-                        textAlign: 'left',
-                        boxShadow: showCumulativeStats ? '0 0 10px rgba(34,197,94,0.2), inset 0 0 15px rgba(34,197,94,0.05)' : 'none'
+                        textAlign: 'left'
                       }}
                     >
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                         <div style={{
-                          width: '6px',
-                          height: '6px',
+                          width: '5px',
+                          height: '5px',
                           borderRadius: '50%',
-                          background: showCumulativeStats ? '#22c55e' : '#444',
-                          boxShadow: showCumulativeStats ? '0 0 4px #22c55e' : 'none'
+                          background: showCumulativeStats ? '#22c55e' : '#444'
                         }} />
                         All Journals
                       </div>
