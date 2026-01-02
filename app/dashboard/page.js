@@ -401,8 +401,8 @@ export default function DashboardPage() {
         const dataIdx = Math.floor(i * (datesWithTrades.length - 1) / Math.max(1, numLabels - 1))
         const item = datesWithTrades[dataIdx]
         const date = new Date(item.date)
-        // Evenly space labels from 0% to 100%
-        const pct = numLabels > 1 ? (i / (numLabels - 1)) * 100 : 50
+        // Evenly space labels from 5% to 95% so ticks center on text
+        const pct = numLabels > 1 ? 5 + (i / (numLabels - 1)) * 90 : 50
         xLabels.push({ label: `${String(date.getDate()).padStart(2, '0')}/${String(date.getMonth() + 1).padStart(2, '0')}/${String(date.getFullYear()).slice(-2)}`, pct })
       }
     }
@@ -475,10 +475,16 @@ export default function DashboardPage() {
 
     return (
       <div style={{ position: 'relative', width: '100%', height: '100%', display: 'flex' }}>
-        <div style={{ width: '38px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', paddingBottom: '22px', flexShrink: 0, paddingRight: '4px' }}>
+        <div style={{ width: '42px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', paddingBottom: '26px', flexShrink: 0, paddingRight: '4px', position: 'relative' }}>
           {yLabels.map((v, i) => (
             <span key={i} style={{ fontSize: '10px', color: '#999', lineHeight: 1, textAlign: 'right' }}>{v >= 1000000 ? `$${(v/1000000).toFixed(1)}M` : v >= 1000 ? `$${(v/1000).toFixed(0)}k` : `$${v}`}</span>
           ))}
+          {/* Start balance on Y-axis */}
+          {startLineY !== null && !yLabels.some(v => Math.abs(v - start) < (yLabels[0] - yLabels[1]) * 0.3) && (
+            <span style={{ position: 'absolute', right: '4px', top: `${startLineY * 0.93}%`, transform: 'translateY(-50%)', fontSize: '10px', color: '#22c55e', fontWeight: 600 }}>
+              {start >= 1000 ? `$${(start/1000).toFixed(0)}k` : `$${start}`}
+            </span>
+          )}
         </div>
         
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, overflow: 'visible' }}>
@@ -487,19 +493,7 @@ export default function DashboardPage() {
             <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', pointerEvents: 'none' }}>
               {yLabels.map((_, i) => <div key={i} style={{ borderTop: '1px solid #1a1a22' }} />)}
             </div>
-            {/* Zero line if negative values exist */}
-            {zeroY !== null && (
-              <div style={{ position: 'absolute', left: 0, right: 0, top: `${zeroY}%`, borderTop: '1px solid #2a2a35', zIndex: 1 }}>
-                <span style={{ position: 'absolute', left: '-44px', top: '-8px', fontSize: '9px', color: '#666' }}>$0</span>
-              </div>
-            )}
-            {/* Starting balance line - always show with initial balance */}
-            {startLineY !== null && (
-              <div style={{ position: 'absolute', left: 0, right: 0, top: `${startLineY}%`, borderTop: '1px dashed #444', zIndex: 1 }}>
-                <span style={{ position: 'absolute', right: '4px', top: '-12px', fontSize: '9px', color: '#666' }}>{start >= 1000 ? `$${(start/1000).toFixed(0)}k` : `$${start}`} Start</span>
-              </div>
-            )}
-            <svg ref={svgRef} style={{ position: 'absolute', inset: '4px 0 4px 0', width: '100%', height: 'calc(100% - 8px)', overflow: 'visible' }} viewBox={`0 0 ${svgW} ${svgH}`} preserveAspectRatio="none" onMouseMove={handleMouseMove} onMouseLeave={() => setHoverPoint(null)}>
+            <svg ref={svgRef} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', overflow: 'visible' }} viewBox={`0 0 ${svgW} ${svgH}`} preserveAspectRatio="none" onMouseMove={handleMouseMove} onMouseLeave={() => setHoverPoint(null)}>
               <defs>
                 <linearGradient id="areaGradGreen" x1="0%" y1="0%" x2="0%" y2="100%">
                   <stop offset="0%" stopColor="#22c55e" stopOpacity="0.3" />
@@ -510,11 +504,21 @@ export default function DashboardPage() {
                   <stop offset="100%" stopColor="#ef4444" stopOpacity="0" />
                 </linearGradient>
               </defs>
+              {/* Start line inside SVG */}
+              {startLineY !== null && (
+                <line x1="0" y1={startY} x2={svgW} y2={startY} stroke="#666" strokeWidth="1" strokeDasharray="4,3" vectorEffect="non-scaling-stroke" />
+              )}
               {greenAreaPath && <path d={greenAreaPath} fill="url(#areaGradGreen)" />}
               {redAreaPath && <path d={redAreaPath} fill="url(#areaGradRed)" />}
-              {greenPath && <path d={greenPath} fill="none" stroke="#22c55e" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />}
-              {redPath && <path d={redPath} fill="none" stroke="#ef4444" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />}
+              {greenPath && <path d={greenPath} fill="none" stroke="#22c55e" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />}
+              {redPath && <path d={redPath} fill="none" stroke="#ef4444" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />}
             </svg>
+            {/* Start label */}
+            {startLineY !== null && (
+              <span style={{ position: 'absolute', right: '4px', top: `${startLineY}%`, transform: 'translateY(-50%)', fontSize: '9px', color: '#888', background: '#0d0d12', padding: '0 4px' }}>
+                {start >= 1000 ? `$${(start/1000).toFixed(0)}k` : `$${start}`} Start
+              </span>
+            )}
 
             {/* Hover dot on the line */}
             {hoverPoint && (
@@ -1083,14 +1087,14 @@ export default function DashboardPage() {
                   </div>
 
                   {/* Chart + Stats Row */}
-                  <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', padding: isMobile ? '0 16px 16px' : '0 24px 16px', gap: '12px', alignItems: isMobile ? 'stretch' : 'stretch' }}>
+                  <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', padding: isMobile ? '0 16px 16px' : '0 24px 16px', gap: '12px' }}>
                     {/* Chart */}
-                    <div style={{ flex: 1, minHeight: isMobile ? '200px' : '350px', overflow: 'hidden' }}>
+                    <div style={{ flex: 1, height: isMobile ? '250px' : '420px', overflow: 'visible' }}>
                       <EquityCurve accountTrades={accTrades} startingBalance={account.starting_balance} />
                     </div>
 
                     {/* Stats */}
-                    <div style={{ width: isMobile ? '100%' : '200px', display: 'flex', flexDirection: isMobile ? 'row' : 'column', flexWrap: isMobile ? 'wrap' : 'nowrap', gap: '12px', justifyContent: 'space-between' }}>
+                    <div style={{ width: isMobile ? '100%' : '200px', display: 'flex', flexDirection: isMobile ? 'row' : 'column', flexWrap: isMobile ? 'wrap' : 'nowrap', gap: '8px' }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: isMobile ? '8px 10px' : '10px 14px', background: '#0a0a0e', borderRadius: '6px', border: '1px solid #1a1a22', flex: isMobile ? '1 1 100%' : 'none' }}>
                         <span style={{ fontSize: isMobile ? '11px' : '12px', color: '#999' }}>Account Balance</span>
                         <span style={{ fontSize: isMobile ? '14px' : '16px', fontWeight: 700, color: currentBalance >= (parseFloat(account.starting_balance) || 0) ? '#22c55e' : '#ef4444' }}>${currentBalance.toLocaleString()}</span>
