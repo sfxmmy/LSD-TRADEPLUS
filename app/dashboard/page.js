@@ -1120,7 +1120,7 @@ export default function DashboardPage() {
                       <div style={{ maxHeight: '200px', overflowY: 'auto', overflowX: 'auto', border: '1px solid #1a1a22', borderRadius: '8px' }}>
                         <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: isMobile ? '600px' : 'auto' }}>
                           <thead style={{ position: 'sticky', top: 0, background: '#0d0d12' }}>
-                            <tr>
+                            <tr style={{ borderBottom: '1px solid #1a1a22' }}>
                               {['Symbol', 'W/L', 'PnL', 'RR', '%', 'Dir', 'Confidence', 'Session', 'TF', 'Rating', 'Placed'].map((h, i) => (
                                 <th key={i} style={{ padding: '10px', textAlign: 'center', color: '#999', fontSize: '11px', fontWeight: 600, textTransform: 'uppercase' }}>{h}</th>
                               ))}

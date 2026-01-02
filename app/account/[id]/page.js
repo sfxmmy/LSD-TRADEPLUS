@@ -792,7 +792,7 @@ export default function AccountPage() {
 
       {/* FIXED SIDEBAR - desktop only, starts under header */}
       {!isMobile && (
-        <div style={{ position: 'fixed', top: '65px', left: 0, bottom: 0, width: '180px', padding: '12px', background: '#0a0a0f', zIndex: 45, display: 'flex', flexDirection: 'column', borderRight: '1px solid rgba(34,197,94,0.25)', boxShadow: '1px 0 12px rgba(34,197,94,0.08)' }}>
+        <div style={{ position: 'fixed', top: '65px', left: 0, bottom: 0, width: '180px', padding: '12px', background: '#0a0a0f', zIndex: 45, display: 'flex', flexDirection: 'column', borderRight: '1px solid #1a1a22' }}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginTop: '12px' }}>
           {['trades', 'statistics', 'notes'].map((tab) => (
             <button
@@ -803,8 +803,7 @@ export default function AccountPage() {
                 background: activeTab === tab ? 'transparent' : 'transparent',
                 border: activeTab === tab ? '1px solid #22c55e' : '1px solid #2a2a35',
                 borderRadius: '8px', color: activeTab === tab ? '#22c55e' : '#888',
-                fontSize: '13px', fontWeight: 600, textTransform: 'uppercase', cursor: 'pointer', textAlign: 'center',
-                boxShadow: activeTab === tab ? '0 0 15px rgba(34,197,94,0.4), 0 0 30px rgba(34,197,94,0.2)' : 'none'
+                fontSize: '14px', fontWeight: 600, textTransform: 'uppercase', cursor: 'pointer', textAlign: 'center'
               }}
             >
               {tab}
@@ -996,9 +995,9 @@ export default function AccountPage() {
                   </thead>
                   <tbody>
                     {/* Add New Trade Row */}
-                    <tr style={{ borderBottom: '1px dashed rgba(147,51,234,0.3)', background: 'rgba(147,51,234,0.02)' }}>
-                      <td colSpan={selectMode ? customInputs.length + 7 : customInputs.length + 6} style={{ padding: '16px', textAlign: 'center' }}>
-                        <button onClick={() => setShowAddTrade(true)} style={{ padding: '12px 28px', background: 'linear-gradient(135deg, #9333ea 0%, #7c3aed 100%)', border: 'none', borderRadius: '8px', color: '#fff', fontWeight: 700, fontSize: '14px', cursor: 'pointer', lineHeight: 1, boxShadow: '0 0 20px rgba(147,51,234,0.5), 0 0 40px rgba(147,51,234,0.3)' }}>+ LOG TRADE</button>
+                    <tr style={{ borderBottom: '1px solid #141418' }}>
+                      <td colSpan={selectMode ? customInputs.length + 7 : customInputs.length + 6} style={{ padding: '14px 12px', textAlign: 'center' }}>
+                        <button onClick={() => setShowAddTrade(true)} style={{ padding: '10px 24px', background: 'linear-gradient(135deg, #9333ea 0%, #7c3aed 100%)', border: 'none', borderRadius: '6px', color: '#fff', fontWeight: 600, fontSize: '14px', cursor: 'pointer', lineHeight: 1, boxShadow: '0 0 20px rgba(147,51,234,0.5), 0 0 40px rgba(147,51,234,0.3)' }}>+ LOG TRADE</button>
                       </td>
                     </tr>
                     {filteredTrades.map((trade) => {
