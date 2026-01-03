@@ -2160,224 +2160,15 @@ export default function AccountPage() {
               </div>
             </div>
 
-            {/* ROW 4: Stats | Pair Analysis | Rating+Streaks | Weekly PnL */}
-            <div style={{ display: 'flex', gap: '12px', marginBottom: '12px' }}>
-              {/* General Stats */}
-              <div style={{ width: '200px', background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '16px' }}>
-                <div style={{ fontSize: '11px', color: '#666', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '12px', fontWeight: 600 }}>Overview</div>
-                {[
-                  { l: 'Avg. Trend', v: avgTrend },
-                  { l: 'Avg. Rating', v: avgRating + '★' },
-                  { l: 'Avg Trade PnL', v: (avgPnl >= 0 ? '+' : '') + '$' + avgPnl },
-                  { l: 'Most Traded', v: mostTradedPair },
-                  { l: 'Most Used RR', v: mostUsedRR },
-                  { l: 'Best RR', v: mostProfitableRR },
-                  { l: 'Best Day', v: bestDay ? `+$${Math.round(bestDay.pnl)}` : '-', c: '#22c55e' },
-                  { l: 'Worst Day', v: worstDay ? `$${Math.round(worstDay.pnl)}` : '-', c: '#ef4444' },
-                ].map((item, i) => (
-                  <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '5px 0', borderBottom: i < 7 ? '1px solid #1a1a22' : 'none' }}>
-                    <span style={{ fontSize: '12px', color: '#999' }}>{item.l}</span>
-                    <span style={{ fontSize: '13px', fontWeight: 700, color: item.c || '#fff' }}>{item.v}</span>
-                  </div>
-                ))}
-              </div>
-
-              {/* Pair Analysis */}
-              <div style={{ width: '180px', background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '16px' }}>
-                <div style={{ fontSize: '11px', color: '#666', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '12px', fontWeight: 600 }}>Pair Analysis</div>
-                <select value={pairAnalysisType} onChange={e => setPairAnalysisType(e.target.value)} style={{ width: '100%', fontSize: '12px', color: '#fff', marginBottom: '12px', background: '#141418', border: '1px solid #2a2a35', borderRadius: '6px', padding: '8px 10px', cursor: 'pointer' }}>
-                  <option value="best">Best Pair</option>
-                  <option value="worst">Worst Pair</option>
-                  <option value="most">Most Traded</option>
-                </select>
-                {(() => {
-                  const ps = {}
-                  displayTrades.forEach(t => {
-                    if (!ps[t.symbol]) ps[t.symbol] = { w: 0, l: 0, pnl: 0, count: 0, rrs: [], wins: [], losses: [] }
-                    if (t.outcome === 'win') { ps[t.symbol].w++; ps[t.symbol].wins.push(parseFloat(t.pnl) || 0) }
-                    else if (t.outcome === 'loss') { ps[t.symbol].l++; ps[t.symbol].losses.push(Math.abs(parseFloat(t.pnl)) || 0) }
-                    ps[t.symbol].pnl += parseFloat(t.pnl) || 0
-                    ps[t.symbol].count++
-                    if (t.rr) ps[t.symbol].rrs.push(parseFloat(t.rr))
-                  })
-                  let selected
-                  if (pairAnalysisType === 'best') selected = Object.entries(ps).sort((a, b) => b[1].pnl - a[1].pnl)[0]
-                  else if (pairAnalysisType === 'worst') selected = Object.entries(ps).sort((a, b) => a[1].pnl - b[1].pnl)[0]
-                  else selected = Object.entries(ps).sort((a, b) => b[1].count - a[1].count)[0]
-                  if (!selected) return <div style={{ color: '#999', textAlign: 'center', fontSize: '12px' }}>No data</div>
-                  const data = selected[1]
-                  const wr = data.w + data.l > 0 ? Math.round((data.w / (data.w + data.l)) * 100) : 0
-                  const avgRR = data.rrs.length > 0 ? (data.rrs.reduce((a, b) => a + b, 0) / data.rrs.length).toFixed(1) : '-'
-                  const totalWins = data.wins.reduce((a, b) => a + b, 0)
-                  const totalLosses = data.losses.reduce((a, b) => a + b, 0)
-                  const pf = totalLosses > 0 ? (totalWins / totalLosses).toFixed(2) : totalWins > 0 ? '∞' : '-'
-                  const size = 70, stroke = 6, r = (size - stroke) / 2, c = 2 * Math.PI * r
-                  return (
-                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                      <div style={{ position: 'relative', width: size, height: size }}>
-                        <svg width={size} height={size} style={{ transform: 'rotate(-90deg)' }}>
-                          <circle cx={size/2} cy={size/2} r={r} fill="none" stroke="#ef4444" strokeWidth={stroke} />
-                          <circle cx={size/2} cy={size/2} r={r} fill="none" stroke="#22c55e" strokeWidth={stroke} strokeDasharray={c} strokeDashoffset={c * (1 - wr/100)} strokeLinecap="butt" />
-                        </svg>
-                        <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-                          <div style={{ fontSize: '11px', fontWeight: 700, color: '#fff' }}>{selected[0]}</div>
-                          <div style={{ fontSize: '13px', fontWeight: 700, color: '#22c55e' }}>{wr}%</div>
-                        </div>
-                      </div>
-                      <div style={{ display: 'flex', gap: '8px', marginTop: '6px', fontSize: '10px' }}>
-                        <span><span style={{ color: '#22c55e' }}>●</span> Win</span>
-                        <span><span style={{ color: '#ef4444' }}>●</span> Loss</span>
-                      </div>
-                      <div style={{ marginTop: '10px', width: '100%' }}>
-                        {[
-                          { l: 'PnL', v: (data.pnl >= 0 ? '+' : '') + '$' + Math.round(data.pnl), c: data.pnl >= 0 ? '#22c55e' : '#ef4444' },
-                          { l: 'Avg RR', v: avgRR, c: '#fff' },
-                          { l: 'PF', v: pf, c: '#fff' },
-                        ].map((item, i) => (
-                          <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '4px 0', borderBottom: i < 2 ? '1px solid #1a1a22' : 'none' }}>
-                            <span style={{ fontSize: '12px', color: '#999' }}>{item.l}</span>
-                            <span style={{ fontSize: '13px', fontWeight: 700, color: item.c }}>{item.v}</span>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )
-                })()}
-              </div>
-
-              {/* Rating + Streaks stacked */}
-              <div style={{ width: '180px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                {/* Average Rating */}
-                <div style={{ flex: 1, background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '14px', display: 'flex', flexDirection: 'column' }}>
-                  <div style={{ fontSize: '11px', color: '#666', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '10px', fontWeight: 600 }}>Avg Rating</div>
-                  <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px' }}>
-                    <div style={{ display: 'flex', gap: '2px' }}>
-                      {[1,2,3,4,5].map(star => {
-                        const rating = parseFloat(displayAvgRating)
-                        const isFullStar = rating >= star
-                        const isHalfStar = rating >= star - 0.5 && rating < star
-                        return (
-                          <div key={star} style={{ position: 'relative', width: '18px', height: '18px' }}>
-                            <span style={{ position: 'absolute', color: '#1a1a22', fontSize: '18px', lineHeight: 1 }}>★</span>
-                            {isHalfStar && <span style={{ position: 'absolute', color: '#22c55e', fontSize: '18px', lineHeight: 1, width: '9px', overflow: 'hidden', filter: 'drop-shadow(0 0 4px rgba(34,197,94,0.5))' }}>★</span>}
-                            {isFullStar && <span style={{ position: 'absolute', color: '#22c55e', fontSize: '18px', lineHeight: 1, filter: 'drop-shadow(0 0 4px rgba(34,197,94,0.5))' }}>★</span>}
-                          </div>
-                        )
-                      })}
-                    </div>
-                    <span style={{ fontSize: '24px', fontWeight: 700, color: '#fff' }}>{displayAvgRating}</span>
-                  </div>
-                </div>
-
-                {/* Streaks */}
-                <div style={{ flex: 1, background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '14px', display: 'flex', flexDirection: 'column' }}>
-                  <div style={{ fontSize: '11px', color: '#666', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '10px', fontWeight: 600 }}>Streaks</div>
-                  <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: '6px' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <span style={{ fontSize: '12px', color: '#999' }}>Best Win</span>
-                      <span style={{ fontSize: '16px', fontWeight: 700, color: '#22c55e' }}>{streaks.mw}</span>
-                    </div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <span style={{ fontSize: '12px', color: '#999' }}>Worst Loss</span>
-                      <span style={{ fontSize: '16px', fontWeight: 700, color: '#ef4444' }}>{streaks.ml}</span>
-                    </div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <span style={{ fontSize: '12px', color: '#999' }}>Trading Days</span>
-                      <span style={{ fontSize: '14px', fontWeight: 700, color: '#fff' }}>{tradingDays}</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Weekly PnL - Compact */}
-              <div style={{ width: '260px', background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '16px', display: 'flex', flexDirection: 'column' }}>
-                <div style={{ fontSize: '11px', color: '#666', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '12px', fontWeight: 600 }}>Weekly PnL</div>
-                {(() => {
-                  const dayNames = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri']
-                  const dayPnL = [0, 0, 0, 0, 0]
-                  displayTrades.forEach(t => {
-                    const day = new Date(t.date).getDay()
-                    if (day >= 1 && day <= 5) dayPnL[day - 1] += parseFloat(t.pnl) || 0
-                  })
-                  const maxAbs = Math.max(...dayPnL.map(p => Math.abs(p)), 1)
-                  return (
-                    <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
-                      <div style={{ flex: 1, display: 'flex', alignItems: 'center', position: 'relative', minHeight: '100px' }}>
-                        <div style={{ position: 'absolute', left: 0, right: 0, top: '50%', height: '1px', background: '#2a2a35' }} />
-                        <div style={{ display: 'flex', justifyContent: 'space-around', alignItems: 'center', width: '100%', height: '100%' }}>
-                          {dayPnL.map((pnl, i) => {
-                            const heightPct = Math.min((Math.abs(pnl) / maxAbs) * 42, 42)
-                            const isPositive = pnl >= 0
-                            const color = isPositive ? '#22c55e' : '#ef4444'
-                            const glowColor = isPositive ? 'rgba(34,197,94,0.3)' : 'rgba(239,68,68,0.3)'
-                            return (
-                              <div key={i} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', height: '100%', justifyContent: 'center', flex: 1 }}>
-                                <div style={{ position: 'absolute', top: isPositive ? `calc(50% - ${heightPct}% - 14px)` : `calc(50% + ${heightPct}% + 2px)`, fontSize: '10px', fontWeight: 600, color: pnl === 0 ? '#444' : color }}>
-                                  {pnl !== 0 ? (pnl >= 0 ? '+' : '') + Math.round(pnl) : '0'}
-                                </div>
-                                <div style={{
-                                  width: '24px',
-                                  height: pnl === 0 ? '2px' : `${heightPct}%`,
-                                  position: 'absolute',
-                                  top: isPositive ? `calc(50% - ${heightPct}%)` : '50%',
-                                  background: pnl === 0 ? '#2a2a35' : `linear-gradient(${isPositive ? '180deg' : '0deg'}, transparent 0%, ${glowColor} 100%)`,
-                                  border: pnl === 0 ? 'none' : `1px solid ${color}`,
-                                  borderRadius: isPositive ? '3px 3px 0 0' : '0 0 3px 3px',
-                                  boxShadow: pnl !== 0 ? `0 0 8px ${glowColor}, inset 0 0 6px ${glowColor}` : 'none'
-                                }} />
-                              </div>
-                            )
-                          })}
-                        </div>
-                      </div>
-                      <div style={{ display: 'flex', justifyContent: 'space-around', marginTop: '6px' }}>
-                        {dayNames.map((day, i) => (
-                          <span key={i} style={{ fontSize: '11px', fontWeight: 600, color: '#666', flex: 1, textAlign: 'center' }}>{day}</span>
-                        ))}
-                      </div>
-                    </div>
-                  )
-                })()}
-              </div>
-
-              {/* AI Insight */}
-              {trades.length >= 5 && (() => {
-                const pf = parseFloat(profitFactor) || 0
-                const rr = parseFloat(avgRR) || 0
-                let insight = ''
-                if (winrate >= 60 && pf >= 2) insight = `Outstanding! ${winrate}% WR with ${profitFactor} PF.`
-                else if (winrate >= 50 && pf >= 1.5) insight = `Solid edge: ${winrate}% WR, ${profitFactor} PF.`
-                else if (winrate < 40) insight = `${winrate}% WR needs work. Focus on A+ setups.`
-                else insight = `${winrate}% WR is decent. Stay consistent.`
-                if (rr >= 2) insight += ` Great ${avgRR}R avg!`
-                if (streaks.cs < -3) insight = `On a ${Math.abs(streaks.cs)}-loss streak. Reduce size.`
-                return (
-                  <div style={{ flex: 1, background: 'linear-gradient(180deg, rgba(139,92,246,0.08) 0%, rgba(139,92,246,0.03) 100%)', border: '1px solid rgba(139,92,246,0.25)', borderRadius: '8px', padding: '16px', display: 'flex', flexDirection: 'column' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '10px' }}>
-                      <span style={{ fontSize: '14px' }}>✨</span>
-                      <span style={{ fontSize: '11px', color: '#8b5cf6', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px' }}>AI Insight</span>
-                    </div>
-                    <span style={{ fontSize: '13px', color: '#ccc', lineHeight: 1.5 }}>{insight}</span>
-                  </div>
-                )
-              })()}
-            </div>
-
-            {/* ROW 5: Grouped stats sections */}
+            {/* COMBINED STATS: Left 3x3 grid + Right visual widgets */}
             {(() => {
-              const tradesThisWeek = displayTrades.filter(t => {
-                const d = new Date(t.date)
-                const now = new Date()
-                const weekAgo = new Date(now.setDate(now.getDate() - 7))
-                return d >= weekAgo
-              }).length
-              const tradingDays = Object.keys(displayDailyPnL.reduce((acc, d) => { acc[d.date] = 1; return acc }, {})).length
+              const tradesThisWeek = displayTrades.filter(t => { const d = new Date(t.date), now = new Date(), weekAgo = new Date(now.setDate(now.getDate() - 7)); return d >= weekAgo }).length
+              const localTradingDays = Object.keys(displayDailyPnL.reduce((acc, d) => { acc[d.date] = 1; return acc }, {})).length
               const tradesThisMonth = displayTrades.filter(t => { const d = new Date(t.date), now = new Date(); return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear() }).length
-              const tradingWeeks = Math.max(1, Math.ceil(tradingDays / 5))
-              const avgPerWeek = (displayTrades.length / tradingWeeks).toFixed(1)
+              const tradingWeeks = Math.max(1, Math.ceil(localTradingDays / 5))
               const dayCount = [0, 0, 0, 0, 0, 0, 0]; displayTrades.forEach(t => { dayCount[new Date(t.date).getDay()]++ })
-              const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
-              const mostCommonDay = dayNames[dayCount.indexOf(Math.max(...dayCount))]
+              const dayNamesArr = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
+              const mostCommonDay = dayNamesArr[dayCount.indexOf(Math.max(...dayCount))]
               const greenDays = displayDailyPnL.filter(d => d.pnl > 0).length
               const redDays = displayDailyPnL.filter(d => d.pnl < 0).length
               let bestGreenStreak = 0, currGreen = 0
@@ -2397,94 +2188,116 @@ export default function AccountPage() {
               const accountAgeDays = firstTradeDate ? Math.floor((new Date() - firstTradeDate) / (1000 * 60 * 60 * 24)) : 0
               const accountAge = accountAgeDays > 30 ? Math.floor(accountAgeDays / 30) + 'mo' : accountAgeDays + 'd'
               const tradesWithNotes = displayTrades.filter(t => { const e = getExtraData(t); const noteContent = t.notes || e.notes || ''; return noteContent.trim().length > 0 }).length
-
-              const StatBox = ({ label, value, color }) => (
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '7px 0' }}>
-                  <span style={{ fontSize: '12px', color: '#999', fontWeight: 500 }}>{label}</span>
-                  <span style={{ fontSize: '14px', fontWeight: 700, color }}>{value}</span>
-                </div>
-              )
-
+              const StatBox = ({ label, value, color }) => <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '6px 0' }}><span style={{ fontSize: '12px', color: '#999', fontWeight: 500 }}>{label}</span><span style={{ fontSize: '14px', fontWeight: 700, color }}>{value}</span></div>
               return (
-                <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(4, 1fr)', gap: '12px', marginBottom: '12px', position: 'relative', zIndex: 2 }}>
-                  {/* Account Overview */}
-                  <div style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '12px 14px' }}>
-                    <div style={{ fontSize: '11px', color: '#aaa', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '8px', borderBottom: '1px solid #1a1a22', paddingBottom: '6px', fontWeight: 600 }}>Account</div>
-                    <StatBox label="Balance" value={'$' + Math.round(displayCurrentBalance).toLocaleString()} color={displayCurrentBalance >= displayStartingBalance ? '#22c55e' : '#ef4444'} />
-                    <StatBox label="Net P&L" value={(displayTotalPnl >= 0 ? '+' : '-') + '$' + Math.abs(Math.round(displayTotalPnl)).toLocaleString()} color={displayTotalPnl >= 0 ? '#22c55e' : '#ef4444'} />
-                    <StatBox label="Growth" value={growth + '%'} color={parseFloat(growth) >= 0 ? '#22c55e' : '#ef4444'} />
-                    <StatBox label="Monthly" value={monthlyGrowth + '%'} color={parseFloat(monthlyGrowth) >= 0 ? '#22c55e' : '#ef4444'} />
-                    <StatBox label="Account Age" value={accountAge} color="#fff" />
-                  </div>
-
-                  {/* Performance */}
-                  <div style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '12px 14px' }}>
-                    <div style={{ fontSize: '11px', color: '#aaa', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '8px', borderBottom: '1px solid #1a1a22', paddingBottom: '6px', fontWeight: 600 }}>Performance</div>
-                    <StatBox label="Winrate" value={displayWinrate + '%'} color={displayWinrate >= 50 ? '#22c55e' : '#ef4444'} />
-                    <StatBox label="Wins / Losses" value={displayWins + ' / ' + displayLosses} color="#fff" />
-                    <StatBox label="Profit Factor" value={displayProfitFactor} color={displayProfitFactor === '-' ? '#666' : displayProfitFactor === '∞' ? '#22c55e' : parseFloat(displayProfitFactor) >= 1.5 ? '#22c55e' : parseFloat(displayProfitFactor) >= 1 ? '#fff' : '#ef4444'} />
-                    <StatBox label="Expectancy" value={'$' + displayExpectancy} color={parseFloat(displayExpectancy) >= 0 ? '#22c55e' : '#ef4444'} />
-                    <StatBox label="Consistency" value={displayConsistencyScore + '%'} color={displayConsistencyScore >= 60 ? '#22c55e' : displayConsistencyScore >= 40 ? '#fff' : '#ef4444'} />
-                  </div>
-
-                  {/* Trade Analysis */}
-                  <div style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '12px 14px' }}>
-                    <div style={{ fontSize: '11px', color: '#aaa', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '8px', borderBottom: '1px solid #1a1a22', paddingBottom: '6px', fontWeight: 600 }}>Trades</div>
-                    <StatBox label="Total" value={displayTrades.length} color="#fff" />
-                    <StatBox label="Trading Days" value={tradingDays} color="#fff" />
-                    <StatBox label="Avg/Week" value={avgPerWeek} color="#fff" />
-                    <StatBox label="This Month" value={tradesThisMonth} color="#fff" />
-                    <StatBox label="Best Day" value={mostCommonDay} color="#fff" />
-                  </div>
-
-                  {/* Risk & Reward */}
-                  <div style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '12px 14px' }}>
-                    <div style={{ fontSize: '11px', color: '#aaa', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '8px', borderBottom: '1px solid #1a1a22', paddingBottom: '6px', fontWeight: 600 }}>Risk & Reward</div>
-                    <StatBox label="Avg RR" value={displayAvgRR + 'R'} color={parseFloat(displayAvgRR) >= 1.5 ? '#22c55e' : '#fff'} />
-                    <StatBox label="Most Used RR" value={mostUsedRR} color="#fff" />
-                    <StatBox label="Best RR" value={mostProfitableRR} color="#22c55e" />
-                    <StatBox label="Win/Loss Ratio" value={(displayAvgWin / Math.max(displayAvgLoss, 1)).toFixed(2) + 'x'} color={displayAvgWin >= displayAvgLoss ? '#22c55e' : '#ef4444'} />
-                  </div>
-
-                  {/* Win/Loss Analysis */}
-                  <div style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '12px 14px' }}>
-                    <div style={{ fontSize: '11px', color: '#aaa', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '8px', borderBottom: '1px solid #1a1a22', paddingBottom: '6px', fontWeight: 600 }}>Win/Loss</div>
-                    <StatBox label="Avg Win" value={'+$' + displayAvgWin} color="#22c55e" />
-                    <StatBox label="Avg Loss" value={'-$' + displayAvgLoss} color="#ef4444" />
-                    <StatBox label="Best Trade" value={'+$' + Math.round(localBiggestWin).toLocaleString()} color="#22c55e" />
-                    <StatBox label="Worst Trade" value={'-$' + Math.abs(Math.round(localBiggestLoss)).toLocaleString()} color="#ef4444" />
-                  </div>
-
-                  {/* Direction */}
-                  <div style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '12px 14px' }}>
-                    <div style={{ fontSize: '11px', color: '#aaa', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '8px', borderBottom: '1px solid #1a1a22', paddingBottom: '6px', fontWeight: 600 }}>Direction</div>
-                    <StatBox label="Long WR" value={longWr + '%'} color={longWr >= 50 ? '#22c55e' : '#ef4444'} />
-                    <StatBox label="Long P&L" value={(longPnl >= 0 ? '+' : '') + '$' + Math.round(longPnl).toLocaleString()} color={longPnl >= 0 ? '#22c55e' : '#ef4444'} />
-                    <StatBox label="Short WR" value={shortWr + '%'} color={shortWr >= 50 ? '#22c55e' : '#ef4444'} />
-                    <StatBox label="Short P&L" value={(shortPnl >= 0 ? '+' : '') + '$' + Math.round(shortPnl).toLocaleString()} color={shortPnl >= 0 ? '#22c55e' : '#ef4444'} />
-                  </div>
-
-                  {/* Streaks */}
-                  <div style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '12px 14px' }}>
-                    <div style={{ fontSize: '11px', color: '#aaa', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '8px', borderBottom: '1px solid #1a1a22', paddingBottom: '6px', fontWeight: 600 }}>Streaks</div>
-                    <StatBox label="Current" value={(displayStreaks.cs >= 0 ? '+' : '') + displayStreaks.cs} color={displayStreaks.cs >= 0 ? '#22c55e' : '#ef4444'} />
-                    <StatBox label="Best Win" value={'+' + displayStreaks.mw} color="#22c55e" />
-                    <StatBox label="Green Days" value={greenDays} color="#22c55e" />
-                    <StatBox label="Red Days" value={redDays} color="#ef4444" />
-                    <StatBox label="Day Streak" value={'+' + bestGreenStreak} color="#22c55e" />
-                  </div>
-
-                  {/* Notes Widget */}
-                  <div style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '12px 14px' }}>
-                    <div style={{ fontSize: '11px', color: '#aaa', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '8px', borderBottom: '1px solid #1a1a22', paddingBottom: '6px', fontWeight: 600 }}>Notes</div>
-                    <StatBox label="Trades w/ Notes" value={tradesWithNotes} color="#fff" />
-                    <StatBox label="Notes Rate" value={displayTrades.length > 0 ? Math.round((tradesWithNotes / displayTrades.length) * 100) + '%' : '0%'} color={tradesWithNotes / Math.max(displayTrades.length, 1) >= 0.5 ? '#22c55e' : '#fff'} />
-                    <StatBox label="This Week" value={tradesThisWeek} color="#fff" />
-                    <StatBox label="This Month" value={tradesThisMonth} color="#fff" />
-                  </div>
+            <div style={{ display: 'flex', gap: '12px', marginBottom: '12px' }}>
+              {/* LEFT: 3x3 Grid */}
+              <div style={{ flex: 1, display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(3, 1fr)', gap: '12px' }}>
+              {/* Account */}
+              <div style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '12px 14px' }}>
+                <div style={{ fontSize: '11px', color: '#aaa', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '8px', borderBottom: '1px solid #1a1a22', paddingBottom: '6px', fontWeight: 600 }}>Account</div>
+                <StatBox label="Balance" value={'$' + Math.round(displayCurrentBalance).toLocaleString()} color={displayCurrentBalance >= displayStartingBalance ? '#22c55e' : '#ef4444'} />
+                <StatBox label="Net P&L" value={(displayTotalPnl >= 0 ? '+' : '-') + '$' + Math.abs(Math.round(displayTotalPnl)).toLocaleString()} color={displayTotalPnl >= 0 ? '#22c55e' : '#ef4444'} />
+                <StatBox label="Growth" value={growth + '%'} color={parseFloat(growth) >= 0 ? '#22c55e' : '#ef4444'} />
+                <StatBox label="Monthly" value={monthlyGrowth + '%'} color={parseFloat(monthlyGrowth) >= 0 ? '#22c55e' : '#ef4444'} />
+              </div>
+              {/* Performance */}
+              <div style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '12px 14px' }}>
+                <div style={{ fontSize: '11px', color: '#aaa', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '8px', borderBottom: '1px solid #1a1a22', paddingBottom: '6px', fontWeight: 600 }}>Performance</div>
+                <StatBox label="Winrate" value={displayWinrate + '%'} color={displayWinrate >= 50 ? '#22c55e' : '#ef4444'} />
+                <StatBox label="Wins / Losses" value={displayWins + ' / ' + displayLosses} color="#fff" />
+                <StatBox label="Profit Factor" value={displayProfitFactor} color={displayProfitFactor === '-' ? '#666' : displayProfitFactor === '∞' ? '#22c55e' : parseFloat(displayProfitFactor) >= 1.5 ? '#22c55e' : parseFloat(displayProfitFactor) >= 1 ? '#fff' : '#ef4444'} />
+                <StatBox label="Expectancy" value={'$' + displayExpectancy} color={parseFloat(displayExpectancy) >= 0 ? '#22c55e' : '#ef4444'} />
+              </div>
+              {/* Trades */}
+              <div style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '12px 14px' }}>
+                <div style={{ fontSize: '11px', color: '#aaa', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '8px', borderBottom: '1px solid #1a1a22', paddingBottom: '6px', fontWeight: 600 }}>Trades</div>
+                <StatBox label="Total" value={displayTrades.length} color="#fff" />
+                <StatBox label="Trading Days" value={localTradingDays} color="#fff" />
+                <StatBox label="This Month" value={tradesThisMonth} color="#fff" />
+                <StatBox label="Best Day" value={mostCommonDay} color="#fff" />
+              </div>
+              {/* Risk & Reward */}
+              <div style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '12px 14px' }}>
+                <div style={{ fontSize: '11px', color: '#aaa', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '8px', borderBottom: '1px solid #1a1a22', paddingBottom: '6px', fontWeight: 600 }}>Risk & Reward</div>
+                <StatBox label="Avg RR" value={displayAvgRR + 'R'} color={parseFloat(displayAvgRR) >= 1.5 ? '#22c55e' : '#fff'} />
+                <StatBox label="Most Used RR" value={mostUsedRR} color="#fff" />
+                <StatBox label="Best RR" value={mostProfitableRR} color="#22c55e" />
+                <StatBox label="Win/Loss Ratio" value={(displayAvgWin / Math.max(displayAvgLoss, 1)).toFixed(2) + 'x'} color={displayAvgWin >= displayAvgLoss ? '#22c55e' : '#ef4444'} />
+              </div>
+              {/* Win/Loss */}
+              <div style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '12px 14px' }}>
+                <div style={{ fontSize: '11px', color: '#aaa', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '8px', borderBottom: '1px solid #1a1a22', paddingBottom: '6px', fontWeight: 600 }}>Win/Loss</div>
+                <StatBox label="Avg Win" value={'+$' + displayAvgWin} color="#22c55e" />
+                <StatBox label="Avg Loss" value={'-$' + displayAvgLoss} color="#ef4444" />
+                <StatBox label="Best Trade" value={'+$' + Math.round(localBiggestWin).toLocaleString()} color="#22c55e" />
+                <StatBox label="Worst Trade" value={'-$' + Math.abs(Math.round(localBiggestLoss)).toLocaleString()} color="#ef4444" />
+              </div>
+              {/* Direction */}
+              <div style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '12px 14px' }}>
+                <div style={{ fontSize: '11px', color: '#aaa', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '8px', borderBottom: '1px solid #1a1a22', paddingBottom: '6px', fontWeight: 600 }}>Direction</div>
+                <StatBox label="Long WR" value={longWr + '%'} color={longWr >= 50 ? '#22c55e' : '#ef4444'} />
+                <StatBox label="Long P&L" value={(longPnl >= 0 ? '+' : '') + '$' + Math.round(longPnl).toLocaleString()} color={longPnl >= 0 ? '#22c55e' : '#ef4444'} />
+                <StatBox label="Short WR" value={shortWr + '%'} color={shortWr >= 50 ? '#22c55e' : '#ef4444'} />
+                <StatBox label="Short P&L" value={(shortPnl >= 0 ? '+' : '') + '$' + Math.round(shortPnl).toLocaleString()} color={shortPnl >= 0 ? '#22c55e' : '#ef4444'} />
+              </div>
+              {/* Streaks */}
+              <div style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '12px 14px' }}>
+                <div style={{ fontSize: '11px', color: '#aaa', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '8px', borderBottom: '1px solid #1a1a22', paddingBottom: '6px', fontWeight: 600 }}>Streaks</div>
+                <StatBox label="Current" value={(displayStreaks.cs >= 0 ? '+' : '') + displayStreaks.cs} color={displayStreaks.cs >= 0 ? '#22c55e' : '#ef4444'} />
+                <StatBox label="Best Win" value={'+' + displayStreaks.mw} color="#22c55e" />
+                <StatBox label="Green Days" value={greenDays} color="#22c55e" />
+                <StatBox label="Red Days" value={redDays} color="#ef4444" />
+              </div>
+              {/* Overview */}
+              <div style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '12px 14px' }}>
+                <div style={{ fontSize: '11px', color: '#aaa', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '8px', borderBottom: '1px solid #1a1a22', paddingBottom: '6px', fontWeight: 600 }}>Overview</div>
+                <StatBox label="Avg Trend" value={avgTrend} color="#fff" />
+                <StatBox label="Most Traded" value={mostTradedPair} color="#fff" />
+                <StatBox label="Best Day P&L" value={bestDay ? `+$${Math.round(bestDay.pnl)}` : '-'} color="#22c55e" />
+                <StatBox label="Worst Day P&L" value={worstDay ? `$${Math.round(worstDay.pnl)}` : '-'} color="#ef4444" />
+              </div>
+              {/* Notes */}
+              <div style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '12px 14px' }}>
+                <div style={{ fontSize: '11px', color: '#aaa', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '8px', borderBottom: '1px solid #1a1a22', paddingBottom: '6px', fontWeight: 600 }}>Notes</div>
+                <StatBox label="Trades w/ Notes" value={tradesWithNotes} color="#fff" />
+                <StatBox label="Notes Rate" value={displayTrades.length > 0 ? Math.round((tradesWithNotes / displayTrades.length) * 100) + '%' : '0%'} color={tradesWithNotes / Math.max(displayTrades.length, 1) >= 0.5 ? '#22c55e' : '#fff'} />
+                <StatBox label="This Week" value={tradesThisWeek} color="#fff" />
+                <StatBox label="Account Age" value={accountAge} color="#fff" />
+              </div>
+              </div>
+              {/* RIGHT: Visual widgets stacked */}
+              <div style={{ width: '220px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              {/* Pair Analysis */}
+              <div style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '14px' }}>
+                <div style={{ fontSize: '11px', color: '#666', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '10px', fontWeight: 600 }}>Pair Analysis</div>
+                <select value={pairAnalysisType} onChange={e => setPairAnalysisType(e.target.value)} style={{ width: '100%', fontSize: '12px', color: '#fff', marginBottom: '10px', background: '#141418', border: '1px solid #2a2a35', borderRadius: '6px', padding: '8px 10px', cursor: 'pointer' }}>
+                  <option value="best">Best Pair</option>
+                  <option value="worst">Worst Pair</option>
+                  <option value="most">Most Traded</option>
+                </select>
+                {(() => { const ps = {}; displayTrades.forEach(t => { if (!ps[t.symbol]) ps[t.symbol] = { w: 0, l: 0, pnl: 0, count: 0, rrs: [], wins: [], losses: [] }; if (t.outcome === 'win') { ps[t.symbol].w++; ps[t.symbol].wins.push(parseFloat(t.pnl) || 0) } else if (t.outcome === 'loss') { ps[t.symbol].l++; ps[t.symbol].losses.push(Math.abs(parseFloat(t.pnl)) || 0) }; ps[t.symbol].pnl += parseFloat(t.pnl) || 0; ps[t.symbol].count++; if (t.rr) ps[t.symbol].rrs.push(parseFloat(t.rr)) }); let selected; if (pairAnalysisType === 'best') selected = Object.entries(ps).sort((a, b) => b[1].pnl - a[1].pnl)[0]; else if (pairAnalysisType === 'worst') selected = Object.entries(ps).sort((a, b) => a[1].pnl - b[1].pnl)[0]; else selected = Object.entries(ps).sort((a, b) => b[1].count - a[1].count)[0]; if (!selected) return <div style={{ color: '#999', textAlign: 'center', fontSize: '12px' }}>No data</div>; const data = selected[1]; const wr = data.w + data.l > 0 ? Math.round((data.w / (data.w + data.l)) * 100) : 0; const pairAvgRR = data.rrs.length > 0 ? (data.rrs.reduce((a, b) => a + b, 0) / data.rrs.length).toFixed(1) : '-'; const totalWins = data.wins.reduce((a, b) => a + b, 0); const totalLosses = data.losses.reduce((a, b) => a + b, 0); const pf = totalLosses > 0 ? (totalWins / totalLosses).toFixed(2) : totalWins > 0 ? '∞' : '-'; const size = 80, stroke = 7, r = (size - stroke) / 2, c = 2 * Math.PI * r; return (<div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}><div style={{ position: 'relative', width: size, height: size }}><svg width={size} height={size} style={{ transform: 'rotate(-90deg)' }}><circle cx={size/2} cy={size/2} r={r} fill="none" stroke="#ef4444" strokeWidth={stroke} /><circle cx={size/2} cy={size/2} r={r} fill="none" stroke="#22c55e" strokeWidth={stroke} strokeDasharray={c} strokeDashoffset={c * (1 - wr/100)} strokeLinecap="butt" /></svg><div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}><div style={{ fontSize: '12px', fontWeight: 700, color: '#fff' }}>{selected[0]}</div><div style={{ fontSize: '14px', fontWeight: 700, color: '#22c55e' }}>{wr}%</div></div></div><div style={{ display: 'flex', gap: '10px', marginTop: '8px', fontSize: '11px' }}><span><span style={{ color: '#22c55e' }}>●</span> Win</span><span><span style={{ color: '#ef4444' }}>●</span> Loss</span></div><div style={{ marginTop: '10px', width: '100%' }}><StatBox label="PnL" value={(data.pnl >= 0 ? '+' : '') + '$' + Math.round(data.pnl)} color={data.pnl >= 0 ? '#22c55e' : '#ef4444'} /><StatBox label="Avg RR" value={pairAvgRR} color="#fff" /><StatBox label="PF" value={pf} color="#fff" /></div></div>) })()}
+              </div>
+              {/* Avg Rating */}
+              <div style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '14px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                <div style={{ fontSize: '11px', color: '#666', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '10px', fontWeight: 600, alignSelf: 'flex-start' }}>Avg Rating</div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <div style={{ display: 'flex', gap: '3px' }}>{[1,2,3,4,5].map(star => { const rating = parseFloat(displayAvgRating); const isFullStar = rating >= star; const isHalfStar = rating >= star - 0.5 && rating < star; return (<div key={star} style={{ position: 'relative', width: '20px', height: '20px' }}><span style={{ position: 'absolute', color: '#1a1a22', fontSize: '20px', lineHeight: 1 }}>★</span>{isHalfStar && <span style={{ position: 'absolute', color: '#22c55e', fontSize: '20px', lineHeight: 1, width: '10px', overflow: 'hidden', filter: 'drop-shadow(0 0 4px rgba(34,197,94,0.5))' }}>★</span>}{isFullStar && <span style={{ position: 'absolute', color: '#22c55e', fontSize: '20px', lineHeight: 1, filter: 'drop-shadow(0 0 4px rgba(34,197,94,0.5))' }}>★</span>}</div>) })}</div>
+                  <span style={{ fontSize: '28px', fontWeight: 700, color: '#fff' }}>{displayAvgRating}</span>
                 </div>
+              </div>
+              {/* Weekly PnL */}
+              <div style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '14px', display: 'flex', flexDirection: 'column' }}>
+                <div style={{ fontSize: '11px', color: '#666', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '10px', fontWeight: 600 }}>Weekly PnL</div>
+                {(() => { const dayNames = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri']; const dayPnL = [0, 0, 0, 0, 0]; displayTrades.forEach(t => { const day = new Date(t.date).getDay(); if (day >= 1 && day <= 5) dayPnL[day - 1] += parseFloat(t.pnl) || 0 }); const maxAbs = Math.max(...dayPnL.map(p => Math.abs(p)), 1); return (<div style={{ display: 'flex', flexDirection: 'column' }}><div style={{ display: 'flex', alignItems: 'center', position: 'relative', height: '80px' }}><div style={{ position: 'absolute', left: 0, right: 0, top: '50%', height: '1px', background: '#2a2a35' }} /><div style={{ display: 'flex', justifyContent: 'space-around', alignItems: 'center', width: '100%', height: '100%' }}>{dayPnL.map((pnl, i) => { const heightPct = Math.min((Math.abs(pnl) / maxAbs) * 40, 40); const isPositive = pnl >= 0; const color = isPositive ? '#22c55e' : '#ef4444'; const glowColor = isPositive ? 'rgba(34,197,94,0.3)' : 'rgba(239,68,68,0.3)'; return (<div key={i} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', height: '100%', justifyContent: 'center', flex: 1 }}><div style={{ position: 'absolute', top: isPositive ? `calc(50% - ${heightPct}% - 12px)` : `calc(50% + ${heightPct}% + 2px)`, fontSize: '9px', fontWeight: 600, color: pnl === 0 ? '#444' : color }}>{pnl !== 0 ? (pnl >= 0 ? '+' : '') + Math.round(pnl) : '0'}</div><div style={{ width: '20px', height: pnl === 0 ? '2px' : `${heightPct}%`, position: 'absolute', top: isPositive ? `calc(50% - ${heightPct}%)` : '50%', background: pnl === 0 ? '#2a2a35' : `linear-gradient(${isPositive ? '180deg' : '0deg'}, transparent 0%, ${glowColor} 100%)`, border: pnl === 0 ? 'none' : `1px solid ${color}`, borderRadius: isPositive ? '3px 3px 0 0' : '0 0 3px 3px', boxShadow: pnl !== 0 ? `0 0 6px ${glowColor}, inset 0 0 4px ${glowColor}` : 'none' }} /></div>) })}</div></div><div style={{ display: 'flex', justifyContent: 'space-around', marginTop: '6px' }}>{dayNames.map((day, i) => <span key={i} style={{ fontSize: '10px', fontWeight: 600, color: '#666', flex: 1, textAlign: 'center' }}>{day}</span>)}</div></div>) })()}
+              </div>
+              {/* AI Insight */}
+              {trades.length >= 5 && (() => { const pf = parseFloat(profitFactor) || 0; const rr = parseFloat(avgRR) || 0; let insight = ''; if (winrate >= 60 && pf >= 2) insight = `Outstanding! ${winrate}% WR with ${profitFactor} PF.`; else if (winrate >= 50 && pf >= 1.5) insight = `Solid edge: ${winrate}% WR, ${profitFactor} PF.`; else if (winrate < 40) insight = `${winrate}% WR needs work. Focus on A+ setups.`; else insight = `${winrate}% WR is decent. Stay consistent.`; if (rr >= 2) insight += ` Great ${avgRR}R avg!`; if (streaks.cs < -3) insight = `On a ${Math.abs(streaks.cs)}-loss streak. Reduce size.`; return (<div style={{ flex: 1, background: 'linear-gradient(180deg, rgba(139,92,246,0.08) 0%, rgba(139,92,246,0.03) 100%)', border: '1px solid rgba(139,92,246,0.25)', borderRadius: '8px', padding: '14px', display: 'flex', flexDirection: 'column' }}><div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '8px' }}><span style={{ fontSize: '14px' }}>✨</span><span style={{ fontSize: '11px', color: '#8b5cf6', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px' }}>AI Insight</span></div><span style={{ fontSize: '12px', color: '#ccc', lineHeight: 1.5 }}>{insight}</span></div>) })()}
+              </div>
+            </div>
               )
             })()}
+
 
             {/* Auto-generated widgets for ALL custom inputs */}
             {(() => {
