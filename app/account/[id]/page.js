@@ -2150,9 +2150,10 @@ export default function AccountPage() {
             </div>
 
             {/* ROW 4: Stats | Pair Analysis | Rating+Streaks | Weekly PnL */}
-            <div style={{ display: 'flex', gap: '12px', marginBottom: '12px', overflow: 'visible', position: 'relative' }}>
+            <div style={{ display: 'flex', gap: '12px', marginBottom: '12px' }}>
               {/* General Stats */}
-              <div style={{ width: '180px', background: 'linear-gradient(145deg, #0d0d12 0%, #0a0a0e 100%)', border: '1px solid rgba(34,197,94,0.2)', borderRadius: '8px', padding: '14px', position: 'relative', zIndex: 2, boxShadow: '0 4px 20px rgba(0,0,0,0.4), 0 0 30px rgba(34,197,94,0.08)' }}>
+              <div style={{ width: '200px', background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '16px' }}>
+                <div style={{ fontSize: '11px', color: '#666', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '12px', fontWeight: 600 }}>Overview</div>
                 {[
                   { l: 'Avg. Trend', v: avgTrend },
                   { l: 'Avg. Rating', v: avgRating + '★' },
@@ -2163,16 +2164,17 @@ export default function AccountPage() {
                   { l: 'Best Day', v: bestDay ? `+$${Math.round(bestDay.pnl)}` : '-', c: '#22c55e' },
                   { l: 'Worst Day', v: worstDay ? `$${Math.round(worstDay.pnl)}` : '-', c: '#ef4444' },
                 ].map((item, i) => (
-                  <div key={i} style={{ display: 'flex', justifyContent: 'space-between', padding: '4px 0', borderBottom: i < 7 ? '1px solid #1a1a22' : 'none' }}>
-                    <span style={{ fontSize: '11px', color: '#999' }}>{item.l}</span>
-                    <span style={{ fontSize: '11px', fontWeight: 600, color: item.c || '#fff' }}>{item.v}</span>
+                  <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '5px 0', borderBottom: i < 7 ? '1px solid #1a1a22' : 'none' }}>
+                    <span style={{ fontSize: '12px', color: '#999' }}>{item.l}</span>
+                    <span style={{ fontSize: '13px', fontWeight: 700, color: item.c || '#fff' }}>{item.v}</span>
                   </div>
                 ))}
               </div>
 
-              {/* Pair Analysis - Separate Widget */}
-              <div style={{ width: '160px', background: 'linear-gradient(145deg, #0d0d12 0%, #0a0a0e 100%)', border: '1px solid rgba(34,197,94,0.2)', borderRadius: '8px', padding: '14px', position: 'relative', zIndex: 2, boxShadow: '0 4px 20px rgba(0,0,0,0.4), 0 0 30px rgba(34,197,94,0.08)' }}>
-                <select value={pairAnalysisType} onChange={e => setPairAnalysisType(e.target.value)} style={{ width: '100%', fontSize: '9px', color: '#ccc', marginBottom: '10px', background: '#141418', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '4px', padding: '4px 8px', cursor: 'pointer' }}>
+              {/* Pair Analysis */}
+              <div style={{ width: '180px', background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '16px' }}>
+                <div style={{ fontSize: '11px', color: '#666', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '12px', fontWeight: 600 }}>Pair Analysis</div>
+                <select value={pairAnalysisType} onChange={e => setPairAnalysisType(e.target.value)} style={{ width: '100%', fontSize: '12px', color: '#fff', marginBottom: '12px', background: '#141418', border: '1px solid #2a2a35', borderRadius: '6px', padding: '8px 10px', cursor: 'pointer' }}>
                   <option value="best">Best Pair</option>
                   <option value="worst">Worst Pair</option>
                   <option value="most">Most Traded</option>
@@ -2191,14 +2193,14 @@ export default function AccountPage() {
                   if (pairAnalysisType === 'best') selected = Object.entries(ps).sort((a, b) => b[1].pnl - a[1].pnl)[0]
                   else if (pairAnalysisType === 'worst') selected = Object.entries(ps).sort((a, b) => a[1].pnl - b[1].pnl)[0]
                   else selected = Object.entries(ps).sort((a, b) => b[1].count - a[1].count)[0]
-                  if (!selected) return <div style={{ color: '#999', textAlign: 'center' }}>No data</div>
+                  if (!selected) return <div style={{ color: '#999', textAlign: 'center', fontSize: '12px' }}>No data</div>
                   const data = selected[1]
                   const wr = data.w + data.l > 0 ? Math.round((data.w / (data.w + data.l)) * 100) : 0
                   const avgRR = data.rrs.length > 0 ? (data.rrs.reduce((a, b) => a + b, 0) / data.rrs.length).toFixed(1) : '-'
                   const totalWins = data.wins.reduce((a, b) => a + b, 0)
                   const totalLosses = data.losses.reduce((a, b) => a + b, 0)
                   const pf = totalLosses > 0 ? (totalWins / totalLosses).toFixed(2) : totalWins > 0 ? '∞' : '-'
-                  const size = 65, stroke = 6, r = (size - stroke) / 2, c = 2 * Math.PI * r
+                  const size = 70, stroke = 6, r = (size - stroke) / 2, c = 2 * Math.PI * r
                   return (
                     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                       <div style={{ position: 'relative', width: size, height: size }}>
@@ -2207,23 +2209,23 @@ export default function AccountPage() {
                           <circle cx={size/2} cy={size/2} r={r} fill="none" stroke="#22c55e" strokeWidth={stroke} strokeDasharray={c} strokeDashoffset={c * (1 - wr/100)} strokeLinecap="butt" />
                         </svg>
                         <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-                          <div style={{ fontSize: '9px', fontWeight: 700, color: '#fff' }}>{selected[0]}</div>
-                          <div style={{ fontSize: '11px', fontWeight: 700, color: '#22c55e' }}>{wr}%</div>
+                          <div style={{ fontSize: '11px', fontWeight: 700, color: '#fff' }}>{selected[0]}</div>
+                          <div style={{ fontSize: '13px', fontWeight: 700, color: '#22c55e' }}>{wr}%</div>
                         </div>
                       </div>
-                      <div style={{ display: 'flex', gap: '6px', marginTop: '4px', fontSize: '8px' }}>
+                      <div style={{ display: 'flex', gap: '8px', marginTop: '6px', fontSize: '10px' }}>
                         <span><span style={{ color: '#22c55e' }}>●</span> Win</span>
                         <span><span style={{ color: '#ef4444' }}>●</span> Loss</span>
                       </div>
-                      <div style={{ marginTop: '8px', width: '100%' }}>
+                      <div style={{ marginTop: '10px', width: '100%' }}>
                         {[
                           { l: 'PnL', v: (data.pnl >= 0 ? '+' : '') + '$' + Math.round(data.pnl), c: data.pnl >= 0 ? '#22c55e' : '#ef4444' },
                           { l: 'Avg RR', v: avgRR, c: '#fff' },
                           { l: 'PF', v: pf, c: '#fff' },
                         ].map((item, i) => (
-                          <div key={i} style={{ display: 'flex', justifyContent: 'space-between', padding: '2px 0', borderBottom: i < 2 ? '1px solid #1a1a22' : 'none' }}>
-                            <span style={{ fontSize: '10px', color: '#999' }}>{item.l}</span>
-                            <span style={{ fontSize: '10px', fontWeight: 600, color: item.c }}>{item.v}</span>
+                          <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '4px 0', borderBottom: i < 2 ? '1px solid #1a1a22' : 'none' }}>
+                            <span style={{ fontSize: '12px', color: '#999' }}>{item.l}</span>
+                            <span style={{ fontSize: '13px', fontWeight: 700, color: item.c }}>{item.v}</span>
                           </div>
                         ))}
                       </div>
@@ -2235,50 +2237,50 @@ export default function AccountPage() {
               {/* Rating + Streaks stacked */}
               <div style={{ width: '180px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
                 {/* Average Rating */}
-                <div style={{ flex: 1, background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '12px', display: 'flex', flexDirection: 'column' }}>
-                  <div style={{ fontSize: '10px', color: '#666', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '8px' }}>Average Rating</div>
-                  <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+                <div style={{ flex: 1, background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '14px', display: 'flex', flexDirection: 'column' }}>
+                  <div style={{ fontSize: '11px', color: '#666', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '10px', fontWeight: 600 }}>Avg Rating</div>
+                  <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px' }}>
                     <div style={{ display: 'flex', gap: '2px' }}>
                       {[1,2,3,4,5].map(star => {
                         const rating = parseFloat(displayAvgRating)
                         const isFullStar = rating >= star
                         const isHalfStar = rating >= star - 0.5 && rating < star
                         return (
-                          <div key={star} style={{ position: 'relative', width: '16px', height: '16px' }}>
-                            <span style={{ position: 'absolute', color: '#1a1a22', fontSize: '16px', lineHeight: 1 }}>★</span>
-                            {isHalfStar && <span style={{ position: 'absolute', color: '#22c55e', fontSize: '16px', lineHeight: 1, width: '8px', overflow: 'hidden', filter: 'drop-shadow(0 0 4px rgba(34,197,94,0.5))' }}>★</span>}
-                            {isFullStar && <span style={{ position: 'absolute', color: '#22c55e', fontSize: '16px', lineHeight: 1, filter: 'drop-shadow(0 0 4px rgba(34,197,94,0.5))' }}>★</span>}
+                          <div key={star} style={{ position: 'relative', width: '18px', height: '18px' }}>
+                            <span style={{ position: 'absolute', color: '#1a1a22', fontSize: '18px', lineHeight: 1 }}>★</span>
+                            {isHalfStar && <span style={{ position: 'absolute', color: '#22c55e', fontSize: '18px', lineHeight: 1, width: '9px', overflow: 'hidden', filter: 'drop-shadow(0 0 4px rgba(34,197,94,0.5))' }}>★</span>}
+                            {isFullStar && <span style={{ position: 'absolute', color: '#22c55e', fontSize: '18px', lineHeight: 1, filter: 'drop-shadow(0 0 4px rgba(34,197,94,0.5))' }}>★</span>}
                           </div>
                         )
                       })}
                     </div>
-                    <span style={{ fontSize: '20px', fontWeight: 700, color: '#fff' }}>{displayAvgRating}</span>
+                    <span style={{ fontSize: '24px', fontWeight: 700, color: '#fff' }}>{displayAvgRating}</span>
                   </div>
                 </div>
 
                 {/* Streaks */}
-                <div style={{ flex: 1, background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '12px', display: 'flex', flexDirection: 'column' }}>
-                  <div style={{ fontSize: '10px', color: '#666', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '8px' }}>Streaks</div>
-                  <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: '4px' }}>
+                <div style={{ flex: 1, background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '14px', display: 'flex', flexDirection: 'column' }}>
+                  <div style={{ fontSize: '11px', color: '#666', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '10px', fontWeight: 600 }}>Streaks</div>
+                  <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: '6px' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <span style={{ fontSize: '10px', color: '#666' }}>Best Win</span>
-                      <span style={{ fontSize: '14px', fontWeight: 700, color: '#22c55e' }}>{streaks.mw}</span>
+                      <span style={{ fontSize: '12px', color: '#999' }}>Best Win</span>
+                      <span style={{ fontSize: '16px', fontWeight: 700, color: '#22c55e' }}>{streaks.mw}</span>
                     </div>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <span style={{ fontSize: '10px', color: '#666' }}>Worst Loss</span>
-                      <span style={{ fontSize: '14px', fontWeight: 700, color: '#ef4444' }}>{streaks.ml}</span>
+                      <span style={{ fontSize: '12px', color: '#999' }}>Worst Loss</span>
+                      <span style={{ fontSize: '16px', fontWeight: 700, color: '#ef4444' }}>{streaks.ml}</span>
                     </div>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <span style={{ fontSize: '10px', color: '#666' }}>Trading Days</span>
-                      <span style={{ fontSize: '12px', fontWeight: 600, color: '#fff' }}>{tradingDays}</span>
+                      <span style={{ fontSize: '12px', color: '#999' }}>Trading Days</span>
+                      <span style={{ fontSize: '14px', fontWeight: 700, color: '#fff' }}>{tradingDays}</span>
                     </div>
                   </div>
                 </div>
               </div>
 
-              {/* Weekly PnL - Vertical bars up/down from center */}
-              <div style={{ flex: 1, background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '14px', display: 'flex', flexDirection: 'column' }}>
-                <div style={{ fontSize: '10px', color: '#666', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '10px' }}>Weekly PnL</div>
+              {/* Weekly PnL - Compact */}
+              <div style={{ width: '260px', background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '16px', display: 'flex', flexDirection: 'column' }}>
+                <div style={{ fontSize: '11px', color: '#666', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '12px', fontWeight: 600 }}>Weekly PnL</div>
                 {(() => {
                   const dayNames = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri']
                   const dayPnL = [0, 0, 0, 0, 0]
@@ -2289,43 +2291,37 @@ export default function AccountPage() {
                   const maxAbs = Math.max(...dayPnL.map(p => Math.abs(p)), 1)
                   return (
                     <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
-                      {/* Chart area with center line */}
-                      <div style={{ flex: 1, display: 'flex', alignItems: 'center', position: 'relative', minHeight: '120px' }}>
-                        {/* Center line */}
+                      <div style={{ flex: 1, display: 'flex', alignItems: 'center', position: 'relative', minHeight: '100px' }}>
                         <div style={{ position: 'absolute', left: 0, right: 0, top: '50%', height: '1px', background: '#2a2a35' }} />
-                        {/* Bars */}
                         <div style={{ display: 'flex', justifyContent: 'space-around', alignItems: 'center', width: '100%', height: '100%' }}>
                           {dayPnL.map((pnl, i) => {
-                            const heightPct = Math.min((Math.abs(pnl) / maxAbs) * 45, 45)
+                            const heightPct = Math.min((Math.abs(pnl) / maxAbs) * 42, 42)
                             const isPositive = pnl >= 0
                             const color = isPositive ? '#22c55e' : '#ef4444'
                             const glowColor = isPositive ? 'rgba(34,197,94,0.3)' : 'rgba(239,68,68,0.3)'
                             return (
                               <div key={i} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', height: '100%', justifyContent: 'center', flex: 1 }}>
-                                {/* Value label */}
-                                <div style={{ position: 'absolute', top: isPositive ? `calc(50% - ${heightPct}% - 16px)` : `calc(50% + ${heightPct}% + 4px)`, fontSize: '9px', fontWeight: 600, color: pnl === 0 ? '#444' : color }}>
+                                <div style={{ position: 'absolute', top: isPositive ? `calc(50% - ${heightPct}% - 14px)` : `calc(50% + ${heightPct}% + 2px)`, fontSize: '10px', fontWeight: 600, color: pnl === 0 ? '#444' : color }}>
                                   {pnl !== 0 ? (pnl >= 0 ? '+' : '') + Math.round(pnl) : '0'}
                                 </div>
-                                {/* Bar */}
                                 <div style={{
-                                  width: '28px',
+                                  width: '24px',
                                   height: pnl === 0 ? '2px' : `${heightPct}%`,
                                   position: 'absolute',
                                   top: isPositive ? `calc(50% - ${heightPct}%)` : '50%',
                                   background: pnl === 0 ? '#2a2a35' : `linear-gradient(${isPositive ? '180deg' : '0deg'}, transparent 0%, ${glowColor} 100%)`,
                                   border: pnl === 0 ? 'none' : `1px solid ${color}`,
                                   borderRadius: isPositive ? '3px 3px 0 0' : '0 0 3px 3px',
-                                  boxShadow: pnl !== 0 ? `0 0 10px ${glowColor}, inset 0 0 8px ${glowColor}` : 'none'
+                                  boxShadow: pnl !== 0 ? `0 0 8px ${glowColor}, inset 0 0 6px ${glowColor}` : 'none'
                                 }} />
                               </div>
                             )
                           })}
                         </div>
                       </div>
-                      {/* Day labels */}
-                      <div style={{ display: 'flex', justifyContent: 'space-around', marginTop: '8px' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-around', marginTop: '6px' }}>
                         {dayNames.map((day, i) => (
-                          <span key={i} style={{ fontSize: '10px', fontWeight: 600, color: '#666', flex: 1, textAlign: 'center' }}>{day}</span>
+                          <span key={i} style={{ fontSize: '11px', fontWeight: 600, color: '#666', flex: 1, textAlign: 'center' }}>{day}</span>
                         ))}
                       </div>
                     </div>
@@ -2333,7 +2329,7 @@ export default function AccountPage() {
                 })()}
               </div>
 
-              {/* AI Insight - compact */}
+              {/* AI Insight */}
               {trades.length >= 5 && (() => {
                 const pf = parseFloat(profitFactor) || 0
                 const rr = parseFloat(avgRR) || 0
@@ -2345,12 +2341,12 @@ export default function AccountPage() {
                 if (rr >= 2) insight += ` Great ${avgRR}R avg!`
                 if (streaks.cs < -3) insight = `On a ${Math.abs(streaks.cs)}-loss streak. Reduce size.`
                 return (
-                  <div style={{ width: '200px', background: 'linear-gradient(180deg, rgba(139,92,246,0.1) 0%, rgba(139,92,246,0.05) 100%)', border: '1px solid rgba(139,92,246,0.3)', borderRadius: '8px', padding: '12px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                      <span style={{ fontSize: '12px' }}>✨</span>
-                      <span style={{ fontSize: '9px', color: '#8b5cf6', fontWeight: 600, textTransform: 'uppercase' }}>AI Insight</span>
+                  <div style={{ flex: 1, background: 'linear-gradient(180deg, rgba(139,92,246,0.08) 0%, rgba(139,92,246,0.03) 100%)', border: '1px solid rgba(139,92,246,0.25)', borderRadius: '8px', padding: '16px', display: 'flex', flexDirection: 'column' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '10px' }}>
+                      <span style={{ fontSize: '14px' }}>✨</span>
+                      <span style={{ fontSize: '11px', color: '#8b5cf6', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px' }}>AI Insight</span>
                     </div>
-                    <span style={{ fontSize: '11px', color: '#ccc', lineHeight: 1.4 }}>{insight}</span>
+                    <span style={{ fontSize: '13px', color: '#ccc', lineHeight: 1.5 }}>{insight}</span>
                   </div>
                 )
               })()}
