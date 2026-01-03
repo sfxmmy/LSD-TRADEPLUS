@@ -378,10 +378,13 @@ export default function DashboardPage() {
     const minBal = Math.min(...points.map(p => p.balance))
     const hasNegative = minBal < 0
     const belowStart = minBal < start // Red if balance ever went below starting
-    const yStep = Math.ceil((maxBal - minBal) / 6 / 1000) * 1000 || 1000
+    // Calculate tight Y-axis range based on actual data
+    const actualMin = Math.min(minBal, start)
+    const actualRange = maxBal - actualMin || 1000
+    const yStep = Math.ceil(actualRange / 6 / 1000) * 1000 || 1000
     const yMax = Math.ceil(maxBal / yStep) * yStep
-    // Don't show unnecessary space below - use actual min or start, whichever is lower
-    const yMin = minBal >= 0 ? Math.max(0, Math.floor(Math.min(minBal, start) / yStep) * yStep) : Math.floor(minBal / yStep) * yStep
+    // yMin just one step below actual minimum - no huge gaps
+    const yMin = Math.max(0, Math.floor(actualMin / yStep) * yStep)
     const yRange = yMax - yMin || yStep
     
     // Calculate zero line position (percentage from top) - for when actual balance goes negative
@@ -510,7 +513,7 @@ export default function DashboardPage() {
               </defs>
               {/* Start line inside SVG - stops before label */}
               {startLineY !== null && (
-                <line x1="0" y1={startY} x2={svgW * 0.88} y2={startY} stroke="#666" strokeWidth="1" strokeDasharray="4,3" vectorEffect="non-scaling-stroke" />
+                <line x1="0" y1={startY} x2={svgW * 0.94} y2={startY} stroke="#666" strokeWidth="1" strokeDasharray="4,3" vectorEffect="non-scaling-stroke" />
               )}
               {greenAreaPath && <path d={greenAreaPath} fill="url(#areaGradGreen)" />}
               {redAreaPath && <path d={redAreaPath} fill="url(#areaGradRed)" />}

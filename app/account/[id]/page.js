@@ -1403,22 +1403,14 @@ export default function AccountPage() {
                             const minBal = allBalances.length > 0 ? Math.min(...allBalances) : startingBalance
                             const range = maxBal - minBal || 1000
                             
-                            // More labels when enlarged
+                            // Calculate tight Y-axis range - no huge gaps
+                            const actualMin = equityCurveGroupBy === 'total' ? Math.min(minBal, displayStartingBalance) : minBal
+                            const actualRange = maxBal - actualMin || 1000
                             const targetLabels = enlargedChart === 'equity' ? 10 : 6
-                            const getNiceStep = (r, tgt) => {
-                              const raw = r / tgt
-                              const mag = Math.pow(10, Math.floor(Math.log10(raw)))
-                              const normalized = raw / mag
-                              if (normalized <= 1) return mag
-                              if (normalized <= 2) return 2 * mag
-                              if (normalized <= 5) return 5 * mag
-                              return 10 * mag
-                            }
-                            const yStep = getNiceStep(range, targetLabels) || 100
+                            const yStep = Math.ceil(actualRange / targetLabels / 1000) * 1000 || 1000
                             const yMax = Math.ceil(maxBal / yStep) * yStep
-                            // Don't show unnecessary space below - use actual min or starting balance, whichever is lower
-                            const effectiveMin = equityCurveGroupBy === 'total' ? Math.min(minBal, displayStartingBalance) : minBal
-                            const yMin = minBal >= 0 ? Math.max(0, Math.floor(effectiveMin / yStep) * yStep) : Math.floor(minBal / yStep) * yStep
+                            // yMin is just one step below actual minimum - no huge gaps
+                            const yMin = Math.max(0, Math.floor(actualMin / yStep) * yStep)
                             const yRange = yMax - yMin || yStep
                             
                             const yLabels = []
@@ -1511,7 +1503,7 @@ export default function AccountPage() {
 
                             return (
                               <>
-                                <div style={{ width: '28px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', flexShrink: 0, paddingBottom: '22px' }}>
+                                <div style={{ width: '28px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', flexShrink: 0, paddingBottom: '24px' }}>
                                   {yLabels.map((v, i) => (
                                     <div key={i} style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end' }}>
                                       <span style={{ fontSize: '8px', color: '#999', lineHeight: 1, textAlign: 'right' }}>{equityCurveGroupBy === 'total' ? `$${(v/1000).toFixed(v >= 1000 ? 0 : 1)}k` : `$${v}`}</span>
@@ -1531,7 +1523,7 @@ export default function AccountPage() {
                                     )}
                                     {/* Starting balance dotted line - stops before label */}
                                     {startLineY !== null && (
-                                      <div style={{ position: 'absolute', left: 0, right: '40px', top: `${startLineY}%`, borderTop: '1px dashed #666', zIndex: 1 }} />
+                                      <div style={{ position: 'absolute', left: 0, right: '28px', top: `${startLineY}%`, borderTop: '1px dashed #666', zIndex: 1 }} />
                                     )}
                                     {/* Start label at end of line */}
                                     {startLineY !== null && (
