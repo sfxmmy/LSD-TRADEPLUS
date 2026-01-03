@@ -1503,13 +1503,16 @@ export default function AccountPage() {
 
                             return (
                               <>
-                                <div style={{ width: '28px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', flexShrink: 0, paddingBottom: '24px' }}>
-                                  {yLabels.map((v, i) => (
-                                    <div key={i} style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end' }}>
-                                      <span style={{ fontSize: '8px', color: '#999', lineHeight: 1, textAlign: 'right' }}>{equityCurveGroupBy === 'total' ? `$${(v/1000).toFixed(v >= 1000 ? 0 : 1)}k` : `$${v}`}</span>
-                                      <div style={{ width: '3px', height: '1px', background: '#2a2a35', marginLeft: '2px' }} />
-                                    </div>
-                                  ))}
+                                <div style={{ width: '28px', flexShrink: 0, position: 'relative', marginBottom: '24px' }}>
+                                  {yLabels.map((v, i) => {
+                                    const topPct = yLabels.length > 1 ? (i / (yLabels.length - 1)) * 100 : 0
+                                    return (
+                                      <div key={i} style={{ position: 'absolute', right: 0, top: `${topPct}%`, transform: 'translateY(-50%)', display: 'flex', alignItems: 'center' }}>
+                                        <span style={{ fontSize: '8px', color: '#999', lineHeight: 1, textAlign: 'right' }}>{equityCurveGroupBy === 'total' ? `$${(v/1000).toFixed(v >= 1000 ? 0 : 1)}k` : `$${v}`}</span>
+                                        <div style={{ width: '3px', height: '1px', background: '#2a2a35', marginLeft: '2px' }} />
+                                      </div>
+                                    )
+                                  })}
                                 </div>
                                 <div style={{ flex: 1, display: 'flex', flexDirection: 'column', position: 'relative' }}>
                                   <div style={{ flex: 1, position: 'relative', borderLeft: '1px solid #2a2a35', borderBottom: hasNegative ? 'none' : '1px solid #2a2a35', overflow: 'visible' }}>
@@ -1863,8 +1866,16 @@ export default function AccountPage() {
                         </div>
                         {/* Graph - full width */}
                         <div style={{ flex: 1, display: 'flex', minHeight: '40px' }}>
-                          <div style={{ width: '24px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', flexShrink: 0, paddingRight: '2px', paddingBottom: '28px' }}>
-                            {yLabels.map((v, i) => <span key={i} style={{ fontSize: '8px', color: '#999', lineHeight: 1, textAlign: 'right' }}>{v}</span>)}
+                          <div style={{ width: '28px', flexShrink: 0, position: 'relative', marginBottom: '28px' }}>
+                            {yLabels.map((v, i) => {
+                              const topPct = yLabels.length > 1 ? (i / (yLabels.length - 1)) * 100 : 0
+                              return (
+                                <div key={i} style={{ position: 'absolute', right: 0, top: `${topPct}%`, transform: 'translateY(-50%)', display: 'flex', alignItems: 'center' }}>
+                                  <span style={{ fontSize: '8px', color: '#999', lineHeight: 1, textAlign: 'right' }}>{v}</span>
+                                  <div style={{ width: '3px', height: '1px', background: '#2a2a35', marginLeft: '2px' }} />
+                                </div>
+                              )
+                            })}
                           </div>
                           <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
                             <div style={{ flex: 1, position: 'relative', borderLeft: '1px solid #2a2a35', borderBottom: '1px solid #2a2a35' }}>
@@ -3479,13 +3490,16 @@ export default function AccountPage() {
                 return (
                   <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
                     <div style={{ flex: 1, display: 'flex' }}>
-                      <div style={{ width: '44px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', flexShrink: 0, paddingBottom: '20px' }}>
-                        {yLabels.map((v, i) => (
-                          <div key={i} style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end' }}>
-                            <span style={{ fontSize: '10px', color: '#999', textAlign: 'right' }}>{equityCurveGroupBy === 'total' ? `$${(v/1000).toFixed(v >= 1000 ? 0 : 1)}k` : `$${v}`}</span>
-                            <div style={{ width: '4px', height: '1px', background: '#2a2a35', marginLeft: '3px' }} />
-                          </div>
-                        ))}
+                      <div style={{ width: '44px', flexShrink: 0, position: 'relative', marginBottom: '28px' }}>
+                        {yLabels.map((v, i) => {
+                          const topPct = yLabels.length > 1 ? (i / (yLabels.length - 1)) * 100 : 0
+                          return (
+                            <div key={i} style={{ position: 'absolute', right: 0, top: `${topPct}%`, transform: 'translateY(-50%)', display: 'flex', alignItems: 'center' }}>
+                              <span style={{ fontSize: '10px', color: '#999', textAlign: 'right' }}>{equityCurveGroupBy === 'total' ? `$${(v/1000).toFixed(v >= 1000 ? 0 : 1)}k` : `$${v}`}</span>
+                              <div style={{ width: '4px', height: '1px', background: '#2a2a35', marginLeft: '3px' }} />
+                            </div>
+                          )
+                        })}
                       </div>
                       <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
                         <div style={{ flex: 1, position: 'relative', borderLeft: '1px solid #2a2a35', borderBottom: hasNegative ? 'none' : '1px solid #2a2a35', overflow: 'visible' }}>

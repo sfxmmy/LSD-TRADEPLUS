@@ -479,18 +479,22 @@ export default function DashboardPage() {
 
     return (
       <div style={{ position: 'relative', width: '100%', height: '100%', display: 'flex' }}>
-        <div style={{ width: '46px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', paddingBottom: '26px', flexShrink: 0, position: 'relative' }}>
-          {yLabels.map((v, i) => (
-            <div key={i} style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end' }}>
-              <span style={{ fontSize: '10px', color: '#999', lineHeight: 1, textAlign: 'right' }}>{v >= 1000000 ? `$${(v/1000000).toFixed(1)}M` : v >= 1000 ? `$${(v/1000).toFixed(0)}k` : `$${v}`}</span>
-              <div style={{ width: '4px', height: '1px', background: '#2a2a35', marginLeft: '3px' }} />
-            </div>
-          ))}
+        <div style={{ width: '46px', flexShrink: 0, position: 'relative', marginBottom: '26px' }}>
+          {yLabels.map((v, i) => {
+            const topPct = yLabels.length > 1 ? (i / (yLabels.length - 1)) * 100 : 0
+            return (
+              <div key={i} style={{ position: 'absolute', right: 0, top: `${topPct}%`, transform: 'translateY(-50%)', display: 'flex', alignItems: 'center' }}>
+                <span style={{ fontSize: '10px', color: '#999', lineHeight: 1, textAlign: 'right' }}>{v >= 1000000 ? `$${(v/1000000).toFixed(1)}M` : v >= 1000 ? `$${(v/1000).toFixed(0)}k` : `$${v}`}</span>
+                <div style={{ width: '4px', height: '1px', background: '#2a2a35', marginLeft: '3px' }} />
+              </div>
+            )
+          })}
           {/* Start balance on Y-axis */}
           {startLineY !== null && !yLabels.some(v => Math.abs(v - start) < (yLabels[0] - yLabels[1]) * 0.3) && (
-            <span style={{ position: 'absolute', right: '4px', top: `${startLineY * 0.93}%`, transform: 'translateY(-50%)', fontSize: '10px', color: '#22c55e', fontWeight: 600 }}>
-              {start >= 1000 ? `$${(start/1000).toFixed(0)}k` : `$${start}`}
-            </span>
+            <div style={{ position: 'absolute', right: 0, top: `${startLineY}%`, transform: 'translateY(-50%)', display: 'flex', alignItems: 'center' }}>
+              <span style={{ fontSize: '10px', color: '#22c55e', fontWeight: 600 }}>{start >= 1000 ? `$${(start/1000).toFixed(0)}k` : `$${start}`}</span>
+              <div style={{ width: '4px', height: '1px', background: '#22c55e', marginLeft: '3px' }} />
+            </div>
           )}
         </div>
         
