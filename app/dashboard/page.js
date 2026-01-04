@@ -479,7 +479,7 @@ export default function DashboardPage() {
 
     return (
       <div style={{ position: 'relative', width: '100%', height: '100%', display: 'flex' }}>
-        <div style={{ width: '46px', flexShrink: 0, position: 'relative', marginBottom: '26px' }}>
+        <div style={{ width: '46px', flexShrink: 0, position: 'relative' }}>
           {yLabels.map((v, i) => {
             const topPct = yLabels.length > 1 ? (i / (yLabels.length - 1)) * 100 : 0
             return (
@@ -497,12 +497,15 @@ export default function DashboardPage() {
             </div>
           )}
         </div>
-        
+
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, overflow: 'visible' }}>
           <div style={{ flex: 1, position: 'relative', borderLeft: '1px solid #2a2a35', borderBottom: hasNegative ? 'none' : '1px solid #2a2a35', overflow: 'visible' }}>
-            {/* Horizontal grid lines */}
-            <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', pointerEvents: 'none' }}>
-              {yLabels.map((_, i) => <div key={i} style={{ borderTop: '1px solid #1a1a22' }} />)}
+            {/* Horizontal grid lines - exact percentage positioning */}
+            <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}>
+              {yLabels.map((_, i) => {
+                const topPct = yLabels.length > 1 ? (i / (yLabels.length - 1)) * 100 : 0
+                return <div key={i} style={{ position: 'absolute', left: 0, right: 0, top: `${topPct}%`, borderTop: '1px solid #1a1a22' }} />
+              })}
             </div>
             <svg ref={svgRef} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', overflow: 'visible' }} viewBox={`0 0 ${svgW} ${svgH}`} preserveAspectRatio="none" onMouseMove={handleMouseMove} onMouseLeave={() => setHoverPoint(null)}>
               <defs>

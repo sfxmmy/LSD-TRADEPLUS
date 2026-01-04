@@ -754,7 +754,7 @@ export default function AccountPage() {
 
       {/* FIXED SUBHEADER - starts at sidebar edge */}
       {!isMobile && (
-        <div style={{ position: 'fixed', top: '69px', left: '180px', right: 0, zIndex: 46, padding: '16px 40px 12px', background: '#0a0a0f', borderBottom: '1px solid #1a1a22', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div style={{ position: 'fixed', top: '69px', left: '180px', right: 0, zIndex: 46, padding: '14px 40px', background: '#0a0a0f', borderBottom: '1px solid #1a1a22', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
             <span style={{ fontSize: '28px', fontWeight: 700, color: '#fff', lineHeight: 1 }}>{account?.name}</span>
           </div>
@@ -1503,7 +1503,7 @@ export default function AccountPage() {
 
                             return (
                               <>
-                                <div style={{ width: '28px', flexShrink: 0, position: 'relative', marginBottom: '24px' }}>
+                                <div style={{ width: '28px', flexShrink: 0, position: 'relative' }}>
                                   {yLabels.map((v, i) => {
                                     const topPct = yLabels.length > 1 ? (i / (yLabels.length - 1)) * 100 : 0
                                     return (
@@ -1516,21 +1516,24 @@ export default function AccountPage() {
                                 </div>
                                 <div style={{ flex: 1, display: 'flex', flexDirection: 'column', position: 'relative' }}>
                                   <div style={{ flex: 1, position: 'relative', borderLeft: '1px solid #2a2a35', borderBottom: hasNegative ? 'none' : '1px solid #2a2a35', overflow: 'visible' }}>
-                                    {/* Horizontal grid lines */}
-                                    <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', pointerEvents: 'none' }}>
-                                      {yLabels.map((_, i) => <div key={i} style={{ borderTop: '1px solid #1a1a22' }} />)}
+                                    {/* Horizontal grid lines - exact percentage positioning */}
+                                    <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}>
+                                      {yLabels.map((_, i) => {
+                                        const topPct = yLabels.length > 1 ? (i / (yLabels.length - 1)) * 100 : 0
+                                        return <div key={i} style={{ position: 'absolute', left: 0, right: 0, top: `${topPct}%`, borderTop: '1px solid #1a1a22' }} />
+                                      })}
                                     </div>
                                     {/* Zero line if negative */}
                                     {zeroY !== null && (
                                       <div style={{ position: 'absolute', left: 0, right: 0, top: `${zeroY}%`, borderTop: '1px solid #2a2a35', zIndex: 1 }} />
                                     )}
-                                    {/* Starting balance dotted line - stops before label */}
+                                    {/* Starting balance dotted line - extends to label */}
                                     {startLineY !== null && (
-                                      <div style={{ position: 'absolute', left: 0, right: '28px', top: `${startLineY}%`, borderTop: '1px dashed #666', zIndex: 1 }} />
+                                      <div style={{ position: 'absolute', left: 0, right: '6px', top: `${startLineY}%`, borderTop: '1px dashed #666', zIndex: 1 }} />
                                     )}
                                     {/* Start label at end of line */}
                                     {startLineY !== null && (
-                                      <span style={{ position: 'absolute', right: '4px', top: `${startLineY}%`, transform: 'translateY(-50%)', fontSize: '9px', color: '#888', background: '#0d0d12', padding: '0 4px' }}>
+                                      <span style={{ position: 'absolute', right: '2px', top: `${startLineY}%`, transform: 'translateY(-50%)', fontSize: '9px', color: '#888', background: '#0d0d12', padding: '0 2px' }}>
                                         Start
                                       </span>
                                     )}
@@ -1866,7 +1869,7 @@ export default function AccountPage() {
                         </div>
                         {/* Graph - full width */}
                         <div style={{ flex: 1, display: 'flex', minHeight: '40px' }}>
-                          <div style={{ width: '28px', flexShrink: 0, position: 'relative', marginBottom: '28px' }}>
+                          <div style={{ width: '28px', flexShrink: 0, position: 'relative' }}>
                             {yLabels.map((v, i) => {
                               const topPct = yLabels.length > 1 ? (i / (yLabels.length - 1)) * 100 : 0
                               return (
@@ -1879,9 +1882,12 @@ export default function AccountPage() {
                           </div>
                           <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
                             <div style={{ flex: 1, position: 'relative', borderLeft: '1px solid #2a2a35', borderBottom: '1px solid #2a2a35' }}>
-                              {/* Horizontal grid lines */}
-                              <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', pointerEvents: 'none' }}>
-                                {yLabels.map((_, i) => <div key={i} style={{ borderTop: '1px solid #1a1a22' }} />)}
+                              {/* Horizontal grid lines - exact percentage positioning */}
+                              <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}>
+                                {yLabels.map((_, i) => {
+                                  const topPct = yLabels.length > 1 ? (i / (yLabels.length - 1)) * 100 : 0
+                                  return <div key={i} style={{ position: 'absolute', left: 0, right: 0, top: `${topPct}%`, borderTop: '1px solid #1a1a22' }} />
+                                })}
                               </div>
                               {/* Bars */}
                               <div style={{ position: 'absolute', inset: '2px 0 0 0', display: 'flex', alignItems: 'flex-end', gap: '6px', padding: '0 4px' }}>
@@ -2009,14 +2015,25 @@ export default function AccountPage() {
                     
                     return (
                       <>
-                        <div style={{ width: '28px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', flexShrink: 0, paddingRight: '2px', paddingBottom: '18px' }}>
-                          {yLabels.map((v, i) => <span key={i} style={{ fontSize: '8px', color: '#999', textAlign: 'right' }}>{i === yLabels.length - 1 ? '$0' : `$${v}`}</span>)}
+                        <div style={{ width: '28px', flexShrink: 0, position: 'relative' }}>
+                          {yLabels.map((v, i) => {
+                            const topPct = yLabels.length > 1 ? (i / (yLabels.length - 1)) * 100 : 0
+                            return (
+                              <div key={i} style={{ position: 'absolute', right: 0, top: `${topPct}%`, transform: 'translateY(-50%)', display: 'flex', alignItems: 'center' }}>
+                                <span style={{ fontSize: '8px', color: '#999', lineHeight: 1, textAlign: 'right' }}>{i === yLabels.length - 1 ? '$0' : `$${v}`}</span>
+                                <div style={{ width: '3px', height: '1px', background: '#2a2a35', marginLeft: '2px' }} />
+                              </div>
+                            )
+                          })}
                         </div>
                         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', position: 'relative' }}>
                           <div style={{ flex: 1, position: 'relative', borderLeft: '1px solid #2a2a35', borderBottom: '1px solid #2a2a35' }}>
-                            {/* Horizontal grid lines */}
-                            <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', pointerEvents: 'none' }}>
-                              {yLabels.map((_, i) => <div key={i} style={{ borderTop: '1px solid #1a1a22' }} />)}
+                            {/* Horizontal grid lines - exact percentage positioning */}
+                            <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}>
+                              {yLabels.map((_, i) => {
+                                const topPct = yLabels.length > 1 ? (i / (yLabels.length - 1)) * 100 : 0
+                                return <div key={i} style={{ position: 'absolute', left: 0, right: 0, top: `${topPct}%`, borderTop: '1px solid #1a1a22' }} />
+                              })}
                             </div>
                             {/* Bars */}
                             <div style={{ position: 'absolute', inset: '2px 0 0 0', display: 'flex', alignItems: 'flex-end', gap: '1px', padding: '0 2px' }}>
@@ -2188,78 +2205,78 @@ export default function AccountPage() {
               const accountAgeDays = firstTradeDate ? Math.floor((new Date() - firstTradeDate) / (1000 * 60 * 60 * 24)) : 0
               const accountAge = accountAgeDays > 30 ? Math.floor(accountAgeDays / 30) + 'mo' : accountAgeDays + 'd'
               const tradesWithNotes = displayTrades.filter(t => { const e = getExtraData(t); const noteContent = t.notes || e.notes || ''; return noteContent.trim().length > 0 }).length
-              const StatBox = ({ label, value, color }) => <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '6px 0' }}><span style={{ fontSize: '12px', color: '#999', fontWeight: 500 }}>{label}</span><span style={{ fontSize: '14px', fontWeight: 700, color }}>{value}</span></div>
+              const StatBox = ({ label, value, color }) => <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '5px 0' }}><span style={{ fontSize: '12px', color: '#999', fontWeight: 500 }}>{label}</span><span style={{ fontSize: '14px', fontWeight: 700, color }}>{value}</span></div>
               return (
-            <div style={{ display: 'flex', gap: '12px', marginBottom: '12px' }}>
+            <div style={{ display: 'flex', gap: '12px', marginBottom: '12px', alignItems: 'flex-start' }}>
               {/* LEFT: 3x3 Grid */}
-              <div style={{ flex: 1, display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(3, 1fr)', gap: '12px' }}>
+              <div style={{ flex: 1, display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(3, 1fr)', gap: '12px', alignContent: 'start' }}>
               {/* Account */}
-              <div style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '12px 14px' }}>
-                <div style={{ fontSize: '11px', color: '#aaa', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '8px', borderBottom: '1px solid #1a1a22', paddingBottom: '6px', fontWeight: 600 }}>Account</div>
+              <div style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '10px 12px' }}>
+                <div style={{ fontSize: '11px', color: '#aaa', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '6px', borderBottom: '1px solid #1a1a22', paddingBottom: '5px', fontWeight: 600 }}>Account</div>
                 <StatBox label="Balance" value={'$' + Math.round(displayCurrentBalance).toLocaleString()} color={displayCurrentBalance >= displayStartingBalance ? '#22c55e' : '#ef4444'} />
                 <StatBox label="Net P&L" value={(displayTotalPnl >= 0 ? '+' : '-') + '$' + Math.abs(Math.round(displayTotalPnl)).toLocaleString()} color={displayTotalPnl >= 0 ? '#22c55e' : '#ef4444'} />
                 <StatBox label="Growth" value={growth + '%'} color={parseFloat(growth) >= 0 ? '#22c55e' : '#ef4444'} />
                 <StatBox label="Monthly" value={monthlyGrowth + '%'} color={parseFloat(monthlyGrowth) >= 0 ? '#22c55e' : '#ef4444'} />
               </div>
               {/* Performance */}
-              <div style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '12px 14px' }}>
-                <div style={{ fontSize: '11px', color: '#aaa', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '8px', borderBottom: '1px solid #1a1a22', paddingBottom: '6px', fontWeight: 600 }}>Performance</div>
+              <div style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '10px 12px' }}>
+                <div style={{ fontSize: '11px', color: '#aaa', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '6px', borderBottom: '1px solid #1a1a22', paddingBottom: '5px', fontWeight: 600 }}>Performance</div>
                 <StatBox label="Winrate" value={displayWinrate + '%'} color={displayWinrate >= 50 ? '#22c55e' : '#ef4444'} />
                 <StatBox label="Wins / Losses" value={displayWins + ' / ' + displayLosses} color="#fff" />
                 <StatBox label="Profit Factor" value={displayProfitFactor} color={displayProfitFactor === '-' ? '#666' : displayProfitFactor === '∞' ? '#22c55e' : parseFloat(displayProfitFactor) >= 1.5 ? '#22c55e' : parseFloat(displayProfitFactor) >= 1 ? '#fff' : '#ef4444'} />
                 <StatBox label="Expectancy" value={'$' + displayExpectancy} color={parseFloat(displayExpectancy) >= 0 ? '#22c55e' : '#ef4444'} />
               </div>
               {/* Trades */}
-              <div style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '12px 14px' }}>
-                <div style={{ fontSize: '11px', color: '#aaa', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '8px', borderBottom: '1px solid #1a1a22', paddingBottom: '6px', fontWeight: 600 }}>Trades</div>
+              <div style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '10px 12px' }}>
+                <div style={{ fontSize: '11px', color: '#aaa', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '6px', borderBottom: '1px solid #1a1a22', paddingBottom: '5px', fontWeight: 600 }}>Trades</div>
                 <StatBox label="Total" value={displayTrades.length} color="#fff" />
                 <StatBox label="Trading Days" value={localTradingDays} color="#fff" />
                 <StatBox label="This Month" value={tradesThisMonth} color="#fff" />
                 <StatBox label="Best Day" value={mostCommonDay} color="#fff" />
               </div>
               {/* Risk & Reward */}
-              <div style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '12px 14px' }}>
-                <div style={{ fontSize: '11px', color: '#aaa', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '8px', borderBottom: '1px solid #1a1a22', paddingBottom: '6px', fontWeight: 600 }}>Risk & Reward</div>
+              <div style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '10px 12px' }}>
+                <div style={{ fontSize: '11px', color: '#aaa', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '6px', borderBottom: '1px solid #1a1a22', paddingBottom: '5px', fontWeight: 600 }}>Risk & Reward</div>
                 <StatBox label="Avg RR" value={displayAvgRR + 'R'} color={parseFloat(displayAvgRR) >= 1.5 ? '#22c55e' : '#fff'} />
                 <StatBox label="Most Used RR" value={mostUsedRR} color="#fff" />
                 <StatBox label="Best RR" value={mostProfitableRR} color="#22c55e" />
                 <StatBox label="Win/Loss Ratio" value={(displayAvgWin / Math.max(displayAvgLoss, 1)).toFixed(2) + 'x'} color={displayAvgWin >= displayAvgLoss ? '#22c55e' : '#ef4444'} />
               </div>
               {/* Win/Loss */}
-              <div style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '12px 14px' }}>
-                <div style={{ fontSize: '11px', color: '#aaa', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '8px', borderBottom: '1px solid #1a1a22', paddingBottom: '6px', fontWeight: 600 }}>Win/Loss</div>
+              <div style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '10px 12px' }}>
+                <div style={{ fontSize: '11px', color: '#aaa', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '6px', borderBottom: '1px solid #1a1a22', paddingBottom: '5px', fontWeight: 600 }}>Win/Loss</div>
                 <StatBox label="Avg Win" value={'+$' + displayAvgWin} color="#22c55e" />
                 <StatBox label="Avg Loss" value={'-$' + displayAvgLoss} color="#ef4444" />
                 <StatBox label="Best Trade" value={'+$' + Math.round(localBiggestWin).toLocaleString()} color="#22c55e" />
                 <StatBox label="Worst Trade" value={'-$' + Math.abs(Math.round(localBiggestLoss)).toLocaleString()} color="#ef4444" />
               </div>
               {/* Direction */}
-              <div style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '12px 14px' }}>
-                <div style={{ fontSize: '11px', color: '#aaa', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '8px', borderBottom: '1px solid #1a1a22', paddingBottom: '6px', fontWeight: 600 }}>Direction</div>
+              <div style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '10px 12px' }}>
+                <div style={{ fontSize: '11px', color: '#aaa', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '6px', borderBottom: '1px solid #1a1a22', paddingBottom: '5px', fontWeight: 600 }}>Direction</div>
                 <StatBox label="Long WR" value={longWr + '%'} color={longWr >= 50 ? '#22c55e' : '#ef4444'} />
                 <StatBox label="Long P&L" value={(longPnl >= 0 ? '+' : '') + '$' + Math.round(longPnl).toLocaleString()} color={longPnl >= 0 ? '#22c55e' : '#ef4444'} />
                 <StatBox label="Short WR" value={shortWr + '%'} color={shortWr >= 50 ? '#22c55e' : '#ef4444'} />
                 <StatBox label="Short P&L" value={(shortPnl >= 0 ? '+' : '') + '$' + Math.round(shortPnl).toLocaleString()} color={shortPnl >= 0 ? '#22c55e' : '#ef4444'} />
               </div>
               {/* Streaks */}
-              <div style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '12px 14px' }}>
-                <div style={{ fontSize: '11px', color: '#aaa', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '8px', borderBottom: '1px solid #1a1a22', paddingBottom: '6px', fontWeight: 600 }}>Streaks</div>
+              <div style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '10px 12px' }}>
+                <div style={{ fontSize: '11px', color: '#aaa', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '6px', borderBottom: '1px solid #1a1a22', paddingBottom: '5px', fontWeight: 600 }}>Streaks</div>
                 <StatBox label="Current" value={(displayStreaks.cs >= 0 ? '+' : '') + displayStreaks.cs} color={displayStreaks.cs >= 0 ? '#22c55e' : '#ef4444'} />
                 <StatBox label="Best Win" value={'+' + displayStreaks.mw} color="#22c55e" />
                 <StatBox label="Green Days" value={greenDays} color="#22c55e" />
                 <StatBox label="Red Days" value={redDays} color="#ef4444" />
               </div>
               {/* Overview */}
-              <div style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '12px 14px' }}>
-                <div style={{ fontSize: '11px', color: '#aaa', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '8px', borderBottom: '1px solid #1a1a22', paddingBottom: '6px', fontWeight: 600 }}>Overview</div>
+              <div style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '10px 12px' }}>
+                <div style={{ fontSize: '11px', color: '#aaa', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '6px', borderBottom: '1px solid #1a1a22', paddingBottom: '5px', fontWeight: 600 }}>Overview</div>
                 <StatBox label="Avg Trend" value={avgTrend} color="#fff" />
                 <StatBox label="Most Traded" value={mostTradedPair} color="#fff" />
                 <StatBox label="Best Day P&L" value={bestDay ? `+$${Math.round(bestDay.pnl)}` : '-'} color="#22c55e" />
                 <StatBox label="Worst Day P&L" value={worstDay ? `$${Math.round(worstDay.pnl)}` : '-'} color="#ef4444" />
               </div>
               {/* Notes */}
-              <div style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '12px 14px' }}>
-                <div style={{ fontSize: '11px', color: '#aaa', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '8px', borderBottom: '1px solid #1a1a22', paddingBottom: '6px', fontWeight: 600 }}>Notes</div>
+              <div style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '10px 12px' }}>
+                <div style={{ fontSize: '11px', color: '#aaa', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '6px', borderBottom: '1px solid #1a1a22', paddingBottom: '5px', fontWeight: 600 }}>Notes</div>
                 <StatBox label="Trades w/ Notes" value={tradesWithNotes} color="#fff" />
                 <StatBox label="Notes Rate" value={displayTrades.length > 0 ? Math.round((tradesWithNotes / displayTrades.length) * 100) + '%' : '0%'} color={tradesWithNotes / Math.max(displayTrades.length, 1) >= 0.5 ? '#22c55e' : '#fff'} />
                 <StatBox label="This Week" value={tradesThisWeek} color="#fff" />
@@ -2287,9 +2304,9 @@ export default function AccountPage() {
                 </div>
               </div>
               {/* Weekly PnL */}
-              <div style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '14px', display: 'flex', flexDirection: 'column' }}>
-                <div style={{ fontSize: '11px', color: '#666', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '10px', fontWeight: 600 }}>Weekly PnL</div>
-                {(() => { const dayNames = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri']; const dayPnL = [0, 0, 0, 0, 0]; displayTrades.forEach(t => { const day = new Date(t.date).getDay(); if (day >= 1 && day <= 5) dayPnL[day - 1] += parseFloat(t.pnl) || 0 }); const maxAbs = Math.max(...dayPnL.map(p => Math.abs(p)), 1); return (<div style={{ display: 'flex', flexDirection: 'column' }}><div style={{ display: 'flex', alignItems: 'center', position: 'relative', height: '80px' }}><div style={{ position: 'absolute', left: 0, right: 0, top: '50%', height: '1px', background: '#2a2a35' }} /><div style={{ display: 'flex', justifyContent: 'space-around', alignItems: 'center', width: '100%', height: '100%' }}>{dayPnL.map((pnl, i) => { const heightPct = Math.min((Math.abs(pnl) / maxAbs) * 40, 40); const isPositive = pnl >= 0; const color = isPositive ? '#22c55e' : '#ef4444'; const glowColor = isPositive ? 'rgba(34,197,94,0.3)' : 'rgba(239,68,68,0.3)'; return (<div key={i} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', height: '100%', justifyContent: 'center', flex: 1 }}><div style={{ position: 'absolute', top: isPositive ? `calc(50% - ${heightPct}% - 12px)` : `calc(50% + ${heightPct}% + 2px)`, fontSize: '9px', fontWeight: 600, color: pnl === 0 ? '#444' : color }}>{pnl !== 0 ? (pnl >= 0 ? '+' : '') + Math.round(pnl) : '0'}</div><div style={{ width: '20px', height: pnl === 0 ? '2px' : `${heightPct}%`, position: 'absolute', top: isPositive ? `calc(50% - ${heightPct}%)` : '50%', background: pnl === 0 ? '#2a2a35' : `linear-gradient(${isPositive ? '180deg' : '0deg'}, transparent 0%, ${glowColor} 100%)`, border: pnl === 0 ? 'none' : `1px solid ${color}`, borderRadius: isPositive ? '3px 3px 0 0' : '0 0 3px 3px', boxShadow: pnl !== 0 ? `0 0 6px ${glowColor}, inset 0 0 4px ${glowColor}` : 'none' }} /></div>) })}</div></div><div style={{ display: 'flex', justifyContent: 'space-around', marginTop: '6px' }}>{dayNames.map((day, i) => <span key={i} style={{ fontSize: '10px', fontWeight: 600, color: '#666', flex: 1, textAlign: 'center' }}>{day}</span>)}</div></div>) })()}
+              <div style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '10px 14px' }}>
+                <div style={{ fontSize: '11px', color: '#666', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '8px', fontWeight: 600 }}>Weekly PnL</div>
+                {(() => { const dayNames = ['M', 'T', 'W', 'T', 'F']; const dayPnL = [0, 0, 0, 0, 0]; displayTrades.forEach(t => { const day = new Date(t.date).getDay(); if (day >= 1 && day <= 5) dayPnL[day - 1] += parseFloat(t.pnl) || 0 }); const maxAbs = Math.max(...dayPnL.map(p => Math.abs(p)), 1); return (<div style={{ display: 'flex', justifyContent: 'space-between', gap: '6px' }}>{dayPnL.map((pnl, i) => { const heightPct = Math.max(Math.min((Math.abs(pnl) / maxAbs) * 100, 100), 8); const isPositive = pnl >= 0; const color = isPositive ? '#22c55e' : '#ef4444'; return (<div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}><div style={{ fontSize: '10px', fontWeight: 600, color: pnl === 0 ? '#444' : color }}>{pnl !== 0 ? (pnl >= 0 ? '+' : '') + Math.round(pnl) : '0'}</div><div style={{ width: '100%', height: '24px', background: '#1a1a22', borderRadius: '3px', position: 'relative', overflow: 'hidden', display: 'flex', alignItems: 'flex-end' }}><div style={{ width: '100%', height: pnl === 0 ? '2px' : `${heightPct}%`, background: pnl === 0 ? '#2a2a35' : color, borderRadius: '2px', opacity: pnl === 0 ? 1 : 0.8 }} /></div><div style={{ fontSize: '9px', fontWeight: 600, color: '#666' }}>{dayNames[i]}</div></div>) })}</div>) })()}
               </div>
               {/* AI Insight */}
               {trades.length >= 5 && (() => { const pf = parseFloat(profitFactor) || 0; const rr = parseFloat(avgRR) || 0; let insight = ''; if (winrate >= 60 && pf >= 2) insight = `Outstanding! ${winrate}% WR with ${profitFactor} PF.`; else if (winrate >= 50 && pf >= 1.5) insight = `Solid edge: ${winrate}% WR, ${profitFactor} PF.`; else if (winrate < 40) insight = `${winrate}% WR needs work. Focus on A+ setups.`; else insight = `${winrate}% WR is decent. Stay consistent.`; if (rr >= 2) insight += ` Great ${avgRR}R avg!`; if (streaks.cs < -3) insight = `On a ${Math.abs(streaks.cs)}-loss streak. Reduce size.`; return (<div style={{ flex: 1, background: 'linear-gradient(180deg, rgba(139,92,246,0.08) 0%, rgba(139,92,246,0.03) 100%)', border: '1px solid rgba(139,92,246,0.25)', borderRadius: '8px', padding: '14px', display: 'flex', flexDirection: 'column' }}><div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '8px' }}><span style={{ fontSize: '14px' }}>✨</span><span style={{ fontSize: '11px', color: '#8b5cf6', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px' }}>AI Insight</span></div><span style={{ fontSize: '12px', color: '#ccc', lineHeight: 1.5 }}>{insight}</span></div>) })()}
@@ -3303,7 +3320,7 @@ export default function AccountPage() {
                 return (
                   <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
                     <div style={{ flex: 1, display: 'flex' }}>
-                      <div style={{ width: '44px', flexShrink: 0, position: 'relative', marginBottom: '28px' }}>
+                      <div style={{ width: '44px', flexShrink: 0, position: 'relative' }}>
                         {yLabels.map((v, i) => {
                           const topPct = yLabels.length > 1 ? (i / (yLabels.length - 1)) * 100 : 0
                           return (
@@ -3316,9 +3333,12 @@ export default function AccountPage() {
                       </div>
                       <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
                         <div style={{ flex: 1, position: 'relative', borderLeft: '1px solid #2a2a35', borderBottom: hasNegative ? 'none' : '1px solid #2a2a35', overflow: 'visible' }}>
-                          {/* Horizontal grid lines */}
-                          <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', pointerEvents: 'none' }}>
-                            {yLabels.map((_, i) => <div key={i} style={{ borderTop: '1px solid #1a1a22' }} />)}
+                          {/* Horizontal grid lines - exact percentage positioning */}
+                          <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}>
+                            {yLabels.map((_, i) => {
+                              const topPct = yLabels.length > 1 ? (i / (yLabels.length - 1)) * 100 : 0
+                              return <div key={i} style={{ position: 'absolute', left: 0, right: 0, top: `${topPct}%`, borderTop: '1px solid #1a1a22' }} />
+                            })}
                           </div>
                           {zeroY !== null && <div style={{ position: 'absolute', left: 0, right: 0, top: `${zeroY}%`, borderTop: '1px solid #2a2a35', zIndex: 1 }}><span style={{ position: 'absolute', left: '-60px', top: '-8px', fontSize: '11px', color: '#666' }}>$0</span></div>}
                           <svg style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', overflow: 'visible' }} viewBox={`0 0 ${svgW} ${svgH}`} preserveAspectRatio="none"
