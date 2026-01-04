@@ -363,7 +363,7 @@ export default function DashboardPage() {
     const svgRef = useRef(null)
 
     if (!accountTrades || accountTrades.length === 0) {
-      return <div style={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#444', fontSize: '14px' }}>No trades yet</div>
+      return <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#444', fontSize: '14px' }}>No trades yet</div>
     }
 
     const start = parseFloat(startingBalance) || 10000
@@ -478,24 +478,28 @@ export default function DashboardPage() {
     }
 
     return (
-      <div style={{ position: 'relative', width: '100%', height: '100%', display: 'flex' }}>
-        <div style={{ width: '46px', flexShrink: 0, position: 'relative' }}>
-          {yLabels.map((v, i) => {
-            const topPct = yLabels.length > 1 ? (i / (yLabels.length - 1)) * 100 : 0
-            return (
-              <div key={i} style={{ position: 'absolute', right: 0, top: `${topPct}%`, transform: 'translateY(-50%)', display: 'flex', alignItems: 'center' }}>
-                <span style={{ fontSize: '10px', color: '#999', lineHeight: 1, textAlign: 'right' }}>{v >= 1000000 ? `$${(v/1000000).toFixed(1)}M` : v >= 1000 ? `$${(v/1000).toFixed(0)}k` : `$${v}`}</span>
-                <div style={{ width: '4px', height: '1px', background: '#2a2a35', marginLeft: '3px' }} />
+      <div style={{ position: 'absolute', inset: 0, display: 'flex' }}>
+        {/* Y-axis - matches chart area height with spacer for x-axis */}
+        <div style={{ width: '46px', flexShrink: 0, display: 'flex', flexDirection: 'column' }}>
+          <div style={{ flex: 1, position: 'relative' }}>
+            {yLabels.map((v, i) => {
+              const topPct = yLabels.length > 1 ? (i / (yLabels.length - 1)) * 100 : 0
+              return (
+                <div key={i} style={{ position: 'absolute', right: 0, top: `${topPct}%`, transform: 'translateY(-50%)', display: 'flex', alignItems: 'center' }}>
+                  <span style={{ fontSize: '10px', color: '#999', lineHeight: 1, textAlign: 'right' }}>{v >= 1000000 ? `$${(v/1000000).toFixed(1)}M` : v >= 1000 ? `$${(v/1000).toFixed(0)}k` : `$${v}`}</span>
+                  <div style={{ width: '4px', height: '1px', background: '#2a2a35', marginLeft: '3px' }} />
+                </div>
+              )
+            })}
+            {/* Start balance on Y-axis */}
+            {startLineY !== null && !yLabels.some(v => Math.abs(v - start) < (yLabels[0] - yLabels[1]) * 0.3) && (
+              <div style={{ position: 'absolute', right: 0, top: `${startLineY}%`, transform: 'translateY(-50%)', display: 'flex', alignItems: 'center' }}>
+                <span style={{ fontSize: '10px', color: '#22c55e', fontWeight: 600 }}>{start >= 1000 ? `$${(start/1000).toFixed(0)}k` : `$${start}`}</span>
+                <div style={{ width: '4px', height: '1px', background: '#22c55e', marginLeft: '3px' }} />
               </div>
-            )
-          })}
-          {/* Start balance on Y-axis */}
-          {startLineY !== null && !yLabels.some(v => Math.abs(v - start) < (yLabels[0] - yLabels[1]) * 0.3) && (
-            <div style={{ position: 'absolute', right: 0, top: `${startLineY}%`, transform: 'translateY(-50%)', display: 'flex', alignItems: 'center' }}>
-              <span style={{ fontSize: '10px', color: '#22c55e', fontWeight: 600 }}>{start >= 1000 ? `$${(start/1000).toFixed(0)}k` : `$${start}`}</span>
-              <div style={{ width: '4px', height: '1px', background: '#22c55e', marginLeft: '3px' }} />
-            </div>
-          )}
+            )}
+          </div>
+          <div style={{ height: '26px' }} />
         </div>
 
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, overflow: 'visible' }}>
@@ -1101,10 +1105,12 @@ export default function DashboardPage() {
                   </div>
 
                   {/* Chart + Stats Row - aligned proportionally */}
-                  <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', padding: isMobile ? '0 16px 16px' : '0 24px 16px', gap: '12px', alignItems: isMobile ? 'stretch' : 'stretch' }}>
+                  <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', padding: isMobile ? '0 16px 16px' : '0 24px 16px', gap: '12px', alignItems: 'stretch' }}>
                     {/* Chart - stretches to match stats height */}
-                    <div style={{ flex: 1, minHeight: isMobile ? '250px' : '300px', overflow: 'visible' }}>
-                      <EquityCurve accountTrades={accTrades} startingBalance={account.starting_balance} />
+                    <div style={{ flex: 1, minHeight: isMobile ? '250px' : '300px', overflow: 'visible', display: 'flex', flexDirection: 'column' }}>
+                      <div style={{ flex: 1, position: 'relative' }}>
+                        <EquityCurve accountTrades={accTrades} startingBalance={account.starting_balance} />
+                      </div>
                     </div>
 
                     {/* Stats - determines the height */}
