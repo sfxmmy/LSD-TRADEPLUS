@@ -1229,10 +1229,10 @@ export default function AccountPage() {
                 <button onClick={() => setFilters({ dateFrom: '', dateTo: '', outcome: '', direction: '', symbol: '', session: '', timeframe: '', confidence: '', rr: '', rating: '' })} style={{ padding: '6px 12px', background: '#1a1a22', border: 'none', borderRadius: '6px', color: '#fff', fontSize: '12px', cursor: 'pointer' }}>Clear Filters</button>
               </div>
             ) : null}
-            {/* ROW 1: Stats + Graphs - both graphs same height, aligned with Total Trades bottom */}
-            <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', gap: '12px', marginBottom: '12px' }}>
-              {/* Stats Widget - Clean List */}
-              <div style={{ width: isMobile ? '100%' : '200px', background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '12px' }}>
+            {/* ROW 1: Stats + Graphs - proportionally aligned */}
+            <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', gap: '12px', marginBottom: '12px', alignItems: 'stretch' }}>
+              {/* Stats Widget - Clean List - determines height */}
+              <div style={{ width: isMobile ? '100%' : '200px', background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '12px', display: 'flex', flexDirection: 'column' }}>
                 {/* Key Metrics List */}
                 <div style={{ display: 'flex', justifyContent: 'space-between', paddingBottom: '6px', borderBottom: '1px solid #1a1a22' }}>
                   <span style={{ fontSize: '12px', color: '#888' }}>Total PnL</span>
@@ -1292,10 +1292,10 @@ export default function AccountPage() {
                 </div>
               </div>
 
-              {/* Graphs - side by side */}
+              {/* Graphs - side by side, stretch to match stats height */}
               <div style={{ flex: 1, display: 'flex', flexDirection: isMobile ? 'column' : 'row', gap: '12px' }}>
                 {/* Equity Curve with groupBy dropdown */}
-                <div style={{ flex: 1, background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '10px', display: 'flex', flexDirection: 'column', position: 'relative', minHeight: isMobile ? '80px' : '100px' }}>
+                <div style={{ flex: 1, background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '10px', display: 'flex', flexDirection: 'column', position: 'relative' }}>
                   {(() => {
                     // Calculate visible lines first so we can compute dynamic Start/Current
                     const sorted = displayTrades.length >= 2 ? [...displayTrades].sort((a, b) => new Date(a.date) - new Date(b.date)) : []
@@ -1789,7 +1789,7 @@ export default function AccountPage() {
                 </div>
 
                 {/* Bar Chart - with title and Y-axis */}
-                <div style={{ flex: 1, background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '10px', display: 'flex', flexDirection: 'column', minHeight: isMobile ? '80px' : '100px' }}>
+                <div style={{ flex: 1, background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '10px', display: 'flex', flexDirection: 'column' }}>
                   {(() => {
                     const groupedData = {}
                     const customSelects = getCustomSelectInputs()
