@@ -743,17 +743,17 @@ export default function DashboardPage() {
               <div style={{ display: 'flex', gap: '12px', marginBottom: '12px', paddingBottom: '12px', borderBottom: '1px solid #1a1a22' }}>
                 <div style={{ flex: 1 }}>
                   <label style={{ display: 'block', fontSize: '9px', color: '#666', marginBottom: '4px', textTransform: 'uppercase' }}>Direction</label>
-                  <div style={{ display: 'flex', borderRadius: '6px', overflow: 'hidden', border: '1px solid #1a1a22' }}>
-                    <button onClick={() => setQuickTradeDirection('long')} style={{ flex: 1, padding: '7px', background: quickTradeDirection === 'long' ? 'rgba(34,197,94,0.2)' : '#0a0a0f', border: 'none', color: quickTradeDirection === 'long' ? '#22c55e' : '#666', fontSize: '11px', fontWeight: 600, cursor: 'pointer' }}>LONG</button>
-                    <button onClick={() => setQuickTradeDirection('short')} style={{ flex: 1, padding: '7px', background: quickTradeDirection === 'short' ? 'rgba(239,68,68,0.2)' : '#0a0a0f', border: 'none', borderLeft: '1px solid #1a1a22', color: quickTradeDirection === 'short' ? '#ef4444' : '#666', fontSize: '11px', fontWeight: 600, cursor: 'pointer' }}>SHORT</button>
+                  <div style={{ display: 'flex', gap: '6px' }}>
+                    <button onClick={() => setQuickTradeDirection('long')} style={{ flex: 1, padding: '7px', background: quickTradeDirection === 'long' ? 'rgba(34,197,94,0.2)' : '#0a0a0f', border: `2px solid ${quickTradeDirection === 'long' ? '#22c55e' : '#1a1a22'}`, borderRadius: '6px', color: quickTradeDirection === 'long' ? '#22c55e' : '#666', fontSize: '11px', fontWeight: 600, cursor: 'pointer' }}>LONG</button>
+                    <button onClick={() => setQuickTradeDirection('short')} style={{ flex: 1, padding: '7px', background: quickTradeDirection === 'short' ? 'rgba(239,68,68,0.2)' : '#0a0a0f', border: `2px solid ${quickTradeDirection === 'short' ? '#ef4444' : '#1a1a22'}`, borderRadius: '6px', color: quickTradeDirection === 'short' ? '#ef4444' : '#666', fontSize: '11px', fontWeight: 600, cursor: 'pointer' }}>SHORT</button>
                   </div>
                 </div>
                 <div style={{ flex: 1 }}>
                   <label style={{ display: 'block', fontSize: '9px', color: '#666', marginBottom: '4px', textTransform: 'uppercase' }}>Outcome</label>
-                  <div style={{ display: 'flex', borderRadius: '6px', overflow: 'hidden', border: '1px solid #1a1a22' }}>
-                    <button onClick={() => setQuickTradeOutcome('win')} style={{ flex: 1, padding: '7px', background: quickTradeOutcome === 'win' ? 'rgba(34,197,94,0.2)' : '#0a0a0f', border: 'none', color: quickTradeOutcome === 'win' ? '#22c55e' : '#666', fontSize: '11px', fontWeight: 600, cursor: 'pointer' }}>W</button>
-                    <button onClick={() => setQuickTradeOutcome('loss')} style={{ flex: 1, padding: '7px', background: quickTradeOutcome === 'loss' ? 'rgba(239,68,68,0.2)' : '#0a0a0f', border: 'none', borderLeft: '1px solid #1a1a22', color: quickTradeOutcome === 'loss' ? '#ef4444' : '#666', fontSize: '11px', fontWeight: 600, cursor: 'pointer' }}>L</button>
-                    <button onClick={() => setQuickTradeOutcome('be')} style={{ flex: 1, padding: '7px', background: quickTradeOutcome === 'be' ? 'rgba(255,255,255,0.1)' : '#0a0a0f', border: 'none', borderLeft: '1px solid #1a1a22', color: quickTradeOutcome === 'be' ? '#888' : '#666', fontSize: '11px', fontWeight: 600, cursor: 'pointer' }}>BE</button>
+                  <div style={{ display: 'flex', gap: '6px' }}>
+                    <button onClick={() => setQuickTradeOutcome('win')} style={{ flex: 1, padding: '7px', background: quickTradeOutcome === 'win' ? 'rgba(34,197,94,0.2)' : '#0a0a0f', border: `2px solid ${quickTradeOutcome === 'win' ? '#22c55e' : '#1a1a22'}`, borderRadius: '6px', color: quickTradeOutcome === 'win' ? '#22c55e' : '#666', fontSize: '11px', fontWeight: 600, cursor: 'pointer' }}>W</button>
+                    <button onClick={() => setQuickTradeOutcome('loss')} style={{ flex: 1, padding: '7px', background: quickTradeOutcome === 'loss' ? 'rgba(239,68,68,0.2)' : '#0a0a0f', border: `2px solid ${quickTradeOutcome === 'loss' ? '#ef4444' : '#1a1a22'}`, borderRadius: '6px', color: quickTradeOutcome === 'loss' ? '#ef4444' : '#666', fontSize: '11px', fontWeight: 600, cursor: 'pointer' }}>L</button>
+                    <button onClick={() => setQuickTradeOutcome('be')} style={{ flex: 1, padding: '7px', background: quickTradeOutcome === 'be' ? 'rgba(255,255,255,0.1)' : '#0a0a0f', border: `2px solid ${quickTradeOutcome === 'be' ? '#888' : '#1a1a22'}`, borderRadius: '6px', color: quickTradeOutcome === 'be' ? '#888' : '#666', fontSize: '11px', fontWeight: 600, cursor: 'pointer' }}>BE</button>
                   </div>
                 </div>
               </div>
