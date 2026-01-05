@@ -1522,11 +1522,11 @@ export default function AccountPage() {
                                 </div>
                                 <div style={{ flex: 1, display: 'flex', flexDirection: 'column', position: 'relative' }}>
                                   <div style={{ flex: 1, position: 'relative', borderLeft: '1px solid #2a2a35', borderBottom: hasNegative ? 'none' : '1px solid #2a2a35', overflow: 'visible' }}>
-                                    {/* Horizontal grid lines - exact percentage positioning */}
+                                    {/* Horizontal grid lines - percentage positioned and centered */}
                                     <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}>
                                       {yLabels.map((_, i) => {
                                         const topPct = yLabels.length > 1 ? (i / (yLabels.length - 1)) * 100 : 0
-                                        return <div key={i} style={{ position: 'absolute', left: 0, right: 0, top: `${topPct}%`, borderTop: '1px solid #1a1a22' }} />
+                                        return <div key={i} style={{ position: 'absolute', left: 0, right: 0, top: `${topPct}%`, height: '1px', background: '#1a1a22', transform: 'translateY(-50%)' }} />
                                       })}
                                     </div>
                                     {/* Zero line if negative */}
@@ -1843,8 +1843,8 @@ export default function AccountPage() {
                       return Math.ceil(v / 500) * 500
                     }
                     const niceMax = barGraphMetric === 'winrate' ? 100 : getNiceMax(maxVal)
-                    // Fewer labels to prevent overlap
-                    const labelCount = enlargedChart === 'bar' ? 6 : 4
+                    // More labels for better readability
+                    const labelCount = 6
                     const yLabels = []
                     for (let i = 0; i <= labelCount - 1; i++) {
                       const val = Math.round((1 - i / (labelCount - 1)) * niceMax)
@@ -1888,15 +1888,15 @@ export default function AccountPage() {
                           </div>
                           <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
                             <div style={{ flex: 1, position: 'relative', borderLeft: '1px solid #2a2a35', borderBottom: '1px solid #2a2a35' }}>
-                              {/* Horizontal grid lines - exact percentage positioning */}
+                              {/* Horizontal grid lines - percentage positioned and centered */}
                               <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}>
                                 {yLabels.map((_, i) => {
                                   const topPct = yLabels.length > 1 ? (i / (yLabels.length - 1)) * 100 : 0
-                                  return <div key={i} style={{ position: 'absolute', left: 0, right: 0, top: `${topPct}%`, borderTop: '1px solid #1a1a22' }} />
+                                  return <div key={i} style={{ position: 'absolute', left: 0, right: 0, top: `${topPct}%`, height: '1px', background: '#1a1a22', transform: 'translateY(-50%)' }} />
                                 })}
                               </div>
                               {/* Bars */}
-                              <div style={{ position: 'absolute', inset: '2px 0 0 0', display: 'flex', alignItems: 'flex-end', gap: '6px', padding: '0 4px' }}>
+                              <div style={{ position: 'absolute', inset: '0', display: 'flex', alignItems: 'flex-end', gap: '6px', padding: '0 4px' }}>
                                 {entries.map((item, i) => {
                                   const hPct = Math.max((Math.abs(item.val) / niceMax) * 100, 5)
                                   const isGreen = barGraphMetric === 'winrate' ? item.val >= 50 : item.val >= 0
@@ -2034,15 +2034,15 @@ export default function AccountPage() {
                         </div>
                         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', position: 'relative' }}>
                           <div style={{ flex: 1, position: 'relative', borderLeft: '1px solid #2a2a35', borderBottom: '1px solid #2a2a35' }}>
-                            {/* Horizontal grid lines - exact percentage positioning */}
+                            {/* Horizontal grid lines - percentage positioned and centered */}
                             <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}>
                               {yLabels.map((_, i) => {
                                 const topPct = yLabels.length > 1 ? (i / (yLabels.length - 1)) * 100 : 0
-                                return <div key={i} style={{ position: 'absolute', left: 0, right: 0, top: `${topPct}%`, borderTop: '1px solid #1a1a22' }} />
+                                return <div key={i} style={{ position: 'absolute', left: 0, right: 0, top: `${topPct}%`, height: '1px', background: '#1a1a22', transform: 'translateY(-50%)' }} />
                               })}
                             </div>
                             {/* Bars */}
-                            <div style={{ position: 'absolute', inset: '2px 0 0 0', display: 'flex', alignItems: 'flex-end', gap: '1px', padding: '0 2px' }}>
+                            <div style={{ position: 'absolute', inset: '0', display: 'flex', alignItems: 'flex-end', gap: '1px', padding: '0 2px' }}>
                               {sortedData.map((d, i) => {
                                 const hPct = yMax > 0 ? (Math.abs(d.pnl) / yMax) * 100 : 0
                                 const isPositive = d.pnl >= 0
@@ -3355,14 +3355,14 @@ export default function AccountPage() {
                       </div>
                       <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
                         <div style={{ flex: 1, position: 'relative', borderLeft: '1px solid #2a2a35', borderBottom: hasNegative ? 'none' : '1px solid #2a2a35', overflow: 'visible' }}>
-                          {/* Horizontal grid lines - exact percentage positioning */}
+                          {/* Horizontal grid lines - percentage positioned and centered */}
                           <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}>
                             {yLabels.map((_, i) => {
                               const topPct = yLabels.length > 1 ? (i / (yLabels.length - 1)) * 100 : 0
-                              return <div key={i} style={{ position: 'absolute', left: 0, right: 0, top: `${topPct}%`, borderTop: '1px solid #1a1a22' }} />
+                              return <div key={i} style={{ position: 'absolute', left: 0, right: 0, top: `${topPct}%`, height: '1px', background: '#1a1a22', transform: 'translateY(-50%)' }} />
                             })}
                           </div>
-                          {zeroY !== null && <div style={{ position: 'absolute', left: 0, right: 0, top: `${zeroY}%`, borderTop: '1px solid #2a2a35', zIndex: 1 }}><span style={{ position: 'absolute', left: '-60px', top: '-8px', fontSize: '11px', color: '#666' }}>$0</span></div>}
+                          {zeroY !== null && <div style={{ position: 'absolute', left: 0, right: 0, top: `${zeroY}%`, height: '1px', background: '#2a2a35', transform: 'translateY(-50%)', zIndex: 1 }}><span style={{ position: 'absolute', left: '-60px', top: '-6px', fontSize: '11px', color: '#666' }}>$0</span></div>}
                           <svg style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', overflow: 'visible' }} viewBox={`0 0 ${svgW} ${svgH}`} preserveAspectRatio="none"
                             onMouseMove={e => {
                               const rect = e.currentTarget.getBoundingClientRect()
@@ -3622,27 +3622,38 @@ export default function AccountPage() {
                 const maxVal = barGraphMetric === 'winrate' ? 100 : Math.max(...entries.map(e => Math.abs(e.val)), 1)
                 const niceMax = barGraphMetric === 'winrate' ? 100 : Math.ceil(maxVal / 100) * 100 || 100
 
-                // Generate Y-axis labels
-                const yLabelCount = 6
+                // Generate Y-axis labels - more labels for better readability
+                const yLabelCount = 11
                 const yLabelsBar = []
                 for (let i = 0; i < yLabelCount; i++) {
                   const val = Math.round((niceMax / (yLabelCount - 1)) * (yLabelCount - 1 - i))
-                  if (barGraphMetric === 'winrate') yLabelsBar.push(val + '%')
-                  else if (barGraphMetric === 'pnl' || barGraphMetric === 'avgpnl') yLabelsBar.push('$' + val)
-                  else yLabelsBar.push(val.toString())
+                  if (barGraphMetric === 'winrate') yLabelsBar.push({ val, disp: val + '%' })
+                  else if (barGraphMetric === 'pnl' || barGraphMetric === 'avgpnl') yLabelsBar.push({ val, disp: '$' + val })
+                  else yLabelsBar.push({ val, disp: val.toString() })
                 }
 
                 return (
                   <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
                     <div style={{ flex: 1, display: 'flex' }}>
-                      <div style={{ width: '40px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', flexShrink: 0, paddingBottom: '30px', paddingRight: '4px' }}>
-                        {yLabelsBar.map((v, i) => <span key={i} style={{ fontSize: '10px', color: '#999', textAlign: 'right' }}>{v}</span>)}
+                      <div style={{ width: '44px', flexShrink: 0, position: 'relative' }}>
+                        {yLabelsBar.map((v, i) => {
+                          const topPct = yLabelsBar.length > 1 ? (i / (yLabelsBar.length - 1)) * 100 : 0
+                          return (
+                            <div key={i} style={{ position: 'absolute', right: 0, top: `${topPct}%`, transform: 'translateY(-50%)', display: 'flex', alignItems: 'center' }}>
+                              <span style={{ fontSize: '10px', color: '#999', textAlign: 'right' }}>{v.disp}</span>
+                              <div style={{ width: '4px', height: '1px', background: '#2a2a35', marginLeft: '3px' }} />
+                            </div>
+                          )
+                        })}
                       </div>
                       <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
                         <div style={{ flex: 1, position: 'relative', borderLeft: '1px solid #1a1a22', borderBottom: '1px solid #1a1a22' }}>
-                          {/* Horizontal grid lines */}
-                          <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', pointerEvents: 'none' }}>
-                            {yLabelsBar.map((_, i) => <div key={i} style={{ borderTop: '1px solid #1a1a22' }} />)}
+                          {/* Horizontal grid lines - percentage positioned and centered */}
+                          <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}>
+                            {yLabelsBar.map((_, i) => {
+                              const topPct = yLabelsBar.length > 1 ? (i / (yLabelsBar.length - 1)) * 100 : 0
+                              return <div key={i} style={{ position: 'absolute', left: 0, right: 0, top: `${topPct}%`, height: '1px', background: '#1a1a22', transform: 'translateY(-50%)' }} />
+                            })}
                           </div>
                           {/* Bars */}
                           <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'flex-end', gap: '12px', padding: '0 20px' }}>
