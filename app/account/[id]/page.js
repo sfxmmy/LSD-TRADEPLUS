@@ -791,7 +791,7 @@ export default function AccountPage() {
               <button onClick={() => setShowEditInputs(true)} style={{ height: '38px', padding: '0 16px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '6px', color: '#fff', fontSize: '13px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>Edit Columns</button>
             )}
             {!selectMode && (
-              <button onClick={() => setShowAddTrade(true)} style={{ height: '38px', padding: '0 16px', background: '#22c55e', border: 'none', borderRadius: '6px', color: '#fff', fontSize: '13px', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}>
+              <button onClick={() => setShowAddTrade(true)} style={{ height: '38px', padding: '0 16px', background: 'linear-gradient(135deg, #9333ea 0%, #7c3aed 100%)', border: 'none', borderRadius: '6px', color: '#fff', fontSize: '13px', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px', boxShadow: '0 0 15px rgba(147,51,234,0.5)' }}>
                 <span style={{ fontSize: '16px', lineHeight: 1 }}>+</span> Log Trade
               </button>
             )}
