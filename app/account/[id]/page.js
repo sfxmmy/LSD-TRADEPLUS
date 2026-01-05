@@ -205,10 +205,20 @@ export default function AccountPage() {
           }
           return inp
         })
-        setInputs(convertedInputs)
+
+        // ALWAYS ensure all default inputs are present - merge saved with defaults
+        const mergedInputs = defaultInputs.map(def => {
+          const saved = convertedInputs.find(c => c.id === def.id)
+          return saved ? { ...def, ...saved, fixed: true } : def
+        })
+        // Add any custom (non-default) inputs
         const customInputs = convertedInputs.filter(i => !defaultInputs.find(d => d.id === i.id))
+        setInputs([...mergedInputs, ...customInputs])
         if (customInputs.length > 0) setHasNewInputs(true)
-      } catch {}
+      } catch {
+        // On parse error, use defaults
+        setInputs(defaultInputs)
+      }
     }
     if (accountData.notes_data) { try { setNotes(JSON.parse(accountData.notes_data)) } catch {} }
     const { data: tradesData } = await supabase.from('trades').select('*').eq('account_id', accountId).order('date', { ascending: false })
