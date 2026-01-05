@@ -2785,12 +2785,24 @@ export default function AccountPage() {
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '12px' }}>
                 {customInputs.filter(i => !['symbol', 'outcome', 'pnl', 'riskPercent', 'rr', 'date', 'direction', 'rating'].includes(i.id)).map(input => (
                   <div key={input.id} style={{ gridColumn: input.type === 'textarea' || input.type === 'file' ? 'span 2' : 'span 1' }}>
-                    <label style={{ display: 'block', fontSize: '10px', color: '#666', marginBottom: '5px', textTransform: 'uppercase' }}>{input.label}</label>
+                    <label style={{ display: 'block', fontSize: '10px', color: '#666', marginBottom: '5px', textTransform: 'uppercase', whiteSpace: 'nowrap', overflow: 'visible' }}>{input.label}</label>
                     {input.type === 'select' ? (
-                      <select value={tradeForm[input.id] || ''} onChange={e => setTradeForm({...tradeForm, [input.id]: e.target.value})} style={{ width: '100%', padding: '10px 12px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '13px' }}>
-                        <option value="">-</option>
-                        {input.options?.map((o, idx) => <option key={idx} value={getOptVal(o).toLowerCase()}>{getOptVal(o)}</option>)}
-                      </select>
+                      (input.options?.length || 0) <= 3 ? (
+                        <div style={{ display: 'flex', gap: '6px' }}>
+                          {input.options?.map((o, idx) => {
+                            const val = getOptVal(o).toLowerCase()
+                            const isSelected = tradeForm[input.id] === val
+                            return (
+                              <button key={idx} type="button" onClick={() => setTradeForm({...tradeForm, [input.id]: isSelected ? '' : val})} style={{ flex: 1, padding: '9px 6px', background: isSelected ? 'rgba(34,197,94,0.2)' : '#0a0a0f', border: `2px solid ${isSelected ? '#22c55e' : '#1a1a22'}`, borderRadius: '8px', color: isSelected ? '#22c55e' : '#666', fontSize: '11px', fontWeight: 600, cursor: 'pointer', textTransform: 'uppercase' }}>{getOptVal(o)}</button>
+                            )
+                          })}
+                        </div>
+                      ) : (
+                        <select value={tradeForm[input.id] || ''} onChange={e => setTradeForm({...tradeForm, [input.id]: e.target.value})} style={{ width: '100%', padding: '10px 12px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '13px' }}>
+                          <option value="">-</option>
+                          {input.options?.map((o, idx) => <option key={idx} value={getOptVal(o).toLowerCase()}>{getOptVal(o)}</option>)}
+                        </select>
+                      )
                     ) : input.type === 'textarea' ? (
                       <input type="text" value={tradeForm[input.id] || ''} onChange={e => setTradeForm({...tradeForm, [input.id]: e.target.value})} placeholder="..." style={{ width: '100%', padding: '10px 12px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '13px', boxSizing: 'border-box' }} />
                     ) : input.type === 'rating' ? (
