@@ -102,6 +102,8 @@ export default function AccountPage() {
   const [hoverRating, setHoverRating] = useState(0)
   const [editingTrade, setEditingTrade] = useState(null)
   const [transferFromJournal, setTransferFromJournal] = useState('')
+  const [draggedColumn, setDraggedColumn] = useState(null)
+  const [dragOverColumn, setDragOverColumn] = useState(null)
 
   const tradesScrollRef = useRef(null)
   const fixedScrollRef = useRef(null)
@@ -463,6 +465,43 @@ export default function AccountPage() {
   function updateOptionTextColor(idx, col) { const n = [...optionsList]; n[idx] = { ...n[idx], textColor: col }; setOptionsList(n) }
   function updateOptionBgColor(idx, col) { const n = [...optionsList]; n[idx] = { ...n[idx], bgColor: col }; setOptionsList(n) }
   function updateOptionBorderColor(idx, col) { const n = [...optionsList]; n[idx] = { ...n[idx], borderColor: col }; setOptionsList(n) }
+
+  // Column reordering functions
+  function handleColumnDragStart(columnId) {
+    setDraggedColumn(columnId)
+  }
+  function handleColumnDragOver(e, columnId) {
+    e.preventDefault()
+    if (columnId !== draggedColumn) setDragOverColumn(columnId)
+  }
+  function handleColumnDrop(targetColumnId) {
+    if (!draggedColumn || draggedColumn === targetColumnId) {
+      setDraggedColumn(null)
+      setDragOverColumn(null)
+      return
+    }
+    // Find indices in the inputs array
+    const dragIdx = inputs.findIndex(i => i.id === draggedColumn)
+    const dropIdx = inputs.findIndex(i => i.id === targetColumnId)
+    if (dragIdx === -1 || dropIdx === -1) {
+      setDraggedColumn(null)
+      setDragOverColumn(null)
+      return
+    }
+    // Reorder inputs
+    const newInputs = [...inputs]
+    const [removed] = newInputs.splice(dragIdx, 1)
+    newInputs.splice(dropIdx, 0, removed)
+    setInputs(newInputs)
+    // Auto-save the new order
+    saveInputsOrder(newInputs)
+    setDraggedColumn(null)
+    setDragOverColumn(null)
+  }
+  async function saveInputsOrder(newInputs) {
+    const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY)
+    await supabase.from('accounts').update({ custom_inputs: JSON.stringify(newInputs) }).eq('id', accountId)
+  }
   function toggleOptionBg(idx) {
     const n = [...optionsList]
     if (n[idx].bgColor) {
@@ -855,7 +894,10 @@ export default function AccountPage() {
                 </button>
               )}
               {activeTab === 'trades' && !selectMode && (
-                <button onClick={() => setShowEditInputs(true)} style={{ height: '38px', margin: 0, padding: '0 16px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '6px', color: '#fff', fontSize: '13px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>Edit Columns</button>
+                <>
+                  <button onClick={() => setShowEditInputs(true)} style={{ height: '38px', margin: 0, padding: '0 16px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '6px', color: '#fff', fontSize: '13px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>Edit Columns</button>
+                  <button onClick={() => setShowAddTrade(true)} style={{ height: '38px', margin: 0, padding: '0 20px', background: 'linear-gradient(135deg, #9333ea 0%, #7c3aed 100%)', border: 'none', borderRadius: '6px', color: '#fff', fontWeight: 600, fontSize: '13px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 0 20px rgba(147,51,234,0.4)' }}>+ LOG TRADE</button>
+                </>
               )}
           </div>
         </div>
@@ -1061,41 +1103,67 @@ export default function AccountPage() {
                   scrollbarWidth: 'thin',
                   scrollbarColor: '#2a2a35 #0a0a0f'
                 }}>
-                <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: '1200px' }}>
+                <table style={{ width: 'max-content', minWidth: '100%', borderCollapse: 'collapse' }}>
                   <thead style={{ position: 'sticky', top: 0, zIndex: 10, background: '#0a0a0f' }}>
                     <tr>
-                      {selectMode && <th style={{ padding: '14px 6px', width: '32px', borderBottom: '1px solid #1a1a22', background: '#0a0a0f' }}><input type="checkbox" checked={filteredTrades.length > 0 && filteredTrades.every(t => selectedTrades.has(t.id))} onChange={() => { const allSelected = filteredTrades.every(t => selectedTrades.has(t.id)); if (allSelected) { const newSet = new Set(selectedTrades); filteredTrades.forEach(t => newSet.delete(t.id)); setSelectedTrades(newSet) } else { const newSet = new Set(selectedTrades); filteredTrades.forEach(t => newSet.add(t.id)); setSelectedTrades(newSet) } }} style={{ width: '14px', height: '14px', accentColor: '#22c55e', cursor: 'pointer' }} /></th>}
-                      {['Symbol', 'W/L', 'PnL', '%', 'RR', ...customInputs.map(i => i.label), 'Date', ''].map((h, i) => (
-                        <th key={i} style={{ padding: isMobile ? '10px 8px' : '14px 12px', textAlign: 'center', color: '#999', fontSize: isMobile ? '11px' : '12px', fontWeight: 600, textTransform: 'uppercase', borderBottom: '1px solid #1a1a22', background: '#0a0a0f' }}>{h}</th>
+                      {selectMode && <th style={{ padding: '14px 6px', width: '32px', minWidth: '32px', borderBottom: '1px solid #1a1a22', background: '#0a0a0f' }}><input type="checkbox" checked={filteredTrades.length > 0 && filteredTrades.every(t => selectedTrades.has(t.id))} onChange={() => { const allSelected = filteredTrades.every(t => selectedTrades.has(t.id)); if (allSelected) { const newSet = new Set(selectedTrades); filteredTrades.forEach(t => newSet.delete(t.id)); setSelectedTrades(newSet) } else { const newSet = new Set(selectedTrades); filteredTrades.forEach(t => newSet.add(t.id)); setSelectedTrades(newSet) } }} style={{ width: '14px', height: '14px', accentColor: '#22c55e', cursor: 'pointer' }} /></th>}
+                      {enabledInputs.map((inp, i) => (
+                        <th
+                          key={inp.id}
+                          draggable
+                          onDragStart={() => handleColumnDragStart(inp.id)}
+                          onDragOver={(e) => handleColumnDragOver(e, inp.id)}
+                          onDrop={() => handleColumnDrop(inp.id)}
+                          onDragEnd={() => { setDraggedColumn(null); setDragOverColumn(null) }}
+                          style={{
+                            padding: isMobile ? '10px 8px' : '14px 12px',
+                            textAlign: 'center',
+                            color: dragOverColumn === inp.id ? '#22c55e' : '#999',
+                            fontSize: isMobile ? '11px' : '12px',
+                            fontWeight: 600,
+                            textTransform: 'uppercase',
+                            borderBottom: '1px solid #1a1a22',
+                            background: dragOverColumn === inp.id ? 'rgba(34,197,94,0.1)' : '#0a0a0f',
+                            minWidth: '100px',
+                            cursor: 'grab',
+                            userSelect: 'none',
+                            opacity: draggedColumn === inp.id ? 0.5 : 1,
+                            transition: 'background 0.15s, color 0.15s'
+                          }}
+                        >
+                          {inp.label}
+                        </th>
                       ))}
+                      <th style={{ padding: '14px 12px', textAlign: 'center', color: '#999', fontSize: '12px', fontWeight: 600, borderBottom: '1px solid #1a1a22', background: '#0a0a0f', minWidth: '70px' }}></th>
                     </tr>
                   </thead>
                   <tbody>
-                    {/* Add New Trade Row */}
-                    <tr style={{ borderBottom: '1px solid #141418' }}>
-                      <td colSpan={selectMode ? customInputs.length + 7 : customInputs.length + 6} style={{ padding: '14px 12px', textAlign: 'center' }}>
-                        <button onClick={() => setShowAddTrade(true)} style={{ padding: '10px 24px', background: 'linear-gradient(135deg, #9333ea 0%, #7c3aed 100%)', border: 'none', borderRadius: '6px', color: '#fff', fontWeight: 600, fontSize: '14px', cursor: 'pointer', lineHeight: 1, boxShadow: '0 0 20px rgba(147,51,234,0.5), 0 0 40px rgba(147,51,234,0.3)' }}>+ LOG TRADE</button>
-                      </td>
-                    </tr>
                     {filteredTrades.map((trade) => {
                       const extra = getExtraData(trade)
                       const pnlValue = parseFloat(trade.pnl) || 0
                       const noteContent = trade.notes || extra.notes || ''
                       return (
                         <tr key={trade.id} onClick={() => selectMode && toggleTradeSelection(trade.id)} style={{ borderBottom: '1px solid #141418', background: selectMode && selectedTrades.has(trade.id) ? 'rgba(34,197,94,0.06)' : 'transparent', cursor: selectMode ? 'pointer' : 'default' }}>
-                          {selectMode && <td style={{ padding: '14px 6px', width: '32px', textAlign: 'center' }} onClick={(e) => e.stopPropagation()}><input type="checkbox" checked={selectedTrades.has(trade.id)} onChange={() => toggleTradeSelection(trade.id)} style={{ width: '14px', height: '14px', accentColor: '#22c55e', cursor: 'pointer' }} /></td>}
-                          <td style={{ padding: isMobile ? '10px 8px' : '14px 12px', fontWeight: 600, fontSize: isMobile ? '14px' : '16px', textAlign: 'center', color: '#fff' }}>{trade.symbol}</td>
-                          <td style={{ padding: '14px 12px', textAlign: 'center' }}>
-                            <span style={{ padding: '5px 12px', borderRadius: '6px', fontSize: '13px', fontWeight: 600, background: trade.outcome === 'win' ? 'rgba(34,197,94,0.15)' : trade.outcome === 'loss' ? 'rgba(239,68,68,0.15)' : 'rgba(255,255,255,0.1)', color: trade.outcome === 'win' ? '#22c55e' : trade.outcome === 'loss' ? '#ef4444' : '#888' }}>
-                              {trade.outcome === 'win' ? 'WIN' : trade.outcome === 'loss' ? 'LOSS' : 'BE'}
-                            </span>
-                          </td>
-                          <td style={{ padding: '14px 12px', textAlign: 'center', fontWeight: 600, fontSize: '16px', color: pnlValue >= 0 ? '#22c55e' : '#ef4444' }}>{pnlValue >= 0 ? '+' : ''}${pnlValue.toFixed(0)}</td>
-                          <td style={{ padding: '14px 12px', textAlign: 'center', fontWeight: 600, fontSize: '14px', color: '#fff' }}>{extra.riskPercent || '1'}%</td>
-                          <td style={{ padding: '14px 12px', textAlign: 'center', fontWeight: 600, fontSize: '14px', color: '#fff' }}>{trade.rr || '-'}</td>
-                          {customInputs.map(inp => (
-                            <td key={inp.id} style={{ padding: '14px 12px', textAlign: 'center', fontSize: '14px', fontWeight: 600, color: '#fff', verticalAlign: 'middle' }}>
-                              {inp.type === 'rating' ? (
+                          {selectMode && <td style={{ padding: '14px 6px', width: '32px', minWidth: '32px', textAlign: 'center' }} onClick={(e) => e.stopPropagation()}><input type="checkbox" checked={selectedTrades.has(trade.id)} onChange={() => toggleTradeSelection(trade.id)} style={{ width: '14px', height: '14px', accentColor: '#22c55e', cursor: 'pointer' }} /></td>}
+                          {enabledInputs.map(inp => (
+                            <td key={inp.id} style={{ padding: '14px 12px', textAlign: 'center', fontSize: '14px', fontWeight: 600, color: '#fff', verticalAlign: 'middle', minWidth: '100px' }}>
+                              {inp.id === 'symbol' ? (
+                                <span style={{ fontWeight: 600, fontSize: '16px', color: '#fff' }}>{trade.symbol}</span>
+                              ) : inp.id === 'outcome' ? (
+                                <span style={{ padding: '5px 12px', borderRadius: '6px', fontSize: '13px', fontWeight: 600, background: trade.outcome === 'win' ? 'rgba(34,197,94,0.15)' : trade.outcome === 'loss' ? 'rgba(239,68,68,0.15)' : 'rgba(255,255,255,0.1)', color: trade.outcome === 'win' ? '#22c55e' : trade.outcome === 'loss' ? '#ef4444' : '#888' }}>
+                                  {trade.outcome === 'win' ? 'WIN' : trade.outcome === 'loss' ? 'LOSS' : 'BE'}
+                                </span>
+                              ) : inp.id === 'pnl' ? (
+                                <span style={{ fontWeight: 600, fontSize: '16px', color: pnlValue >= 0 ? '#22c55e' : '#ef4444' }}>{pnlValue >= 0 ? '+' : ''}${pnlValue.toFixed(0)}</span>
+                              ) : inp.id === 'riskPercent' ? (
+                                <span style={{ fontWeight: 600, color: '#fff' }}>{extra.riskPercent || '1'}%</span>
+                              ) : inp.id === 'rr' ? (
+                                <span style={{ fontWeight: 600, color: '#fff' }}>{trade.rr || '-'}</span>
+                              ) : inp.id === 'date' ? (
+                                <span style={{ fontWeight: 600, color: '#fff' }}>{new Date(trade.date).toLocaleDateString()}</span>
+                              ) : inp.id === 'time' ? (
+                                <span style={{ fontWeight: 600, color: '#fff' }}>{extra.time || '-'}</span>
+                              ) : inp.type === 'rating' ? (
                                 <div style={{ display: 'flex', justifyContent: 'center', gap: '1px' }}>
                                   {[1,2,3,4,5].map(star => {
                                     const rating = parseFloat(extra[inp.id] || 0)
@@ -1114,6 +1182,8 @@ export default function AccountPage() {
                                 <button onClick={() => setShowExpandedImage(extra[inp.id])} style={{ width: '50px', height: '50px', background: '#1a1a22', borderRadius: '6px', border: '1px solid #2a2a35', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto', overflow: 'hidden', padding: 0 }}>
                                   <img src={extra[inp.id]} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} onError={e => { e.target.style.display = 'none' }} />
                                 </button>
+                              ) : inp.id === 'image' ? (
+                                <span style={{ color: '#444' }}>-</span>
                               ) : inp.id === 'notes' ? (
                                 noteContent ? (
                                   <div onClick={() => setShowExpandedNote(noteContent)} style={{ cursor: 'pointer', color: '#fff', fontSize: '14px', fontWeight: 600, maxWidth: '160px', margin: '0 auto', lineHeight: '1.4', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', textAlign: 'left' }}>{noteContent}</div>
@@ -1137,8 +1207,7 @@ export default function AccountPage() {
                               )}
                             </td>
                           ))}
-                          <td style={{ padding: '14px 12px', textAlign: 'center', fontSize: '14px', fontWeight: 600, color: '#fff' }}>{new Date(trade.date).toLocaleDateString()}</td>
-                          <td style={{ padding: '14px 12px', textAlign: 'center' }}>
+                          <td style={{ padding: '14px 12px', textAlign: 'center', minWidth: '70px' }}>
                             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
                               <button onClick={() => startEditTrade(trade)} style={{ background: 'transparent', border: 'none', color: '#666', cursor: 'pointer', fontSize: '14px', padding: '4px' }} title="Edit trade">✎</button>
                               <button onClick={() => setDeleteConfirmId(trade.id)} style={{ background: 'transparent', border: 'none', color: '#999', cursor: 'pointer', fontSize: '18px', padding: '4px' }} title="Delete trade">×</button>
