@@ -2783,29 +2783,16 @@ export default function AccountPage() {
                 {customInputs.filter(i => !['symbol', 'outcome', 'pnl', 'riskPercent', 'rr', 'date', 'direction', 'rating'].includes(i.id)).map(input => {
                   const inputColor = input.color || '#fff'
                   const optionsArr = Array.isArray(input.options) ? input.options : []
-                  const useButtons = input.type === 'select' && optionsArr.length > 0 && optionsArr.length <= 3
                   return (
                   <div key={input.id} style={{ gridColumn: input.type === 'textarea' || input.type === 'file' ? 'span 2' : 'span 1' }}>
                     <label style={{ display: 'block', fontSize: '10px', color: '#666', marginBottom: '5px', textTransform: 'uppercase', whiteSpace: 'nowrap', overflow: 'visible' }}>{input.label}</label>
                     {input.type === 'select' ? (
-                      useButtons ? (
-                        <div style={{ display: 'flex', gap: '6px' }}>
-                          {optionsArr.map((o, idx) => {
-                            const val = getOptVal(o).toLowerCase()
-                            const isSelected = tradeForm[input.id] === val
-                            return (
-                              <button key={idx} type="button" onClick={() => setTradeForm({...tradeForm, [input.id]: isSelected ? '' : val})} style={{ flex: 1, padding: '9px 6px', background: isSelected ? `${inputColor}22` : '#0a0a0f', border: `2px solid ${isSelected ? inputColor : '#1a1a22'}`, borderRadius: '8px', color: isSelected ? inputColor : '#666', fontSize: '11px', fontWeight: 600, cursor: 'pointer', textTransform: 'uppercase' }}>{getOptVal(o)}</button>
-                            )
-                          })}
-                        </div>
-                      ) : (
-                        <select value={tradeForm[input.id] || ''} onChange={e => setTradeForm({...tradeForm, [input.id]: e.target.value})} style={{ width: '100%', padding: '10px 12px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '13px' }}>
-                          <option value="">-</option>
-                          {optionsArr.map((o, idx) => <option key={idx} value={getOptVal(o).toLowerCase()}>{getOptVal(o)}</option>)}
-                        </select>
-                      )
+                      <select value={tradeForm[input.id] || ''} onChange={e => setTradeForm({...tradeForm, [input.id]: e.target.value})} style={{ width: '100%', padding: '10px 12px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '13px' }}>
+                        <option value="">-</option>
+                        {optionsArr.map((o, idx) => <option key={idx} value={getOptVal(o).toLowerCase()}>{getOptVal(o)}</option>)}
+                      </select>
                     ) : input.type === 'textarea' ? (
-                      <input type="text" value={tradeForm[input.id] || ''} onChange={e => setTradeForm({...tradeForm, [input.id]: e.target.value})} placeholder="..." style={{ width: '100%', padding: '10px 12px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '13px', boxSizing: 'border-box' }} />
+                      <textarea value={tradeForm[input.id] || ''} onChange={e => setTradeForm({...tradeForm, [input.id]: e.target.value})} placeholder="..." rows={3} style={{ width: '100%', padding: '10px 12px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '13px', boxSizing: 'border-box', resize: 'vertical', fontFamily: 'inherit' }} />
                     ) : input.type === 'rating' ? (
                       <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                         <div style={{ display: 'inline-flex', gap: '4px', padding: '10px 14px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px', alignItems: 'center' }} onMouseLeave={() => setHoverRating(0)}>
