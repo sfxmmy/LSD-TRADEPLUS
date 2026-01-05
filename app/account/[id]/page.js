@@ -807,11 +807,6 @@ export default function AccountPage() {
     <div style={{ height: '100vh', background: '#0a0a0f', overflow: activeTab === 'trades' ? 'hidden' : 'auto' }} onMouseMove={e => setMousePos({ x: e.clientX, y: e.clientY })}>
       {/* Global scrollbar styles */}
       <style>{`
-        .trades-scroll::-webkit-scrollbar { width: 10px; height: 10px; }
-        .trades-scroll::-webkit-scrollbar-track { background: #1a1a22; border-radius: 5px; }
-        .trades-scroll::-webkit-scrollbar-thumb { background: #22c55e; border-radius: 5px; }
-        .trades-scroll::-webkit-scrollbar-thumb:hover { background: #16a34a; }
-        .trades-scroll::-webkit-scrollbar-corner { background: #0a0a0f; }
         select option { background: #141418; color: #fff; }
         select option:hover { background: #22c55e; }
         select option:checked { background: #1a1a22; }
@@ -1091,15 +1086,14 @@ export default function AccountPage() {
               <>
               <div
                 ref={tradesScrollRef}
-                className="trades-scroll"
                 style={{
                   position: 'absolute',
                   top: 0,
                   left: 0,
                   right: 0,
-                  bottom: '16px',
-                  overflowX: 'scroll',
-                  overflowY: 'scroll',
+                  bottom: 0,
+                  overflowX: 'auto',
+                  overflowY: 'auto',
                   scrollbarWidth: 'thin',
                   scrollbarColor: '#2a2a35 #0a0a0f'
                 }}>
@@ -1218,23 +1212,6 @@ export default function AccountPage() {
                     })}
                   </tbody>
                 </table>
-              </div>
-              {/* Fixed horizontal scrollbar at bottom */}
-              <div
-                ref={fixedScrollRef}
-                className="trades-scroll"
-                style={{
-                  position: 'absolute',
-                  bottom: 0,
-                  left: 0,
-                  right: 0,
-                  height: '16px',
-                  overflowX: 'scroll',
-                  overflowY: 'hidden',
-                  background: '#0a0a0f'
-                }}
-              >
-                <div style={{ width: tradesScrollWidth, height: '1px' }} />
               </div>
               </>
             )}
@@ -3286,10 +3263,20 @@ export default function AccountPage() {
       )}
 
       {showExpandedImage && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.95)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100 }} onClick={() => setShowExpandedImage(null)}>
-          <div style={{ position: 'relative', maxWidth: '90vw', maxHeight: '90vh' }}>
-            <img src={showExpandedImage} alt="Trade" style={{ maxWidth: '100%', maxHeight: '85vh', borderRadius: '8px' }} />
-            <button onClick={() => setShowExpandedImage(null)} style={{ position: 'absolute', top: '-50px', right: '0', background: 'transparent', border: 'none', color: '#999', fontSize: '32px', cursor: 'pointer' }}>×</button>
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.95)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100, overflow: 'auto', padding: '20px' }} onClick={() => setShowExpandedImage(null)}>
+          <div style={{ position: 'relative' }} onClick={e => e.stopPropagation()}>
+            <img
+              src={showExpandedImage}
+              alt="Trade"
+              style={{
+                maxWidth: '95vw',
+                maxHeight: '90vh',
+                borderRadius: '8px',
+                objectFit: 'contain',
+                imageRendering: 'auto'
+              }}
+            />
+            <button onClick={() => setShowExpandedImage(null)} style={{ position: 'absolute', top: '-40px', right: '0', background: 'rgba(0,0,0,0.5)', border: 'none', color: '#fff', fontSize: '24px', cursor: 'pointer', padding: '4px 12px', borderRadius: '4px' }}>×</button>
           </div>
         </div>
       )}
@@ -3314,7 +3301,7 @@ export default function AccountPage() {
               <button onClick={() => setSlideshowIndex(idx === 0 ? imgs.length - 1 : idx - 1)} style={{ position: 'absolute', left: 20, top: '50%', transform: 'translateY(-50%)', background: '#1a1a22', border: '1px solid #2a2a35', borderRadius: '50%', width: 48, height: 48, color: '#fff', fontSize: 24, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>‹</button>
               <button onClick={() => setSlideshowIndex(idx === imgs.length - 1 ? 0 : idx + 1)} style={{ position: 'absolute', right: 20, top: '50%', transform: 'translateY(-50%)', background: '#1a1a22', border: '1px solid #2a2a35', borderRadius: '50%', width: 48, height: 48, color: '#fff', fontSize: 24, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>›</button>
             </>}
-            <img src={image} alt="" style={{ maxWidth: '85vw', maxHeight: '70vh', borderRadius: 8, objectFit: 'contain' }} />
+            <img src={image} alt="" style={{ maxWidth: '90vw', maxHeight: '75vh', borderRadius: 8, objectFit: 'contain', imageRendering: 'auto' }} />
             <div style={{ position: 'absolute', bottom: 30, display: 'flex', alignItems: 'center', gap: 12 }}>
               <span style={{ color: '#666', fontSize: 14 }}>{idx + 1} / {imgs.length}</span>
               {imgs.length <= 10 && <div style={{ display: 'flex', gap: 6 }}>{imgs.map((_, i) => <button key={i} onClick={() => setSlideshowIndex(i)} style={{ width: 8, height: 8, borderRadius: '50%', background: i === idx ? '#22c55e' : '#333', border: 'none', cursor: 'pointer', padding: 0 }} />)}</div>}
