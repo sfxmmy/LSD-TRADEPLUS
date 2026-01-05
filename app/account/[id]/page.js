@@ -970,7 +970,7 @@ export default function AccountPage() {
         {activeTab === 'trades' && (
           <div style={{ position: 'relative', height: 'calc(100vh - 142px)' }}>
             {/* Green glow from bottom */}
-            <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: '200px', background: 'linear-gradient(to top, rgba(34,197,94,0.08) 0%, rgba(34,197,94,0.03) 40%, transparent 100%)', pointerEvents: 'none', zIndex: 1 }} />
+            <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: '80px', background: 'linear-gradient(to top, rgba(34,197,94,0.03) 0%, rgba(34,197,94,0.01) 50%, transparent 100%)', pointerEvents: 'none', zIndex: 1 }} />
             {filteredTrades.length === 0 && trades.length > 0 ? (
               <div style={{ padding: isMobile ? '40px 20px' : '60px', textAlign: 'center' }}>
                 <div style={{ color: '#999', fontSize: '15px', marginBottom: '12px' }}>No trades match your filters.</div>
