@@ -2774,24 +2774,28 @@ export default function AccountPage() {
             {/* Custom inputs - render dynamically in grid */}
             {customInputs.filter(i => !['symbol', 'outcome', 'pnl', 'riskPercent', 'rr', 'date', 'direction', 'rating'].includes(i.id)).length > 0 && (
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '12px' }}>
-                {customInputs.filter(i => !['symbol', 'outcome', 'pnl', 'riskPercent', 'rr', 'date', 'direction', 'rating'].includes(i.id)).map(input => (
+                {customInputs.filter(i => !['symbol', 'outcome', 'pnl', 'riskPercent', 'rr', 'date', 'direction', 'rating'].includes(i.id)).map(input => {
+                  const inputColor = input.color || '#fff'
+                  const optionsArr = Array.isArray(input.options) ? input.options : []
+                  const useButtons = input.type === 'select' && optionsArr.length > 0 && optionsArr.length <= 3
+                  return (
                   <div key={input.id} style={{ gridColumn: input.type === 'textarea' || input.type === 'file' ? 'span 2' : 'span 1' }}>
                     <label style={{ display: 'block', fontSize: '10px', color: '#666', marginBottom: '5px', textTransform: 'uppercase', whiteSpace: 'nowrap', overflow: 'visible' }}>{input.label}</label>
                     {input.type === 'select' ? (
-                      (input.options?.length || 0) <= 3 ? (
+                      useButtons ? (
                         <div style={{ display: 'flex', gap: '6px' }}>
-                          {input.options?.map((o, idx) => {
+                          {optionsArr.map((o, idx) => {
                             const val = getOptVal(o).toLowerCase()
                             const isSelected = tradeForm[input.id] === val
                             return (
-                              <button key={idx} type="button" onClick={() => setTradeForm({...tradeForm, [input.id]: isSelected ? '' : val})} style={{ flex: 1, padding: '9px 6px', background: isSelected ? 'rgba(34,197,94,0.2)' : '#0a0a0f', border: `2px solid ${isSelected ? '#22c55e' : '#1a1a22'}`, borderRadius: '8px', color: isSelected ? '#22c55e' : '#666', fontSize: '11px', fontWeight: 600, cursor: 'pointer', textTransform: 'uppercase' }}>{getOptVal(o)}</button>
+                              <button key={idx} type="button" onClick={() => setTradeForm({...tradeForm, [input.id]: isSelected ? '' : val})} style={{ flex: 1, padding: '9px 6px', background: isSelected ? `${inputColor}22` : '#0a0a0f', border: `2px solid ${isSelected ? inputColor : '#1a1a22'}`, borderRadius: '8px', color: isSelected ? inputColor : '#666', fontSize: '11px', fontWeight: 600, cursor: 'pointer', textTransform: 'uppercase' }}>{getOptVal(o)}</button>
                             )
                           })}
                         </div>
                       ) : (
                         <select value={tradeForm[input.id] || ''} onChange={e => setTradeForm({...tradeForm, [input.id]: e.target.value})} style={{ width: '100%', padding: '10px 12px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '13px' }}>
                           <option value="">-</option>
-                          {input.options?.map((o, idx) => <option key={idx} value={getOptVal(o).toLowerCase()}>{getOptVal(o)}</option>)}
+                          {optionsArr.map((o, idx) => <option key={idx} value={getOptVal(o).toLowerCase()}>{getOptVal(o)}</option>)}
                         </select>
                       )
                     ) : input.type === 'textarea' ? (
@@ -2834,7 +2838,7 @@ export default function AccountPage() {
                       <input type={input.type} value={tradeForm[input.id] || ''} onChange={e => setTradeForm({...tradeForm, [input.id]: e.target.value})} style={{ width: '100%', padding: '10px 12px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '13px', boxSizing: 'border-box' }} />
                     )}
                   </div>
-                ))}
+                )})}
               </div>
             )}
 
