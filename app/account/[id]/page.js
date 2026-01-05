@@ -2841,7 +2841,7 @@ export default function AccountPage() {
 
       {showEditInputs && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.9)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 101 }} onClick={() => setShowEditInputs(false)}>
-          <div style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '12px', padding: '28px', width: '700px', maxHeight: '90vh', overflowY: 'auto' }} onClick={e => e.stopPropagation()}>
+          <div style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '12px', padding: '28px', width: '900px', maxWidth: '95vw', maxHeight: '90vh', overflowY: 'auto' }} onClick={e => e.stopPropagation()}>
             {/* Header */}
             <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '20px' }}>
               <div>
@@ -2854,12 +2854,12 @@ export default function AccountPage() {
             {/* Core Fields Section - in bordered container */}
             <div style={{ marginBottom: '20px', padding: '16px', background: '#0a0a0e', borderRadius: '10px', border: '1px solid #1a1a22' }}>
               <div style={{ fontSize: '12px', color: '#888', marginBottom: '14px', fontWeight: 600 }}>Default Fields</div>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
                 {inputs.map((input, i) => input.fixed && !input.hidden && (
-                  <div key={input.id} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 12px', background: '#141418', borderRadius: '6px' }}>
-                    <input type="checkbox" checked={input.enabled} onChange={e => updateInput(i, 'enabled', e.target.checked)} style={{ width: '15px', height: '15px', accentColor: '#22c55e' }} />
-                    <input type="text" value={input.label} onChange={e => updateInput(i, 'label', e.target.value)} style={{ flex: 1, minWidth: '60px', padding: '6px 8px', background: '#0a0a0e', border: '1px solid #2a2a35', borderRadius: '4px', color: input.enabled ? '#fff' : '#555', fontSize: '12px' }} />
-                    <select value={input.type} onChange={e => updateInput(i, 'type', e.target.value)} style={{ padding: '6px 8px', background: '#0a0a0e', border: '1px solid #2a2a35', borderRadius: '4px', color: '#fff', fontSize: '11px', minWidth: '90px' }}>
+                  <div key={input.id} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 12px', background: '#141418', borderRadius: '6px', minWidth: 0 }}>
+                    <input type="checkbox" checked={input.enabled} onChange={e => updateInput(i, 'enabled', e.target.checked)} style={{ width: '15px', height: '15px', accentColor: '#22c55e', flexShrink: 0 }} />
+                    <input type="text" value={input.label} onChange={e => updateInput(i, 'label', e.target.value)} style={{ flex: 1, minWidth: '80px', padding: '6px 8px', background: '#0a0a0e', border: '1px solid #2a2a35', borderRadius: '4px', color: input.enabled ? '#fff' : '#555', fontSize: '12px' }} />
+                    <select value={input.type} onChange={e => updateInput(i, 'type', e.target.value)} style={{ padding: '6px 8px', background: '#0a0a0e', border: '1px solid #2a2a35', borderRadius: '4px', color: '#fff', fontSize: '11px', flexShrink: 0 }}>
                       <option value="text">Text</option>
                       <option value="number">Number</option>
                       <option value="select">Dropdown</option>
@@ -2870,7 +2870,7 @@ export default function AccountPage() {
                       <option value="file">Image</option>
                     </select>
                     {input.type === 'select' && (
-                      <button onClick={() => openOptionsEditor(i)} style={{ padding: '6px 8px', background: '#0a0a0e', border: '1px solid #2a2a35', borderRadius: '4px', color: '#fff', fontSize: '11px', cursor: 'pointer', whiteSpace: 'nowrap' }}>
+                      <button onClick={() => openOptionsEditor(i)} style={{ padding: '6px 8px', background: '#0a0a0e', border: '1px solid #2a2a35', borderRadius: '4px', color: '#fff', fontSize: '11px', cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0 }}>
                         Options ▾
                       </button>
                     )}
@@ -2886,12 +2886,12 @@ export default function AccountPage() {
                 {inputs.filter(inp => !inp.fixed && !inp.hidden).length === 0 && <span style={{ color: '#555', fontWeight: 400 }}>— none yet</span>}
               </div>
               {inputs.filter(inp => !inp.fixed && !inp.hidden).length > 0 && (
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
                   {inputs.map((input, i) => !input.fixed && !input.hidden && (
-                    <div key={input.id} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 12px', background: '#141418', borderRadius: '6px' }}>
-                      <input type="checkbox" checked={input.enabled} onChange={e => updateInput(i, 'enabled', e.target.checked)} style={{ width: '15px', height: '15px', accentColor: '#22c55e' }} />
-                      <input type="text" value={input.label} onChange={e => updateInput(i, 'label', e.target.value)} style={{ flex: 1, padding: '6px 8px', background: '#0a0a0e', border: '1px solid #2a2a35', borderRadius: '4px', color: '#fff', fontSize: '12px', minWidth: '60px' }} placeholder="Name" />
-                      <select value={input.type} onChange={e => updateInput(i, 'type', e.target.value)} style={{ padding: '6px 8px', background: '#0a0a0e', border: '1px solid #2a2a35', borderRadius: '4px', color: '#fff', fontSize: '11px' }}>
+                    <div key={input.id} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 12px', background: '#141418', borderRadius: '6px', minWidth: 0 }}>
+                      <input type="checkbox" checked={input.enabled} onChange={e => updateInput(i, 'enabled', e.target.checked)} style={{ width: '15px', height: '15px', accentColor: '#22c55e', flexShrink: 0 }} />
+                      <input type="text" value={input.label} onChange={e => updateInput(i, 'label', e.target.value)} style={{ flex: 1, padding: '6px 8px', background: '#0a0a0e', border: '1px solid #2a2a35', borderRadius: '4px', color: '#fff', fontSize: '12px', minWidth: '80px' }} placeholder="Name" />
+                      <select value={input.type} onChange={e => updateInput(i, 'type', e.target.value)} style={{ padding: '6px 8px', background: '#0a0a0e', border: '1px solid #2a2a35', borderRadius: '4px', color: '#fff', fontSize: '11px', flexShrink: 0 }}>
                         <option value="text">Text</option>
                         <option value="number">Number</option>
                         <option value="select">Dropdown</option>
@@ -2902,11 +2902,11 @@ export default function AccountPage() {
                         <option value="file">Image</option>
                       </select>
                       {input.type === 'select' && (
-                        <button onClick={() => openOptionsEditor(i)} style={{ padding: '6px 8px', background: '#0a0a0e', border: '1px solid #2a2a35', borderRadius: '4px', color: '#fff', fontSize: '11px', cursor: 'pointer', whiteSpace: 'nowrap' }}>
+                        <button onClick={() => openOptionsEditor(i)} style={{ padding: '6px 8px', background: '#0a0a0e', border: '1px solid #2a2a35', borderRadius: '4px', color: '#fff', fontSize: '11px', cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0 }}>
                           Options ▾
                         </button>
                       )}
-                      <button onClick={() => setDeleteInputConfirm({ index: i, label: input.label || input.id, id: input.id })} style={{ padding: '4px 8px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '4px', color: '#555', cursor: 'pointer', fontSize: '12px' }}>×</button>
+                      <button onClick={() => setDeleteInputConfirm({ index: i, label: input.label || input.id, id: input.id })} style={{ padding: '4px 8px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '4px', color: '#555', cursor: 'pointer', fontSize: '12px', flexShrink: 0 }}>×</button>
                     </div>
                   ))}
                 </div>
