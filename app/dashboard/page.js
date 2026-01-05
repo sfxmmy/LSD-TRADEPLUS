@@ -42,6 +42,37 @@ function getOptionStyles(field, value) {
 // Helper to extract value from option (supports both string and {value, textColor, bgColor} formats)
 function getOptVal(o) { return typeof o === 'object' ? o.value : o }
 
+// Get option styles from account's custom_inputs (uses journal's actual settings)
+function getAccountOptionStyles(account, field, value) {
+  if (!value) return { textColor: '#fff', bgColor: null, borderColor: null }
+
+  // Try to get styles from account's custom_inputs
+  try {
+    const customInputs = account?.custom_inputs ? JSON.parse(account.custom_inputs) : null
+    if (customInputs) {
+      const input = customInputs.find(i => i.id === field)
+      if (input?.options) {
+        const opt = input.options.find(o => {
+          const optVal = typeof o === 'object' ? o.value : o
+          return optVal?.toLowerCase() === value?.toLowerCase()
+        })
+        if (opt && typeof opt === 'object') {
+          return {
+            textColor: opt.textColor || opt.color || '#fff',
+            bgColor: opt.bgColor || null,
+            borderColor: opt.borderColor || null
+          }
+        }
+      }
+    }
+  } catch (e) {}
+
+  // Fallback to static option styles
+  const fieldStyles = optionStyles[field]
+  if (fieldStyles && fieldStyles[value]) return { ...fieldStyles[value], borderColor: null }
+  return { textColor: '#fff', bgColor: null, borderColor: null }
+}
+
 export default function DashboardPage() {
   const [user, setUser] = useState(null)
   const [accounts, setAccounts] = useState([])
@@ -1149,8 +1180,20 @@ export default function DashboardPage() {
                         <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: isMobile ? '600px' : 'auto' }}>
                           <thead style={{ position: 'sticky', top: 0, background: '#0d0d12' }}>
                             <tr style={{ borderBottom: '1px solid #1a1a22' }}>
-                              {['Symbol', 'W/L', 'PnL', 'RR', '%', 'Dir', 'Confidence', 'Session', 'TF', 'Rating', 'Placed'].map((h, i) => (
-                                <th key={i} style={{ padding: '10px', textAlign: 'center', color: '#999', fontSize: '11px', fontWeight: 600, textTransform: 'uppercase', borderBottom: '1px solid #1a1a22' }}>{h}</th>
+                              {[
+                                { label: 'Symbol', width: '90px' },
+                                { label: 'W/L', width: '70px' },
+                                { label: 'PnL', width: '80px' },
+                                { label: 'RR', width: '50px' },
+                                { label: '%', width: '50px' },
+                                { label: 'Dir', width: '80px' },
+                                { label: 'Confidence', width: '90px' },
+                                { label: 'Session', width: '90px' },
+                                { label: 'TF', width: '60px' },
+                                { label: 'Rating', width: '80px' },
+                                { label: 'Placed', width: '70px' }
+                              ].map((h, i) => (
+                                <th key={i} style={{ padding: '10px', textAlign: 'center', color: '#999', fontSize: '11px', fontWeight: 600, textTransform: 'uppercase', borderBottom: '1px solid #1a1a22', minWidth: h.width }}>{h.label}</th>
                               ))}
                             </tr>
                           </thead>
@@ -1161,31 +1204,33 @@ export default function DashboardPage() {
                                 <tr key={trade.id} style={{ borderBottom: '1px solid #1a1a22' }}>
                                   <td style={{ padding: '12px', fontWeight: 600, fontSize: '14px', textAlign: 'center', color: '#fff' }}>{trade.symbol}</td>
                                   <td style={{ padding: '12px', textAlign: 'center' }}>
-                                    <span style={{ padding: '5px 12px', borderRadius: '6px', fontSize: '13px', fontWeight: 600, background: trade.outcome === 'win' ? 'rgba(34,197,94,0.15)' : trade.outcome === 'loss' ? 'rgba(239,68,68,0.15)' : 'rgba(255,255,255,0.1)', color: trade.outcome === 'win' ? '#22c55e' : trade.outcome === 'loss' ? '#ef4444' : '#888' }}>
-                                      {trade.outcome === 'win' ? 'WIN' : trade.outcome === 'loss' ? 'LOSS' : 'BE'}
-                                    </span>
+                                    {(() => { const s = getAccountOptionStyles(account, 'outcome', trade.outcome); return (
+                                      <span style={{ padding: '5px 12px', borderRadius: '6px', fontSize: '14px', fontWeight: 600, background: s.bgColor || (trade.outcome === 'win' ? 'rgba(34,197,94,0.15)' : trade.outcome === 'loss' ? 'rgba(239,68,68,0.15)' : 'rgba(255,255,255,0.1)'), color: s.textColor || (trade.outcome === 'win' ? '#22c55e' : trade.outcome === 'loss' ? '#ef4444' : '#888'), border: s.borderColor ? `1px solid ${s.borderColor}` : 'none' }}>
+                                        {trade.outcome === 'win' ? 'WIN' : trade.outcome === 'loss' ? 'LOSS' : 'BE'}
+                                      </span>
+                                    )})()}
                                   </td>
                                   <td style={{ padding: '12px', textAlign: 'center', fontWeight: 600, fontSize: '14px', color: parseFloat(trade.pnl) >= 0 ? '#22c55e' : '#ef4444' }}>{parseFloat(trade.pnl) >= 0 ? '+' : ''}${parseFloat(trade.pnl || 0).toFixed(0)}</td>
                                   <td style={{ padding: '12px', textAlign: 'center', fontWeight: 600, fontSize: '14px', color: '#fff' }}>{trade.rr || '-'}</td>
                                   <td style={{ padding: '12px', textAlign: 'center', fontWeight: 600, fontSize: '14px', color: '#fff' }}>{extra.riskPercent || '1'}%</td>
                                   <td style={{ padding: '12px', textAlign: 'center' }}>
                                     {trade.direction ? (
-                                      (() => { const s = getOptionStyles('direction', trade.direction); return <span style={{ padding: '5px 12px', borderRadius: '6px', fontSize: '13px', fontWeight: 600, background: s.bgColor || 'transparent', color: s.textColor }}>{trade.direction?.toUpperCase()}</span> })()
+                                      (() => { const s = getAccountOptionStyles(account, 'direction', trade.direction); return <span style={{ padding: '5px 12px', borderRadius: '6px', fontSize: '14px', fontWeight: 600, background: s.bgColor || 'transparent', color: s.textColor, border: s.borderColor ? `1px solid ${s.borderColor}` : 'none' }}>{trade.direction?.toUpperCase()}</span> })()
                                     ) : <span style={{ fontWeight: 600, fontSize: '14px', color: '#444' }}>-</span>}
                                   </td>
                                   <td style={{ padding: '12px', textAlign: 'center' }}>
                                     {extra.confidence ? (
-                                      (() => { const s = getOptionStyles('confidence', extra.confidence); return <span style={{ padding: '5px 12px', borderRadius: '6px', fontSize: '13px', fontWeight: 600, background: s.bgColor || 'transparent', color: s.textColor }}>{extra.confidence}</span> })()
+                                      (() => { const s = getAccountOptionStyles(account, 'confidence', extra.confidence); return <span style={{ padding: '5px 12px', borderRadius: '6px', fontSize: '14px', fontWeight: 600, background: s.bgColor || 'transparent', color: s.textColor, border: s.borderColor ? `1px solid ${s.borderColor}` : 'none' }}>{extra.confidence}</span> })()
                                     ) : <span style={{ fontWeight: 600, fontSize: '14px', color: '#444' }}>-</span>}
                                   </td>
                                   <td style={{ padding: '12px', textAlign: 'center' }}>
                                     {extra.session ? (
-                                      (() => { const s = getOptionStyles('session', extra.session); return <span style={{ padding: '5px 12px', borderRadius: '6px', fontSize: '13px', fontWeight: 600, background: s.bgColor || 'transparent', color: s.textColor }}>{extra.session}</span> })()
+                                      (() => { const s = getAccountOptionStyles(account, 'session', extra.session); return <span style={{ padding: '5px 12px', borderRadius: '6px', fontSize: '14px', fontWeight: 600, background: s.bgColor || 'transparent', color: s.textColor, border: s.borderColor ? `1px solid ${s.borderColor}` : 'none' }}>{extra.session}</span> })()
                                     ) : <span style={{ fontWeight: 600, fontSize: '14px', color: '#444' }}>-</span>}
                                   </td>
                                   <td style={{ padding: '12px', textAlign: 'center' }}>
                                     {extra.timeframe ? (
-                                      (() => { const s = getOptionStyles('timeframe', extra.timeframe); return <span style={{ padding: '5px 12px', borderRadius: '6px', fontSize: '13px', fontWeight: 600, background: s.bgColor || 'transparent', color: s.textColor }}>{extra.timeframe}</span> })()
+                                      (() => { const s = getAccountOptionStyles(account, 'timeframe', extra.timeframe); return <span style={{ padding: '5px 12px', borderRadius: '6px', fontSize: '14px', fontWeight: 600, background: s.bgColor || 'transparent', color: s.textColor, border: s.borderColor ? `1px solid ${s.borderColor}` : 'none' }}>{extra.timeframe}</span> })()
                                     ) : <span style={{ fontWeight: 600, fontSize: '14px', color: '#444' }}>-</span>}
                                   </td>
                                   <td style={{ padding: '12px', textAlign: 'center', minWidth: '80px' }}>

@@ -100,6 +100,8 @@ export default function AccountPage() {
   const [filters, setFilters] = useState({ dateFrom: '', dateTo: '', outcome: '', direction: '', symbol: '', session: '', timeframe: '', confidence: '', rr: '', rating: '' })
   const [draftFilters, setDraftFilters] = useState({ dateFrom: '', dateTo: '', outcome: '', direction: '', symbol: '', session: '', timeframe: '', confidence: '', rr: '', rating: '', quickSelect: '' })
   const [hoverRating, setHoverRating] = useState(0)
+  const [editingTrade, setEditingTrade] = useState(null)
+  const [transferFromJournal, setTransferFromJournal] = useState('')
 
   const tradesScrollRef = useRef(null)
   const fixedScrollRef = useRef(null)
@@ -275,6 +277,68 @@ export default function AccountPage() {
     const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY)
     await supabase.from('trades').delete().eq('id', tradeId)
     setTrades(trades.filter(t => t.id !== tradeId))
+  }
+
+  function startEditTrade(trade) {
+    const extra = getExtraData(trade)
+    const form = {
+      symbol: trade.symbol || '',
+      pnl: trade.pnl?.toString() || '',
+      direction: trade.direction || 'long',
+      outcome: trade.outcome || 'win',
+      rr: trade.rr?.toString() || '',
+      date: trade.date || new Date().toISOString().split('T')[0],
+      notes: trade.notes || '',
+      ...extra
+    }
+    setTradeForm(form)
+    setEditingTrade(trade)
+    setShowAddTrade(true)
+  }
+
+  async function updateTrade() {
+    if (!editingTrade) return
+    if (!tradeForm.symbol?.trim()) { alert('Please enter a symbol'); return }
+    if (!tradeForm.pnl || isNaN(parseFloat(tradeForm.pnl))) { alert('Please enter a valid PnL number'); return }
+    setSaving(true)
+    const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY)
+
+    const extraData = {}
+    inputs.forEach(inp => {
+      if (!['symbol', 'outcome', 'pnl', 'rr', 'date', 'notes', 'direction'].includes(inp.id)) {
+        extraData[inp.id] = tradeForm[inp.id] || ''
+      }
+    })
+
+    const { data, error } = await supabase.from('trades').update({
+      symbol: tradeForm.symbol?.toUpperCase(),
+      direction: tradeForm.direction || 'long',
+      outcome: tradeForm.outcome || 'win',
+      pnl: parseFloat(tradeForm.pnl) || 0,
+      rr: parseFloat(tradeForm.rr) || 0,
+      date: tradeForm.date || new Date().toISOString().split('T')[0],
+      notes: tradeForm.notes || '',
+      extra_data: JSON.stringify(extraData)
+    }).eq('id', editingTrade.id).select().single()
+
+    if (error) { alert('Error: ' + error.message); setSaving(false); return }
+    setTrades(trades.map(t => t.id === editingTrade.id ? data : t))
+    setEditingTrade(null)
+    setShowAddTrade(false)
+    setSaving(false)
+  }
+
+  async function transferColumnsFromJournal(sourceAccountId) {
+    if (!sourceAccountId) return
+    const sourceAccount = allAccounts.find(a => a.id === sourceAccountId)
+    if (!sourceAccount) return
+    try {
+      const sourceInputs = sourceAccount.custom_inputs ? JSON.parse(sourceAccount.custom_inputs) : defaultInputs
+      setInputs(sourceInputs)
+      setTransferFromJournal('')
+    } catch (e) {
+      console.error('Error parsing source inputs:', e)
+    }
   }
 
   async function saveInputs() {
@@ -1075,7 +1139,10 @@ export default function AccountPage() {
                           ))}
                           <td style={{ padding: '14px 12px', textAlign: 'center', fontSize: '14px', fontWeight: 600, color: '#fff' }}>{new Date(trade.date).toLocaleDateString()}</td>
                           <td style={{ padding: '14px 12px', textAlign: 'center' }}>
-                            <button onClick={() => setDeleteConfirmId(trade.id)} style={{ background: 'transparent', border: 'none', color: '#999', cursor: 'pointer', fontSize: '18px' }}>×</button>
+                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+                              <button onClick={() => startEditTrade(trade)} style={{ background: 'transparent', border: 'none', color: '#666', cursor: 'pointer', fontSize: '14px', padding: '4px' }} title="Edit trade">✎</button>
+                              <button onClick={() => setDeleteConfirmId(trade.id)} style={{ background: 'transparent', border: 'none', color: '#999', cursor: 'pointer', fontSize: '18px', padding: '4px' }} title="Delete trade">×</button>
+                            </div>
                           </td>
                         </tr>
                       )
@@ -2692,19 +2759,21 @@ export default function AccountPage() {
 
       {/* MODALS */}
       {showAddTrade && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.9)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100 }} onClick={() => setShowAddTrade(false)}>
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.9)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100 }} onClick={() => { setShowAddTrade(false); setEditingTrade(null) }}>
           <div style={{ background: 'linear-gradient(180deg, #0f0f14 0%, #0a0a0f 100%)', border: '1px solid #1a1a22', borderRadius: '12px', padding: '24px', width: customInputs.filter(i => !['symbol', 'outcome', 'pnl', 'riskPercent', 'rr', 'date', 'direction', 'rating'].includes(i.id) && !i.hidden).length > 4 ? '560px' : customInputs.filter(i => !['symbol', 'outcome', 'pnl', 'riskPercent', 'rr', 'date', 'direction', 'rating'].includes(i.id) && !i.hidden).length > 2 ? '500px' : '440px', maxHeight: '90vh', overflowY: 'auto' }} onClick={e => e.stopPropagation()}>
             {/* Header */}
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#9333ea' }} />
-                <span style={{ fontSize: '13px', color: '#fff', fontWeight: 600, letterSpacing: '0.5px' }}>LOG TRADE</span>
-                <button onClick={() => { setShowAddTrade(false); setShowEditInputs(true) }} style={{ padding: '4px 8px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '4px', color: '#666', fontSize: '11px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-                  Edit
-                </button>
+                <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: editingTrade ? '#f59e0b' : '#9333ea' }} />
+                <span style={{ fontSize: '13px', color: '#fff', fontWeight: 600, letterSpacing: '0.5px' }}>{editingTrade ? 'EDIT TRADE' : 'LOG TRADE'}</span>
+                {!editingTrade && (
+                  <button onClick={() => { setShowAddTrade(false); setShowEditInputs(true) }} style={{ padding: '4px 8px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '4px', color: '#666', fontSize: '11px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                    Edit
+                  </button>
+                )}
               </div>
-              <button onClick={() => setShowAddTrade(false)} style={{ padding: '6px 8px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '6px', color: '#666', fontSize: '14px', cursor: 'pointer', lineHeight: 1 }}>×</button>
+              <button onClick={() => { setShowAddTrade(false); setEditingTrade(null) }} style={{ padding: '6px 8px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '6px', color: '#666', fontSize: '14px', cursor: 'pointer', lineHeight: 1 }}>×</button>
             </div>
 
             {/* Core Fields Grid */}
@@ -2842,8 +2911,8 @@ export default function AccountPage() {
 
             {/* Buttons */}
             <div style={{ display: 'flex', gap: '12px', marginTop: '12px' }}>
-              <button onClick={() => setShowAddTrade(false)} style={{ flex: 1, padding: '12px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '8px', color: '#888', fontWeight: 600, fontSize: '13px', cursor: 'pointer' }}>Cancel</button>
-              <button onClick={addTrade} disabled={saving || !tradeForm.symbol || !tradeForm.pnl} style={{ flex: 1, padding: '12px', background: (saving || !tradeForm.symbol || !tradeForm.pnl) ? '#1a1a22' : 'linear-gradient(135deg, #9333ea 0%, #7c3aed 100%)', border: 'none', borderRadius: '8px', color: (saving || !tradeForm.symbol || !tradeForm.pnl) ? '#666' : '#fff', fontWeight: 600, fontSize: '14px', cursor: (saving || !tradeForm.symbol || !tradeForm.pnl) ? 'not-allowed' : 'pointer' }}>{saving ? '...' : 'Log Trade'}</button>
+              <button onClick={() => { setShowAddTrade(false); setEditingTrade(null) }} style={{ flex: 1, padding: '12px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '8px', color: '#888', fontWeight: 600, fontSize: '13px', cursor: 'pointer' }}>Cancel</button>
+              <button onClick={editingTrade ? updateTrade : addTrade} disabled={saving || !tradeForm.symbol || !tradeForm.pnl} style={{ flex: 1, padding: '12px', background: (saving || !tradeForm.symbol || !tradeForm.pnl) ? '#1a1a22' : editingTrade ? 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)' : 'linear-gradient(135deg, #9333ea 0%, #7c3aed 100%)', border: 'none', borderRadius: '8px', color: (saving || !tradeForm.symbol || !tradeForm.pnl) ? '#666' : '#fff', fontWeight: 600, fontSize: '14px', cursor: (saving || !tradeForm.symbol || !tradeForm.pnl) ? 'not-allowed' : 'pointer' }}>{saving ? '...' : editingTrade ? 'Update Trade' : 'Log Trade'}</button>
             </div>
           </div>
         </div>
@@ -2851,15 +2920,18 @@ export default function AccountPage() {
 
       {showEditInputs && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.9)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 101 }} onClick={() => setShowEditInputs(false)}>
-          <div style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '12px', padding: '28px', width: '900px', maxWidth: '95vw', maxHeight: '90vh', overflowY: 'auto' }} onClick={e => e.stopPropagation()}>
-            {/* Header */}
-            <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '20px' }}>
+          <div style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '12px', width: '900px', maxWidth: '95vw', maxHeight: '90vh', display: 'flex', flexDirection: 'column' }} onClick={e => e.stopPropagation()}>
+            {/* Sticky Header */}
+            <div style={{ position: 'sticky', top: 0, background: '#0d0d12', padding: '24px 28px 16px', borderBottom: '1px solid #1a1a22', borderRadius: '12px 12px 0 0', zIndex: 1, display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
               <div>
                 <h2 style={{ fontSize: '20px', fontWeight: 700, color: '#fff', marginBottom: '4px' }}>Edit Columns</h2>
                 <p style={{ fontSize: '12px', color: '#555', margin: 0 }}>Configure fields for {account?.name}</p>
               </div>
               <button onClick={() => setShowEditInputs(false)} style={{ padding: '6px 8px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '6px', color: '#666', fontSize: '14px', cursor: 'pointer', lineHeight: 1 }}>×</button>
             </div>
+
+            {/* Scrollable Content */}
+            <div style={{ flex: 1, overflowY: 'auto', padding: '20px 28px' }}>
 
             {/* Core Fields Section - in bordered container */}
             <div style={{ marginBottom: '20px', padding: '16px', background: '#0a0a0e', borderRadius: '10px', border: '1px solid #1a1a22' }}>
@@ -2938,8 +3010,36 @@ export default function AccountPage() {
               </div>
             )}
 
-            {/* Action buttons */}
-            <div style={{ display: 'flex', gap: '12px' }}>
+            {/* Transfer From Another Journal */}
+            {allAccounts.filter(a => a.id !== accountId).length > 0 && (
+              <div style={{ marginBottom: '20px', padding: '16px', background: '#0a0a0e', borderRadius: '10px', border: '1px solid #1a1a22' }}>
+                <div style={{ fontSize: '12px', color: '#888', marginBottom: '10px', fontWeight: 600 }}>Transfer From Another Journal</div>
+                <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+                  <select
+                    value={transferFromJournal}
+                    onChange={e => setTransferFromJournal(e.target.value)}
+                    style={{ flex: 1, padding: '10px 12px', background: '#141418', border: '1px solid #2a2a35', borderRadius: '6px', color: '#fff', fontSize: '13px' }}
+                  >
+                    <option value="">Select a journal...</option>
+                    {allAccounts.filter(a => a.id !== accountId).map(a => (
+                      <option key={a.id} value={a.id}>{a.name}</option>
+                    ))}
+                  </select>
+                  <button
+                    onClick={() => transferColumnsFromJournal(transferFromJournal)}
+                    disabled={!transferFromJournal}
+                    style={{ padding: '10px 16px', background: transferFromJournal ? '#3b82f6' : '#1a1a22', border: 'none', borderRadius: '6px', color: transferFromJournal ? '#fff' : '#555', fontWeight: 600, fontSize: '13px', cursor: transferFromJournal ? 'pointer' : 'not-allowed' }}
+                  >
+                    Transfer
+                  </button>
+                </div>
+                <p style={{ fontSize: '11px', color: '#555', marginTop: '8px', margin: '8px 0 0 0' }}>This will copy all column settings from the selected journal</p>
+              </div>
+            )}
+            </div>
+
+            {/* Sticky Footer - Action buttons */}
+            <div style={{ padding: '16px 28px 24px', borderTop: '1px solid #1a1a22', background: '#0d0d12', borderRadius: '0 0 12px 12px', display: 'flex', gap: '12px' }}>
               <button onClick={() => setShowRestoreDefaults(true)} style={{ padding: '12px 16px', background: 'transparent', border: '1px solid #f59e0b', borderRadius: '8px', color: '#f59e0b', fontWeight: 600, fontSize: '13px', cursor: 'pointer' }}>Restore Defaults</button>
               <button onClick={() => setShowEditInputs(false)} style={{ flex: 1, padding: '12px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '8px', color: '#888', fontWeight: 600, fontSize: '13px', cursor: 'pointer' }}>Cancel</button>
               <button onClick={saveInputs} style={{ flex: 1, padding: '12px', background: '#22c55e', border: 'none', borderRadius: '8px', color: '#fff', fontWeight: 600, fontSize: '13px', cursor: 'pointer' }}>Save</button>
