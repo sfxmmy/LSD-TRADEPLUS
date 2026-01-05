@@ -964,11 +964,11 @@ export default function AccountPage() {
       )}
 
       {/* MAIN CONTENT */}
-      <div style={{ marginLeft: isMobile ? 0 : '180px', marginTop: isMobile ? '100px' : '134px', padding: isMobile ? '12px' : '0' }}>
+      <div style={{ marginLeft: isMobile ? 0 : '180px', marginTop: isMobile ? '100px' : '142px', padding: isMobile ? '12px' : '0' }}>
 
         {/* TRADES TAB */}
         {activeTab === 'trades' && (
-          <div style={{ position: 'relative', height: 'calc(100vh - 134px)' }}>
+          <div style={{ position: 'relative', height: 'calc(100vh - 142px)' }}>
             {/* Green glow from bottom */}
             <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: '200px', background: 'linear-gradient(to top, rgba(34,197,94,0.08) 0%, rgba(34,197,94,0.03) 40%, transparent 100%)', pointerEvents: 'none', zIndex: 1 }} />
             {filteredTrades.length === 0 && trades.length > 0 ? (
