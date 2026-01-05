@@ -3116,7 +3116,7 @@ export default function AccountPage() {
 
       {editingOptions !== null && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.9)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 102 }} onClick={() => { setEditingOptions(null); setOptionsList([]) }}>
-          <div style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '12px', padding: '24px', width: '480px', maxHeight: '80vh', overflowY: 'auto' }} onClick={e => e.stopPropagation()}>
+          <div style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '12px', padding: '24px', width: '680px', maxWidth: '95vw', maxHeight: '80vh', overflowY: 'auto' }} onClick={e => e.stopPropagation()}>
             <h2 style={{ fontSize: '18px', fontWeight: 700, marginBottom: '4px', color: '#fff' }}>Edit Options</h2>
             <p style={{ fontSize: '12px', color: '#555', marginBottom: '12px' }}>Customize option values, text color, and background</p>
 
@@ -3127,7 +3127,7 @@ export default function AccountPage() {
                     <input type="text" value={opt.value} onChange={e => updateOptionValue(idx, e.target.value)} placeholder="Option name" style={{ flex: 1, padding: '10px 12px', background: '#141418', border: '1px solid #2a2a35', borderRadius: '6px', color: '#fff', fontSize: '14px', fontWeight: 600 }} />
                     <button onClick={() => removeOption(idx)} style={{ padding: '8px 12px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '6px', color: '#666', cursor: 'pointer', fontSize: '14px' }}>×</button>
                   </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                       <span style={{ fontSize: '12px', color: '#888' }}>Text</span>
                       <div style={{ position: 'relative', width: '32px', height: '32px' }}>
