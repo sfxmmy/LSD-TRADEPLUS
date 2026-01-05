@@ -31,11 +31,15 @@ function getOptBgColor(o) {
   if (typeof o !== 'object') return null
   return o.bgColor || null
 }
+function getOptBorderColor(o) {
+  if (typeof o !== 'object') return null
+  return o.borderColor || null
+}
 function findOptStyles(opts, val) {
-  if (!opts || !val) return { textColor: '#fff', bgColor: null }
+  if (!opts || !val) return { textColor: '#fff', bgColor: null, borderColor: null }
   const o = opts.find(x => getOptVal(x).toLowerCase() === val.toLowerCase())
-  if (!o) return { textColor: '#fff', bgColor: null }
-  return { textColor: getOptTextColor(o), bgColor: getOptBgColor(o) }
+  if (!o) return { textColor: '#fff', bgColor: null, borderColor: null }
+  return { textColor: getOptTextColor(o), bgColor: getOptBgColor(o), borderColor: getOptBorderColor(o) }
 }
 
 export default function AccountPage() {
@@ -394,21 +398,22 @@ export default function AccountPage() {
   function updateOptionValue(idx, val) { const n = [...optionsList]; n[idx] = { ...n[idx], value: val }; setOptionsList(n) }
   function updateOptionTextColor(idx, col) { const n = [...optionsList]; n[idx] = { ...n[idx], textColor: col }; setOptionsList(n) }
   function updateOptionBgColor(idx, col) { const n = [...optionsList]; n[idx] = { ...n[idx], bgColor: col }; setOptionsList(n) }
+  function updateOptionBorderColor(idx, col) { const n = [...optionsList]; n[idx] = { ...n[idx], borderColor: col }; setOptionsList(n) }
   function toggleOptionBg(idx) {
     const n = [...optionsList]
     if (n[idx].bgColor) {
       n[idx] = { ...n[idx], bgColor: null }
     } else {
       // Generate bg from text color
-      const hex = (n[idx].textColor || '#888').replace('#', '')
-      const r = parseInt(hex.substr(0, 2), 16) || 136
-      const g = parseInt(hex.substr(2, 2), 16) || 136
-      const b = parseInt(hex.substr(4, 2), 16) || 136
+      const hex = (n[idx].textColor || '#fff').replace('#', '')
+      const r = parseInt(hex.substr(0, 2), 16) || 255
+      const g = parseInt(hex.substr(2, 2), 16) || 255
+      const b = parseInt(hex.substr(4, 2), 16) || 255
       n[idx] = { ...n[idx], bgColor: `rgba(${r},${g},${b},0.15)` }
     }
     setOptionsList(n)
   }
-  function addOption() { setOptionsList([...optionsList, { value: '', textColor: '#888', bgColor: null }]) }
+  function addOption() { setOptionsList([...optionsList, { value: '', textColor: '#fff', bgColor: null }]) }
   function removeOption(idx) { setOptionsList(optionsList.filter((_, i) => i !== idx)) }
   function getExtraData(t) {
     // First get extra_data (from JSONB)
@@ -1042,12 +1047,12 @@ export default function AccountPage() {
                                   })}
                                 </div>
                               ) : inp.id === 'image' && extra[inp.id] ? (
-                                <button onClick={() => setShowExpandedImage(extra[inp.id])} style={{ width: '36px', height: '36px', background: '#1a1a22', borderRadius: '6px', border: '1px solid #2a2a35', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto', overflow: 'hidden' }}>
+                                <button onClick={() => setShowExpandedImage(extra[inp.id])} style={{ width: '50px', height: '50px', background: '#1a1a22', borderRadius: '6px', border: '1px solid #2a2a35', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto', overflow: 'hidden', padding: 0 }}>
                                   <img src={extra[inp.id]} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} onError={e => { e.target.style.display = 'none' }} />
                                 </button>
                               ) : inp.id === 'notes' ? (
                                 noteContent ? (
-                                  <div onClick={() => setShowExpandedNote(noteContent)} style={{ cursor: 'pointer', color: '#999', fontSize: '12px', fontWeight: 400, maxWidth: '160px', margin: '0 auto', lineHeight: '1.4', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', textAlign: 'left' }}>{noteContent}</div>
+                                  <div onClick={() => setShowExpandedNote(noteContent)} style={{ cursor: 'pointer', color: '#fff', fontSize: '14px', fontWeight: 600, maxWidth: '160px', margin: '0 auto', lineHeight: '1.4', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', textAlign: 'left' }}>{noteContent}</div>
                                 ) : <span style={{ color: '#444' }}>-</span>
                               ) : inp.type === 'number' ? (
                                 <span style={{ fontWeight: 600, color: '#fff' }}>{extra[inp.id] || '-'}</span>
@@ -1056,7 +1061,7 @@ export default function AccountPage() {
                                   const val = inp.id === 'direction' ? trade.direction : extra[inp.id]
                                   const styles = findOptStyles(inp.options, val)
                                   return val ? (
-                                    <span style={{ padding: '5px 12px', borderRadius: '6px', fontSize: '13px', fontWeight: 600, background: styles.bgColor || 'transparent', color: styles.textColor }}>
+                                    <span style={{ padding: '5px 12px', borderRadius: '6px', fontSize: '14px', fontWeight: 600, background: styles.bgColor || 'transparent', color: styles.textColor, border: styles.borderColor ? `1px solid ${styles.borderColor}` : 'none' }}>
                                       {inp.id === 'direction' ? trade.direction?.toUpperCase() : val}
                                     </span>
                                   ) : <span style={{ color: '#444' }}>-</span>
@@ -2976,12 +2981,12 @@ export default function AccountPage() {
                     <input type="text" value={opt.value} onChange={e => updateOptionValue(idx, e.target.value)} placeholder="Option name" style={{ flex: 1, padding: '10px 12px', background: '#141418', border: '1px solid #2a2a35', borderRadius: '6px', color: '#fff', fontSize: '14px', fontWeight: 600 }} />
                     <button onClick={() => removeOption(idx)} style={{ padding: '8px 12px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '6px', color: '#666', cursor: 'pointer', fontSize: '14px' }}>×</button>
                   </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                       <span style={{ fontSize: '12px', color: '#888' }}>Text</span>
                       <div style={{ position: 'relative', width: '32px', height: '32px' }}>
-                        <div style={{ width: '32px', height: '32px', borderRadius: '6px', background: opt.textColor || '#888', border: '2px solid #2a2a35', cursor: 'pointer' }} />
-                        <input type="color" value={opt.textColor || '#888888'} onChange={e => updateOptionTextColor(idx, e.target.value)} style={{ position: 'absolute', inset: 0, opacity: 0, width: '100%', height: '100%', cursor: 'pointer' }} />
+                        <div style={{ width: '32px', height: '32px', borderRadius: '6px', background: opt.textColor || '#fff', border: '2px solid #2a2a35', cursor: 'pointer' }} />
+                        <input type="color" value={opt.textColor || '#ffffff'} onChange={e => updateOptionTextColor(idx, e.target.value)} style={{ position: 'absolute', inset: 0, opacity: 0, width: '100%', height: '100%', cursor: 'pointer' }} />
                       </div>
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -2992,11 +2997,10 @@ export default function AccountPage() {
                           if (e.target.value === 'none') {
                             updateOptionBgColor(idx, null)
                           } else {
-                            // Generate bg from text color
-                            const hex = (opt.textColor || '#888').replace('#', '')
-                            const r = parseInt(hex.substr(0, 2), 16) || 136
-                            const g = parseInt(hex.substr(2, 2), 16) || 136
-                            const b = parseInt(hex.substr(4, 2), 16) || 136
+                            const hex = (opt.textColor || '#fff').replace('#', '')
+                            const r = parseInt(hex.substr(0, 2), 16) || 255
+                            const g = parseInt(hex.substr(2, 2), 16) || 255
+                            const b = parseInt(hex.substr(4, 2), 16) || 255
                             updateOptionBgColor(idx, `rgba(${r},${g},${b},0.15)`)
                           }
                         }}
@@ -3008,7 +3012,7 @@ export default function AccountPage() {
                       {opt.bgColor && (
                         <div style={{ position: 'relative', width: '32px', height: '32px' }}>
                           <div style={{ width: '32px', height: '32px', borderRadius: '6px', background: opt.bgColor, border: '2px solid #2a2a35', cursor: 'pointer' }} />
-                          <input type="color" value={opt.textColor || '#888888'} onChange={e => {
+                          <input type="color" value={opt.textColor || '#ffffff'} onChange={e => {
                             const hex = e.target.value.replace('#', '')
                             const r = parseInt(hex.substr(0, 2), 16)
                             const g = parseInt(hex.substr(2, 2), 16)
@@ -3018,9 +3022,32 @@ export default function AccountPage() {
                         </div>
                       )}
                     </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <span style={{ fontSize: '12px', color: '#888' }}>Border</span>
+                      <select
+                        value={opt.borderColor ? 'custom' : 'none'}
+                        onChange={e => {
+                          if (e.target.value === 'none') {
+                            updateOptionBorderColor(idx, null)
+                          } else {
+                            updateOptionBorderColor(idx, opt.textColor || '#fff')
+                          }
+                        }}
+                        style={{ padding: '6px 10px', background: '#141418', border: '1px solid #2a2a35', borderRadius: '6px', color: '#fff', fontSize: '12px', cursor: 'pointer' }}
+                      >
+                        <option value="none">None</option>
+                        <option value="custom">Enabled</option>
+                      </select>
+                      {opt.borderColor && (
+                        <div style={{ position: 'relative', width: '32px', height: '32px' }}>
+                          <div style={{ width: '32px', height: '32px', borderRadius: '6px', background: 'transparent', border: `3px solid ${opt.borderColor}`, cursor: 'pointer' }} />
+                          <input type="color" value={opt.borderColor || '#ffffff'} onChange={e => updateOptionBorderColor(idx, e.target.value)} style={{ position: 'absolute', inset: 0, opacity: 0, width: '100%', height: '100%', cursor: 'pointer' }} />
+                        </div>
+                      )}
+                    </div>
                     <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '8px' }}>
                       <span style={{ fontSize: '12px', color: '#666' }}>Preview:</span>
-                      <span style={{ padding: '5px 12px', borderRadius: '6px', fontSize: '13px', fontWeight: 600, background: opt.bgColor || 'transparent', color: opt.textColor || '#888' }}>
+                      <span style={{ padding: '5px 12px', borderRadius: '6px', fontSize: '14px', fontWeight: 600, background: opt.bgColor || 'transparent', color: opt.textColor || '#fff', border: opt.borderColor ? `1px solid ${opt.borderColor}` : 'none' }}>
                         {opt.value || 'Sample'}
                       </span>
                     </div>
