@@ -1400,7 +1400,7 @@ export default function AccountPage() {
                           </div>
                         </div>
                         {/* Graph area - full width now */}
-                        <div style={{ flex: 1, position: 'relative', display: 'flex', minHeight: '40px' }}>
+                        <div style={{ flex: 1, position: 'relative', display: 'flex', flexDirection: 'column', minHeight: '40px' }}>
                           {sorted.length < 2 ? (
                             <div style={{ height: '100%', width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#999' }}>Need 2+ trades</div>
                           ) : (() => {
@@ -1509,18 +1509,21 @@ export default function AccountPage() {
 
                             return (
                               <>
-                                <div style={{ width: '28px', flexShrink: 0, position: 'relative' }}>
-                                  {yLabels.map((v, i) => {
-                                    const topPct = yLabels.length > 1 ? (i / (yLabels.length - 1)) * 100 : 0
-                                    return (
-                                      <div key={i} style={{ position: 'absolute', right: 0, top: `${topPct}%`, transform: 'translateY(-50%)', display: 'flex', alignItems: 'center' }}>
-                                        <span style={{ fontSize: '8px', color: '#999', lineHeight: 1, textAlign: 'right' }}>{equityCurveGroupBy === 'total' ? `$${(v/1000).toFixed(v >= 1000 ? 0 : 1)}k` : `$${v}`}</span>
-                                        <div style={{ width: '3px', height: '1px', background: '#2a2a35', marginLeft: '2px' }} />
-                                      </div>
-                                    )
-                                  })}
-                                </div>
-                                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', position: 'relative' }}>
+                                {/* Chart row - Y-axis and chart area aligned */}
+                                <div style={{ flex: 1, display: 'flex' }}>
+                                  {/* Y-axis labels - same height as chart */}
+                                  <div style={{ width: '28px', flexShrink: 0, position: 'relative' }}>
+                                    {yLabels.map((v, i) => {
+                                      const topPct = yLabels.length > 1 ? (i / (yLabels.length - 1)) * 100 : 0
+                                      return (
+                                        <div key={i} style={{ position: 'absolute', right: 0, top: `${topPct}%`, transform: 'translateY(-50%)', display: 'flex', alignItems: 'center' }}>
+                                          <span style={{ fontSize: '8px', color: '#999', lineHeight: 1, textAlign: 'right' }}>{equityCurveGroupBy === 'total' ? `$${(v/1000).toFixed(v >= 1000 ? 0 : 1)}k` : `$${v}`}</span>
+                                          <div style={{ width: '3px', height: '1px', background: '#2a2a35', marginLeft: '2px' }} />
+                                        </div>
+                                      )
+                                    })}
+                                  </div>
+                                  {/* Chart area */}
                                   <div style={{ flex: 1, position: 'relative', borderLeft: '1px solid #2a2a35', borderBottom: hasNegative ? 'none' : '1px solid #2a2a35', overflow: 'visible' }}>
                                     {/* Horizontal grid lines - percentage positioned and centered */}
                                     <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}>
@@ -1774,18 +1777,17 @@ export default function AccountPage() {
                                       </div>
                                     )}
                                   </div>
-                                  {/* X-axis with tick marks and date labels */}
-                                  <div style={{ height: '24px', position: 'relative', marginLeft: '1px' }}>
-                                    {xLabels.map((l, i) => {
-                                      const isFirst = i === 0
-                                      const isLast = i === xLabels.length - 1
-                                      return (
-                                        <div key={i} style={{ position: 'absolute', left: `${l.pct}%`, transform: 'translateX(-50%)', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                                          <div style={{ width: '1px', height: '5px', background: '#2a2a35' }} />
-                                          <span style={{ fontSize: '9px', color: '#999', marginTop: '3px', whiteSpace: 'nowrap' }}>{l.label}</span>
-                                        </div>
-                                      )
-                                    })}
+                                </div>
+                                {/* X-axis row - spacer + labels */}
+                                <div style={{ display: 'flex' }}>
+                                  <div style={{ width: '28px', flexShrink: 0 }} />
+                                  <div style={{ flex: 1, height: '24px', position: 'relative' }}>
+                                    {xLabels.map((l, i) => (
+                                      <div key={i} style={{ position: 'absolute', left: `${l.pct}%`, transform: 'translateX(-50%)', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                                        <div style={{ width: '1px', height: '5px', background: '#2a2a35' }} />
+                                        <span style={{ fontSize: '9px', color: '#999', marginTop: '3px', whiteSpace: 'nowrap' }}>{l.label}</span>
+                                      </div>
+                                    ))}
                                   </div>
                                 </div>
                               </>
@@ -1873,20 +1875,23 @@ export default function AccountPage() {
                             <button onClick={() => setEnlargedChart(enlargedChart === 'bar' ? null : 'bar')} style={{ background: '#1a1a22', border: '1px solid #2a2a35', borderRadius: '4px', padding: '4px 8px', color: '#999', fontSize: '10px', cursor: 'pointer' }}>⛶</button>
                           </div>
                         </div>
-                        {/* Graph - full width */}
-                        <div style={{ flex: 1, display: 'flex', minHeight: '40px' }}>
-                          <div style={{ width: '28px', flexShrink: 0, position: 'relative' }}>
-                            {yLabels.map((v, i) => {
-                              const topPct = yLabels.length > 1 ? (i / (yLabels.length - 1)) * 100 : 0
-                              return (
-                                <div key={i} style={{ position: 'absolute', right: 0, top: `${topPct}%`, transform: 'translateY(-50%)', display: 'flex', alignItems: 'center' }}>
-                                  <span style={{ fontSize: '8px', color: '#999', lineHeight: 1, textAlign: 'right' }}>{v}</span>
-                                  <div style={{ width: '3px', height: '1px', background: '#2a2a35', marginLeft: '2px' }} />
-                                </div>
-                              )
-                            })}
-                          </div>
-                          <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+                        {/* Graph - restructured so Y-axis aligns only with chart area */}
+                        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: '40px' }}>
+                          {/* Chart row - Y-axis and chart area aligned */}
+                          <div style={{ flex: 1, display: 'flex' }}>
+                            {/* Y-axis labels - same height as chart */}
+                            <div style={{ width: '28px', flexShrink: 0, position: 'relative' }}>
+                              {yLabels.map((v, i) => {
+                                const topPct = yLabels.length > 1 ? (i / (yLabels.length - 1)) * 100 : 0
+                                return (
+                                  <div key={i} style={{ position: 'absolute', right: 0, top: `${topPct}%`, transform: 'translateY(-50%)', display: 'flex', alignItems: 'center' }}>
+                                    <span style={{ fontSize: '8px', color: '#999', lineHeight: 1, textAlign: 'right' }}>{v}</span>
+                                    <div style={{ width: '3px', height: '1px', background: '#2a2a35', marginLeft: '2px' }} />
+                                  </div>
+                                )
+                              })}
+                            </div>
+                            {/* Chart area */}
                             <div style={{ flex: 1, position: 'relative', borderLeft: '1px solid #2a2a35', borderBottom: '1px solid #2a2a35' }}>
                               {/* Horizontal grid lines - percentage positioned and centered */}
                               <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}>
@@ -1924,15 +1929,14 @@ export default function AccountPage() {
                                 })}
                               </div>
                             </div>
-                            <div style={{ marginLeft: '1px' }}>
-                              <div style={{ display: 'flex', gap: '6px', padding: '0 4px' }}>
-                                {entries.map((item, i) => (
-                                  <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                                    <div style={{ width: '1px', height: '5px', background: '#2a2a35' }} />
-                                    <div style={{ marginTop: '4px', textAlign: 'center', fontSize: '10px', color: '#999', fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', background: '#0d0d12', padding: '2px 4px', borderRadius: '3px', border: '1px solid #1a1a22', width: '100%', boxSizing: 'border-box' }}>{item.name}</div>
-                                  </div>
-                                ))}
-                              </div>
+                          </div>
+                          {/* X-axis row - spacer + labels, NO borders */}
+                          <div style={{ display: 'flex' }}>
+                            <div style={{ width: '28px', flexShrink: 0 }} />
+                            <div style={{ flex: 1, display: 'flex', gap: '6px', padding: '6px 4px 0' }}>
+                              {entries.map((item, i) => (
+                                <div key={i} style={{ flex: 1, textAlign: 'center', fontSize: '10px', color: '#999', fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.name}</div>
+                              ))}
                             </div>
                           </div>
                         </div>
@@ -1977,7 +1981,7 @@ export default function AccountPage() {
                     <span style={{ color: includeDaysNotTraded ? '#fff' : '#888' }}>Include non-trading days</span>
                   </label>
                 </div>
-                <div style={{ height: '200px', display: 'flex' }}>
+                <div style={{ height: '200px', display: 'flex', flexDirection: 'column' }}>
                   {displayDailyPnL.length === 0 ? <div style={{ height: '100%', width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#999' }}>No data</div> : (() => {
                     let displayData = displayDailyPnL
                     if (includeDaysNotTraded && displayDailyPnL.length > 1) {
@@ -1992,7 +1996,7 @@ export default function AccountPage() {
                         displayData.push({ date: dateStr, pnl: pnlByDate[dateStr] || 0 })
                       }
                     }
-                    
+
                     const maxAbs = Math.max(...displayData.map(x => Math.abs(x.pnl)), 1)
                     const getNiceMax = (v) => {
                       if (v <= 50) return Math.ceil(v / 10) * 10
@@ -2006,9 +2010,9 @@ export default function AccountPage() {
                     const yStep = yMax / 5
                     const yLabels = []
                     for (let v = yMax; v >= 0; v -= yStep) yLabels.push(Math.round(v))
-                    
+
                     const sortedData = [...displayData].sort((a, b) => new Date(a.date) - new Date(b.date))
-                    
+
                     // Generate X-axis labels (evenly spaced across the chart) - double digit format
                     const xLabelCount = Math.min(sortedData.length, 15)
                     const xLabels = []
@@ -2018,21 +2022,24 @@ export default function AccountPage() {
                       // Use evenly spaced percentages based on label index, not data index
                       xLabels.push({ label: `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}`, pct: xLabelCount > 1 ? (i / (xLabelCount - 1)) * 100 : 50 })
                     }
-                    
+
                     return (
                       <>
-                        <div style={{ width: '28px', flexShrink: 0, position: 'relative' }}>
-                          {yLabels.map((v, i) => {
-                            const topPct = yLabels.length > 1 ? (i / (yLabels.length - 1)) * 100 : 0
-                            return (
-                              <div key={i} style={{ position: 'absolute', right: 0, top: `${topPct}%`, transform: 'translateY(-50%)', display: 'flex', alignItems: 'center' }}>
-                                <span style={{ fontSize: '8px', color: '#999', lineHeight: 1, textAlign: 'right' }}>{i === yLabels.length - 1 ? '$0' : `$${v}`}</span>
-                                <div style={{ width: '3px', height: '1px', background: '#2a2a35', marginLeft: '2px' }} />
-                              </div>
-                            )
-                          })}
-                        </div>
-                        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', position: 'relative' }}>
+                        {/* Chart row - Y-axis and chart area aligned */}
+                        <div style={{ flex: 1, display: 'flex' }}>
+                          {/* Y-axis labels - same height as chart */}
+                          <div style={{ width: '28px', flexShrink: 0, position: 'relative' }}>
+                            {yLabels.map((v, i) => {
+                              const topPct = yLabels.length > 1 ? (i / (yLabels.length - 1)) * 100 : 0
+                              return (
+                                <div key={i} style={{ position: 'absolute', right: 0, top: `${topPct}%`, transform: 'translateY(-50%)', display: 'flex', alignItems: 'center' }}>
+                                  <span style={{ fontSize: '8px', color: '#999', lineHeight: 1, textAlign: 'right' }}>{i === yLabels.length - 1 ? '$0' : `$${v}`}</span>
+                                  <div style={{ width: '3px', height: '1px', background: '#2a2a35', marginLeft: '2px' }} />
+                                </div>
+                              )
+                            })}
+                          </div>
+                          {/* Chart area */}
                           <div style={{ flex: 1, position: 'relative', borderLeft: '1px solid #2a2a35', borderBottom: '1px solid #2a2a35' }}>
                             {/* Horizontal grid lines - percentage positioned and centered */}
                             <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}>
@@ -2069,18 +2076,17 @@ export default function AccountPage() {
                               })}
                             </div>
                           </div>
-                          {/* X-axis with tick marks and date labels */}
-                          <div style={{ height: '24px', position: 'relative', marginLeft: '1px' }}>
-                            {xLabels.map((l, i) => {
-                              const isFirst = i === 0
-                              const isLast = i === xLabels.length - 1
-                              return (
-                                <div key={i} style={{ position: 'absolute', left: `${l.pct}%`, transform: 'translateX(-50%)', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                                  <div style={{ width: '1px', height: '5px', background: '#2a2a35' }} />
-                                  <span style={{ fontSize: '9px', color: '#999', marginTop: '3px', whiteSpace: 'nowrap' }}>{l.label}</span>
-                                </div>
-                              )
-                            })}
+                        </div>
+                        {/* X-axis row - spacer + labels */}
+                        <div style={{ display: 'flex' }}>
+                          <div style={{ width: '28px', flexShrink: 0 }} />
+                          <div style={{ flex: 1, height: '24px', position: 'relative' }}>
+                            {xLabels.map((l, i) => (
+                              <div key={i} style={{ position: 'absolute', left: `${l.pct}%`, transform: 'translateX(-50%)', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                                <div style={{ width: '1px', height: '5px', background: '#2a2a35' }} />
+                                <span style={{ fontSize: '9px', color: '#999', marginTop: '3px', whiteSpace: 'nowrap' }}>{l.label}</span>
+                              </div>
+                            ))}
                           </div>
                         </div>
                       </>
@@ -3341,7 +3347,9 @@ export default function AccountPage() {
 
                 return (
                   <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+                    {/* Chart row - Y-axis and chart area aligned */}
                     <div style={{ flex: 1, display: 'flex' }}>
+                      {/* Y-axis labels - same height as chart */}
                       <div style={{ width: '44px', flexShrink: 0, position: 'relative' }}>
                         {yLabels.map((v, i) => {
                           const topPct = yLabels.length > 1 ? (i / (yLabels.length - 1)) * 100 : 0
@@ -3353,8 +3361,8 @@ export default function AccountPage() {
                           )
                         })}
                       </div>
-                      <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
-                        <div style={{ flex: 1, position: 'relative', borderLeft: '1px solid #2a2a35', borderBottom: hasNegative ? 'none' : '1px solid #2a2a35', overflow: 'visible' }}>
+                      {/* Chart area */}
+                      <div style={{ flex: 1, position: 'relative', borderLeft: '1px solid #2a2a35', borderBottom: hasNegative ? 'none' : '1px solid #2a2a35', overflow: 'visible' }}>
                           {/* Horizontal grid lines - percentage positioned and centered */}
                           <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}>
                             {yLabels.map((_, i) => {
@@ -3363,6 +3371,13 @@ export default function AccountPage() {
                             })}
                           </div>
                           {zeroY !== null && <div style={{ position: 'absolute', left: 0, right: 0, top: `${zeroY}%`, height: '1px', background: '#2a2a35', transform: 'translateY(-50%)', zIndex: 1 }}><span style={{ position: 'absolute', left: '-60px', top: '-6px', fontSize: '11px', color: '#666' }}>$0</span></div>}
+                          {/* Start line - dashed horizontal line at starting balance */}
+                          {equityCurveGroupBy === 'total' && startYEnl >= 0 && startYEnl <= svgH && (
+                            <>
+                              <div style={{ position: 'absolute', left: 0, right: '40px', top: `${(startYEnl / svgH) * 100}%`, borderTop: '1px dashed #666', transform: 'translateY(-50%)', zIndex: 1 }} />
+                              <span style={{ position: 'absolute', right: '2px', top: `${(startYEnl / svgH) * 100}%`, transform: 'translateY(-50%)', fontSize: '10px', color: '#888', background: '#0d0d12', padding: '0 4px' }}>Start</span>
+                            </>
+                          )}
                           <svg style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', overflow: 'visible' }} viewBox={`0 0 ${svgW} ${svgH}`} preserveAspectRatio="none"
                             onMouseMove={e => {
                               const rect = e.currentTarget.getBoundingClientRect()
@@ -3564,34 +3579,32 @@ export default function AccountPage() {
                             </div>
                           )}
                         </div>
-                        {/* X-axis with tick marks and labels */}
-                        <div style={{ height: '28px', position: 'relative' }}>
-                          {xLabels.map((l, i) => {
-                            const isFirst = i === 0
-                            const isLast = i === xLabels.length - 1
-                            return (
-                              <div key={i} style={{ position: 'absolute', left: `${l.pct}%`, transform: 'translateX(-50%)', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                                <div style={{ width: '1px', height: '8px', background: '#333' }} />
-                                <span style={{ fontSize: '10px', color: '#999', marginTop: '2px', whiteSpace: 'nowrap' }}>{l.label}</span>
-                              </div>
-                            )
-                          })}
-                        </div>
-                        {/* Legend - only for total mode (multi-line has legend in top-left of chart) */}
-                        {equityCurveGroupBy === 'total' && (
-                          <div style={{ display: 'flex', justifyContent: 'center', gap: '12px', padding: '8px 0', flexWrap: 'wrap' }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                              <div style={{ width: '16px', height: '3px', background: '#22c55e' }} />
-                              <span style={{ fontSize: '10px', color: '#999' }}>Above Start</span>
-                            </div>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                              <div style={{ width: '16px', height: '3px', background: '#ef4444' }} />
-                              <span style={{ fontSize: '10px', color: '#999' }}>Below Start</span>
-                            </div>
+                    </div>
+                    {/* X-axis row - spacer + labels */}
+                    <div style={{ display: 'flex' }}>
+                      <div style={{ width: '44px', flexShrink: 0 }} />
+                      <div style={{ flex: 1, height: '28px', position: 'relative' }}>
+                        {xLabels.map((l, i) => (
+                          <div key={i} style={{ position: 'absolute', left: `${l.pct}%`, transform: 'translateX(-50%)', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                            <div style={{ width: '1px', height: '8px', background: '#333' }} />
+                            <span style={{ fontSize: '10px', color: '#999', marginTop: '2px', whiteSpace: 'nowrap' }}>{l.label}</span>
                           </div>
-                        )}
+                        ))}
                       </div>
                     </div>
+                    {/* Legend - only for total mode (multi-line has legend in top-left of chart) */}
+                    {equityCurveGroupBy === 'total' && (
+                      <div style={{ display: 'flex', justifyContent: 'center', gap: '12px', padding: '8px 0', flexWrap: 'wrap' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                          <div style={{ width: '16px', height: '3px', background: '#22c55e' }} />
+                          <span style={{ fontSize: '10px', color: '#999' }}>Above Start</span>
+                        </div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                          <div style={{ width: '16px', height: '3px', background: '#ef4444' }} />
+                          <span style={{ fontSize: '10px', color: '#999' }}>Below Start</span>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 )
               })()}
@@ -3634,7 +3647,9 @@ export default function AccountPage() {
 
                 return (
                   <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+                    {/* Chart row - Y-axis and chart area aligned */}
                     <div style={{ flex: 1, display: 'flex' }}>
+                      {/* Y-axis labels - same height as chart */}
                       <div style={{ width: '44px', flexShrink: 0, position: 'relative' }}>
                         {yLabelsBar.map((v, i) => {
                           const topPct = yLabelsBar.length > 1 ? (i / (yLabelsBar.length - 1)) * 100 : 0
@@ -3646,50 +3661,51 @@ export default function AccountPage() {
                           )
                         })}
                       </div>
-                      <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
-                        <div style={{ flex: 1, position: 'relative', borderLeft: '1px solid #1a1a22', borderBottom: '1px solid #1a1a22' }}>
-                          {/* Horizontal grid lines - percentage positioned and centered */}
-                          <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}>
-                            {yLabelsBar.map((_, i) => {
-                              const topPct = yLabelsBar.length > 1 ? (i / (yLabelsBar.length - 1)) * 100 : 0
-                              return <div key={i} style={{ position: 'absolute', left: 0, right: 0, top: `${topPct}%`, height: '1px', background: '#1a1a22', transform: 'translateY(-50%)' }} />
-                            })}
-                          </div>
-                          {/* Bars */}
-                          <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'flex-end', gap: '12px', padding: '0 20px' }}>
-                            {entries.map((item, i) => {
-                              const hPct = Math.max((Math.abs(item.val) / niceMax) * 100, 5)
-                              const isGreen = barGraphMetric === 'winrate' ? item.val >= 50 : item.val >= 0
-                              const isHovered = barHover === i
-                              return (
-                                <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', height: '100%', justifyContent: 'flex-end', position: 'relative' }}
-                                  onMouseEnter={() => setBarHover(i)}
-                                  onMouseLeave={() => setBarHover(null)}
-                                >
-                                  <div style={{ width: '100%', maxWidth: '80px', height: `${hPct}%`, background: `linear-gradient(to bottom, ${isGreen ? `rgba(34, 197, 94, ${0.15 + (hPct / 100) * 0.2})` : `rgba(239, 68, 68, ${0.15 + (hPct / 100) * 0.2})`} 0%, transparent 100%)`, border: `1px solid ${isGreen ? '#22c55e' : '#ef4444'}`, borderBottom: 'none', borderRadius: '6px 6px 0 0', minHeight: '20px', position: 'relative', cursor: 'pointer' }}>
-                                    {/* Price label at top of bar */}
-                                    <div style={{ position: 'absolute', top: '-20px', left: '50%', transform: 'translateX(-50%)', fontSize: '14px', color: isGreen ? '#22c55e' : '#ef4444', fontWeight: 600, whiteSpace: 'nowrap' }}>{item.disp}</div>
-                                    {isHovered && (
-                                      <>
-                                        <div style={{ position: 'absolute', bottom: '8px', left: '50%', transform: 'translateX(-50%)', width: '10px', height: '10px', borderRadius: '50%', background: isGreen ? '#22c55e' : '#ef4444', border: '2px solid #fff', zIndex: 5 }} />
-                                        <div style={{ position: 'absolute', bottom: '0px', left: 'calc(50% + 12px)', background: '#1a1a22', border: '1px solid #2a2a35', borderRadius: '6px', padding: '8px 12px', fontSize: '12px', whiteSpace: 'nowrap', zIndex: 10, pointerEvents: 'none' }}>
-                                          <div style={{ fontWeight: 700, color: '#fff', fontSize: '14px', marginBottom: '2px' }}>{item.name}</div>
-                                          <div style={{ fontWeight: 600, fontSize: '16px', color: isGreen ? '#22c55e' : '#ef4444' }}>{item.disp}</div>
-                                        </div>
-                                      </>
-                                    )}
-                                  </div>
+                      {/* Chart area */}
+                      <div style={{ flex: 1, position: 'relative', borderLeft: '1px solid #1a1a22', borderBottom: '1px solid #1a1a22' }}>
+                        {/* Horizontal grid lines */}
+                        <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}>
+                          {yLabelsBar.map((_, i) => {
+                            const topPct = yLabelsBar.length > 1 ? (i / (yLabelsBar.length - 1)) * 100 : 0
+                            return <div key={i} style={{ position: 'absolute', left: 0, right: 0, top: `${topPct}%`, height: '1px', background: '#1a1a22', transform: 'translateY(-50%)' }} />
+                          })}
+                        </div>
+                        {/* Bars */}
+                        <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'flex-end', gap: '12px', padding: '0 20px' }}>
+                          {entries.map((item, i) => {
+                            const hPct = Math.max((Math.abs(item.val) / niceMax) * 100, 5)
+                            const isGreen = barGraphMetric === 'winrate' ? item.val >= 50 : item.val >= 0
+                            const isHovered = barHover === i
+                            return (
+                              <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', height: '100%', justifyContent: 'flex-end', position: 'relative' }}
+                                onMouseEnter={() => setBarHover(i)}
+                                onMouseLeave={() => setBarHover(null)}
+                              >
+                                <div style={{ width: '100%', maxWidth: '80px', height: `${hPct}%`, background: `linear-gradient(to bottom, ${isGreen ? `rgba(34, 197, 94, ${0.15 + (hPct / 100) * 0.2})` : `rgba(239, 68, 68, ${0.15 + (hPct / 100) * 0.2})`} 0%, transparent 100%)`, border: `1px solid ${isGreen ? '#22c55e' : '#ef4444'}`, borderBottom: 'none', borderRadius: '6px 6px 0 0', minHeight: '20px', position: 'relative', cursor: 'pointer' }}>
+                                  <div style={{ position: 'absolute', top: '-20px', left: '50%', transform: 'translateX(-50%)', fontSize: '14px', color: isGreen ? '#22c55e' : '#ef4444', fontWeight: 600, whiteSpace: 'nowrap' }}>{item.disp}</div>
+                                  {isHovered && (
+                                    <>
+                                      <div style={{ position: 'absolute', bottom: '8px', left: '50%', transform: 'translateX(-50%)', width: '10px', height: '10px', borderRadius: '50%', background: isGreen ? '#22c55e' : '#ef4444', border: '2px solid #fff', zIndex: 5 }} />
+                                      <div style={{ position: 'absolute', bottom: '0px', left: 'calc(50% + 12px)', background: '#1a1a22', border: '1px solid #2a2a35', borderRadius: '6px', padding: '8px 12px', fontSize: '12px', whiteSpace: 'nowrap', zIndex: 10, pointerEvents: 'none' }}>
+                                        <div style={{ fontWeight: 700, color: '#fff', fontSize: '14px', marginBottom: '2px' }}>{item.name}</div>
+                                        <div style={{ fontWeight: 600, fontSize: '16px', color: isGreen ? '#22c55e' : '#ef4444' }}>{item.disp}</div>
+                                      </div>
+                                    </>
+                                  )}
                                 </div>
-                              )
-                            })}
-                          </div>
+                              </div>
+                            )
+                          })}
                         </div>
-                        {/* X-axis labels */}
-                        <div style={{ height: '30px', display: 'flex', gap: '12px', padding: '8px 20px 0' }}>
-                          {entries.map((item, i) => (
-                            <div key={i} style={{ flex: 1, textAlign: 'center', fontSize: '12px', color: '#999' }}>{item.name}</div>
-                          ))}
-                        </div>
+                      </div>
+                    </div>
+                    {/* X-axis row - spacer + labels, NO borders */}
+                    <div style={{ display: 'flex' }}>
+                      <div style={{ width: '44px', flexShrink: 0 }} />
+                      <div style={{ flex: 1, display: 'flex', gap: '12px', padding: '8px 20px 0' }}>
+                        {entries.map((item, i) => (
+                          <div key={i} style={{ flex: 1, textAlign: 'center', fontSize: '12px', color: '#999' }}>{item.name}</div>
+                        ))}
                       </div>
                     </div>
                   </div>
