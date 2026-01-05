@@ -790,11 +790,6 @@ export default function AccountPage() {
             {activeTab === 'trades' && !selectMode && (
               <button onClick={() => setShowEditInputs(true)} style={{ height: '38px', padding: '0 16px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '6px', color: '#fff', fontSize: '13px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>Edit Columns</button>
             )}
-            {!selectMode && (
-              <button onClick={() => setShowAddTrade(true)} style={{ height: '38px', padding: '0 16px', background: 'linear-gradient(135deg, #9333ea 0%, #7c3aed 100%)', border: 'none', borderRadius: '6px', color: '#fff', fontSize: '13px', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px', boxShadow: '0 0 15px rgba(147,51,234,0.5)' }}>
-                <span style={{ fontSize: '16px', lineHeight: 1 }}>+</span> Log Trade
-              </button>
-            )}
           </div>
         </div>
       )}
@@ -978,9 +973,7 @@ export default function AccountPage() {
           <div style={{ position: 'relative', height: 'calc(100vh - 134px)' }}>
             {/* Green glow from bottom */}
             <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: '200px', background: 'linear-gradient(to top, rgba(34,197,94,0.08) 0%, rgba(34,197,94,0.03) 40%, transparent 100%)', pointerEvents: 'none', zIndex: 1 }} />
-            {trades.length === 0 ? (
-              <div style={{ padding: isMobile ? '40px 20px' : '60px', textAlign: 'center', color: '#999', fontSize: '15px' }}>No trades yet. Click "+ LOG NEW TRADE" to add your first trade.</div>
-            ) : filteredTrades.length === 0 ? (
+            {filteredTrades.length === 0 && trades.length > 0 ? (
               <div style={{ padding: isMobile ? '40px 20px' : '60px', textAlign: 'center' }}>
                 <div style={{ color: '#999', fontSize: '15px', marginBottom: '12px' }}>No trades match your filters.</div>
                 <button onClick={() => setFilters({ dateFrom: '', dateTo: '', outcome: '', direction: '', symbol: '' })} style={{ padding: '10px 20px', background: 'transparent', border: '1px solid #22c55e', borderRadius: '8px', color: '#22c55e', fontSize: '13px', cursor: 'pointer' }}>Clear Filters</button>
