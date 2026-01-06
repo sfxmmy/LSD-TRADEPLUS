@@ -2998,28 +2998,34 @@ export default function AccountPage() {
 
       {showEditInputs && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.9)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 101 }} onClick={() => setShowEditInputs(false)}>
-          <div style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '12px', width: '900px', maxWidth: '95vw', maxHeight: '90vh', display: 'flex', flexDirection: 'column' }} onClick={e => e.stopPropagation()}>
-            {/* Sticky Header */}
-            <div style={{ position: 'sticky', top: 0, background: '#0d0d12', padding: '24px 28px 16px', borderBottom: '1px solid #1a1a22', borderRadius: '12px 12px 0 0', zIndex: 1, display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
+          <div style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '12px', width: '700px', maxWidth: '95vw', maxHeight: '90vh', display: 'flex', flexDirection: 'column' }} onClick={e => e.stopPropagation()}>
+            {/* Header */}
+            <div style={{ padding: '20px 24px', borderBottom: '1px solid #1a1a22', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
               <div>
-                <h2 style={{ fontSize: '20px', fontWeight: 700, color: '#fff', marginBottom: '4px' }}>Edit Columns</h2>
-                <p style={{ fontSize: '12px', color: '#555', margin: 0 }}>Configure fields for {account?.name}</p>
+                <h2 style={{ fontSize: '18px', fontWeight: 700, color: '#fff', margin: 0 }}>Column Settings</h2>
+                <p style={{ fontSize: '12px', color: '#666', margin: '4px 0 0 0' }}>Customize the fields shown when logging trades</p>
               </div>
-              <button onClick={() => setShowEditInputs(false)} style={{ padding: '6px 8px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '6px', color: '#666', fontSize: '14px', cursor: 'pointer', lineHeight: 1 }}>×</button>
+              <button onClick={() => setShowEditInputs(false)} style={{ width: '32px', height: '32px', background: '#141418', border: '1px solid #2a2a35', borderRadius: '6px', color: '#888', fontSize: '16px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>×</button>
             </div>
 
             {/* Scrollable Content */}
-            <div style={{ flex: 1, overflowY: 'auto', padding: '20px 28px' }}>
+            <div style={{ flex: 1, overflowY: 'auto', padding: '16px 24px' }}>
+              {/* Column headers */}
+              <div style={{ display: 'grid', gridTemplateColumns: '32px 1fr 120px auto 32px', gap: '12px', padding: '8px 12px', marginBottom: '8px', alignItems: 'center' }}>
+                <span style={{ fontSize: '10px', color: '#666', textTransform: 'uppercase', fontWeight: 600 }}>On</span>
+                <span style={{ fontSize: '10px', color: '#666', textTransform: 'uppercase', fontWeight: 600 }}>Name</span>
+                <span style={{ fontSize: '10px', color: '#666', textTransform: 'uppercase', fontWeight: 600 }}>Type</span>
+                <span style={{ fontSize: '10px', color: '#666', textTransform: 'uppercase', fontWeight: 600 }}>Options</span>
+                <span></span>
+              </div>
 
-            {/* All Fields Section - unified single column layout */}
-            <div style={{ marginBottom: '20px', padding: '16px', background: '#0a0a0e', borderRadius: '10px', border: '1px solid #1a1a22' }}>
-              <div style={{ fontSize: '12px', color: '#888', marginBottom: '14px', fontWeight: 600 }}>Fields</div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              {/* Field rows */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', marginBottom: '16px' }}>
                 {inputs.map((input, i) => !input.hidden && (
-                  <div key={input.id} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '12px 14px', background: '#141418', borderRadius: '8px', borderLeft: input.enabled ? '3px solid #22c55e' : '3px solid #333' }}>
-                    <input type="checkbox" checked={input.enabled} onChange={e => updateInput(i, 'enabled', e.target.checked)} style={{ width: '16px', height: '16px', accentColor: '#22c55e', flexShrink: 0 }} />
-                    <input type="text" value={input.label} onChange={e => updateInput(i, 'label', e.target.value)} style={{ width: '140px', padding: '8px 10px', background: '#0a0a0e', border: '1px solid #2a2a35', borderRadius: '6px', color: input.enabled ? '#fff' : '#555', fontSize: '13px', fontWeight: 500 }} placeholder="Field Name" />
-                    <select value={input.type} onChange={e => updateInput(i, 'type', e.target.value)} style={{ width: '100px', padding: '8px 10px', background: '#0a0a0e', border: '1px solid #2a2a35', borderRadius: '6px', color: '#fff', fontSize: '12px' }}>
+                  <div key={input.id} style={{ display: 'grid', gridTemplateColumns: '32px 1fr 120px auto 32px', gap: '12px', padding: '10px 12px', background: input.enabled ? '#141418' : '#0d0d12', borderRadius: '8px', border: '1px solid #1a1a22', alignItems: 'center', opacity: input.enabled ? 1 : 0.6 }}>
+                    <input type="checkbox" checked={input.enabled} onChange={e => updateInput(i, 'enabled', e.target.checked)} style={{ width: '18px', height: '18px', accentColor: '#22c55e', cursor: 'pointer' }} />
+                    <input type="text" value={input.label} onChange={e => updateInput(i, 'label', e.target.value)} style={{ padding: '8px 10px', background: '#0a0a0e', border: '1px solid #2a2a35', borderRadius: '6px', color: '#fff', fontSize: '13px' }} placeholder="Field name" />
+                    <select value={input.type} onChange={e => updateInput(i, 'type', e.target.value)} style={{ padding: '8px 10px', background: '#0a0a0e', border: '1px solid #2a2a35', borderRadius: '6px', color: '#fff', fontSize: '12px', cursor: 'pointer' }}>
                       <option value="text">Text</option>
                       <option value="number">Number</option>
                       <option value="select">Dropdown</option>
@@ -3029,82 +3035,75 @@ export default function AccountPage() {
                       <option value="time">Time</option>
                       <option value="file">Image</option>
                     </select>
-                    {/* Options preview/button - always same width for consistent layout */}
-                    <div style={{ flex: 1, minWidth: '200px' }}>
-                      {input.type === 'select' ? (
-                        <button onClick={() => openOptionsEditor(i)} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 12px', background: '#0a0a0e', border: '1px solid #2a2a35', borderRadius: '6px', color: '#fff', fontSize: '12px', cursor: 'pointer', width: '100%' }}>
-                          <span style={{ color: '#888' }}>Options:</span>
-                          {input.options?.slice(0, 3).map((opt, idx) => (
-                            <span key={idx} style={{ padding: '2px 8px', borderRadius: '4px', fontSize: '11px', fontWeight: 600, background: (typeof opt === 'object' ? opt.bgColor : null) || 'transparent', color: (typeof opt === 'object' ? opt.textColor : null) || '#fff', border: (typeof opt === 'object' && opt.borderColor) ? `1px solid ${opt.borderColor}` : '1px solid #333' }}>
-                              {typeof opt === 'object' ? opt.value : opt}
-                            </span>
-                          ))}
-                          {input.options?.length > 3 && <span style={{ color: '#666', fontSize: '11px' }}>+{input.options.length - 3}</span>}
-                          <span style={{ marginLeft: 'auto', color: '#666' }}>Edit ▾</span>
-                        </button>
-                      ) : (
-                        <div style={{ padding: '8px 12px', background: 'transparent', borderRadius: '6px', color: '#555', fontSize: '12px' }}>
-                          {input.type === 'text' && 'Free text input'}
-                          {input.type === 'number' && 'Numeric value'}
-                          {input.type === 'textarea' && 'Long text notes'}
-                          {input.type === 'rating' && '★★★★★ (1-5)'}
-                          {input.type === 'date' && 'Date picker'}
-                          {input.type === 'time' && 'Time picker'}
-                          {input.type === 'file' && 'Image upload'}
-                        </div>
-                      )}
-                    </div>
-                    {!input.fixed ? (
-                      <button onClick={() => setDeleteInputConfirm({ index: i, label: input.label || input.id, id: input.id })} style={{ padding: '6px 10px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '6px', color: '#666', cursor: 'pointer', fontSize: '14px', flexShrink: 0 }}>×</button>
+                    {input.type === 'select' ? (
+                      <button onClick={() => openOptionsEditor(i)} style={{ padding: '8px 12px', background: '#0a0a0e', border: '1px solid #2a2a35', borderRadius: '6px', color: '#fff', fontSize: '12px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        <span style={{ color: '#888' }}>{input.options?.length || 0} options</span>
+                        <span style={{ color: '#22c55e' }}>Edit</span>
+                      </button>
                     ) : (
-                      <div style={{ width: '36px' }} />
+                      <span style={{ padding: '8px 12px', color: '#555', fontSize: '11px' }}>
+                        {input.type === 'text' && '—'}
+                        {input.type === 'number' && '—'}
+                        {input.type === 'textarea' && '—'}
+                        {input.type === 'rating' && '★★★★★'}
+                        {input.type === 'date' && '📅'}
+                        {input.type === 'time' && '🕐'}
+                        {input.type === 'file' && '📷'}
+                      </span>
+                    )}
+                    {!input.fixed ? (
+                      <button onClick={() => setDeleteInputConfirm({ index: i, label: input.label || input.id, id: input.id })} style={{ width: '32px', height: '32px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '6px', color: '#666', cursor: 'pointer', fontSize: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>×</button>
+                    ) : (
+                      <div style={{ width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <span style={{ fontSize: '10px', color: '#444' }}>🔒</span>
+                      </div>
                     )}
                   </div>
                 ))}
               </div>
-              <button onClick={addNewInput} style={{ width: '100%', padding: '12px', marginTop: '12px', background: 'transparent', border: '1px dashed #2a2a35', borderRadius: '8px', color: '#666', fontSize: '13px', cursor: 'pointer' }}>+ Add New Field</button>
-            </div>
 
-            {/* Hidden Fields */}
-            {inputs.filter(inp => inp.hidden).length > 0 && (
-              <div style={{ marginBottom: '20px', padding: '12px', background: '#0a0a0e', borderRadius: '8px', border: '1px solid #1a1a22' }}>
-                <div style={{ fontSize: '11px', color: '#555', marginBottom: '8px' }}>Hidden</div>
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
-                  {inputs.map((inp, idx) => inp.hidden && (
-                    <button key={inp.id} onClick={() => restoreInput(idx)} style={{ padding: '6px 10px', background: '#141418', border: '1px solid #2a2a35', borderRadius: '4px', color: '#666', fontSize: '11px', cursor: 'pointer' }}>
-                      {inp.label} ↩
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
+              {/* Add field button */}
+              <button onClick={addNewInput} style={{ width: '100%', padding: '12px', background: '#141418', border: '1px dashed #2a2a35', borderRadius: '8px', color: '#888', fontSize: '13px', cursor: 'pointer', marginBottom: '20px' }}>+ Add New Column</button>
 
-            {/* Transfer From Another Journal */}
-            {allAccounts.filter(a => a.id !== accountId).length > 0 && (
-              <div style={{ marginBottom: '20px', padding: '16px', background: '#0a0a0e', borderRadius: '10px', border: '1px solid #1a1a22' }}>
-                <div style={{ fontSize: '12px', color: '#888', marginBottom: '10px', fontWeight: 600 }}>Transfer From Another Journal</div>
-                <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-                  <select
-                    value={transferFromJournal}
-                    onChange={e => setTransferFromJournal(e.target.value)}
-                    style={{ flex: 1, padding: '10px 12px', background: '#141418', border: '1px solid #2a2a35', borderRadius: '6px', color: '#fff', fontSize: '13px' }}
-                  >
-                    <option value="">Select a journal...</option>
-                    {allAccounts.filter(a => a.id !== accountId).map(a => (
-                      <option key={a.id} value={a.id}>{a.name}</option>
+              {/* Hidden Fields */}
+              {inputs.filter(inp => inp.hidden).length > 0 && (
+                <div style={{ marginBottom: '20px', padding: '14px', background: '#0a0a0e', borderRadius: '8px', border: '1px solid #1a1a22' }}>
+                  <div style={{ fontSize: '11px', color: '#666', marginBottom: '10px', fontWeight: 600, textTransform: 'uppercase' }}>Hidden Columns (click to restore)</div>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                    {inputs.map((inp, idx) => inp.hidden && (
+                      <button key={inp.id} onClick={() => restoreInput(idx)} style={{ padding: '8px 14px', background: '#141418', border: '1px solid #2a2a35', borderRadius: '6px', color: '#888', fontSize: '12px', cursor: 'pointer' }}>
+                        {inp.label} <span style={{ color: '#22c55e', marginLeft: '4px' }}>↩</span>
+                      </button>
                     ))}
-                  </select>
-                  <button
-                    onClick={() => transferColumnsFromJournal(transferFromJournal)}
-                    disabled={!transferFromJournal}
-                    style={{ padding: '10px 16px', background: transferFromJournal ? '#3b82f6' : '#1a1a22', border: 'none', borderRadius: '6px', color: transferFromJournal ? '#fff' : '#555', fontWeight: 600, fontSize: '13px', cursor: transferFromJournal ? 'pointer' : 'not-allowed' }}
-                  >
-                    Transfer
-                  </button>
+                  </div>
                 </div>
-                <p style={{ fontSize: '11px', color: '#555', marginTop: '8px', margin: '8px 0 0 0' }}>This will copy all column settings from the selected journal</p>
-              </div>
-            )}
+              )}
+
+              {/* Transfer Section */}
+              {allAccounts.filter(a => a.id !== accountId).length > 0 && (
+                <div style={{ padding: '14px', background: '#0a0a0e', borderRadius: '8px', border: '1px solid #1a1a22' }}>
+                  <div style={{ fontSize: '11px', color: '#666', marginBottom: '10px', fontWeight: 600, textTransform: 'uppercase' }}>Copy Settings From Another Journal</div>
+                  <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                    <select
+                      value={transferFromJournal}
+                      onChange={e => setTransferFromJournal(e.target.value)}
+                      style={{ flex: 1, padding: '10px 12px', background: '#141418', border: '1px solid #2a2a35', borderRadius: '6px', color: '#fff', fontSize: '13px', cursor: 'pointer' }}
+                    >
+                      <option value="">Select journal...</option>
+                      {allAccounts.filter(a => a.id !== accountId).map(a => (
+                        <option key={a.id} value={a.id}>{a.name}</option>
+                      ))}
+                    </select>
+                    <button
+                      onClick={() => transferColumnsFromJournal(transferFromJournal)}
+                      disabled={!transferFromJournal}
+                      style={{ padding: '10px 20px', background: transferFromJournal ? '#3b82f6' : '#1a1a22', border: 'none', borderRadius: '6px', color: transferFromJournal ? '#fff' : '#555', fontWeight: 600, fontSize: '13px', cursor: transferFromJournal ? 'pointer' : 'not-allowed' }}
+                    >
+                      Copy
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Sticky Footer - Action buttons */}
