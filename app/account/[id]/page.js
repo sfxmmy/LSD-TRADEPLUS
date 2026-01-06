@@ -1010,9 +1010,9 @@ export default function AccountPage() {
             <div style={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)' }}>
               <span style={{ fontSize: '32px', fontWeight: 700, color: '#fff' }}>{tabTitles[activeTab]}</span>
             </div>
-            <div style={{ display: 'flex', gap: '12px' }}>
-              <a href="/dashboard" style={{ padding: '12px 24px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '6px', color: '#fff', fontSize: '14px', fontWeight: 600, textDecoration: 'none', cursor: 'pointer' }}>← Dashboard</a>
-              <a href="/settings" style={{ padding: '12px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '6px', color: '#fff', textDecoration: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }} title="Settings">
+            <div style={{ display: 'flex', gap: '8px' }}>
+              <a href="/dashboard" style={{ padding: '10px 20px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '6px', color: '#fff', fontSize: '14px', fontWeight: 600, textDecoration: 'none', cursor: 'pointer' }}>← Dashboard</a>
+              <a href="/settings" style={{ padding: '10px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '6px', color: '#fff', textDecoration: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }} title="Settings">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
               </a>
             </div>
@@ -1055,7 +1055,7 @@ export default function AccountPage() {
 
       {/* FIXED SUBHEADER - starts at sidebar edge */}
       {!isMobile && (
-        <div style={{ position: 'fixed', top: '81px', left: '180px', right: 0, zIndex: 46, padding: '20px 40px 16px', background: '#0a0a0f', borderBottom: '1px solid #1a1a22', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div style={{ position: 'fixed', top: '69px', left: '180px', right: 0, zIndex: 46, padding: '12px 40px', background: '#0a0a0f', borderBottom: '1px solid #1a1a22', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <span style={{ fontSize: '28px', fontWeight: 700, color: '#fff' }}>{account?.name}</span>
           <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
               {activeTab === 'trades' && trades.length > 0 && !selectMode && (
@@ -1097,7 +1097,7 @@ export default function AccountPage() {
       {/* FIXED SIDEBAR - desktop only, starts under header */}
       {!isMobile && (
         <div style={{ position: 'fixed', top: '69px', left: 0, bottom: 0, width: '180px', padding: '12px', background: '#0a0a0f', zIndex: 45, display: 'flex', flexDirection: 'column', borderRight: '1px solid #1a1a22' }}>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginTop: '12px' }}>
           {['trades', 'statistics', 'notes'].map((tab) => (
             <button
               key={tab}
@@ -1256,11 +1256,11 @@ export default function AccountPage() {
       )}
 
       {/* MAIN CONTENT */}
-      <div style={{ marginLeft: isMobile ? 0 : '180px', marginTop: isMobile ? '100px' : '162px', padding: isMobile ? '12px' : '0' }}>
+      <div style={{ marginLeft: isMobile ? 0 : '180px', marginTop: isMobile ? '100px' : '143px', padding: isMobile ? '12px' : '0' }}>
 
         {/* TRADES TAB */}
         {activeTab === 'trades' && (
-          <div style={{ position: 'relative', height: 'calc(100vh - 162px)' }}>
+          <div style={{ position: 'relative', height: 'calc(100vh - 143px)' }}>
             {/* Green glow from bottom */}
             <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: '80px', background: 'linear-gradient(to top, rgba(34,197,94,0.03) 0%, rgba(34,197,94,0.01) 50%, transparent 100%)', pointerEvents: 'none', zIndex: 1 }} />
             {filteredTrades.length === 0 && trades.length > 0 ? (
@@ -1831,7 +1831,7 @@ export default function AccountPage() {
                                 {/* Chart row - Y-axis and chart area aligned */}
                                 <div style={{ flex: 1, display: 'flex' }}>
                                   {/* Y-axis labels - same height as chart */}
-                                  <div style={{ width: '28px', flexShrink: 0, position: 'relative', borderRight: '1px solid #2a2a35', borderBottom: '1px solid transparent' }}>
+                                  <div style={{ width: '28px', flexShrink: 0, position: 'relative', borderRight: '1px solid #2a2a35' }}>
                                     {yLabels.map((v, i) => {
                                       const topPct = yLabels.length > 1 ? (i / (yLabels.length - 1)) * 100 : 0
                                       return (
@@ -1843,11 +1843,10 @@ export default function AccountPage() {
                                     })}
                                   </div>
                                   {/* Chart area */}
-                                  <div style={{ flex: 1, position: 'relative', borderBottom: '1px solid #2a2a35', overflow: 'visible' }}>
-                                    {/* Horizontal grid lines - skip last one since borderBottom is X-axis */}
+                                  <div style={{ flex: 1, position: 'relative', overflow: 'visible' }}>
+                                    {/* Horizontal grid lines - all lines including bottom */}
                                     <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}>
                                       {yLabels.map((_, i) => {
-                                        if (i === yLabels.length - 1) return null
                                         const topPct = yLabels.length > 1 ? (i / (yLabels.length - 1)) * 100 : 0
                                         return <div key={i} style={{ position: 'absolute', left: 0, right: 0, top: `${topPct}%`, height: '1px', background: '#2a2a35', transform: 'translateY(-50%)' }} />
                                       })}
@@ -2200,7 +2199,7 @@ export default function AccountPage() {
                           {/* Chart row - Y-axis and chart area aligned */}
                           <div style={{ flex: 1, display: 'flex' }}>
                             {/* Y-axis labels - same height as chart */}
-                            <div style={{ width: '28px', flexShrink: 0, position: 'relative', borderBottom: '1px solid transparent' }}>
+                            <div style={{ width: '28px', flexShrink: 0, position: 'relative' }}>
                               {yLabels.map((v, i) => {
                                 const topPct = yLabels.length > 1 ? (i / (yLabels.length - 1)) * 100 : 0
                                 return (
@@ -2212,11 +2211,10 @@ export default function AccountPage() {
                               })}
                             </div>
                             {/* Chart area */}
-                            <div style={{ flex: 1, position: 'relative', borderLeft: '1px solid #2a2a35', borderBottom: '1px solid #2a2a35' }}>
-                              {/* Horizontal grid lines - skip last one since borderBottom is X-axis */}
+                            <div style={{ flex: 1, position: 'relative', borderLeft: '1px solid #2a2a35' }}>
+                              {/* Horizontal grid lines - all lines including bottom */}
                               <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}>
                                 {yLabels.map((_, i) => {
-                                  if (i === yLabels.length - 1) return null
                                   const topPct = yLabels.length > 1 ? (i / (yLabels.length - 1)) * 100 : 0
                                   return <div key={i} style={{ position: 'absolute', left: 0, right: 0, top: `${topPct}%`, height: '1px', background: '#2a2a35', transform: 'translateY(-50%)' }} />
                                 })}
@@ -2352,7 +2350,7 @@ export default function AccountPage() {
                         {/* Chart row - Y-axis and chart area aligned */}
                         <div style={{ flex: 1, display: 'flex' }}>
                           {/* Y-axis labels - same height as chart */}
-                          <div style={{ width: '28px', flexShrink: 0, position: 'relative', borderBottom: '1px solid transparent' }}>
+                          <div style={{ width: '28px', flexShrink: 0, position: 'relative' }}>
                             {yLabels.map((v, i) => {
                               const topPct = yLabels.length > 1 ? (i / (yLabels.length - 1)) * 100 : 0
                               return (
@@ -2364,11 +2362,10 @@ export default function AccountPage() {
                             })}
                           </div>
                           {/* Chart area */}
-                          <div style={{ flex: 1, position: 'relative', borderLeft: '1px solid #2a2a35', borderBottom: '1px solid #2a2a35' }}>
-                            {/* Horizontal grid lines - skip last one since borderBottom is X-axis */}
+                          <div style={{ flex: 1, position: 'relative', borderLeft: '1px solid #2a2a35' }}>
+                            {/* Horizontal grid lines - all lines including bottom */}
                             <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}>
                               {yLabels.map((_, i) => {
-                                if (i === yLabels.length - 1) return null
                                 const topPct = yLabels.length > 1 ? (i / (yLabels.length - 1)) * 100 : 0
                                 return <div key={i} style={{ position: 'absolute', left: 0, right: 0, top: `${topPct}%`, height: '1px', background: '#2a2a35', transform: 'translateY(-50%)' }} />
                               })}
@@ -3758,7 +3755,7 @@ export default function AccountPage() {
                     {/* Chart row - Y-axis and chart area aligned */}
                     <div style={{ flex: 1, display: 'flex' }}>
                       {/* Y-axis labels - same height as chart */}
-                      <div style={{ width: '44px', flexShrink: 0, position: 'relative', borderRight: '1px solid #2a2a35', borderBottom: '1px solid transparent' }}>
+                      <div style={{ width: '44px', flexShrink: 0, position: 'relative', borderRight: '1px solid #2a2a35' }}>
                         {yLabels.map((v, i) => {
                           const topPct = yLabels.length > 1 ? (i / (yLabels.length - 1)) * 100 : 0
                           return (
@@ -3770,11 +3767,10 @@ export default function AccountPage() {
                         })}
                       </div>
                       {/* Chart area */}
-                      <div style={{ flex: 1, position: 'relative', borderBottom: '1px solid #2a2a35', overflow: 'visible' }}>
-                          {/* Horizontal grid lines - skip last one since borderBottom is X-axis */}
+                      <div style={{ flex: 1, position: 'relative', overflow: 'visible' }}>
+                          {/* Horizontal grid lines - all lines including bottom */}
                           <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}>
                             {yLabels.map((_, i) => {
-                              if (i === yLabels.length - 1) return null
                               const topPct = yLabels.length > 1 ? (i / (yLabels.length - 1)) * 100 : 0
                               return <div key={i} style={{ position: 'absolute', left: 0, right: 0, top: `${topPct}%`, height: '1px', background: '#2a2a35', transform: 'translateY(-50%)' }} />
                             })}
@@ -4059,7 +4055,7 @@ export default function AccountPage() {
                     {/* Chart row - Y-axis and chart area aligned */}
                     <div style={{ flex: 1, display: 'flex' }}>
                       {/* Y-axis labels - same height as chart */}
-                      <div style={{ width: '44px', flexShrink: 0, position: 'relative', borderBottom: '1px solid transparent' }}>
+                      <div style={{ width: '44px', flexShrink: 0, position: 'relative' }}>
                         {yLabelsBar.map((v, i) => {
                           const topPct = yLabelsBar.length > 1 ? (i / (yLabelsBar.length - 1)) * 100 : 0
                           return (
@@ -4071,11 +4067,10 @@ export default function AccountPage() {
                         })}
                       </div>
                       {/* Chart area */}
-                      <div style={{ flex: 1, position: 'relative', borderLeft: '1px solid #2a2a35', borderBottom: '1px solid #2a2a35' }}>
-                        {/* Horizontal grid lines - skip last one since borderBottom is X-axis */}
+                      <div style={{ flex: 1, position: 'relative', borderLeft: '1px solid #2a2a35' }}>
+                        {/* Horizontal grid lines - all lines including bottom */}
                         <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}>
                           {yLabelsBar.map((_, i) => {
-                            if (i === yLabelsBar.length - 1) return null
                             const topPct = yLabelsBar.length > 1 ? (i / (yLabelsBar.length - 1)) * 100 : 0
                             return <div key={i} style={{ position: 'absolute', left: 0, right: 0, top: `${topPct}%`, height: '1px', background: '#2a2a35', transform: 'translateY(-50%)' }} />
                           })}
