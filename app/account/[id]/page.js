@@ -98,8 +98,8 @@ export default function AccountPage() {
   const [slideshowIndex, setSlideshowIndex] = useState(0)
   const [viewingSelectedStats, setViewingSelectedStats] = useState(false)
   const [showFilters, setShowFilters] = useState(false)
-  const [filters, setFilters] = useState({ dateFrom: '', dateTo: '', outcome: '', direction: '', symbol: '', session: '', timeframe: '', confidence: '', rr: '', rating: '' })
-  const [draftFilters, setDraftFilters] = useState({ dateFrom: '', dateTo: '', outcome: '', direction: '', symbol: '', session: '', timeframe: '', confidence: '', rr: '', rating: '', quickSelect: '' })
+  const [filters, setFilters] = useState({ dateFrom: '', dateTo: '', outcome: '', direction: '', symbol: '', session: '', timeframe: '', confidence: '', rr: '', rating: '', custom: {} })
+  const [draftFilters, setDraftFilters] = useState({ dateFrom: '', dateTo: '', outcome: '', direction: '', symbol: '', session: '', timeframe: '', confidence: '', rr: '', rating: '', quickSelect: '', custom: {} })
   const [hoverRating, setHoverRating] = useState(0)
   const [editingTrade, setEditingTrade] = useState(null)
   const [transferFromJournal, setTransferFromJournal] = useState('')
@@ -659,9 +659,22 @@ export default function AccountPage() {
     if (filters.confidence && (t.confidence || '').toLowerCase() !== filters.confidence.toLowerCase()) return false
     if (filters.rr && parseFloat(t.rr || 0) < parseFloat(filters.rr)) return false
     if (filters.rating && parseInt(t.rating || 0) < parseInt(filters.rating)) return false
+    // Custom input filters
+    if (filters.custom && Object.keys(filters.custom).length > 0) {
+      const extra = getExtraData(t)
+      for (const [inputId, filterValue] of Object.entries(filters.custom)) {
+        if (!filterValue) continue
+        const tradeValue = t[inputId] || extra[inputId] || ''
+        if (typeof tradeValue === 'string' && typeof filterValue === 'string') {
+          if (!tradeValue.toLowerCase().includes(filterValue.toLowerCase())) return false
+        } else if (tradeValue !== filterValue) {
+          return false
+        }
+      }
+    }
     return true
   })
-  const hasActiveFilters = filters.dateFrom || filters.dateTo || filters.outcome || filters.direction || filters.symbol || filters.session || filters.timeframe || filters.confidence || filters.rr || filters.rating
+  const hasActiveFilters = filters.dateFrom || filters.dateTo || filters.outcome || filters.direction || filters.symbol || filters.session || filters.timeframe || filters.confidence || filters.rr || filters.rating || (filters.custom && Object.values(filters.custom).some(v => v))
 
   const wins = trades.filter(t => t.outcome === 'win').length
   const losses = trades.filter(t => t.outcome === 'loss').length
@@ -1253,15 +1266,25 @@ export default function AccountPage() {
             {filteredTrades.length === 0 && trades.length > 0 ? (
               <div style={{ padding: isMobile ? '40px 20px' : '60px', textAlign: 'center' }}>
                 <div style={{ color: '#999', fontSize: '15px', marginBottom: '12px' }}>No trades match your filters.</div>
-                <button onClick={() => setFilters({ dateFrom: '', dateTo: '', outcome: '', direction: '', symbol: '' })} style={{ padding: '10px 20px', background: 'transparent', border: '1px solid #22c55e', borderRadius: '8px', color: '#22c55e', fontSize: '13px', cursor: 'pointer' }}>Clear Filters</button>
+                <button onClick={() => setFilters({ dateFrom: '', dateTo: '', outcome: '', direction: '', symbol: '', session: '', timeframe: '', confidence: '', rr: '', rating: '', custom: {} })} style={{ padding: '10px 20px', background: 'transparent', border: '1px solid #22c55e', borderRadius: '8px', color: '#22c55e', fontSize: '13px', cursor: 'pointer' }}>Clear Filters</button>
               </div>
             ) : (
               <>
+              {/* All Journals Note */}
+              {showCumulativeStats && allAccounts.length > 1 && (
+                <div style={{ position: 'absolute', top: 0, left: 0, right: 0, zIndex: 11, padding: '8px 16px', background: 'rgba(59,130,246,0.1)', borderBottom: '1px solid rgba(59,130,246,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#3b82f6', boxShadow: '0 0 6px #3b82f6' }} />
+                    <span style={{ fontSize: '12px', fontWeight: 600, color: '#3b82f6' }}>VIEWING ALL JOURNALS ({allAccounts.length} journals, {filteredTrades.length} trades)</span>
+                  </div>
+                  <button onClick={() => setShowCumulativeStats(false)} style={{ padding: '4px 10px', background: '#1a1a22', border: 'none', borderRadius: '4px', color: '#fff', fontSize: '11px', cursor: 'pointer' }}>View This Journal</button>
+                </div>
+              )}
               <div
                 ref={tradesScrollRef}
                 style={{
                   position: 'absolute',
-                  top: 0,
+                  top: showCumulativeStats && allAccounts.length > 1 ? '40px' : 0,
                   left: 0,
                   right: 0,
                   bottom: 0,
@@ -1522,21 +1545,13 @@ export default function AccountPage() {
                 </div>
                 <button onClick={() => setViewingSelectedStats(false)} style={{ padding: '6px 12px', background: '#1a1a22', border: 'none', borderRadius: '6px', color: '#fff', fontSize: '12px', cursor: 'pointer' }}>View Journal Stats</button>
               </div>
-            ) : showCumulativeStats && allAccounts.length > 1 ? (
-              <div style={{ marginBottom: '12px', padding: '12px 16px', background: 'rgba(59,130,246,0.1)', border: '1px solid rgba(59,130,246,0.5)', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', boxShadow: '0 0 12px rgba(59,130,246,0.15)' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                  <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#3b82f6', boxShadow: '0 0 8px #3b82f6' }} />
-                  <span style={{ fontSize: '13px', fontWeight: 600, color: '#3b82f6' }}>VIEWING ALL JOURNALS ({allAccounts.length} journals)</span>
-                </div>
-                <button onClick={() => setShowCumulativeStats(false)} style={{ padding: '6px 12px', background: '#1a1a22', border: 'none', borderRadius: '6px', color: '#fff', fontSize: '12px', cursor: 'pointer' }}>View This Journal</button>
-              </div>
             ) : hasActiveFilters && !viewingSelectedStats ? (
               <div style={{ marginBottom: '12px', padding: '12px 16px', background: 'rgba(251,191,36,0.1)', border: '1px solid rgba(251,191,36,0.5)', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', boxShadow: '0 0 12px rgba(251,191,36,0.15)' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                   <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#fbbf24', boxShadow: '0 0 8px #fbbf24' }} />
                   <span style={{ fontSize: '13px', fontWeight: 600, color: '#fbbf24' }}>VIEWING FILTERED TRADES ({filteredTrades.length} of {trades.length})</span>
                 </div>
-                <button onClick={() => setFilters({ dateFrom: '', dateTo: '', outcome: '', direction: '', symbol: '', session: '', timeframe: '', confidence: '', rr: '', rating: '' })} style={{ padding: '6px 12px', background: '#1a1a22', border: 'none', borderRadius: '6px', color: '#fff', fontSize: '12px', cursor: 'pointer' }}>Clear Filters</button>
+                <button onClick={() => setFilters({ dateFrom: '', dateTo: '', outcome: '', direction: '', symbol: '', session: '', timeframe: '', confidence: '', rr: '', rating: '', custom: {} })} style={{ padding: '6px 12px', background: '#1a1a22', border: 'none', borderRadius: '6px', color: '#fff', fontSize: '12px', cursor: 'pointer' }}>Clear Filters</button>
               </div>
             ) : null}
             {/* ROW 1: Stats + Graphs - proportionally aligned */}
@@ -1842,12 +1857,12 @@ export default function AccountPage() {
                                     )}
                                     {/* Starting balance dotted line - extends to label */}
                                     {startLineY !== null && (
-                                      <div style={{ position: 'absolute', left: 0, right: '6px', top: `${startLineY}%`, borderTop: '1px dashed #666', zIndex: 1 }} />
+                                      <div style={{ position: 'absolute', left: 0, right: '34px', top: `${startLineY}%`, borderTop: '1px dashed #666', zIndex: 1 }} />
                                     )}
-                                    {/* Start label at end of line - shows starting balance value */}
+                                    {/* Start label at end of line */}
                                     {startLineY !== null && (
-                                      <span style={{ position: 'absolute', right: '2px', top: `${startLineY}%`, transform: 'translateY(-50%)', fontSize: '9px', color: '#22c55e', background: '#0d0d12', padding: '0 4px', fontWeight: 600 }}>
-                                        Start: ${(displayStartingBalance/1000).toFixed(displayStartingBalance >= 1000 ? 0 : 1)}k
+                                      <span style={{ position: 'absolute', right: '4px', top: `${startLineY}%`, transform: 'translateY(-50%)', fontSize: '9px', color: '#888', background: '#0d0d12', padding: '0 4px' }}>
+                                        Start
                                       </span>
                                     )}
                                     <svg style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', overflow: 'visible' }} viewBox={`0 0 ${svgW} ${svgH}`} preserveAspectRatio="none"
@@ -2739,145 +2754,223 @@ export default function AccountPage() {
       </div>
 
       {/* FILTERS MODAL */}
-      {showFilters && (
+      {showFilters && (() => {
+        // Get inputs based on whether viewing all journals or single journal
+        const filterInputs = showCumulativeStats && allAccounts.length > 1 ? mergedInputsForAllJournals : inputs
+        // Get custom inputs that can be filtered (exclude fixed fields that are already in the UI)
+        const customFilterInputs = filterInputs.filter(i =>
+          i.enabled && !i.hidden &&
+          !['symbol', 'outcome', 'pnl', 'riskPercent', 'rr', 'date', 'direction', 'rating', 'confidence', 'timeframe', 'session'].includes(i.id)
+        )
+        // Calculate preview count
+        const previewCount = baseTradesToFilter.filter(t => {
+          if (draftFilters.dateFrom && t.date < draftFilters.dateFrom) return false
+          if (draftFilters.dateTo && t.date > draftFilters.dateTo) return false
+          if (draftFilters.outcome) {
+            const fo = draftFilters.outcome.toLowerCase(), to = (t.outcome || '').toLowerCase()
+            if (fo === 'breakeven') { if (to !== 'be' && to !== 'breakeven') return false }
+            else if (to !== fo) return false
+          }
+          if (draftFilters.direction && t.direction !== draftFilters.direction) return false
+          if (draftFilters.symbol && !t.symbol?.toLowerCase().includes(draftFilters.symbol.toLowerCase())) return false
+          if (draftFilters.session && t.session !== draftFilters.session) return false
+          if (draftFilters.timeframe && t.timeframe !== draftFilters.timeframe) return false
+          if (draftFilters.confidence && t.confidence !== draftFilters.confidence) return false
+          if (draftFilters.rr && parseFloat(t.rr || 0) < parseFloat(draftFilters.rr)) return false
+          if (draftFilters.rating && parseInt(t.rating || 0) < parseInt(draftFilters.rating)) return false
+          if (draftFilters.custom && Object.keys(draftFilters.custom).length > 0) {
+            const extra = getExtraData(t)
+            for (const [inputId, filterValue] of Object.entries(draftFilters.custom)) {
+              if (!filterValue) continue
+              const tradeValue = t[inputId] || extra[inputId] || ''
+              if (typeof tradeValue === 'string' && typeof filterValue === 'string') {
+                if (!tradeValue.toLowerCase().includes(filterValue.toLowerCase())) return false
+              } else if (tradeValue !== filterValue) return false
+            }
+          }
+          return true
+        }).length
+        const hasAnyFilter = draftFilters.dateFrom || draftFilters.dateTo || draftFilters.outcome || draftFilters.direction || draftFilters.symbol || draftFilters.session || draftFilters.timeframe || draftFilters.confidence || draftFilters.rr || draftFilters.rating || (draftFilters.custom && Object.values(draftFilters.custom).some(v => v))
+
+        return (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.9)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100 }} onClick={() => setShowFilters(false)}>
-          <div style={{ background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '12px', padding: '20px', width: '340px', maxHeight: '90vh', overflowY: 'auto' }} onClick={e => e.stopPropagation()}>
+          <div style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '12px', width: '400px', maxHeight: '90vh', display: 'flex', flexDirection: 'column' }} onClick={e => e.stopPropagation()}>
             {/* Header */}
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px', paddingBottom: '12px', borderBottom: '1px solid #1a1a22' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#22c55e' }} />
-                <span style={{ fontSize: '13px', color: '#fff', fontWeight: 600, letterSpacing: '0.5px' }}>FILTER TRADES</span>
+            <div style={{ padding: '16px 20px', borderBottom: '1px solid #1a1a22', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#22c55e" strokeWidth="2"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
+                <span style={{ fontSize: '14px', color: '#fff', fontWeight: 600 }}>Filter Trades</span>
+                {showCumulativeStats && allAccounts.length > 1 && (
+                  <span style={{ fontSize: '10px', color: '#3b82f6', background: 'rgba(59,130,246,0.15)', padding: '2px 6px', borderRadius: '4px' }}>All Journals</span>
+                )}
               </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <button onClick={() => setDraftFilters({ dateFrom: '', dateTo: '', outcome: '', direction: '', symbol: '', session: '', timeframe: '', confidence: '', rr: '', rating: '', quickSelect: '' })} style={{ padding: '6px 12px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '6px', color: '#888', fontSize: '12px', cursor: 'pointer' }}>Clear</button>
-                <button onClick={() => { setFilters({...draftFilters}); setShowFilters(false) }} style={{ padding: '6px 12px', background: '#22c55e', border: 'none', borderRadius: '6px', color: '#fff', fontWeight: 600, fontSize: '12px', cursor: 'pointer' }}>Apply</button>
-                <button onClick={() => setShowFilters(false)} style={{ padding: '6px 8px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '6px', color: '#666', fontSize: '14px', cursor: 'pointer', lineHeight: 1 }}>×</button>
-              </div>
+              <button onClick={() => setShowFilters(false)} style={{ width: '28px', height: '28px', background: 'transparent', border: 'none', color: '#666', cursor: 'pointer', fontSize: '18px' }}>×</button>
             </div>
 
-            {/* Date Range Row */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '12px' }}>
-              <div>
-                <label style={{ display: 'block', fontSize: '10px', color: '#666', marginBottom: '5px', textTransform: 'uppercase' }}>From</label>
-                <input type="date" value={draftFilters.dateFrom} onChange={e => setDraftFilters({...draftFilters, dateFrom: e.target.value, quickSelect: ''})} style={{ width: '100%', padding: '10px 12px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '13px', boxSizing: 'border-box' }} />
-              </div>
-              <div>
-                <label style={{ display: 'block', fontSize: '10px', color: '#666', marginBottom: '5px', textTransform: 'uppercase' }}>To</label>
-                <input type="date" value={draftFilters.dateTo} onChange={e => setDraftFilters({...draftFilters, dateTo: e.target.value, quickSelect: ''})} style={{ width: '100%', padding: '10px 12px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '13px', boxSizing: 'border-box' }} />
-              </div>
-            </div>
-
-            {/* Quick Select */}
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginBottom: '12px' }}>
-              {[
-                { label: 'Today', key: 'today', fn: () => { const d = new Date().toISOString().split('T')[0]; return { dateFrom: d, dateTo: d } } },
-                { label: 'This Week', key: 'week', fn: () => { const now = new Date(); const start = new Date(now); start.setDate(now.getDate() - now.getDay()); return { dateFrom: start.toISOString().split('T')[0], dateTo: now.toISOString().split('T')[0] } } },
-                { label: 'This Month', key: 'month', fn: () => { const now = new Date(); const start = new Date(now.getFullYear(), now.getMonth(), 1); return { dateFrom: start.toISOString().split('T')[0], dateTo: now.toISOString().split('T')[0] } } },
-                { label: 'Last 7 Days', key: '7days', fn: () => { const now = new Date(); const start = new Date(now); start.setDate(now.getDate() - 7); return { dateFrom: start.toISOString().split('T')[0], dateTo: now.toISOString().split('T')[0] } } },
-                { label: 'Last 30 Days', key: '30days', fn: () => { const now = new Date(); const start = new Date(now); start.setDate(now.getDate() - 30); return { dateFrom: start.toISOString().split('T')[0], dateTo: now.toISOString().split('T')[0] } } },
-              ].map(preset => (
-                <button key={preset.key} onClick={() => { const dates = preset.fn(); setDraftFilters({...draftFilters, ...dates, quickSelect: preset.key}) }} style={{ padding: '6px 10px', background: draftFilters.quickSelect === preset.key ? 'rgba(34,197,94,0.2)' : '#0a0a0f', border: draftFilters.quickSelect === preset.key ? '1px solid #22c55e' : '1px solid #1a1a22', borderRadius: '6px', color: draftFilters.quickSelect === preset.key ? '#22c55e' : '#888', fontSize: '11px', cursor: 'pointer' }}>{preset.label}</button>
-              ))}
-            </div>
-
-            {/* Direction + Outcome Row */}
-            <div style={{ display: 'flex', gap: '12px', marginBottom: '12px' }}>
-              <div style={{ flex: 1 }}>
-                <label style={{ display: 'block', fontSize: '10px', color: '#666', marginBottom: '5px', textTransform: 'uppercase' }}>Direction</label>
-                <div style={{ display: 'flex', borderRadius: '6px', overflow: 'hidden', border: '1px solid #1a1a22' }}>
-                  {['', 'long', 'short'].map(d => (
-                    <button key={d || 'all'} onClick={() => setDraftFilters({...draftFilters, direction: d})} style={{ flex: 1, padding: '9px', background: draftFilters.direction === d ? (d === 'long' ? 'rgba(34,197,94,0.2)' : d === 'short' ? 'rgba(239,68,68,0.2)' : 'rgba(34,197,94,0.15)') : '#0a0a0f', border: 'none', borderLeft: d !== '' ? '1px solid #1a1a22' : 'none', color: draftFilters.direction === d ? (d === 'long' ? '#22c55e' : d === 'short' ? '#ef4444' : '#22c55e') : '#666', fontSize: '12px', fontWeight: 600, cursor: 'pointer', textTransform: 'uppercase' }}>{d || 'ALL'}</button>
-                  ))}
+            {/* Content - scrollable */}
+            <div style={{ flex: 1, overflowY: 'auto', padding: '16px 20px' }}>
+              {/* Date Range Row */}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '12px' }}>
+                <div>
+                  <label style={{ display: 'block', fontSize: '10px', color: '#666', marginBottom: '5px', textTransform: 'uppercase' }}>From</label>
+                  <input type="date" value={draftFilters.dateFrom} onChange={e => setDraftFilters({...draftFilters, dateFrom: e.target.value, quickSelect: ''})} style={{ width: '100%', padding: '10px 12px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '13px', boxSizing: 'border-box' }} />
+                </div>
+                <div>
+                  <label style={{ display: 'block', fontSize: '10px', color: '#666', marginBottom: '5px', textTransform: 'uppercase' }}>To</label>
+                  <input type="date" value={draftFilters.dateTo} onChange={e => setDraftFilters({...draftFilters, dateTo: e.target.value, quickSelect: ''})} style={{ width: '100%', padding: '10px 12px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '13px', boxSizing: 'border-box' }} />
                 </div>
               </div>
-              <div style={{ flex: 1 }}>
-                <label style={{ display: 'block', fontSize: '10px', color: '#666', marginBottom: '5px', textTransform: 'uppercase' }}>Outcome</label>
-                <div style={{ display: 'flex', borderRadius: '6px', overflow: 'hidden', border: '1px solid #1a1a22' }}>
-                  {[{v: '', l: 'ALL'}, {v: 'win', l: 'W'}, {v: 'loss', l: 'L'}, {v: 'breakeven', l: 'BE'}].map((o, i) => (
-                    <button key={o.v || 'all'} onClick={() => setDraftFilters({...draftFilters, outcome: o.v})} style={{ flex: 1, padding: '9px', background: draftFilters.outcome === o.v ? (o.v === 'win' ? 'rgba(34,197,94,0.2)' : o.v === 'loss' ? 'rgba(239,68,68,0.2)' : o.v === 'breakeven' ? 'rgba(234,179,8,0.2)' : 'rgba(34,197,94,0.15)') : '#0a0a0f', border: 'none', borderLeft: i > 0 ? '1px solid #1a1a22' : 'none', color: draftFilters.outcome === o.v ? (o.v === 'win' ? '#22c55e' : o.v === 'loss' ? '#ef4444' : o.v === 'breakeven' ? '#eab308' : '#22c55e') : '#666', fontSize: '12px', fontWeight: 600, cursor: 'pointer' }}>{o.l}</button>
-                  ))}
-                </div>
-              </div>
-            </div>
 
-            {/* Symbol + Min RR Row */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '12px' }}>
-              <div>
-                <label style={{ display: 'block', fontSize: '10px', color: '#666', marginBottom: '5px', textTransform: 'uppercase' }}>Symbol</label>
-                <input type="text" value={draftFilters.symbol} onChange={e => setDraftFilters({...draftFilters, symbol: e.target.value})} placeholder="XAUUSD" style={{ width: '100%', padding: '10px 12px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '13px', boxSizing: 'border-box' }} />
-              </div>
-              <div>
-                <label style={{ display: 'block', fontSize: '10px', color: '#666', marginBottom: '5px', textTransform: 'uppercase' }}>Min R:R</label>
-                <input type="number" step="0.1" value={draftFilters.rr} onChange={e => setDraftFilters({...draftFilters, rr: e.target.value})} placeholder="2.5" style={{ width: '100%', padding: '10px 12px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '13px', boxSizing: 'border-box' }} />
-              </div>
-            </div>
-
-            {/* Confidence */}
-            <div style={{ marginBottom: '12px' }}>
-              <label style={{ display: 'block', fontSize: '10px', color: '#666', marginBottom: '5px', textTransform: 'uppercase' }}>Confidence</label>
-              <select value={draftFilters.confidence} onChange={e => setDraftFilters({...draftFilters, confidence: e.target.value})} style={{ width: '100%', padding: '10px 12px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '13px', boxSizing: 'border-box', appearance: 'none', backgroundImage: 'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'12\' height=\'12\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'%23666\' stroke-width=\'2\'%3E%3Cpath d=\'M6 9l6 6 6-6\'/%3E%3C/svg%3E")', backgroundRepeat: 'no-repeat', backgroundPosition: 'right 12px center' }}>
-                <option value="">-</option>
-                {(inputs.find(i => i.id === 'confidence')?.options || ['high', 'medium', 'low']).map(c => (
-                  <option key={getOptVal(c)} value={getOptVal(c)}>{getOptVal(c)}</option>
-                ))}
-              </select>
-            </div>
-
-            {/* Rating */}
-            <div style={{ marginBottom: '12px' }}>
-              <label style={{ display: 'block', fontSize: '10px', color: '#666', marginBottom: '5px', textTransform: 'uppercase' }}>Min Rating</label>
-              <div style={{ display: 'flex', gap: '4px' }}>
-                {[0, 1, 2, 3, 4, 5].map(r => (
-                  <span key={r} onClick={() => setDraftFilters({...draftFilters, rating: r === 0 ? '' : String(r)})} style={{ fontSize: '20px', cursor: 'pointer', color: (draftFilters.rating ? parseInt(draftFilters.rating) >= r : r === 0) && r > 0 ? '#f59e0b' : '#333' }}>★</span>
+              {/* Quick Select */}
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginBottom: '16px' }}>
+                {[
+                  { label: 'Today', key: 'today', fn: () => { const d = new Date().toISOString().split('T')[0]; return { dateFrom: d, dateTo: d } } },
+                  { label: 'This Week', key: 'week', fn: () => { const now = new Date(); const start = new Date(now); start.setDate(now.getDate() - now.getDay()); return { dateFrom: start.toISOString().split('T')[0], dateTo: now.toISOString().split('T')[0] } } },
+                  { label: 'This Month', key: 'month', fn: () => { const now = new Date(); const start = new Date(now.getFullYear(), now.getMonth(), 1); return { dateFrom: start.toISOString().split('T')[0], dateTo: now.toISOString().split('T')[0] } } },
+                  { label: 'Last 7 Days', key: '7days', fn: () => { const now = new Date(); const start = new Date(now); start.setDate(now.getDate() - 7); return { dateFrom: start.toISOString().split('T')[0], dateTo: now.toISOString().split('T')[0] } } },
+                  { label: 'Last 30 Days', key: '30days', fn: () => { const now = new Date(); const start = new Date(now); start.setDate(now.getDate() - 30); return { dateFrom: start.toISOString().split('T')[0], dateTo: now.toISOString().split('T')[0] } } },
+                ].map(preset => (
+                  <button key={preset.key} onClick={() => { const dates = preset.fn(); setDraftFilters({...draftFilters, ...dates, quickSelect: preset.key}) }} style={{ padding: '6px 10px', background: draftFilters.quickSelect === preset.key ? 'rgba(34,197,94,0.2)' : '#0a0a0f', border: draftFilters.quickSelect === preset.key ? '1px solid #22c55e' : '1px solid #1a1a22', borderRadius: '6px', color: draftFilters.quickSelect === preset.key ? '#22c55e' : '#888', fontSize: '11px', cursor: 'pointer' }}>{preset.label}</button>
                 ))}
               </div>
-            </div>
 
-            {/* Timeframe + Session Row */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '12px' }}>
-              <div>
-                <label style={{ display: 'block', fontSize: '10px', color: '#666', marginBottom: '5px', textTransform: 'uppercase' }}>Timeframe</label>
-                <select value={draftFilters.timeframe} onChange={e => setDraftFilters({...draftFilters, timeframe: e.target.value})} style={{ width: '100%', padding: '10px 12px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '13px', boxSizing: 'border-box', appearance: 'none', backgroundImage: 'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'12\' height=\'12\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'%23666\' stroke-width=\'2\'%3E%3Cpath d=\'M6 9l6 6 6-6\'/%3E%3C/svg%3E")', backgroundRepeat: 'no-repeat', backgroundPosition: 'right 12px center' }}>
-                  <option value="">-</option>
-                  {(inputs.find(i => i.id === 'timeframe')?.options || ['1m', '5m', '15m', '1h', '4h', 'daily']).map(t => (
-                    <option key={getOptVal(t)} value={getOptVal(t)}>{getOptVal(t)}</option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label style={{ display: 'block', fontSize: '10px', color: '#666', marginBottom: '5px', textTransform: 'uppercase' }}>Session</label>
-                <select value={draftFilters.session} onChange={e => setDraftFilters({...draftFilters, session: e.target.value})} style={{ width: '100%', padding: '10px 12px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '13px', boxSizing: 'border-box', appearance: 'none', backgroundImage: 'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'12\' height=\'12\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'%23666\' stroke-width=\'2\'%3E%3Cpath d=\'M6 9l6 6 6-6\'/%3E%3C/svg%3E")', backgroundRepeat: 'no-repeat', backgroundPosition: 'right 12px center' }}>
-                  <option value="">-</option>
-                  {(inputs.find(i => i.id === 'session')?.options || ['london', 'new york', 'asian', 'other']).map(s => (
-                    <option key={getOptVal(s)} value={getOptVal(s)}>{getOptVal(s)}</option>
-                  ))}
-                </select>
-              </div>
-            </div>
-
-            {/* Filter Preview */}
-            {Object.values(draftFilters).some(v => v && v !== '') && (
-              <div style={{ marginTop: '12px', padding: '10px', background: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.3)', borderRadius: '6px', textAlign: 'center' }}>
-                <div style={{ fontSize: '12px', color: '#22c55e' }}>
-                  {trades.filter(t => {
-                    if (draftFilters.dateFrom && t.date < draftFilters.dateFrom) return false
-                    if (draftFilters.dateTo && t.date > draftFilters.dateTo) return false
-                    if (draftFilters.outcome && t.outcome !== draftFilters.outcome) return false
-                    if (draftFilters.direction && t.direction !== draftFilters.direction) return false
-                    if (draftFilters.symbol && !t.symbol?.toLowerCase().includes(draftFilters.symbol.toLowerCase())) return false
-                    if (draftFilters.session && t.session !== draftFilters.session) return false
-                    if (draftFilters.timeframe && t.timeframe !== draftFilters.timeframe) return false
-                    if (draftFilters.confidence && t.confidence !== draftFilters.confidence) return false
-                    if (draftFilters.rr && parseFloat(t.rr || 0) < parseFloat(draftFilters.rr)) return false
-                    if (draftFilters.rating && parseInt(t.rating || 0) < parseInt(draftFilters.rating)) return false
-                    return true
-                  }).length} of {trades.length} trades match
+              {/* Direction + Outcome Row */}
+              <div style={{ display: 'flex', gap: '12px', marginBottom: '12px' }}>
+                <div style={{ flex: 1 }}>
+                  <label style={{ display: 'block', fontSize: '10px', color: '#666', marginBottom: '5px', textTransform: 'uppercase' }}>Direction</label>
+                  <div style={{ display: 'flex', borderRadius: '6px', overflow: 'hidden', border: '1px solid #1a1a22' }}>
+                    {['', 'long', 'short'].map(d => (
+                      <button key={d || 'all'} onClick={() => setDraftFilters({...draftFilters, direction: d})} style={{ flex: 1, padding: '9px', background: draftFilters.direction === d ? (d === 'long' ? 'rgba(34,197,94,0.2)' : d === 'short' ? 'rgba(239,68,68,0.2)' : 'rgba(34,197,94,0.15)') : '#0a0a0f', border: 'none', borderLeft: d !== '' ? '1px solid #1a1a22' : 'none', color: draftFilters.direction === d ? (d === 'long' ? '#22c55e' : d === 'short' ? '#ef4444' : '#22c55e') : '#666', fontSize: '12px', fontWeight: 600, cursor: 'pointer', textTransform: 'uppercase' }}>{d || 'ALL'}</button>
+                    ))}
+                  </div>
+                </div>
+                <div style={{ flex: 1 }}>
+                  <label style={{ display: 'block', fontSize: '10px', color: '#666', marginBottom: '5px', textTransform: 'uppercase' }}>Outcome</label>
+                  <div style={{ display: 'flex', borderRadius: '6px', overflow: 'hidden', border: '1px solid #1a1a22' }}>
+                    {[{v: '', l: 'ALL'}, {v: 'win', l: 'W'}, {v: 'loss', l: 'L'}, {v: 'breakeven', l: 'BE'}].map((o, i) => (
+                      <button key={o.v || 'all'} onClick={() => setDraftFilters({...draftFilters, outcome: o.v})} style={{ flex: 1, padding: '9px', background: draftFilters.outcome === o.v ? (o.v === 'win' ? 'rgba(34,197,94,0.2)' : o.v === 'loss' ? 'rgba(239,68,68,0.2)' : o.v === 'breakeven' ? 'rgba(234,179,8,0.2)' : 'rgba(34,197,94,0.15)') : '#0a0a0f', border: 'none', borderLeft: i > 0 ? '1px solid #1a1a22' : 'none', color: draftFilters.outcome === o.v ? (o.v === 'win' ? '#22c55e' : o.v === 'loss' ? '#ef4444' : o.v === 'breakeven' ? '#eab308' : '#22c55e') : '#666', fontSize: '12px', fontWeight: 600, cursor: 'pointer' }}>{o.l}</button>
+                    ))}
+                  </div>
                 </div>
               </div>
-            )}
+
+              {/* Symbol + Min RR Row */}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '12px' }}>
+                <div>
+                  <label style={{ display: 'block', fontSize: '10px', color: '#666', marginBottom: '5px', textTransform: 'uppercase' }}>Symbol</label>
+                  <input type="text" value={draftFilters.symbol} onChange={e => setDraftFilters({...draftFilters, symbol: e.target.value})} placeholder="XAUUSD" style={{ width: '100%', padding: '10px 12px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '13px', boxSizing: 'border-box' }} />
+                </div>
+                <div>
+                  <label style={{ display: 'block', fontSize: '10px', color: '#666', marginBottom: '5px', textTransform: 'uppercase' }}>Min R:R</label>
+                  <input type="number" step="0.1" value={draftFilters.rr} onChange={e => setDraftFilters({...draftFilters, rr: e.target.value})} placeholder="2.5" style={{ width: '100%', padding: '10px 12px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '13px', boxSizing: 'border-box' }} />
+                </div>
+              </div>
+
+              {/* Confidence + Rating Row */}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '12px' }}>
+                <div>
+                  <label style={{ display: 'block', fontSize: '10px', color: '#666', marginBottom: '5px', textTransform: 'uppercase' }}>Confidence</label>
+                  <select value={draftFilters.confidence} onChange={e => setDraftFilters({...draftFilters, confidence: e.target.value})} style={{ width: '100%', padding: '10px 12px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '13px', boxSizing: 'border-box', appearance: 'none', backgroundImage: 'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'12\' height=\'12\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'%23666\' stroke-width=\'2\'%3E%3Cpath d=\'M6 9l6 6 6-6\'/%3E%3C/svg%3E")', backgroundRepeat: 'no-repeat', backgroundPosition: 'right 12px center' }}>
+                    <option value="">Any</option>
+                    {(filterInputs.find(i => i.id === 'confidence')?.options || ['high', 'medium', 'low']).map(c => (
+                      <option key={getOptVal(c)} value={getOptVal(c)}>{getOptVal(c)}</option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label style={{ display: 'block', fontSize: '10px', color: '#666', marginBottom: '5px', textTransform: 'uppercase' }}>Min Rating</label>
+                  <div style={{ display: 'flex', gap: '4px', padding: '8px 0' }}>
+                    {[0, 1, 2, 3, 4, 5].map(r => (
+                      <span key={r} onClick={() => setDraftFilters({...draftFilters, rating: r === 0 ? '' : String(r)})} style={{ fontSize: '18px', cursor: 'pointer', color: (draftFilters.rating ? parseInt(draftFilters.rating) >= r : r === 0) && r > 0 ? '#f59e0b' : '#333' }}>★</span>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* Timeframe + Session Row */}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '12px' }}>
+                <div>
+                  <label style={{ display: 'block', fontSize: '10px', color: '#666', marginBottom: '5px', textTransform: 'uppercase' }}>Timeframe</label>
+                  <select value={draftFilters.timeframe} onChange={e => setDraftFilters({...draftFilters, timeframe: e.target.value})} style={{ width: '100%', padding: '10px 12px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '13px', boxSizing: 'border-box', appearance: 'none', backgroundImage: 'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'12\' height=\'12\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'%23666\' stroke-width=\'2\'%3E%3Cpath d=\'M6 9l6 6 6-6\'/%3E%3C/svg%3E")', backgroundRepeat: 'no-repeat', backgroundPosition: 'right 12px center' }}>
+                    <option value="">Any</option>
+                    {(filterInputs.find(i => i.id === 'timeframe')?.options || ['1m', '5m', '15m', '1h', '4h', 'daily']).map(t => (
+                      <option key={getOptVal(t)} value={getOptVal(t)}>{getOptVal(t)}</option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label style={{ display: 'block', fontSize: '10px', color: '#666', marginBottom: '5px', textTransform: 'uppercase' }}>Session</label>
+                  <select value={draftFilters.session} onChange={e => setDraftFilters({...draftFilters, session: e.target.value})} style={{ width: '100%', padding: '10px 12px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '13px', boxSizing: 'border-box', appearance: 'none', backgroundImage: 'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'12\' height=\'12\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'%23666\' stroke-width=\'2\'%3E%3Cpath d=\'M6 9l6 6 6-6\'/%3E%3C/svg%3E")', backgroundRepeat: 'no-repeat', backgroundPosition: 'right 12px center' }}>
+                    <option value="">Any</option>
+                    {(filterInputs.find(i => i.id === 'session')?.options || ['london', 'new york', 'asian', 'other']).map(s => (
+                      <option key={getOptVal(s)} value={getOptVal(s)}>{getOptVal(s)}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              {/* Custom Inputs Section */}
+              {customFilterInputs.length > 0 && (
+                <>
+                  <div style={{ borderTop: '1px solid #1a1a22', marginTop: '8px', paddingTop: '12px', marginBottom: '12px' }}>
+                    <div style={{ fontSize: '10px', color: '#666', textTransform: 'uppercase', marginBottom: '10px' }}>Custom Inputs</div>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                      {customFilterInputs.map(inp => (
+                        <div key={inp.id}>
+                          <label style={{ display: 'block', fontSize: '10px', color: '#666', marginBottom: '5px', textTransform: 'uppercase' }}>{inp.label}</label>
+                          {inp.type === 'select' ? (
+                            <select
+                              value={draftFilters.custom?.[inp.id] || ''}
+                              onChange={e => setDraftFilters({...draftFilters, custom: {...(draftFilters.custom || {}), [inp.id]: e.target.value}})}
+                              style={{ width: '100%', padding: '10px 12px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '13px', boxSizing: 'border-box', appearance: 'none', backgroundImage: 'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'12\' height=\'12\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'%23666\' stroke-width=\'2\'%3E%3Cpath d=\'M6 9l6 6 6-6\'/%3E%3C/svg%3E")', backgroundRepeat: 'no-repeat', backgroundPosition: 'right 12px center' }}
+                            >
+                              <option value="">Any</option>
+                              {(inp.options || []).map(opt => (
+                                <option key={getOptVal(opt)} value={getOptVal(opt)}>{getOptVal(opt)}</option>
+                              ))}
+                            </select>
+                          ) : inp.type === 'number' ? (
+                            <input
+                              type="number"
+                              value={draftFilters.custom?.[inp.id] || ''}
+                              onChange={e => setDraftFilters({...draftFilters, custom: {...(draftFilters.custom || {}), [inp.id]: e.target.value}})}
+                              placeholder={`Min ${inp.label}`}
+                              style={{ width: '100%', padding: '10px 12px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '13px', boxSizing: 'border-box' }}
+                            />
+                          ) : (
+                            <input
+                              type="text"
+                              value={draftFilters.custom?.[inp.id] || ''}
+                              onChange={e => setDraftFilters({...draftFilters, custom: {...(draftFilters.custom || {}), [inp.id]: e.target.value}})}
+                              placeholder={`Search ${inp.label}`}
+                              style={{ width: '100%', padding: '10px 12px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '13px', boxSizing: 'border-box' }}
+                            />
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </>
+              )}
+            </div>
+
+            {/* Footer with preview and actions */}
+            <div style={{ padding: '12px 20px', borderTop: '1px solid #1a1a22', background: '#0a0a0f' }}>
+              {hasAnyFilter && (
+                <div style={{ marginBottom: '12px', padding: '10px', background: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.3)', borderRadius: '6px', textAlign: 'center' }}>
+                  <div style={{ fontSize: '12px', color: '#22c55e' }}>
+                    {previewCount} of {baseTradesToFilter.length} trades match
+                  </div>
+                </div>
+              )}
+              <div style={{ display: 'flex', gap: '8px' }}>
+                <button onClick={() => setDraftFilters({ dateFrom: '', dateTo: '', outcome: '', direction: '', symbol: '', session: '', timeframe: '', confidence: '', rr: '', rating: '', quickSelect: '', custom: {} })} style={{ flex: 1, padding: '10px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '6px', color: '#888', fontSize: '13px', cursor: 'pointer' }}>Clear All</button>
+                <button onClick={() => { setFilters({...draftFilters}); setShowFilters(false) }} style={{ flex: 1, padding: '10px', background: '#22c55e', border: 'none', borderRadius: '6px', color: '#fff', fontWeight: 600, fontSize: '13px', cursor: 'pointer' }}>Apply Filters</button>
+              </div>
+            </div>
           </div>
         </div>
-      )}
+      )})()}
 
       {/* MODALS */}
       {showAddTrade && (
@@ -3042,7 +3135,7 @@ export default function AccountPage() {
 
       {showEditInputs && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.9)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 101 }} onClick={() => setShowEditInputs(false)}>
-          <div style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '12px', width: '800px', maxWidth: '95vw', maxHeight: '90vh', display: 'flex', flexDirection: 'column' }} onClick={e => e.stopPropagation()}>
+          <div style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '12px', width: '560px', maxWidth: '95vw', maxHeight: '90vh', display: 'flex', flexDirection: 'column' }} onClick={e => e.stopPropagation()}>
             {/* Header */}
             <div style={{ padding: '20px 24px', borderBottom: '1px solid #1a1a22', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
               <div>
@@ -3055,7 +3148,7 @@ export default function AccountPage() {
             {/* Scrollable Content */}
             <div style={{ flex: 1, overflowY: 'auto', padding: '16px 24px' }}>
               {/* Column headers */}
-              <div style={{ display: 'grid', gridTemplateColumns: '32px 140px 110px 1fr 32px', gap: '12px', padding: '8px 12px', marginBottom: '8px', alignItems: 'center' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '28px 120px 100px 80px 28px', gap: '10px', padding: '8px 12px', marginBottom: '8px', alignItems: 'center' }}>
                 <span style={{ fontSize: '10px', color: '#666', textTransform: 'uppercase', fontWeight: 600 }}>On</span>
                 <span style={{ fontSize: '10px', color: '#666', textTransform: 'uppercase', fontWeight: 600 }}>Name</span>
                 <span style={{ fontSize: '10px', color: '#666', textTransform: 'uppercase', fontWeight: 600 }}>Type</span>
@@ -3066,10 +3159,10 @@ export default function AccountPage() {
               {/* Field rows */}
               <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', marginBottom: '16px' }}>
                 {inputs.map((input, i) => !input.hidden && (
-                  <div key={input.id} style={{ display: 'grid', gridTemplateColumns: '32px 140px 110px 100px 32px', gap: '12px', padding: '10px 12px', background: input.enabled ? '#141418' : '#0d0d12', borderRadius: '8px', border: '1px solid #1a1a22', alignItems: 'center', opacity: input.enabled ? 1 : 0.6 }}>
-                    <input type="checkbox" checked={input.enabled} onChange={e => updateInput(i, 'enabled', e.target.checked)} style={{ width: '18px', height: '18px', accentColor: '#22c55e', cursor: 'pointer' }} />
-                    <input type="text" value={input.label} onChange={e => updateInput(i, 'label', e.target.value)} style={{ padding: '8px 10px', background: '#0a0a0e', border: '1px solid #2a2a35', borderRadius: '6px', color: '#fff', fontSize: '12px', width: '100%' }} placeholder="Field name" />
-                    <select value={input.type} onChange={e => updateInput(i, 'type', e.target.value)} style={{ padding: '8px 10px', background: '#0a0a0e', border: '1px solid #2a2a35', borderRadius: '6px', color: '#fff', fontSize: '11px', cursor: 'pointer' }}>
+                  <div key={input.id} style={{ display: 'grid', gridTemplateColumns: '28px 120px 100px 80px 28px', gap: '10px', padding: '10px 12px', background: input.enabled ? '#141418' : '#0d0d12', borderRadius: '8px', border: '1px solid #1a1a22', alignItems: 'center', opacity: input.enabled ? 1 : 0.6 }}>
+                    <input type="checkbox" checked={input.enabled} onChange={e => updateInput(i, 'enabled', e.target.checked)} style={{ width: '16px', height: '16px', accentColor: '#22c55e', cursor: 'pointer' }} />
+                    <input type="text" value={input.label} onChange={e => updateInput(i, 'label', e.target.value)} style={{ padding: '6px 8px', background: '#0a0a0e', border: '1px solid #2a2a35', borderRadius: '6px', color: '#fff', fontSize: '12px', width: '100%' }} placeholder="Field name" />
+                    <select value={input.type} onChange={e => updateInput(i, 'type', e.target.value)} style={{ padding: '6px 8px', background: '#0a0a0e', border: '1px solid #2a2a35', borderRadius: '6px', color: '#fff', fontSize: '11px', cursor: 'pointer' }}>
                       <option value="text">Text</option>
                       <option value="number">Number</option>
                       <option value="select">Dropdown</option>
@@ -3080,13 +3173,13 @@ export default function AccountPage() {
                       <option value="file">Image</option>
                     </select>
                     {input.type === 'number' ? (
-                      <span style={{ padding: '8px 12px', color: '#555', fontSize: '12px' }}>N/A</span>
+                      <button onClick={() => openColorEditor(i)} style={{ padding: '6px 10px', background: '#0a0a0e', border: '1px solid #2a2a35', borderRadius: '6px', color: '#22c55e', fontSize: '11px', cursor: 'pointer' }}>Options</button>
                     ) : input.type === 'select' ? (
-                      <button onClick={() => openOptionsEditor(i)} style={{ padding: '8px 12px', background: '#0a0a0e', border: '1px solid #2a2a35', borderRadius: '6px', color: '#22c55e', fontSize: '12px', cursor: 'pointer' }}>Options</button>
+                      <button onClick={() => openOptionsEditor(i)} style={{ padding: '6px 10px', background: '#0a0a0e', border: '1px solid #2a2a35', borderRadius: '6px', color: '#22c55e', fontSize: '11px', cursor: 'pointer' }}>Options</button>
                     ) : (
-                      <button onClick={() => openColorEditor(i)} style={{ padding: '8px 12px', background: '#0a0a0e', border: '1px solid #2a2a35', borderRadius: '6px', color: '#22c55e', fontSize: '12px', cursor: 'pointer' }}>Options</button>
+                      <button onClick={() => openColorEditor(i)} style={{ padding: '6px 10px', background: '#0a0a0e', border: '1px solid #2a2a35', borderRadius: '6px', color: '#22c55e', fontSize: '11px', cursor: 'pointer' }}>Options</button>
                     )}
-                    <button onClick={() => setDeleteInputConfirm({ index: i, label: input.label || input.id, id: input.id })} style={{ width: '32px', height: '32px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '6px', color: '#666', cursor: 'pointer', fontSize: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>×</button>
+                    <button onClick={() => setDeleteInputConfirm({ index: i, label: input.label || input.id, id: input.id })} style={{ width: '28px', height: '28px', background: 'transparent', border: 'none', color: '#666', cursor: 'pointer', fontSize: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>×</button>
                   </div>
                 ))}
               </div>
@@ -3265,32 +3358,91 @@ export default function AccountPage() {
         </div>
       )}
 
-      {/* Simple Color Editor Modal */}
-      {editingColor !== null && (
+      {/* Color Editor Modal */}
+      {editingColor !== null && (() => {
+        const isNumber = inputs[editingColor]?.type === 'number'
+        const inp = inputs[editingColor] || {}
+        return (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.9)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 102 }} onClick={() => setEditingColor(null)}>
-          <div style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '12px', padding: '24px', width: '360px', maxWidth: '95vw' }} onClick={e => e.stopPropagation()}>
-            <h2 style={{ fontSize: '18px', fontWeight: 700, marginBottom: '4px', color: '#fff' }}>Color Settings</h2>
-            <p style={{ fontSize: '12px', color: '#555', marginBottom: '16px' }}>Choose text color for this field</p>
+          <div style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '12px', padding: '24px', width: '420px', maxWidth: '95vw' }} onClick={e => e.stopPropagation()}>
+            <h2 style={{ fontSize: '18px', fontWeight: 700, marginBottom: '4px', color: '#fff' }}>Style Settings</h2>
+            <p style={{ fontSize: '12px', color: '#555', marginBottom: '16px' }}>{isNumber ? 'Numbers use automatic green/red coloring' : 'Customize colors for this field'}</p>
 
-            <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '20px', padding: '16px', background: '#0a0a0e', borderRadius: '8px' }}>
-              <div style={{ position: 'relative', width: '48px', height: '48px' }}>
-                <div style={{ width: '48px', height: '48px', borderRadius: '8px', background: inputs[editingColor]?.textColor || '#fff', border: '2px solid #2a2a35', cursor: 'pointer' }} />
-                <input type="color" value={inputs[editingColor]?.textColor || '#ffffff'} onChange={e => updateInput(editingColor, 'textColor', e.target.value)} style={{ position: 'absolute', inset: 0, opacity: 0, width: '100%', height: '100%', cursor: 'pointer' }} />
+            {isNumber ? (
+              <div style={{ padding: '16px', background: '#0a0a0e', borderRadius: '8px', marginBottom: '16px' }}>
+                <div style={{ fontSize: '13px', color: '#888', textAlign: 'center' }}>Positive values show as <span style={{ color: '#22c55e' }}>green</span>, negative as <span style={{ color: '#ef4444' }}>red</span></div>
               </div>
-              <div>
-                <div style={{ fontSize: '14px', fontWeight: 600, color: '#fff' }}>Text Color</div>
-                <div style={{ fontSize: '12px', color: '#888' }}>{inputs[editingColor]?.textColor || 'Default'}</div>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '16px' }}>
+                {/* Text Color */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px', background: '#0a0a0e', borderRadius: '8px' }}>
+                  <div style={{ position: 'relative', width: '36px', height: '36px' }}>
+                    <div style={{ width: '36px', height: '36px', borderRadius: '6px', background: inp.textColor || '#fff', border: '2px solid #2a2a35', cursor: 'pointer' }} />
+                    <input type="color" value={inp.textColor || '#ffffff'} onChange={e => updateInput(editingColor, 'textColor', e.target.value)} style={{ position: 'absolute', inset: 0, opacity: 0, width: '100%', height: '100%', cursor: 'pointer' }} />
+                  </div>
+                  <span style={{ fontSize: '13px', color: '#888', flex: 1 }}>Text Color</span>
+                </div>
+                {/* Background */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px', background: '#0a0a0e', borderRadius: '8px' }}>
+                  <select value={inp.bgColor ? 'custom' : 'none'} onChange={e => {
+                    if (e.target.value === 'none') updateInput(editingColor, 'bgColor', null)
+                    else {
+                      const hex = (inp.textColor || '#fff').replace('#', '')
+                      const r = parseInt(hex.substr(0, 2), 16) || 255
+                      const g = parseInt(hex.substr(2, 2), 16) || 255
+                      const b = parseInt(hex.substr(4, 2), 16) || 255
+                      updateInput(editingColor, 'bgColor', `rgba(${r},${g},${b},0.15)`)
+                    }
+                  }} style={{ padding: '8px 12px', background: '#141418', border: '1px solid #2a2a35', borderRadius: '6px', color: '#fff', fontSize: '12px', cursor: 'pointer' }}>
+                    <option value="none">No Fill</option>
+                    <option value="custom">Fill</option>
+                  </select>
+                  {inp.bgColor && (
+                    <div style={{ position: 'relative', width: '36px', height: '36px' }}>
+                      <div style={{ width: '36px', height: '36px', borderRadius: '6px', background: inp.bgColor, border: '2px solid #2a2a35', cursor: 'pointer' }} />
+                      <input type="color" value={inp.textColor || '#ffffff'} onChange={e => {
+                        const hex = e.target.value.replace('#', '')
+                        const r = parseInt(hex.substr(0, 2), 16)
+                        const g = parseInt(hex.substr(2, 2), 16)
+                        const b = parseInt(hex.substr(4, 2), 16)
+                        updateInput(editingColor, 'bgColor', `rgba(${r},${g},${b},0.15)`)
+                      }} style={{ position: 'absolute', inset: 0, opacity: 0, width: '100%', height: '100%', cursor: 'pointer' }} />
+                    </div>
+                  )}
+                  <span style={{ fontSize: '13px', color: '#888', flex: 1 }}>Background</span>
+                </div>
+                {/* Border */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px', background: '#0a0a0e', borderRadius: '8px' }}>
+                  <select value={inp.borderColor ? 'custom' : 'none'} onChange={e => {
+                    if (e.target.value === 'none') updateInput(editingColor, 'borderColor', null)
+                    else updateInput(editingColor, 'borderColor', inp.textColor || '#fff')
+                  }} style={{ padding: '8px 12px', background: '#141418', border: '1px solid #2a2a35', borderRadius: '6px', color: '#fff', fontSize: '12px', cursor: 'pointer' }}>
+                    <option value="none">No Border</option>
+                    <option value="custom">Border</option>
+                  </select>
+                  {inp.borderColor && (
+                    <div style={{ position: 'relative', width: '36px', height: '36px' }}>
+                      <div style={{ width: '36px', height: '36px', borderRadius: '6px', background: 'transparent', border: `3px solid ${inp.borderColor}`, cursor: 'pointer' }} />
+                      <input type="color" value={inp.borderColor || '#ffffff'} onChange={e => updateInput(editingColor, 'borderColor', e.target.value)} style={{ position: 'absolute', inset: 0, opacity: 0, width: '100%', height: '100%', cursor: 'pointer' }} />
+                    </div>
+                  )}
+                  <span style={{ fontSize: '13px', color: '#888', flex: 1 }}>Border</span>
+                </div>
+                {/* Preview */}
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '12px', background: '#0a0a0e', borderRadius: '8px' }}>
+                  <span style={{ padding: '6px 14px', borderRadius: '6px', fontSize: '14px', fontWeight: 600, background: inp.bgColor || 'transparent', color: inp.textColor || '#fff', border: inp.borderColor ? `1px solid ${inp.borderColor}` : 'none' }}>Preview</span>
+                </div>
               </div>
-              <span style={{ marginLeft: 'auto', fontSize: '16px', fontWeight: 600, color: inputs[editingColor]?.textColor || '#fff' }}>Preview</span>
-            </div>
+            )}
 
             <div style={{ display: 'flex', gap: '12px' }}>
               <button onClick={() => setEditingColor(null)} style={{ flex: 1, padding: '12px', background: '#22c55e', border: 'none', borderRadius: '8px', color: '#fff', fontWeight: 600, fontSize: '13px', cursor: 'pointer' }}>Done</button>
-              <button onClick={() => { updateInput(editingColor, 'textColor', null); setEditingColor(null) }} style={{ flex: 1, padding: '12px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '8px', color: '#888', fontWeight: 600, fontSize: '13px', cursor: 'pointer' }}>Reset</button>
+              {!isNumber && <button onClick={() => { updateInput(editingColor, 'textColor', null); updateInput(editingColor, 'bgColor', null); updateInput(editingColor, 'borderColor', null); setEditingColor(null) }} style={{ flex: 1, padding: '12px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '8px', color: '#888', fontWeight: 600, fontSize: '13px', cursor: 'pointer' }}>Reset</button>}
             </div>
           </div>
         </div>
-      )}
+        )
+      })()}
 
       {/* Delete Input Confirmation Modal */}
       {deleteInputConfirm && (() => {
@@ -3627,8 +3779,8 @@ export default function AccountPage() {
                           {/* Start line - dashed horizontal line at starting balance */}
                           {equityCurveGroupBy === 'total' && startYEnl >= 0 && startYEnl <= svgH && (
                             <>
-                              <div style={{ position: 'absolute', left: 0, right: '40px', top: `${(startYEnl / svgH) * 100}%`, borderTop: '1px dashed #666', transform: 'translateY(-50%)', zIndex: 1 }} />
-                              <span style={{ position: 'absolute', right: '2px', top: `${(startYEnl / svgH) * 100}%`, transform: 'translateY(-50%)', fontSize: '10px', color: '#888', background: '#0d0d12', padding: '0 4px' }}>Start</span>
+                              <div style={{ position: 'absolute', left: 0, right: '34px', top: `${(startYEnl / svgH) * 100}%`, borderTop: '1px dashed #666', transform: 'translateY(-50%)', zIndex: 1 }} />
+                              <span style={{ position: 'absolute', right: '4px', top: `${(startYEnl / svgH) * 100}%`, transform: 'translateY(-50%)', fontSize: '9px', color: '#888', background: '#0d0d12', padding: '0 4px' }}>Start</span>
                             </>
                           )}
                           <svg style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', overflow: 'visible' }} viewBox={`0 0 ${svgW} ${svgH}`} preserveAspectRatio="none"
@@ -3966,7 +4118,7 @@ export default function AccountPage() {
               })()}
               </div>
               {/* Stats Sidebar - Matches chart height exactly */}
-              <div style={{ width: '280px', background: '#0a0a0e', borderRadius: '12px', border: '1px solid #1a1a22', padding: '16px', flexShrink: 0, display: 'flex', flexDirection: 'column', maxHeight: '500px', overflow: 'hidden' }}>
+              <div style={{ width: '280px', background: '#0a0a0e', borderRadius: '12px', border: '1px solid #1a1a22', padding: '16px', flexShrink: 0, display: 'flex', flexDirection: 'column', overflow: 'auto' }}>
                 <div style={{ fontSize: '13px', color: '#fff', textTransform: 'uppercase', marginBottom: '12px', fontWeight: 700, letterSpacing: '1px', borderBottom: '1px solid #1a1a22', paddingBottom: '8px' }}>Statistics</div>
                 {(() => {
                   // Calculate stats based on selected lines/data
@@ -4037,7 +4189,9 @@ export default function AccountPage() {
 
                   const stats = [
                     { label: 'Total P&L', value: `${totalPnl >= 0 ? '+' : ''}$${Math.round(totalPnl).toLocaleString()}`, color: totalPnl >= 0 ? '#22c55e' : '#ef4444', big: true },
-                    { label: 'Trades', value: `${filteredTrades.length} (${wins.length}W/${losses.length}L)`, color: '#fff' },
+                    { label: 'Total Trades', value: filteredTrades.length, color: '#fff' },
+                    { label: 'Wins', value: wins.length, color: '#22c55e' },
+                    { label: 'Losses', value: losses.length, color: '#ef4444' },
                     { label: 'Winrate', value: `${winrate}%`, color: winrate === '-' ? '#666' : parseFloat(winrate) >= 50 ? '#22c55e' : '#ef4444' },
                     { label: 'Profit Factor', value: profitFactor, color: profitFactor === '-' ? '#666' : profitFactor === '∞' ? '#22c55e' : parseFloat(profitFactor) >= 1 ? '#22c55e' : '#ef4444' },
                     { label: 'Avg RR', value: `${avgRR}R`, color: avgRR === '-' ? '#666' : avgRR === '∞' ? '#22c55e' : parseFloat(avgRR) >= 1 ? '#22c55e' : '#ef4444' },
@@ -4048,18 +4202,20 @@ export default function AccountPage() {
                     { label: 'Best Trade', value: `+$${Math.round(biggestWin).toLocaleString()}`, color: '#22c55e' },
                     { label: 'Worst Trade', value: `$${Math.round(biggestLoss).toLocaleString()}`, color: '#ef4444' },
                     { label: 'Trade Streak', value: currentStreak >= 0 ? `+${currentStreak}` : `${currentStreak}`, color: currentStreak >= 0 ? '#22c55e' : '#ef4444' },
-                    { label: 'Best Trade Streak', value: `+${maxWinStreak}W / -${maxLossStreak}L`, color: '#fff' },
-                    { label: 'Days Traded', value: `${totalDays} (${greenDays}G/${redDays}R)`, color: greenDays >= redDays ? '#22c55e' : '#ef4444' },
+                    { label: 'Best Win Streak', value: `+${maxWinStreak}`, color: '#22c55e' },
+                    { label: 'Worst Loss Streak', value: `-${maxLossStreak}`, color: '#ef4444' },
+                    { label: 'Days Traded', value: totalDays, color: '#fff' },
+                    { label: 'Green Days', value: greenDays, color: '#22c55e' },
+                    { label: 'Red Days', value: redDays, color: '#ef4444' },
                     { label: 'Day Streak', value: currentDayStreak >= 0 ? `+${currentDayStreak}` : `${currentDayStreak}`, color: currentDayStreak >= 0 ? '#22c55e' : '#ef4444' },
-                    { label: 'Best Day Streak', value: `+${maxDayWinStreak}G / -${maxDayLossStreak}R`, color: '#fff' },
                   ]
 
                   return (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '3px', flex: 1 }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', flex: 1 }}>
                       {stats.map((stat, i) => (
-                        <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: stat.big ? '8px 10px' : '5px 8px', background: stat.big ? 'linear-gradient(135deg, #0d0d12 0%, #141418 100%)' : '#0d0d12', borderRadius: '4px', border: stat.big ? '1px solid #1a1a22' : 'none' }}>
-                          <span style={{ fontSize: stat.big ? '11px' : '10px', color: '#fff', fontWeight: stat.big ? 600 : 500 }}>{stat.label}</span>
-                          <span style={{ fontSize: stat.big ? '14px' : '12px', fontWeight: 700, color: stat.color }}>{stat.value}</span>
+                        <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: stat.big ? '10px 12px' : '6px 10px', background: stat.big ? 'linear-gradient(135deg, #0d0d12 0%, #141418 100%)' : '#0d0d12', borderRadius: '6px', border: stat.big ? '1px solid #1a1a22' : '1px solid #141418' }}>
+                          <span style={{ fontSize: stat.big ? '12px' : '11px', color: '#888', fontWeight: 500 }}>{stat.label}</span>
+                          <span style={{ fontSize: stat.big ? '16px' : '13px', fontWeight: 700, color: stat.color }}>{stat.value}</span>
                         </div>
                       ))}
                     </div>

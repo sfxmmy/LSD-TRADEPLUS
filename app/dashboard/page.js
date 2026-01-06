@@ -535,12 +535,11 @@ export default function DashboardPage() {
         <div style={{ width: '46px', flexShrink: 0, display: 'flex', flexDirection: 'column' }}>
           <div style={{ flex: 1, position: 'relative', borderRight: '1px solid #2a2a35' }}>
             {yLabels.map((v, i) => {
-              const isLast = i === yLabels.length - 1
               const topPct = yLabels.length > 1 ? (i / (yLabels.length - 1)) * 100 : 0
               return (
-                <div key={i} style={{ position: 'absolute', right: '-1px', top: `${topPct}%`, transform: `translateY(${isLast ? '-100%' : '-50%'})`, display: 'flex', alignItems: 'center', paddingBottom: isLast ? '0' : '0' }}>
+                <div key={i} style={{ position: 'absolute', right: 0, top: `${topPct}%`, transform: 'translateY(-50%)', display: 'flex', alignItems: 'center' }}>
                   <span style={{ fontSize: '10px', color: '#999', lineHeight: 1, textAlign: 'right' }}>{v >= 1000000 ? `$${(v/1000000).toFixed(1)}M` : v >= 1000 ? `$${(v/1000).toFixed(0)}k` : `$${v}`}</span>
-                  <div style={{ width: '4px', height: '1px', background: '#2a2a35', marginLeft: '3px' }} />
+                  <div style={{ width: '4px', height: '1px', background: '#2a2a35', marginLeft: '2px' }} />
                 </div>
               )
             })}
@@ -800,21 +799,21 @@ export default function DashboardPage() {
               </div>
 
               {/* Direction + Outcome Row */}
-              <div style={{ display: 'flex', gap: '12px', marginBottom: '12px', paddingBottom: '12px', borderBottom: '1px solid #1a1a22' }}>
-                <div style={{ flex: 1 }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '12px', paddingBottom: '12px', borderBottom: '1px solid #1a1a22' }}>
+                <div>
                   <label style={{ display: 'block', fontSize: '9px', color: '#666', marginBottom: '4px', textTransform: 'uppercase' }}>Direction</label>
-                  <div style={{ display: 'flex', gap: '6px' }}>
-                    <button onClick={() => setQuickTradeDirection('long')} style={{ flex: 1, padding: '7px', background: quickTradeDirection === 'long' ? 'rgba(34,197,94,0.2)' : '#0a0a0f', border: `2px solid ${quickTradeDirection === 'long' ? '#22c55e' : '#1a1a22'}`, borderRadius: '6px', color: quickTradeDirection === 'long' ? '#22c55e' : '#666', fontSize: '11px', fontWeight: 600, cursor: 'pointer' }}>LONG</button>
-                    <button onClick={() => setQuickTradeDirection('short')} style={{ flex: 1, padding: '7px', background: quickTradeDirection === 'short' ? 'rgba(239,68,68,0.2)' : '#0a0a0f', border: `2px solid ${quickTradeDirection === 'short' ? '#ef4444' : '#1a1a22'}`, borderRadius: '6px', color: quickTradeDirection === 'short' ? '#ef4444' : '#666', fontSize: '11px', fontWeight: 600, cursor: 'pointer' }}>SHORT</button>
-                  </div>
+                  <select value={quickTradeDirection} onChange={e => setQuickTradeDirection(e.target.value)} style={{ width: '100%', padding: '8px 10px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px', color: quickTradeDirection === 'long' ? '#22c55e' : quickTradeDirection === 'short' ? '#ef4444' : '#fff', fontSize: '12px', boxSizing: 'border-box' }}>
+                    <option value="long">Long</option>
+                    <option value="short">Short</option>
+                  </select>
                 </div>
-                <div style={{ flex: 1 }}>
+                <div>
                   <label style={{ display: 'block', fontSize: '9px', color: '#666', marginBottom: '4px', textTransform: 'uppercase' }}>Outcome</label>
-                  <div style={{ display: 'flex', gap: '6px' }}>
-                    <button onClick={() => setQuickTradeOutcome('win')} style={{ flex: 1, padding: '7px', background: quickTradeOutcome === 'win' ? 'rgba(34,197,94,0.2)' : '#0a0a0f', border: `2px solid ${quickTradeOutcome === 'win' ? '#22c55e' : '#1a1a22'}`, borderRadius: '6px', color: quickTradeOutcome === 'win' ? '#22c55e' : '#666', fontSize: '11px', fontWeight: 600, cursor: 'pointer' }}>W</button>
-                    <button onClick={() => setQuickTradeOutcome('loss')} style={{ flex: 1, padding: '7px', background: quickTradeOutcome === 'loss' ? 'rgba(239,68,68,0.2)' : '#0a0a0f', border: `2px solid ${quickTradeOutcome === 'loss' ? '#ef4444' : '#1a1a22'}`, borderRadius: '6px', color: quickTradeOutcome === 'loss' ? '#ef4444' : '#666', fontSize: '11px', fontWeight: 600, cursor: 'pointer' }}>L</button>
-                    <button onClick={() => setQuickTradeOutcome('be')} style={{ flex: 1, padding: '7px', background: quickTradeOutcome === 'be' ? 'rgba(255,255,255,0.1)' : '#0a0a0f', border: `2px solid ${quickTradeOutcome === 'be' ? '#888' : '#1a1a22'}`, borderRadius: '6px', color: quickTradeOutcome === 'be' ? '#888' : '#666', fontSize: '11px', fontWeight: 600, cursor: 'pointer' }}>BE</button>
-                  </div>
+                  <select value={quickTradeOutcome} onChange={e => setQuickTradeOutcome(e.target.value)} style={{ width: '100%', padding: '8px 10px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px', color: quickTradeOutcome === 'win' ? '#22c55e' : quickTradeOutcome === 'loss' ? '#ef4444' : '#f59e0b', fontSize: '12px', boxSizing: 'border-box' }}>
+                    <option value="win">Win</option>
+                    <option value="loss">Loss</option>
+                    <option value="be">Breakeven</option>
+                  </select>
                 </div>
               </div>
 
@@ -1146,7 +1145,7 @@ export default function DashboardPage() {
               const recentTrades = [...accTrades].reverse()
 
               return (
-                <div key={account.id} onClick={() => router.push(`/account/${account.id}`)} style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '10px', overflow: 'hidden', cursor: 'pointer', transition: 'border-color 0.15s' }}>
+                <div key={account.id} style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '10px', overflow: 'hidden' }}>
                   {/* Account Name */}
                   <div style={{ padding: isMobile ? '14px 16px' : '20px 24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: isMobile ? '10px' : '14px' }}>
@@ -1198,21 +1197,36 @@ export default function DashboardPage() {
                     {recentTrades.length === 0 ? (
                       <div style={{ padding: '20px', textAlign: 'center', color: '#999', fontSize: '14px', border: '1px solid #1a1a22', borderRadius: '8px' }}>No trades yet</div>
                     ) : (() => {
-                        // Get enabled columns from account's custom_inputs
+                        // Get specific columns for dashboard - limited set, not all inputs
                         const getEnabledColumns = () => {
+                          // Default columns to show on dashboard
+                          const defaultDashboardCols = ['symbol', 'outcome', 'pnl', 'direction']
                           let columns = []
                           try {
                             const customInputs = account?.custom_inputs ? JSON.parse(account.custom_inputs) : null
                             if (customInputs && Array.isArray(customInputs)) {
-                              // Filter to only enabled inputs and map to column format
-                              columns = customInputs
-                                .filter(inp => inp.enabled !== false)
-                                .map(inp => ({
-                                  id: inp.id,
-                                  label: inp.label || inp.id,
-                                  type: inp.type,
-                                  options: inp.options
-                                }))
+                              // Get only the specific dashboard columns from enabled inputs
+                              for (const colId of defaultDashboardCols) {
+                                const inp = customInputs.find(i => i.id === colId && i.enabled !== false && !i.hidden)
+                                if (inp) {
+                                  columns.push({
+                                    id: inp.id,
+                                    label: inp.label || inp.id,
+                                    type: inp.type,
+                                    options: inp.options
+                                  })
+                                } else if (colId === 'symbol') {
+                                  // Symbol is always shown
+                                  columns.push({ id: 'symbol', label: 'Symbol', type: 'text' })
+                                } else if (colId === 'outcome') {
+                                  // Outcome is always shown
+                                  columns.push({ id: 'outcome', label: 'W/L', type: 'select' })
+                                } else if (colId === 'pnl') {
+                                  // PnL is always shown
+                                  columns.push({ id: 'pnl', label: 'PnL', type: 'number' })
+                                }
+                                // If direction is disabled/hidden, skip it - no fallback needed
+                              }
                             }
                           } catch {}
                           // If no columns found, use minimal defaults
@@ -1270,7 +1284,7 @@ export default function DashboardPage() {
                         return (
                           <div style={{ maxHeight: '200px', overflowY: 'auto', overflowX: 'auto', border: '1px solid #1a1a22', borderRadius: '8px' }}>
                             <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: isMobile ? '600px' : 'auto' }}>
-                              <thead style={{ position: 'sticky', top: 0, background: '#0d0d12', zIndex: 1, boxShadow: '0 2px 0 0 #ef4444' }}>
+                              <thead style={{ position: 'sticky', top: 0, background: '#0d0d12', zIndex: 1, borderBottom: '1px solid #1a1a22' }}>
                                 <tr>
                                   {visibleCols.map((col, i) => (
                                     <th key={col.id} style={{ padding: '10px', textAlign: 'center', color: '#999', fontSize: '11px', fontWeight: 600, textTransform: 'uppercase', minWidth: '70px', background: '#0d0d12' }}>{col.label}</th>
@@ -1596,22 +1610,22 @@ export default function DashboardPage() {
                 </div>
               </div>
 
-              {/* Direction */}
-              <div style={{ marginBottom: '16px' }}>
-                <label style={{ display: 'block', fontSize: '11px', color: '#666', marginBottom: '8px', textTransform: 'uppercase' }}>Direction</label>
-                <div style={{ display: 'flex', gap: '8px' }}>
-                  <button onClick={() => setQuickTradeDirection('long')} style={{ flex: 1, padding: '14px', background: quickTradeDirection === 'long' ? 'rgba(34,197,94,0.2)' : '#0a0a0f', border: `2px solid ${quickTradeDirection === 'long' ? '#22c55e' : '#1a1a22'}`, borderRadius: '8px', color: quickTradeDirection === 'long' ? '#22c55e' : '#666', fontSize: '15px', fontWeight: 600, cursor: 'pointer' }}>LONG</button>
-                  <button onClick={() => setQuickTradeDirection('short')} style={{ flex: 1, padding: '14px', background: quickTradeDirection === 'short' ? 'rgba(239,68,68,0.2)' : '#0a0a0f', border: `2px solid ${quickTradeDirection === 'short' ? '#ef4444' : '#1a1a22'}`, borderRadius: '8px', color: quickTradeDirection === 'short' ? '#ef4444' : '#666', fontSize: '15px', fontWeight: 600, cursor: 'pointer' }}>SHORT</button>
+              {/* Direction + Outcome Row */}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '16px' }}>
+                <div>
+                  <label style={{ display: 'block', fontSize: '11px', color: '#666', marginBottom: '6px', textTransform: 'uppercase' }}>Direction</label>
+                  <select value={quickTradeDirection} onChange={e => setQuickTradeDirection(e.target.value)} style={{ width: '100%', padding: '14px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '8px', color: quickTradeDirection === 'long' ? '#22c55e' : quickTradeDirection === 'short' ? '#ef4444' : '#fff', fontSize: '15px', boxSizing: 'border-box' }}>
+                    <option value="long">Long</option>
+                    <option value="short">Short</option>
+                  </select>
                 </div>
-              </div>
-
-              {/* Outcome */}
-              <div style={{ marginBottom: '16px' }}>
-                <label style={{ display: 'block', fontSize: '11px', color: '#666', marginBottom: '8px', textTransform: 'uppercase' }}>Outcome</label>
-                <div style={{ display: 'flex', gap: '8px' }}>
-                  <button onClick={() => setQuickTradeOutcome('win')} style={{ flex: 1, padding: '14px', background: quickTradeOutcome === 'win' ? 'rgba(34,197,94,0.2)' : '#0a0a0f', border: `2px solid ${quickTradeOutcome === 'win' ? '#22c55e' : '#1a1a22'}`, borderRadius: '8px', color: quickTradeOutcome === 'win' ? '#22c55e' : '#666', fontSize: '15px', fontWeight: 600, cursor: 'pointer' }}>WIN</button>
-                  <button onClick={() => setQuickTradeOutcome('loss')} style={{ flex: 1, padding: '14px', background: quickTradeOutcome === 'loss' ? 'rgba(239,68,68,0.2)' : '#0a0a0f', border: `2px solid ${quickTradeOutcome === 'loss' ? '#ef4444' : '#1a1a22'}`, borderRadius: '8px', color: quickTradeOutcome === 'loss' ? '#ef4444' : '#666', fontSize: '15px', fontWeight: 600, cursor: 'pointer' }}>LOSS</button>
-                  <button onClick={() => setQuickTradeOutcome('be')} style={{ flex: 1, padding: '14px', background: quickTradeOutcome === 'be' ? 'rgba(255,255,255,0.1)' : '#0a0a0f', border: `2px solid ${quickTradeOutcome === 'be' ? '#888' : '#1a1a22'}`, borderRadius: '8px', color: quickTradeOutcome === 'be' ? '#888' : '#666', fontSize: '15px', fontWeight: 600, cursor: 'pointer' }}>BE</button>
+                <div>
+                  <label style={{ display: 'block', fontSize: '11px', color: '#666', marginBottom: '6px', textTransform: 'uppercase' }}>Outcome</label>
+                  <select value={quickTradeOutcome} onChange={e => setQuickTradeOutcome(e.target.value)} style={{ width: '100%', padding: '14px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '8px', color: quickTradeOutcome === 'win' ? '#22c55e' : quickTradeOutcome === 'loss' ? '#ef4444' : '#f59e0b', fontSize: '15px', boxSizing: 'border-box' }}>
+                    <option value="win">Win</option>
+                    <option value="loss">Loss</option>
+                    <option value="be">Breakeven</option>
+                  </select>
                 </div>
               </div>
 
@@ -1852,18 +1866,18 @@ export default function DashboardPage() {
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '20px' }}>
                 <div>
                   <label style={{ display: 'block', fontSize: '11px', color: '#666', marginBottom: '6px', textTransform: 'uppercase' }}>Direction</label>
-                  <div style={{ display: 'flex', gap: '8px' }}>
-                    <button onClick={() => setQuickTradeDirection('long')} style={{ flex: 1, padding: '10px', background: quickTradeDirection === 'long' ? 'rgba(34,197,94,0.2)' : '#0a0a0f', border: `2px solid ${quickTradeDirection === 'long' ? '#22c55e' : '#1a1a22'}`, borderRadius: '8px', color: quickTradeDirection === 'long' ? '#22c55e' : '#666', fontSize: '13px', fontWeight: 600, cursor: 'pointer' }}>LONG</button>
-                    <button onClick={() => setQuickTradeDirection('short')} style={{ flex: 1, padding: '10px', background: quickTradeDirection === 'short' ? 'rgba(239,68,68,0.2)' : '#0a0a0f', border: `2px solid ${quickTradeDirection === 'short' ? '#ef4444' : '#1a1a22'}`, borderRadius: '8px', color: quickTradeDirection === 'short' ? '#ef4444' : '#666', fontSize: '13px', fontWeight: 600, cursor: 'pointer' }}>SHORT</button>
-                  </div>
+                  <select value={quickTradeDirection} onChange={e => setQuickTradeDirection(e.target.value)} style={{ width: '100%', padding: '12px 14px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '8px', color: quickTradeDirection === 'long' ? '#22c55e' : quickTradeDirection === 'short' ? '#ef4444' : '#fff', fontSize: '14px', boxSizing: 'border-box' }}>
+                    <option value="long">Long</option>
+                    <option value="short">Short</option>
+                  </select>
                 </div>
                 <div>
                   <label style={{ display: 'block', fontSize: '11px', color: '#666', marginBottom: '6px', textTransform: 'uppercase' }}>Outcome</label>
-                  <div style={{ display: 'flex', gap: '8px' }}>
-                    <button onClick={() => setQuickTradeOutcome('win')} style={{ flex: 1, padding: '10px', background: quickTradeOutcome === 'win' ? 'rgba(34,197,94,0.2)' : '#0a0a0f', border: `2px solid ${quickTradeOutcome === 'win' ? '#22c55e' : '#1a1a22'}`, borderRadius: '8px', color: quickTradeOutcome === 'win' ? '#22c55e' : '#666', fontSize: '13px', fontWeight: 600, cursor: 'pointer' }}>W</button>
-                    <button onClick={() => setQuickTradeOutcome('loss')} style={{ flex: 1, padding: '10px', background: quickTradeOutcome === 'loss' ? 'rgba(239,68,68,0.2)' : '#0a0a0f', border: `2px solid ${quickTradeOutcome === 'loss' ? '#ef4444' : '#1a1a22'}`, borderRadius: '8px', color: quickTradeOutcome === 'loss' ? '#ef4444' : '#666', fontSize: '13px', fontWeight: 600, cursor: 'pointer' }}>L</button>
-                    <button onClick={() => setQuickTradeOutcome('be')} style={{ flex: 1, padding: '10px', background: quickTradeOutcome === 'be' ? 'rgba(255,255,255,0.1)' : '#0a0a0f', border: `2px solid ${quickTradeOutcome === 'be' ? '#888' : '#1a1a22'}`, borderRadius: '8px', color: quickTradeOutcome === 'be' ? '#888' : '#666', fontSize: '13px', fontWeight: 600, cursor: 'pointer' }}>BE</button>
-                  </div>
+                  <select value={quickTradeOutcome} onChange={e => setQuickTradeOutcome(e.target.value)} style={{ width: '100%', padding: '12px 14px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '8px', color: quickTradeOutcome === 'win' ? '#22c55e' : quickTradeOutcome === 'loss' ? '#ef4444' : '#f59e0b', fontSize: '14px', boxSizing: 'border-box' }}>
+                    <option value="win">Win</option>
+                    <option value="loss">Loss</option>
+                    <option value="be">Breakeven</option>
+                  </select>
                 </div>
               </div>
 
