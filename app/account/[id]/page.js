@@ -1831,7 +1831,7 @@ export default function AccountPage() {
                                 {/* Chart row - Y-axis and chart area aligned */}
                                 <div style={{ flex: 1, display: 'flex' }}>
                                   {/* Y-axis labels - same height as chart */}
-                                  <div style={{ width: '28px', flexShrink: 0, position: 'relative', borderRight: '1px solid #2a2a35' }}>
+                                  <div style={{ width: '28px', flexShrink: 0, position: 'relative', borderRight: '1px solid #2a2a35', borderBottom: '1px solid transparent' }}>
                                     {yLabels.map((v, i) => {
                                       const topPct = yLabels.length > 1 ? (i / (yLabels.length - 1)) * 100 : 0
                                       return (
@@ -2200,7 +2200,7 @@ export default function AccountPage() {
                           {/* Chart row - Y-axis and chart area aligned */}
                           <div style={{ flex: 1, display: 'flex' }}>
                             {/* Y-axis labels - same height as chart */}
-                            <div style={{ width: '28px', flexShrink: 0, position: 'relative' }}>
+                            <div style={{ width: '28px', flexShrink: 0, position: 'relative', borderBottom: '1px solid transparent' }}>
                               {yLabels.map((v, i) => {
                                 const topPct = yLabels.length > 1 ? (i / (yLabels.length - 1)) * 100 : 0
                                 return (
@@ -2352,7 +2352,7 @@ export default function AccountPage() {
                         {/* Chart row - Y-axis and chart area aligned */}
                         <div style={{ flex: 1, display: 'flex' }}>
                           {/* Y-axis labels - same height as chart */}
-                          <div style={{ width: '28px', flexShrink: 0, position: 'relative' }}>
+                          <div style={{ width: '28px', flexShrink: 0, position: 'relative', borderBottom: '1px solid transparent' }}>
                             {yLabels.map((v, i) => {
                               const topPct = yLabels.length > 1 ? (i / (yLabels.length - 1)) * 100 : 0
                               return (
@@ -3758,7 +3758,7 @@ export default function AccountPage() {
                     {/* Chart row - Y-axis and chart area aligned */}
                     <div style={{ flex: 1, display: 'flex' }}>
                       {/* Y-axis labels - same height as chart */}
-                      <div style={{ width: '44px', flexShrink: 0, position: 'relative', borderRight: '1px solid #2a2a35' }}>
+                      <div style={{ width: '44px', flexShrink: 0, position: 'relative', borderRight: '1px solid #2a2a35', borderBottom: '1px solid transparent' }}>
                         {yLabels.map((v, i) => {
                           const topPct = yLabels.length > 1 ? (i / (yLabels.length - 1)) * 100 : 0
                           return (
@@ -4059,7 +4059,7 @@ export default function AccountPage() {
                     {/* Chart row - Y-axis and chart area aligned */}
                     <div style={{ flex: 1, display: 'flex' }}>
                       {/* Y-axis labels - same height as chart */}
-                      <div style={{ width: '44px', flexShrink: 0, position: 'relative' }}>
+                      <div style={{ width: '44px', flexShrink: 0, position: 'relative', borderBottom: '1px solid transparent' }}>
                         {yLabelsBar.map((v, i) => {
                           const topPct = yLabelsBar.length > 1 ? (i / (yLabelsBar.length - 1)) * 100 : 0
                           return (

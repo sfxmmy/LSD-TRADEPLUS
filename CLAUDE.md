@@ -8,3 +8,16 @@
 
 ## Project
 - Trading journal web app
+
+# Project Rules
+
+## Code Protection
+- Files marked with "// FINALISED" at the top should NOT be modified
+- Before editing any file, state which file you're editing and why
+- Only edit the specific section requested — don't refactor surrounding code
+- If a previous edit is working, don't touch it when working on something else
+
+## Workflow
+- When asked to fix/add something, ONLY touch the relevant code
+- Don't "improve" or "clean up" code that wasn't mentioned
+- If you need to modify finalised code, ASK FIRST
