@@ -1843,10 +1843,11 @@ export default function AccountPage() {
                                     })}
                                   </div>
                                   {/* Chart area */}
-                                  <div style={{ flex: 1, position: 'relative', overflow: 'visible' }}>
-                                    {/* Horizontal grid lines - thin like axis lines */}
+                                  <div style={{ flex: 1, position: 'relative', borderBottom: '1px solid #2a2a35', overflow: 'visible' }}>
+                                    {/* Horizontal grid lines - skip last one since borderBottom is X-axis */}
                                     <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}>
                                       {yLabels.map((_, i) => {
+                                        if (i === yLabels.length - 1) return null
                                         const topPct = yLabels.length > 1 ? (i / (yLabels.length - 1)) * 100 : 0
                                         return <div key={i} style={{ position: 'absolute', left: 0, right: 0, top: `${topPct}%`, height: '1px', background: '#2a2a35', transform: 'translateY(-50%)' }} />
                                       })}
@@ -2212,9 +2213,10 @@ export default function AccountPage() {
                             </div>
                             {/* Chart area */}
                             <div style={{ flex: 1, position: 'relative', borderLeft: '1px solid #2a2a35', borderBottom: '1px solid #2a2a35' }}>
-                              {/* Horizontal grid lines - percentage positioned and centered */}
+                              {/* Horizontal grid lines - skip last one since borderBottom is X-axis */}
                               <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}>
                                 {yLabels.map((_, i) => {
+                                  if (i === yLabels.length - 1) return null
                                   const topPct = yLabels.length > 1 ? (i / (yLabels.length - 1)) * 100 : 0
                                   return <div key={i} style={{ position: 'absolute', left: 0, right: 0, top: `${topPct}%`, height: '1px', background: '#2a2a35', transform: 'translateY(-50%)' }} />
                                 })}
@@ -2363,9 +2365,10 @@ export default function AccountPage() {
                           </div>
                           {/* Chart area */}
                           <div style={{ flex: 1, position: 'relative', borderLeft: '1px solid #2a2a35', borderBottom: '1px solid #2a2a35' }}>
-                            {/* Horizontal grid lines - percentage positioned and centered */}
+                            {/* Horizontal grid lines - skip last one since borderBottom is X-axis */}
                             <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}>
                               {yLabels.map((_, i) => {
+                                if (i === yLabels.length - 1) return null
                                 const topPct = yLabels.length > 1 ? (i / (yLabels.length - 1)) * 100 : 0
                                 return <div key={i} style={{ position: 'absolute', left: 0, right: 0, top: `${topPct}%`, height: '1px', background: '#2a2a35', transform: 'translateY(-50%)' }} />
                               })}
@@ -3767,10 +3770,11 @@ export default function AccountPage() {
                         })}
                       </div>
                       {/* Chart area */}
-                      <div style={{ flex: 1, position: 'relative', overflow: 'visible' }}>
-                          {/* Horizontal grid lines - percentage positioned and centered */}
+                      <div style={{ flex: 1, position: 'relative', borderBottom: '1px solid #2a2a35', overflow: 'visible' }}>
+                          {/* Horizontal grid lines - skip last one since borderBottom is X-axis */}
                           <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}>
                             {yLabels.map((_, i) => {
+                              if (i === yLabels.length - 1) return null
                               const topPct = yLabels.length > 1 ? (i / (yLabels.length - 1)) * 100 : 0
                               return <div key={i} style={{ position: 'absolute', left: 0, right: 0, top: `${topPct}%`, height: '1px', background: '#2a2a35', transform: 'translateY(-50%)' }} />
                             })}
@@ -4067,10 +4071,11 @@ export default function AccountPage() {
                         })}
                       </div>
                       {/* Chart area */}
-                      <div style={{ flex: 1, position: 'relative', borderLeft: '1px solid #1a1a22', borderBottom: '1px solid #1a1a22' }}>
-                        {/* Horizontal grid lines */}
+                      <div style={{ flex: 1, position: 'relative', borderLeft: '1px solid #2a2a35', borderBottom: '1px solid #2a2a35' }}>
+                        {/* Horizontal grid lines - skip last one since borderBottom is X-axis */}
                         <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}>
                           {yLabelsBar.map((_, i) => {
+                            if (i === yLabelsBar.length - 1) return null
                             const topPct = yLabelsBar.length > 1 ? (i / (yLabelsBar.length - 1)) * 100 : 0
                             return <div key={i} style={{ position: 'absolute', left: 0, right: 0, top: `${topPct}%`, height: '1px', background: '#2a2a35', transform: 'translateY(-50%)' }} />
                           })}
