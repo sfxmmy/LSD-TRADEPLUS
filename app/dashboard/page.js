@@ -1197,44 +1197,29 @@ export default function DashboardPage() {
                     {recentTrades.length === 0 ? (
                       <div style={{ padding: '20px', textAlign: 'center', color: '#999', fontSize: '14px', border: '1px solid #1a1a22', borderRadius: '8px' }}>No trades yet</div>
                     ) : (() => {
-                        // Get specific columns for dashboard - limited set, not all inputs
+                        // Get ALL enabled columns from journal settings
                         const getEnabledColumns = () => {
-                          // Default columns to show on dashboard
-                          const defaultDashboardCols = ['symbol', 'outcome', 'pnl', 'direction']
                           let columns = []
                           try {
                             const customInputs = account?.custom_inputs ? JSON.parse(account.custom_inputs) : null
                             if (customInputs && Array.isArray(customInputs)) {
-                              // Get only the specific dashboard columns from enabled inputs
-                              for (const colId of defaultDashboardCols) {
-                                const inp = customInputs.find(i => i.id === colId && i.enabled !== false && !i.hidden)
-                                if (inp) {
-                                  columns.push({
-                                    id: inp.id,
-                                    label: inp.label || inp.id,
-                                    type: inp.type,
-                                    options: inp.options
-                                  })
-                                } else if (colId === 'symbol') {
-                                  // Symbol is always shown
-                                  columns.push({ id: 'symbol', label: 'Symbol', type: 'text' })
-                                } else if (colId === 'outcome') {
-                                  // Outcome is always shown
-                                  columns.push({ id: 'outcome', label: 'W/L', type: 'select' })
-                                } else if (colId === 'pnl') {
-                                  // PnL is always shown
-                                  columns.push({ id: 'pnl', label: 'PnL', type: 'number' })
-                                }
-                                // If direction is disabled/hidden, skip it - no fallback needed
-                              }
+                              // Get all enabled, non-hidden inputs (excluding file/textarea which don't render in dashboard)
+                              columns = customInputs
+                                .filter(i => i.enabled !== false && !i.hidden && i.type !== 'file' && i.type !== 'textarea')
+                                .map(inp => ({
+                                  id: inp.id,
+                                  label: inp.label || inp.id,
+                                  type: inp.type,
+                                  options: inp.options
+                                }))
                             }
                           } catch {}
-                          // If no columns found, use minimal defaults
+                          // If no columns found, use defaults
                           if (columns.length === 0) {
                             columns = [
                               { id: 'symbol', label: 'Symbol', type: 'text' },
-                              { id: 'outcome', label: 'W/L', type: 'select' },
-                              { id: 'pnl', label: 'PnL', type: 'number' },
+                              { id: 'outcome', label: 'Outcome', type: 'select' },
+                              { id: 'pnl', label: 'PnL ($)', type: 'number' },
                               { id: 'direction', label: 'Direction', type: 'select' }
                             ]
                           }
@@ -1283,11 +1268,11 @@ export default function DashboardPage() {
 
                         return (
                           <div style={{ maxHeight: '200px', overflowY: 'auto', overflowX: 'auto', border: '1px solid #1a1a22', borderRadius: '8px' }}>
-                            <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: isMobile ? '600px' : 'auto' }}>
-                              <thead style={{ position: 'sticky', top: 0, background: '#0d0d12', zIndex: 1, borderBottom: '1px solid #1a1a22' }}>
+                            <table style={{ width: '100%', borderCollapse: 'separate', borderSpacing: 0, minWidth: isMobile ? '600px' : 'auto' }}>
+                              <thead style={{ position: 'sticky', top: 0, background: '#0d0d12', zIndex: 1 }}>
                                 <tr>
                                   {visibleCols.map((col, i) => (
-                                    <th key={col.id} style={{ padding: '10px', textAlign: 'center', color: '#999', fontSize: '11px', fontWeight: 600, textTransform: 'uppercase', minWidth: '70px', background: '#0d0d12' }}>{col.label}</th>
+                                    <th key={col.id} style={{ padding: '10px', textAlign: 'center', color: '#999', fontSize: '11px', fontWeight: 600, textTransform: 'uppercase', minWidth: '70px', background: '#0d0d12', borderBottom: '1px solid #2a2a35' }}>{col.label}</th>
                                   ))}
                                 </tr>
                               </thead>
