@@ -1096,8 +1096,8 @@ export default function AccountPage() {
 
       {/* FIXED SIDEBAR - desktop only, starts under header */}
       {!isMobile && (
-        <div style={{ position: 'fixed', top: '81px', left: 0, bottom: 0, width: '180px', padding: '12px', background: '#0a0a0f', zIndex: 45, display: 'flex', flexDirection: 'column', borderRight: '1px solid #1a1a22' }}>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginTop: '16px' }}>
+        <div style={{ position: 'fixed', top: '69px', left: 0, bottom: 0, width: '180px', padding: '12px', background: '#0a0a0f', zIndex: 45, display: 'flex', flexDirection: 'column', borderRight: '1px solid #1a1a22' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
           {['trades', 'statistics', 'notes'].map((tab) => (
             <button
               key={tab}
@@ -1831,19 +1831,19 @@ export default function AccountPage() {
                                 {/* Chart row - Y-axis and chart area aligned */}
                                 <div style={{ flex: 1, display: 'flex' }}>
                                   {/* Y-axis labels - same height as chart */}
-                                  <div style={{ width: '28px', flexShrink: 0, position: 'relative' }}>
+                                  <div style={{ width: '28px', flexShrink: 0, position: 'relative', borderRight: '1px solid #2a2a35' }}>
                                     {yLabels.map((v, i) => {
                                       const topPct = yLabels.length > 1 ? (i / (yLabels.length - 1)) * 100 : 0
                                       return (
                                         <div key={i} style={{ position: 'absolute', right: 0, top: `${topPct}%`, transform: 'translateY(-50%)', display: 'flex', alignItems: 'center' }}>
                                           <span style={{ fontSize: '8px', color: '#999', lineHeight: 1, textAlign: 'right' }}>{equityCurveGroupBy === 'total' ? `$${(v/1000).toFixed(v >= 1000 ? 0 : 1)}k` : `$${v}`}</span>
-                                          <div style={{ width: '3px', height: '1px', background: '#2a2a35', marginLeft: '2px' }} />
+                                          <div style={{ width: '4px', height: '1px', background: '#2a2a35', marginLeft: '2px' }} />
                                         </div>
                                       )
                                     })}
                                   </div>
                                   {/* Chart area */}
-                                  <div style={{ flex: 1, position: 'relative', borderLeft: '1px solid #2a2a35', borderBottom: hasNegative ? 'none' : '1px solid #2a2a35', overflow: 'visible' }}>
+                                  <div style={{ flex: 1, position: 'relative', borderBottom: hasNegative ? 'none' : '1px solid #2a2a35', overflow: 'visible' }}>
                                     {/* Horizontal grid lines - thin like axis lines */}
                                     <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}>
                                       {yLabels.map((_, i) => {
@@ -1857,12 +1857,12 @@ export default function AccountPage() {
                                     )}
                                     {/* Starting balance dotted line - extends to label */}
                                     {startLineY !== null && (
-                                      <div style={{ position: 'absolute', left: 0, right: '34px', top: `${startLineY}%`, borderTop: '1px dashed #666', zIndex: 1 }} />
+                                      <div style={{ position: 'absolute', left: 0, right: '50px', top: `${startLineY}%`, borderTop: '1px dashed #666', zIndex: 1 }} />
                                     )}
-                                    {/* Start label at end of line */}
+                                    {/* Start label at end of line - shows starting balance value */}
                                     {startLineY !== null && (
-                                      <span style={{ position: 'absolute', right: '4px', top: `${startLineY}%`, transform: 'translateY(-50%)', fontSize: '9px', color: '#888', background: '#0d0d12', padding: '0 4px' }}>
-                                        Start
+                                      <span style={{ position: 'absolute', right: '4px', top: `${startLineY}%`, transform: 'translateY(-50%)', fontSize: '9px', color: '#22c55e', background: '#0d0d12', padding: '0 4px', fontWeight: 600 }}>
+                                        Start: ${(displayStartingBalance/1000).toFixed(displayStartingBalance >= 1000 ? 0 : 1)}k
                                       </span>
                                     )}
                                     <svg style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', overflow: 'visible' }} viewBox={`0 0 ${svgW} ${svgH}`} preserveAspectRatio="none"
@@ -3004,21 +3004,21 @@ export default function AccountPage() {
             </div>
 
             {/* Direction + Outcome Row */}
-            <div style={{ display: 'flex', gap: '12px', marginBottom: '12px' }}>
-              <div style={{ flex: 1 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '12px' }}>
+              <div>
                 <label style={{ display: 'block', fontSize: '10px', color: '#666', marginBottom: '5px', textTransform: 'uppercase' }}>Direction</label>
-                <div style={{ display: 'flex', gap: '8px' }}>
-                  <button type="button" onClick={() => setTradeForm({...tradeForm, direction: 'long'})} style={{ flex: 1, padding: '9px', background: (tradeForm.direction || 'long') === 'long' ? 'rgba(34,197,94,0.2)' : '#0a0a0f', border: `2px solid ${(tradeForm.direction || 'long') === 'long' ? '#22c55e' : '#1a1a22'}`, borderRadius: '8px', color: (tradeForm.direction || 'long') === 'long' ? '#22c55e' : '#666', fontSize: '12px', fontWeight: 600, cursor: 'pointer' }}>LONG</button>
-                  <button type="button" onClick={() => setTradeForm({...tradeForm, direction: 'short'})} style={{ flex: 1, padding: '9px', background: tradeForm.direction === 'short' ? 'rgba(239,68,68,0.2)' : '#0a0a0f', border: `2px solid ${tradeForm.direction === 'short' ? '#ef4444' : '#1a1a22'}`, borderRadius: '8px', color: tradeForm.direction === 'short' ? '#ef4444' : '#666', fontSize: '12px', fontWeight: 600, cursor: 'pointer' }}>SHORT</button>
-                </div>
+                <select value={tradeForm.direction || 'long'} onChange={e => setTradeForm({...tradeForm, direction: e.target.value})} style={{ width: '100%', padding: '10px 12px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px', color: (tradeForm.direction || 'long') === 'long' ? '#22c55e' : '#ef4444', fontSize: '13px', boxSizing: 'border-box' }}>
+                  <option value="long">Long</option>
+                  <option value="short">Short</option>
+                </select>
               </div>
-              <div style={{ flex: 1 }}>
+              <div>
                 <label style={{ display: 'block', fontSize: '10px', color: '#666', marginBottom: '5px', textTransform: 'uppercase' }}>Outcome</label>
-                <div style={{ display: 'flex', gap: '8px' }}>
-                  <button type="button" onClick={() => setTradeForm({...tradeForm, outcome: 'win'})} style={{ flex: 1, padding: '9px', background: (tradeForm.outcome || 'win') === 'win' ? 'rgba(34,197,94,0.2)' : '#0a0a0f', border: `2px solid ${(tradeForm.outcome || 'win') === 'win' ? '#22c55e' : '#1a1a22'}`, borderRadius: '8px', color: (tradeForm.outcome || 'win') === 'win' ? '#22c55e' : '#666', fontSize: '12px', fontWeight: 600, cursor: 'pointer' }}>W</button>
-                  <button type="button" onClick={() => setTradeForm({...tradeForm, outcome: 'loss'})} style={{ flex: 1, padding: '9px', background: tradeForm.outcome === 'loss' ? 'rgba(239,68,68,0.2)' : '#0a0a0f', border: `2px solid ${tradeForm.outcome === 'loss' ? '#ef4444' : '#1a1a22'}`, borderRadius: '8px', color: tradeForm.outcome === 'loss' ? '#ef4444' : '#666', fontSize: '12px', fontWeight: 600, cursor: 'pointer' }}>L</button>
-                  <button type="button" onClick={() => setTradeForm({...tradeForm, outcome: 'be'})} style={{ flex: 1, padding: '9px', background: tradeForm.outcome === 'be' ? 'rgba(245,158,11,0.2)' : '#0a0a0f', border: `2px solid ${tradeForm.outcome === 'be' ? '#f59e0b' : '#1a1a22'}`, borderRadius: '8px', color: tradeForm.outcome === 'be' ? '#f59e0b' : '#666', fontSize: '12px', fontWeight: 600, cursor: 'pointer' }}>BE</button>
-                </div>
+                <select value={tradeForm.outcome || 'win'} onChange={e => setTradeForm({...tradeForm, outcome: e.target.value})} style={{ width: '100%', padding: '10px 12px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px', color: (tradeForm.outcome || 'win') === 'win' ? '#22c55e' : tradeForm.outcome === 'loss' ? '#ef4444' : '#f59e0b', fontSize: '13px', boxSizing: 'border-box' }}>
+                  <option value="win">Win</option>
+                  <option value="loss">Loss</option>
+                  <option value="be">Breakeven</option>
+                </select>
               </div>
             </div>
 
@@ -3148,7 +3148,7 @@ export default function AccountPage() {
             {/* Scrollable Content */}
             <div style={{ flex: 1, overflowY: 'auto', padding: '16px 24px' }}>
               {/* Column headers */}
-              <div style={{ display: 'grid', gridTemplateColumns: '28px 120px 100px 80px 28px', gap: '10px', padding: '8px 12px', marginBottom: '8px', alignItems: 'center' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '28px 1fr 100px 80px 28px', gap: '10px', padding: '8px 12px', marginBottom: '8px', alignItems: 'center' }}>
                 <span style={{ fontSize: '10px', color: '#666', textTransform: 'uppercase', fontWeight: 600 }}>On</span>
                 <span style={{ fontSize: '10px', color: '#666', textTransform: 'uppercase', fontWeight: 600 }}>Name</span>
                 <span style={{ fontSize: '10px', color: '#666', textTransform: 'uppercase', fontWeight: 600 }}>Type</span>
@@ -3159,7 +3159,7 @@ export default function AccountPage() {
               {/* Field rows */}
               <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', marginBottom: '16px' }}>
                 {inputs.map((input, i) => !input.hidden && (
-                  <div key={input.id} style={{ display: 'grid', gridTemplateColumns: '28px 120px 100px 80px 28px', gap: '10px', padding: '10px 12px', background: input.enabled ? '#141418' : '#0d0d12', borderRadius: '8px', border: '1px solid #1a1a22', alignItems: 'center', opacity: input.enabled ? 1 : 0.6 }}>
+                  <div key={input.id} style={{ display: 'grid', gridTemplateColumns: '28px 1fr 100px 80px 28px', gap: '10px', padding: '10px 12px', background: input.enabled ? '#141418' : '#0d0d12', borderRadius: '8px', border: '1px solid #1a1a22', alignItems: 'center', opacity: input.enabled ? 1 : 0.6 }}>
                     <input type="checkbox" checked={input.enabled} onChange={e => updateInput(i, 'enabled', e.target.checked)} style={{ width: '16px', height: '16px', accentColor: '#22c55e', cursor: 'pointer' }} />
                     <input type="text" value={input.label} onChange={e => updateInput(i, 'label', e.target.value)} style={{ padding: '6px 8px', background: '#0a0a0e', border: '1px solid #2a2a35', borderRadius: '6px', color: '#fff', fontSize: '12px', width: '100%' }} placeholder="Field name" />
                     <select value={input.type} onChange={e => updateInput(i, 'type', e.target.value)} style={{ padding: '6px 8px', background: '#0a0a0e', border: '1px solid #2a2a35', borderRadius: '6px', color: '#fff', fontSize: '11px', cursor: 'pointer' }}>
@@ -3755,7 +3755,7 @@ export default function AccountPage() {
                     {/* Chart row - Y-axis and chart area aligned */}
                     <div style={{ flex: 1, display: 'flex' }}>
                       {/* Y-axis labels - same height as chart */}
-                      <div style={{ width: '44px', flexShrink: 0, position: 'relative' }}>
+                      <div style={{ width: '44px', flexShrink: 0, position: 'relative', borderRight: '1px solid #2a2a35' }}>
                         {yLabels.map((v, i) => {
                           const topPct = yLabels.length > 1 ? (i / (yLabels.length - 1)) * 100 : 0
                           return (
@@ -3767,7 +3767,7 @@ export default function AccountPage() {
                         })}
                       </div>
                       {/* Chart area */}
-                      <div style={{ flex: 1, position: 'relative', borderLeft: '1px solid #2a2a35', borderBottom: hasNegative ? 'none' : '1px solid #2a2a35', overflow: 'visible' }}>
+                      <div style={{ flex: 1, position: 'relative', borderBottom: hasNegative ? 'none' : '1px solid #2a2a35', overflow: 'visible' }}>
                           {/* Horizontal grid lines - percentage positioned and centered */}
                           <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}>
                             {yLabels.map((_, i) => {
@@ -3779,8 +3779,8 @@ export default function AccountPage() {
                           {/* Start line - dashed horizontal line at starting balance */}
                           {equityCurveGroupBy === 'total' && startYEnl >= 0 && startYEnl <= svgH && (
                             <>
-                              <div style={{ position: 'absolute', left: 0, right: '34px', top: `${(startYEnl / svgH) * 100}%`, borderTop: '1px dashed #666', transform: 'translateY(-50%)', zIndex: 1 }} />
-                              <span style={{ position: 'absolute', right: '4px', top: `${(startYEnl / svgH) * 100}%`, transform: 'translateY(-50%)', fontSize: '9px', color: '#888', background: '#0d0d12', padding: '0 4px' }}>Start</span>
+                              <div style={{ position: 'absolute', left: 0, right: '55px', top: `${(startYEnl / svgH) * 100}%`, borderTop: '1px dashed #666', transform: 'translateY(-50%)', zIndex: 1 }} />
+                              <span style={{ position: 'absolute', right: '4px', top: `${(startYEnl / svgH) * 100}%`, transform: 'translateY(-50%)', fontSize: '10px', color: '#22c55e', background: '#0d0d12', padding: '0 4px', fontWeight: 600 }}>Start: ${(startingBalance/1000).toFixed(startingBalance >= 1000 ? 0 : 1)}k</span>
                             </>
                           )}
                           <svg style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', overflow: 'visible' }} viewBox={`0 0 ${svgW} ${svgH}`} preserveAspectRatio="none"

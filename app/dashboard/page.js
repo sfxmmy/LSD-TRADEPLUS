@@ -585,8 +585,8 @@ export default function DashboardPage() {
             </svg>
             {/* Start label */}
             {startLineY !== null && (
-              <span style={{ position: 'absolute', right: '4px', top: `${startLineY}%`, transform: 'translateY(-50%)', fontSize: '9px', color: '#888', background: '#0d0d12', padding: '0 4px' }}>
-                Start
+              <span style={{ position: 'absolute', right: '4px', top: `${startLineY}%`, transform: 'translateY(-50%)', fontSize: '9px', color: '#22c55e', background: '#0d0d12', padding: '0 4px', fontWeight: 600 }}>
+                Start: ${start >= 1000 ? `${(start/1000).toFixed(0)}k` : start}
               </span>
             )}
 
