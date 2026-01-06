@@ -627,8 +627,13 @@ export default function AccountPage() {
     </div>
   )
 
+  // Get base trades - either current account or all accounts when viewing cumulative
+  const baseTradesToFilter = showCumulativeStats && allAccounts.length > 1
+    ? Object.values(allAccountsTrades).flat().sort((a, b) => new Date(b.date) - new Date(a.date))
+    : trades
+
   // Apply filters to trades for display
-  const filteredTrades = trades.filter(t => {
+  const filteredTrades = baseTradesToFilter.filter(t => {
     if (filters.dateFrom && t.date < filters.dateFrom) return false
     if (filters.dateTo && t.date > filters.dateTo) return false
     if (filters.outcome) {
@@ -949,7 +954,7 @@ export default function AccountPage() {
 
       {/* FIXED HEADER - same structure as dashboard */}
       <header style={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 50, padding: '16px 40px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#0a0a0f', borderBottom: '1px solid #1a1a22' }}>
-        <a href="/" style={{ fontSize: isMobile ? '24px' : '32px', fontWeight: 700, textDecoration: 'none', letterSpacing: '-0.5px' }}><span style={{ color: '#22c55e' }}>LSD</span><span style={{ color: '#fff' }}>TRADE</span><span style={{ color: '#22c55e' }}>+</span></a>
+        <a href="/" style={{ fontSize: isMobile ? '28px' : '42px', fontWeight: 700, textDecoration: 'none', letterSpacing: '-0.5px' }}><span style={{ color: '#22c55e' }}>LSD</span><span style={{ color: '#fff' }}>TRADE</span><span style={{ color: '#22c55e' }}>+</span></a>
         {!isMobile && (
           <>
             <div style={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)' }}>
@@ -1307,7 +1312,7 @@ export default function AccountPage() {
                                     return (
                                       <div key={star} style={{ position: 'relative', width: '14px', height: '14px' }}>
                                         <span style={{ position: 'absolute', color: '#2a2a35', fontSize: '14px', lineHeight: 1 }}>★</span>
-                                        {isHalfStar && <span style={{ position: 'absolute', color: '#22c55e', fontSize: '14px', lineHeight: 1, width: '50%', overflow: 'hidden' }}>★</span>}
+                                        {isHalfStar && <span style={{ position: 'absolute', color: '#22c55e', fontSize: '14px', lineHeight: 1, width: '48%', overflow: 'hidden' }}>★</span>}
                                         {isFullStar && <span style={{ position: 'absolute', color: '#22c55e', fontSize: '14px', lineHeight: 1 }}>★</span>}
                                       </div>
                                     )
@@ -2906,7 +2911,7 @@ export default function AccountPage() {
                           onMouseMove={(e) => { const rect = e.currentTarget.getBoundingClientRect(); const x = e.clientX - rect.left; setHoverRating(x < rect.width / 2 ? star - 0.5 : star) }}
                           onClick={(e) => { const rect = e.currentTarget.getBoundingClientRect(); const x = e.clientX - rect.left; const newRating = x < rect.width / 2 ? star - 0.5 : star; setTradeForm({...tradeForm, rating: parseFloat(tradeForm.rating) === newRating ? '' : String(newRating)}) }}>
                           <span style={{ position: 'absolute', color: '#2a2a35', fontSize: '24px', lineHeight: 1 }}>★</span>
-                          {isHalfStar && <span style={{ position: 'absolute', color: '#22c55e', fontSize: '24px', lineHeight: 1, width: '50%', overflow: 'hidden' }}>★</span>}
+                          {isHalfStar && <span style={{ position: 'absolute', color: '#22c55e', fontSize: '24px', lineHeight: 1, width: '48%', overflow: 'hidden' }}>★</span>}
                           {isFullStar && <span style={{ position: 'absolute', color: '#22c55e', fontSize: '24px', lineHeight: 1 }}>★</span>}
                         </div>
                       )
@@ -2947,7 +2952,7 @@ export default function AccountPage() {
                                 onMouseMove={(e) => { const rect = e.currentTarget.getBoundingClientRect(); const x = e.clientX - rect.left; setHoverRating(x < rect.width / 2 ? star - 0.5 : star) }}
                                 onClick={(e) => { const rect = e.currentTarget.getBoundingClientRect(); const x = e.clientX - rect.left; const newRating = x < rect.width / 2 ? star - 0.5 : star; setTradeForm({...tradeForm, [input.id]: parseFloat(tradeForm[input.id]) === newRating ? '' : String(newRating)}) }}>
                                 <span style={{ position: 'absolute', color: '#2a2a35', fontSize: '28px', lineHeight: 1 }}>★</span>
-                                {isHalfStar && <span style={{ position: 'absolute', color: '#22c55e', fontSize: '28px', lineHeight: 1, width: '50%', overflow: 'hidden' }}>★</span>}
+                                {isHalfStar && <span style={{ position: 'absolute', color: '#22c55e', fontSize: '28px', lineHeight: 1, width: '48%', overflow: 'hidden' }}>★</span>}
                                 {isFullStar && <span style={{ position: 'absolute', color: '#22c55e', fontSize: '28px', lineHeight: 1 }}>★</span>}
                               </div>
                             )
@@ -3001,15 +3006,15 @@ export default function AccountPage() {
             {/* Scrollable Content */}
             <div style={{ flex: 1, overflowY: 'auto', padding: '20px 28px' }}>
 
-            {/* All Fields Section - unified */}
+            {/* All Fields Section - unified single column layout */}
             <div style={{ marginBottom: '20px', padding: '16px', background: '#0a0a0e', borderRadius: '10px', border: '1px solid #1a1a22' }}>
               <div style={{ fontSize: '12px', color: '#888', marginBottom: '14px', fontWeight: 600 }}>Fields</div>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                 {inputs.map((input, i) => !input.hidden && (
-                  <div key={input.id} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 12px', background: '#141418', borderRadius: '6px', minWidth: 0 }}>
-                    <input type="checkbox" checked={input.enabled} onChange={e => updateInput(i, 'enabled', e.target.checked)} style={{ width: '15px', height: '15px', accentColor: '#22c55e', flexShrink: 0 }} />
-                    <input type="text" value={input.label} onChange={e => updateInput(i, 'label', e.target.value)} style={{ flex: 1, minWidth: '80px', padding: '6px 8px', background: '#0a0a0e', border: '1px solid #2a2a35', borderRadius: '4px', color: input.enabled ? '#fff' : '#555', fontSize: '12px' }} placeholder="Name" />
-                    <select value={input.type} onChange={e => updateInput(i, 'type', e.target.value)} style={{ padding: '6px 8px', background: '#0a0a0e', border: '1px solid #2a2a35', borderRadius: '4px', color: '#fff', fontSize: '11px', flexShrink: 0 }}>
+                  <div key={input.id} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '12px 14px', background: '#141418', borderRadius: '8px', borderLeft: input.enabled ? '3px solid #22c55e' : '3px solid #333' }}>
+                    <input type="checkbox" checked={input.enabled} onChange={e => updateInput(i, 'enabled', e.target.checked)} style={{ width: '16px', height: '16px', accentColor: '#22c55e', flexShrink: 0 }} />
+                    <input type="text" value={input.label} onChange={e => updateInput(i, 'label', e.target.value)} style={{ width: '140px', padding: '8px 10px', background: '#0a0a0e', border: '1px solid #2a2a35', borderRadius: '6px', color: input.enabled ? '#fff' : '#555', fontSize: '13px', fontWeight: 500 }} placeholder="Field Name" />
+                    <select value={input.type} onChange={e => updateInput(i, 'type', e.target.value)} style={{ width: '100px', padding: '8px 10px', background: '#0a0a0e', border: '1px solid #2a2a35', borderRadius: '6px', color: '#fff', fontSize: '12px' }}>
                       <option value="text">Text</option>
                       <option value="number">Number</option>
                       <option value="select">Dropdown</option>
@@ -3019,18 +3024,40 @@ export default function AccountPage() {
                       <option value="time">Time</option>
                       <option value="file">Image</option>
                     </select>
-                    {input.type === 'select' && (
-                      <button onClick={() => openOptionsEditor(i)} style={{ padding: '6px 8px', background: '#0a0a0e', border: '1px solid #2a2a35', borderRadius: '4px', color: '#fff', fontSize: '11px', cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0 }}>
-                        Options ▾
-                      </button>
-                    )}
-                    {!input.fixed && (
-                      <button onClick={() => setDeleteInputConfirm({ index: i, label: input.label || input.id, id: input.id })} style={{ padding: '4px 8px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '4px', color: '#555', cursor: 'pointer', fontSize: '12px', flexShrink: 0 }}>×</button>
+                    {/* Options preview/button - always same width for consistent layout */}
+                    <div style={{ flex: 1, minWidth: '200px' }}>
+                      {input.type === 'select' ? (
+                        <button onClick={() => openOptionsEditor(i)} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 12px', background: '#0a0a0e', border: '1px solid #2a2a35', borderRadius: '6px', color: '#fff', fontSize: '12px', cursor: 'pointer', width: '100%' }}>
+                          <span style={{ color: '#888' }}>Options:</span>
+                          {input.options?.slice(0, 3).map((opt, idx) => (
+                            <span key={idx} style={{ padding: '2px 8px', borderRadius: '4px', fontSize: '11px', fontWeight: 600, background: (typeof opt === 'object' ? opt.bgColor : null) || 'transparent', color: (typeof opt === 'object' ? opt.textColor : null) || '#fff', border: (typeof opt === 'object' && opt.borderColor) ? `1px solid ${opt.borderColor}` : '1px solid #333' }}>
+                              {typeof opt === 'object' ? opt.value : opt}
+                            </span>
+                          ))}
+                          {input.options?.length > 3 && <span style={{ color: '#666', fontSize: '11px' }}>+{input.options.length - 3}</span>}
+                          <span style={{ marginLeft: 'auto', color: '#666' }}>Edit ▾</span>
+                        </button>
+                      ) : (
+                        <div style={{ padding: '8px 12px', background: 'transparent', borderRadius: '6px', color: '#555', fontSize: '12px' }}>
+                          {input.type === 'text' && 'Free text input'}
+                          {input.type === 'number' && 'Numeric value'}
+                          {input.type === 'textarea' && 'Long text notes'}
+                          {input.type === 'rating' && '★★★★★ (1-5)'}
+                          {input.type === 'date' && 'Date picker'}
+                          {input.type === 'time' && 'Time picker'}
+                          {input.type === 'file' && 'Image upload'}
+                        </div>
+                      )}
+                    </div>
+                    {!input.fixed ? (
+                      <button onClick={() => setDeleteInputConfirm({ index: i, label: input.label || input.id, id: input.id })} style={{ padding: '6px 10px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '6px', color: '#666', cursor: 'pointer', fontSize: '14px', flexShrink: 0 }}>×</button>
+                    ) : (
+                      <div style={{ width: '36px' }} />
                     )}
                   </div>
                 ))}
               </div>
-              <button onClick={addNewInput} style={{ width: '100%', padding: '10px', marginTop: '12px', background: 'transparent', border: '1px dashed #2a2a35', borderRadius: '6px', color: '#555', fontSize: '12px', cursor: 'pointer' }}>+ Add Field</button>
+              <button onClick={addNewInput} style={{ width: '100%', padding: '12px', marginTop: '12px', background: 'transparent', border: '1px dashed #2a2a35', borderRadius: '8px', color: '#666', fontSize: '13px', cursor: 'pointer' }}>+ Add New Field</button>
             </div>
 
             {/* Hidden Fields */}
