@@ -673,7 +673,33 @@ export default function AccountPage() {
     return { cs, mw, ml }
   }
   const streaks = getStreaks()
-  const enabledInputs = inputs.filter(i => i.enabled && !i.hidden)
+
+  // Merge inputs from all accounts when viewing all journals
+  const mergedInputsForAllJournals = (() => {
+    if (!showCumulativeStats || allAccounts.length <= 1) return inputs
+
+    // Start with current account inputs
+    const merged = [...inputs]
+    const existingIds = new Set(inputs.map(i => i.id))
+
+    // Add custom inputs from other accounts
+    allAccounts.forEach(acc => {
+      if (acc.id === accountId || !acc.custom_inputs) return
+      try {
+        const accInputs = JSON.parse(acc.custom_inputs)
+        accInputs.forEach(inp => {
+          // Only add if it's a custom input (not default) and doesn't already exist
+          if (!existingIds.has(inp.id) && !defaultInputs.find(d => d.id === inp.id)) {
+            merged.push({ ...inp, enabled: true, hidden: false })
+            existingIds.add(inp.id)
+          }
+        })
+      } catch {}
+    })
+    return merged
+  })()
+
+  const enabledInputs = mergedInputsForAllJournals.filter(i => i.enabled && !i.hidden)
   const fixedInputs = enabledInputs.filter(i => ['symbol', 'outcome', 'pnl', 'riskPercent', 'rr', 'date'].includes(i.id))
   const customInputs = enabledInputs.filter(i => !['symbol', 'outcome', 'pnl', 'riskPercent', 'rr', 'date'].includes(i.id))
 
@@ -2487,6 +2513,13 @@ export default function AccountPage() {
               const accountAgeDays = firstTradeDate ? Math.floor((new Date() - firstTradeDate) / (1000 * 60 * 60 * 24)) : 0
               const accountAge = accountAgeDays > 30 ? Math.floor(accountAgeDays / 30) + 'mo' : accountAgeDays + 'd'
               const tradesWithNotes = displayTrades.filter(t => { const e = getExtraData(t); const noteContent = t.notes || e.notes || ''; return noteContent.trim().length > 0 }).length
+              const tradesWithImages = displayTrades.filter(t => { const extra = getExtraData(t); return extra.images && extra.images.length > 0 }).length
+
+              // Notes counts
+              const dailyNotesCount = Object.keys(notes.daily || {}).length
+              const weeklyNotesCount = Object.keys(notes.weekly || {}).length
+              const customNotesCount = (notes.custom || []).length
+
               const StatBox = ({ label, value, color }) => <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '5px 0' }}><span style={{ fontSize: '12px', color: '#999', fontWeight: 500 }}>{label}</span><span style={{ fontSize: '14px', fontWeight: 700, color }}>{value}</span></div>
               return (
             <div style={{ display: 'flex', gap: '12px', marginBottom: '12px', alignItems: 'flex-start' }}>
@@ -2537,7 +2570,7 @@ export default function AccountPage() {
                 <StatBox label="Most Used R-Multiple" value={mostUsedRR} color="#fff" />
                 <StatBox label="Best Performing R" value={mostProfitableRR} color="#22c55e" />
                 <StatBox label="Win/Loss Ratio" value={(displayAvgWin / Math.max(displayAvgLoss, 1)).toFixed(2) + 'x'} color={displayAvgWin >= displayAvgLoss ? '#22c55e' : '#ef4444'} />
-                <StatBox label="Max Drawdown" value={currentDrawdown.pct + '%'} color={parseFloat(currentDrawdown.pct) > 5 ? '#ef4444' : '#fff'} />
+                <StatBox label="Expected Value" value={'$' + displayExpectancy} color={parseFloat(displayExpectancy) >= 0 ? '#22c55e' : '#ef4444'} />
                 <StatBox label="Max Drawdown $" value={'$' + Math.round(currentDrawdown.amount).toLocaleString()} color={parseFloat(currentDrawdown.amount) > 0 ? '#ef4444' : '#22c55e'} />
               </div>
               {/* Win/Loss */}
@@ -2550,7 +2583,7 @@ export default function AccountPage() {
                 <StatBox label="Largest Loss" value={'-$' + Math.abs(Math.round(localBiggestLoss)).toLocaleString()} color="#ef4444" />
                 <StatBox label="Gross Profit" value={'+$' + Math.round(grossProfit).toLocaleString()} color="#22c55e" />
                 <StatBox label="Gross Loss" value={'-$' + Math.round(grossLoss).toLocaleString()} color="#ef4444" />
-                <StatBox label="Net Profit/Loss" value={(displayTotalPnl >= 0 ? '+' : '-') + '$' + Math.abs(Math.round(displayTotalPnl)).toLocaleString()} color={displayTotalPnl >= 0 ? '#22c55e' : '#ef4444'} />
+                <StatBox label="Largest Win Streak $" value={'+$' + Math.round(displayStreaks.mw > 0 ? displayTrades.filter(t => t.outcome === 'win').slice(0, displayStreaks.mw).reduce((s, t) => s + (parseFloat(t.pnl) || 0), 0) : 0).toLocaleString()} color="#22c55e" />
               </div>
               {/* Direction */}
               <div style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '10px 12px' }}>
@@ -2585,20 +2618,20 @@ export default function AccountPage() {
                 <StatBox label="Worst Losing Day" value={worstDay ? `$${Math.round(worstDay.pnl).toLocaleString()}` : '-'} color="#ef4444" />
                 <StatBox label="Most Traded Pair" value={mostTradedPair} color="#fff" />
                 <StatBox label="Average Trend" value={avgTrend} color="#fff" />
-                <StatBox label="Total Unique Pairs" value={uniqueSymbols} color="#fff" />
+                <StatBox label="Best Session" value={(() => { const s = {}; displayTrades.forEach(t => { if (t.session) { if (!s[t.session]) s[t.session] = 0; s[t.session] += parseFloat(t.pnl) || 0 } }); const best = Object.entries(s).sort((a, b) => b[1] - a[1])[0]; return best ? best[0] : '-' })()} color="#fff" />
                 <StatBox label="Account Age" value={accountAge} color="#fff" />
               </div>
-              {/* Notes */}
+              {/* Notes & Images */}
               <div style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '10px 12px' }}>
                 <div style={{ fontSize: '11px', color: '#aaa', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '6px', borderBottom: '1px solid #1a1a22', paddingBottom: '5px', fontWeight: 600 }}>Notes & Images</div>
                 <StatBox label="Trades With Notes" value={tradesWithNotes} color="#fff" />
                 <StatBox label="Notes Completion Rate" value={displayTrades.length > 0 ? Math.round((tradesWithNotes / displayTrades.length) * 100) + '%' : '0%'} color={tradesWithNotes / Math.max(displayTrades.length, 1) >= 0.5 ? '#22c55e' : '#fff'} />
                 <StatBox label="Trades With Images" value={tradesWithImages} color="#fff" />
                 <StatBox label="Image Completion Rate" value={displayTrades.length > 0 ? Math.round((tradesWithImages / displayTrades.length) * 100) + '%' : '0%'} color={tradesWithImages / Math.max(displayTrades.length, 1) >= 0.3 ? '#22c55e' : '#fff'} />
-                <StatBox label="Total Winning Days" value={greenDays} color="#22c55e" />
-                <StatBox label="Total Losing Days" value={redDays} color="#ef4444" />
-                <StatBox label="Active Days %" value={activeDaysPct + '%'} color={activeDaysPct >= 50 ? '#22c55e' : '#fff'} />
-                <StatBox label="Average Winning Day" value={greenDays > 0 ? '+$' + Math.round(displayDailyPnL.filter(d => d.pnl > 0).reduce((s, d) => s + d.pnl, 0) / greenDays).toLocaleString() : '-'} color="#22c55e" />
+                <StatBox label="Daily Notes" value={dailyNotesCount} color="#fff" />
+                <StatBox label="Weekly Notes" value={weeklyNotesCount} color="#fff" />
+                <StatBox label="Custom Notes" value={customNotesCount} color="#fff" />
+                <StatBox label="Total Notes" value={dailyNotesCount + weeklyNotesCount + customNotesCount} color="#fff" />
               </div>
               </div>
               {/* RIGHT: Visual widgets stacked */}
@@ -2998,12 +3031,12 @@ export default function AccountPage() {
 
       {showEditInputs && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.9)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 101 }} onClick={() => setShowEditInputs(false)}>
-          <div style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '12px', width: '700px', maxWidth: '95vw', maxHeight: '90vh', display: 'flex', flexDirection: 'column' }} onClick={e => e.stopPropagation()}>
+          <div style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '12px', width: '800px', maxWidth: '95vw', maxHeight: '90vh', display: 'flex', flexDirection: 'column' }} onClick={e => e.stopPropagation()}>
             {/* Header */}
             <div style={{ padding: '20px 24px', borderBottom: '1px solid #1a1a22', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
               <div>
                 <h2 style={{ fontSize: '18px', fontWeight: 700, color: '#fff', margin: 0 }}>Column Settings</h2>
-                <p style={{ fontSize: '12px', color: '#666', margin: '4px 0 0 0' }}>Customize the fields shown when logging trades</p>
+                <p style={{ fontSize: '12px', color: '#666', margin: '4px 0 0 0' }}>Customize fields and styling for trade entries</p>
               </div>
               <button onClick={() => setShowEditInputs(false)} style={{ width: '32px', height: '32px', background: '#141418', border: '1px solid #2a2a35', borderRadius: '6px', color: '#888', fontSize: '16px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>×</button>
             </div>
@@ -3011,7 +3044,7 @@ export default function AccountPage() {
             {/* Scrollable Content */}
             <div style={{ flex: 1, overflowY: 'auto', padding: '16px 24px' }}>
               {/* Column headers */}
-              <div style={{ display: 'grid', gridTemplateColumns: '32px 1fr 120px auto 32px', gap: '12px', padding: '8px 12px', marginBottom: '8px', alignItems: 'center' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '32px 140px 110px 1fr 32px', gap: '12px', padding: '8px 12px', marginBottom: '8px', alignItems: 'center' }}>
                 <span style={{ fontSize: '10px', color: '#666', textTransform: 'uppercase', fontWeight: 600 }}>On</span>
                 <span style={{ fontSize: '10px', color: '#666', textTransform: 'uppercase', fontWeight: 600 }}>Name</span>
                 <span style={{ fontSize: '10px', color: '#666', textTransform: 'uppercase', fontWeight: 600 }}>Type</span>
@@ -3022,10 +3055,10 @@ export default function AccountPage() {
               {/* Field rows */}
               <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', marginBottom: '16px' }}>
                 {inputs.map((input, i) => !input.hidden && (
-                  <div key={input.id} style={{ display: 'grid', gridTemplateColumns: '32px 1fr 120px auto 32px', gap: '12px', padding: '10px 12px', background: input.enabled ? '#141418' : '#0d0d12', borderRadius: '8px', border: '1px solid #1a1a22', alignItems: 'center', opacity: input.enabled ? 1 : 0.6 }}>
+                  <div key={input.id} style={{ display: 'grid', gridTemplateColumns: '32px 140px 110px 1fr 32px', gap: '12px', padding: '10px 12px', background: input.enabled ? '#141418' : '#0d0d12', borderRadius: '8px', border: '1px solid #1a1a22', alignItems: 'center', opacity: input.enabled ? 1 : 0.6 }}>
                     <input type="checkbox" checked={input.enabled} onChange={e => updateInput(i, 'enabled', e.target.checked)} style={{ width: '18px', height: '18px', accentColor: '#22c55e', cursor: 'pointer' }} />
-                    <input type="text" value={input.label} onChange={e => updateInput(i, 'label', e.target.value)} style={{ padding: '8px 10px', background: '#0a0a0e', border: '1px solid #2a2a35', borderRadius: '6px', color: '#fff', fontSize: '13px' }} placeholder="Field name" />
-                    <select value={input.type} onChange={e => updateInput(i, 'type', e.target.value)} style={{ padding: '8px 10px', background: '#0a0a0e', border: '1px solid #2a2a35', borderRadius: '6px', color: '#fff', fontSize: '12px', cursor: 'pointer' }}>
+                    <input type="text" value={input.label} onChange={e => updateInput(i, 'label', e.target.value)} style={{ padding: '8px 10px', background: '#0a0a0e', border: '1px solid #2a2a35', borderRadius: '6px', color: '#fff', fontSize: '12px', width: '100%' }} placeholder="Field name" />
+                    <select value={input.type} onChange={e => updateInput(i, 'type', e.target.value)} style={{ padding: '8px 10px', background: '#0a0a0e', border: '1px solid #2a2a35', borderRadius: '6px', color: '#fff', fontSize: '11px', cursor: 'pointer' }}>
                       <option value="text">Text</option>
                       <option value="number">Number</option>
                       <option value="select">Dropdown</option>
@@ -3035,28 +3068,23 @@ export default function AccountPage() {
                       <option value="time">Time</option>
                       <option value="file">Image</option>
                     </select>
-                    {input.type === 'select' ? (
-                      <button onClick={() => openOptionsEditor(i)} style={{ padding: '8px 12px', background: '#0a0a0e', border: '1px solid #2a2a35', borderRadius: '6px', color: '#fff', fontSize: '12px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                        <span style={{ color: '#888' }}>{input.options?.length || 0} options</span>
-                        <span style={{ color: '#22c55e' }}>Edit</span>
-                      </button>
-                    ) : (
-                      <span style={{ padding: '8px 12px', color: '#555', fontSize: '11px' }}>
-                        {input.type === 'text' && '—'}
-                        {input.type === 'number' && '—'}
-                        {input.type === 'textarea' && '—'}
-                        {input.type === 'rating' && '★★★★★'}
-                        {input.type === 'date' && '📅'}
-                        {input.type === 'time' && '🕐'}
-                        {input.type === 'file' && '📷'}
+                    <button onClick={() => openOptionsEditor(i)} style={{ padding: '8px 14px', background: '#0a0a0e', border: '1px solid #2a2a35', borderRadius: '6px', color: '#fff', fontSize: '12px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', justifyContent: 'space-between' }}>
+                      <span style={{ color: '#888' }}>
+                        {input.type === 'select' && `${input.options?.length || 0} options`}
+                        {input.type === 'number' && `${input.colorRules?.length || 0} rules`}
+                        {input.type === 'text' && (input.textColor ? 'Styled' : 'Default')}
+                        {input.type === 'rating' && (input.starColor ? 'Styled' : 'Default')}
+                        {input.type === 'date' && (input.dateColor ? 'Styled' : 'Default')}
+                        {input.type === 'time' && (input.timeColor ? 'Styled' : 'Default')}
+                        {input.type === 'textarea' && (input.notesColor ? 'Styled' : 'Default')}
+                        {input.type === 'file' && 'Images'}
                       </span>
-                    )}
+                      <span style={{ color: '#22c55e' }}>Edit</span>
+                    </button>
                     {!input.fixed ? (
                       <button onClick={() => setDeleteInputConfirm({ index: i, label: input.label || input.id, id: input.id })} style={{ width: '32px', height: '32px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '6px', color: '#666', cursor: 'pointer', fontSize: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>×</button>
                     ) : (
-                      <div style={{ width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                        <span style={{ fontSize: '10px', color: '#444' }}>🔒</span>
-                      </div>
+                      <div style={{ width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#444', fontSize: '10px' }}>Fixed</div>
                     )}
                   </div>
                 ))}
@@ -3072,7 +3100,7 @@ export default function AccountPage() {
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
                     {inputs.map((inp, idx) => inp.hidden && (
                       <button key={inp.id} onClick={() => restoreInput(idx)} style={{ padding: '8px 14px', background: '#141418', border: '1px solid #2a2a35', borderRadius: '6px', color: '#888', fontSize: '12px', cursor: 'pointer' }}>
-                        {inp.label} <span style={{ color: '#22c55e', marginLeft: '4px' }}>↩</span>
+                        {inp.label} <span style={{ color: '#22c55e', marginLeft: '4px' }}>Restore</span>
                       </button>
                     ))}
                   </div>
@@ -3138,27 +3166,25 @@ export default function AccountPage() {
 
       {editingOptions !== null && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.9)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 102 }} onClick={() => { setEditingOptions(null); setOptionsList([]) }}>
-          <div style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '12px', padding: '24px', width: '680px', maxWidth: '95vw', maxHeight: '80vh', overflowY: 'auto' }} onClick={e => e.stopPropagation()}>
+          <div style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '12px', padding: '24px', width: '720px', maxWidth: '95vw', maxHeight: '80vh', overflowY: 'auto' }} onClick={e => e.stopPropagation()}>
             <h2 style={{ fontSize: '18px', fontWeight: 700, marginBottom: '4px', color: '#fff' }}>Edit Options</h2>
-            <p style={{ fontSize: '12px', color: '#555', marginBottom: '12px' }}>Customize option values, text color, and background</p>
+            <p style={{ fontSize: '12px', color: '#555', marginBottom: '16px' }}>Customize colors and styling for each option</p>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '12px' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', marginBottom: '16px' }}>
               {optionsList.map((opt, idx) => (
-                <div key={idx} style={{ padding: '14px', background: '#0a0a0e', borderRadius: '8px', border: '1px solid #1a1a22' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}>
-                    <input type="text" value={opt.value} onChange={e => updateOptionValue(idx, e.target.value)} placeholder="Option name" style={{ flex: 1, padding: '10px 12px', background: '#141418', border: '1px solid #2a2a35', borderRadius: '6px', color: '#fff', fontSize: '14px', fontWeight: 600 }} />
-                    <button onClick={() => removeOption(idx)} style={{ padding: '8px 12px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '6px', color: '#666', cursor: 'pointer', fontSize: '14px' }}>×</button>
-                  </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <span style={{ fontSize: '12px', color: '#888' }}>Text</span>
-                      <div style={{ position: 'relative', width: '32px', height: '32px' }}>
-                        <div style={{ width: '32px', height: '32px', borderRadius: '6px', background: opt.textColor || '#fff', border: '2px solid #2a2a35', cursor: 'pointer' }} />
+                <div key={idx} style={{ padding: '16px', background: '#0a0a0e', borderRadius: '10px', border: '1px solid #1a1a22' }}>
+                  {/* Colors row - first */}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '20px', marginBottom: '14px', flexWrap: 'wrap' }}>
+                    {/* Text color */}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                      <div style={{ position: 'relative', width: '36px', height: '36px' }}>
+                        <div style={{ width: '36px', height: '36px', borderRadius: '8px', background: opt.textColor || '#fff', border: '2px solid #2a2a35', cursor: 'pointer' }} />
                         <input type="color" value={opt.textColor || '#ffffff'} onChange={e => updateOptionTextColor(idx, e.target.value)} style={{ position: 'absolute', inset: 0, opacity: 0, width: '100%', height: '100%', cursor: 'pointer' }} />
                       </div>
+                      <span style={{ fontSize: '12px', color: '#888' }}>Text</span>
                     </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <span style={{ fontSize: '12px', color: '#888' }}>Background</span>
+                    {/* Background */}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                       <select
                         value={opt.bgColor ? 'custom' : 'none'}
                         onChange={e => {
@@ -3172,14 +3198,14 @@ export default function AccountPage() {
                             updateOptionBgColor(idx, `rgba(${r},${g},${b},0.15)`)
                           }
                         }}
-                        style={{ padding: '6px 10px', background: '#141418', border: '1px solid #2a2a35', borderRadius: '6px', color: '#fff', fontSize: '12px', cursor: 'pointer' }}
+                        style={{ padding: '8px 12px', background: '#141418', border: '1px solid #2a2a35', borderRadius: '6px', color: '#fff', fontSize: '12px', cursor: 'pointer' }}
                       >
-                        <option value="none">None</option>
-                        <option value="custom">Filled</option>
+                        <option value="none">No Fill</option>
+                        <option value="custom">Fill</option>
                       </select>
                       {opt.bgColor && (
-                        <div style={{ position: 'relative', width: '32px', height: '32px' }}>
-                          <div style={{ width: '32px', height: '32px', borderRadius: '6px', background: opt.bgColor, border: '2px solid #2a2a35', cursor: 'pointer' }} />
+                        <div style={{ position: 'relative', width: '36px', height: '36px' }}>
+                          <div style={{ width: '36px', height: '36px', borderRadius: '8px', background: opt.bgColor, border: '2px solid #2a2a35', cursor: 'pointer' }} />
                           <input type="color" value={opt.textColor || '#ffffff'} onChange={e => {
                             const hex = e.target.value.replace('#', '')
                             const r = parseInt(hex.substr(0, 2), 16)
@@ -3189,9 +3215,10 @@ export default function AccountPage() {
                           }} style={{ position: 'absolute', inset: 0, opacity: 0, width: '100%', height: '100%', cursor: 'pointer' }} />
                         </div>
                       )}
+                      <span style={{ fontSize: '12px', color: '#888' }}>Background</span>
                     </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <span style={{ fontSize: '12px', color: '#888' }}>Border</span>
+                    {/* Border */}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                       <select
                         value={opt.borderColor ? 'custom' : 'none'}
                         onChange={e => {
@@ -3201,30 +3228,33 @@ export default function AccountPage() {
                             updateOptionBorderColor(idx, opt.textColor || '#fff')
                           }
                         }}
-                        style={{ padding: '6px 10px', background: '#141418', border: '1px solid #2a2a35', borderRadius: '6px', color: '#fff', fontSize: '12px', cursor: 'pointer' }}
+                        style={{ padding: '8px 12px', background: '#141418', border: '1px solid #2a2a35', borderRadius: '6px', color: '#fff', fontSize: '12px', cursor: 'pointer' }}
                       >
-                        <option value="none">None</option>
-                        <option value="custom">Enabled</option>
+                        <option value="none">No Border</option>
+                        <option value="custom">Border</option>
                       </select>
                       {opt.borderColor && (
-                        <div style={{ position: 'relative', width: '32px', height: '32px' }}>
-                          <div style={{ width: '32px', height: '32px', borderRadius: '6px', background: 'transparent', border: `3px solid ${opt.borderColor}`, cursor: 'pointer' }} />
+                        <div style={{ position: 'relative', width: '36px', height: '36px' }}>
+                          <div style={{ width: '36px', height: '36px', borderRadius: '8px', background: 'transparent', border: `3px solid ${opt.borderColor}`, cursor: 'pointer' }} />
                           <input type="color" value={opt.borderColor || '#ffffff'} onChange={e => updateOptionBorderColor(idx, e.target.value)} style={{ position: 'absolute', inset: 0, opacity: 0, width: '100%', height: '100%', cursor: 'pointer' }} />
                         </div>
                       )}
+                      <span style={{ fontSize: '12px', color: '#888' }}>Border</span>
                     </div>
-                    <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <span style={{ fontSize: '12px', color: '#666' }}>Preview:</span>
-                      <span style={{ padding: '5px 12px', borderRadius: '6px', fontSize: '14px', fontWeight: 600, background: opt.bgColor || 'transparent', color: opt.textColor || '#fff', border: opt.borderColor ? `1px solid ${opt.borderColor}` : 'none' }}>
-                        {opt.value || 'Sample'}
-                      </span>
-                    </div>
+                  </div>
+                  {/* Option name and preview row - second */}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+                    <input type="text" value={opt.value} onChange={e => updateOptionValue(idx, e.target.value)} placeholder="Option name" style={{ flex: 1, padding: '10px 14px', background: '#141418', border: '1px solid #2a2a35', borderRadius: '6px', color: '#fff', fontSize: '14px', fontWeight: 600 }} />
+                    <span style={{ padding: '6px 14px', borderRadius: '6px', fontSize: '14px', fontWeight: 600, background: opt.bgColor || 'transparent', color: opt.textColor || '#fff', border: opt.borderColor ? `1px solid ${opt.borderColor}` : 'none', whiteSpace: 'nowrap' }}>
+                      {opt.value || 'Preview'}
+                    </span>
+                    <button onClick={() => removeOption(idx)} style={{ padding: '8px 12px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '6px', color: '#666', cursor: 'pointer', fontSize: '14px' }}>×</button>
                   </div>
                 </div>
               ))}
             </div>
 
-            <button onClick={addOption} style={{ width: '100%', padding: '12px', marginBottom: '12px', background: 'transparent', border: '1px dashed #2a2a35', borderRadius: '6px', color: '#555', fontSize: '13px', cursor: 'pointer' }}>+ Add Option</button>
+            <button onClick={addOption} style={{ width: '100%', padding: '12px', marginBottom: '16px', background: 'transparent', border: '1px dashed #2a2a35', borderRadius: '6px', color: '#555', fontSize: '13px', cursor: 'pointer' }}>+ Add Option</button>
 
             <div style={{ display: 'flex', gap: '12px' }}>
               <button onClick={saveOptions} style={{ flex: 1, padding: '12px', background: '#22c55e', border: 'none', borderRadius: '8px', color: '#fff', fontWeight: 600, fontSize: '13px', cursor: 'pointer' }}>Save</button>
