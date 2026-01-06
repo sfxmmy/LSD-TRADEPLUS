@@ -1792,11 +1792,11 @@ export default function AccountPage() {
                                   </div>
                                   {/* Chart area */}
                                   <div style={{ flex: 1, position: 'relative', borderLeft: '1px solid #2a2a35', borderBottom: hasNegative ? 'none' : '1px solid #2a2a35', overflow: 'visible' }}>
-                                    {/* Horizontal grid lines - percentage positioned and centered */}
+                                    {/* Horizontal grid lines - thin like axis lines */}
                                     <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}>
                                       {yLabels.map((_, i) => {
                                         const topPct = yLabels.length > 1 ? (i / (yLabels.length - 1)) * 100 : 0
-                                        return <div key={i} style={{ position: 'absolute', left: 0, right: 0, top: `${topPct}%`, height: '1px', background: '#1a1a22', transform: 'translateY(-50%)' }} />
+                                        return <div key={i} style={{ position: 'absolute', left: 0, right: 0, top: `${topPct}%`, height: '1px', background: 'rgba(42,42,53,0.5)', transform: 'translateY(-50%)' }} />
                                       })}
                                     </div>
                                     {/* Zero line if negative */}
@@ -1807,10 +1807,10 @@ export default function AccountPage() {
                                     {startLineY !== null && (
                                       <div style={{ position: 'absolute', left: 0, right: '6px', top: `${startLineY}%`, borderTop: '1px dashed #666', zIndex: 1 }} />
                                     )}
-                                    {/* Start label at end of line */}
+                                    {/* Start label at end of line - shows starting balance value */}
                                     {startLineY !== null && (
-                                      <span style={{ position: 'absolute', right: '2px', top: `${startLineY}%`, transform: 'translateY(-50%)', fontSize: '9px', color: '#888', background: '#0d0d12', padding: '0 2px' }}>
-                                        Start
+                                      <span style={{ position: 'absolute', right: '2px', top: `${startLineY}%`, transform: 'translateY(-50%)', fontSize: '9px', color: '#22c55e', background: '#0d0d12', padding: '0 4px', fontWeight: 600 }}>
+                                        Start: ${(displayStartingBalance/1000).toFixed(displayStartingBalance >= 1000 ? 0 : 1)}k
                                       </span>
                                     )}
                                     <svg style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', overflow: 'visible' }} viewBox={`0 0 ${svgW} ${svgH}`} preserveAspectRatio="none"
@@ -2495,105 +2495,110 @@ export default function AccountPage() {
               {/* Account */}
               <div style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '10px 12px' }}>
                 <div style={{ fontSize: '11px', color: '#aaa', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '6px', borderBottom: '1px solid #1a1a22', paddingBottom: '5px', fontWeight: 600 }}>Account</div>
-                <StatBox label="Balance" value={'$' + Math.round(displayCurrentBalance).toLocaleString()} color={displayCurrentBalance >= displayStartingBalance ? '#22c55e' : '#ef4444'} />
-                <StatBox label="Peak" value={'$' + Math.round(peakBalance).toLocaleString()} color="#22c55e" />
-                <StatBox label="Net P&L" value={(displayTotalPnl >= 0 ? '+' : '-') + '$' + Math.abs(Math.round(displayTotalPnl)).toLocaleString()} color={displayTotalPnl >= 0 ? '#22c55e' : '#ef4444'} />
-                <StatBox label="Growth" value={growth + '%'} color={parseFloat(growth) >= 0 ? '#22c55e' : '#ef4444'} />
-                <StatBox label="Weekly" value={weeklyGrowth + '%'} color={parseFloat(weeklyGrowth) >= 0 ? '#22c55e' : '#ef4444'} />
-                <StatBox label="Monthly" value={monthlyGrowth + '%'} color={parseFloat(monthlyGrowth) >= 0 ? '#22c55e' : '#ef4444'} />
-                <StatBox label="Yearly" value={yearlyGrowth + '%'} color={parseFloat(yearlyGrowth) >= 0 ? '#22c55e' : '#ef4444'} />
-                <StatBox label="Drawdown" value={currentDrawdown.pct + '%'} color={parseFloat(currentDrawdown.pct) > 5 ? '#ef4444' : parseFloat(currentDrawdown.pct) > 0 ? '#f59e0b' : '#22c55e'} />
+                <StatBox label="Current Balance" value={'$' + Math.round(displayCurrentBalance).toLocaleString()} color={displayCurrentBalance >= displayStartingBalance ? '#22c55e' : '#ef4444'} />
+                <StatBox label="Peak Balance" value={'$' + Math.round(peakBalance).toLocaleString()} color="#22c55e" />
+                <StatBox label="Total Profit/Loss" value={(displayTotalPnl >= 0 ? '+' : '-') + '$' + Math.abs(Math.round(displayTotalPnl)).toLocaleString()} color={displayTotalPnl >= 0 ? '#22c55e' : '#ef4444'} />
+                <StatBox label="Total Growth" value={growth + '%'} color={parseFloat(growth) >= 0 ? '#22c55e' : '#ef4444'} />
+                <StatBox label="Weekly Growth" value={weeklyGrowth + '%'} color={parseFloat(weeklyGrowth) >= 0 ? '#22c55e' : '#ef4444'} />
+                <StatBox label="Monthly Growth" value={monthlyGrowth + '%'} color={parseFloat(monthlyGrowth) >= 0 ? '#22c55e' : '#ef4444'} />
+                <StatBox label="Current Drawdown" value={currentDrawdown.pct + '%'} color={parseFloat(currentDrawdown.pct) > 5 ? '#ef4444' : parseFloat(currentDrawdown.pct) > 0 ? '#f59e0b' : '#22c55e'} />
                 <StatBox label="From Peak" value={peakToCurrent + '%'} color={parseFloat(peakToCurrent) >= 0 ? '#22c55e' : '#ef4444'} />
-                {distanceFromTarget && <StatBox label={distanceFromTarget.passed ? 'Target ✓' : 'To Target'} value={distanceFromTarget.passed ? 'Passed!' : distanceFromTarget.pct + '%'} color={distanceFromTarget.passed ? '#22c55e' : '#f59e0b'} />}
               </div>
               {/* Performance */}
               <div style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '10px 12px' }}>
                 <div style={{ fontSize: '11px', color: '#aaa', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '6px', borderBottom: '1px solid #1a1a22', paddingBottom: '5px', fontWeight: 600 }}>Performance</div>
-                <StatBox label="Winrate" value={displayWinrate + '%'} color={displayWinrate >= 50 ? '#22c55e' : '#ef4444'} />
-                <StatBox label="Day Winrate" value={displayDayWinrate + '%'} color={displayDayWinrate >= 50 ? '#22c55e' : '#ef4444'} />
-                <StatBox label="Wins / Losses" value={displayWins + ' / ' + displayLosses} color="#fff" />
-                <StatBox label="Breakeven" value={displayTrades.filter(t => t.outcome === 'be' || t.outcome === 'breakeven').length} color="#f59e0b" />
+                <StatBox label="Win Rate" value={displayWinrate + '%'} color={displayWinrate >= 50 ? '#22c55e' : '#ef4444'} />
+                <StatBox label="Day Win Rate" value={displayDayWinrate + '%'} color={displayDayWinrate >= 50 ? '#22c55e' : '#ef4444'} />
+                <StatBox label="Winning Trades" value={displayWins} color="#22c55e" />
+                <StatBox label="Losing Trades" value={displayLosses} color="#ef4444" />
+                <StatBox label="Breakeven Trades" value={displayTrades.filter(t => t.outcome === 'be' || t.outcome === 'breakeven').length} color="#f59e0b" />
                 <StatBox label="Profit Factor" value={displayProfitFactor} color={displayProfitFactor === '-' ? '#666' : displayProfitFactor === '∞' ? '#22c55e' : parseFloat(displayProfitFactor) >= 1.5 ? '#22c55e' : parseFloat(displayProfitFactor) >= 1 ? '#fff' : '#ef4444'} />
-                <StatBox label="Recovery" value={recoveryFactor} color={recoveryFactor === '-' ? '#666' : recoveryFactor === '∞' ? '#22c55e' : parseFloat(recoveryFactor) >= 2 ? '#22c55e' : '#fff'} />
-                <StatBox label="Win Amount" value={winAmountPct + '%'} color={winAmountPct >= 55 ? '#22c55e' : winAmountPct >= 50 ? '#fff' : '#ef4444'} />
-                <StatBox label="Expectancy" value={'$' + displayExpectancy} color={parseFloat(displayExpectancy) >= 0 ? '#22c55e' : '#ef4444'} />
+                <StatBox label="Recovery Factor" value={recoveryFactor} color={recoveryFactor === '-' ? '#666' : recoveryFactor === '∞' ? '#22c55e' : parseFloat(recoveryFactor) >= 2 ? '#22c55e' : '#fff'} />
+                <StatBox label="Trade Expectancy" value={'$' + displayExpectancy} color={parseFloat(displayExpectancy) >= 0 ? '#22c55e' : '#ef4444'} />
               </div>
               {/* Trades */}
               <div style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '10px 12px' }}>
                 <div style={{ fontSize: '11px', color: '#aaa', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '6px', borderBottom: '1px solid #1a1a22', paddingBottom: '5px', fontWeight: 600 }}>Trades</div>
-                <StatBox label="Total" value={displayTrades.length} color="#fff" />
-                <StatBox label="This Week" value={tradesThisWeek} color="#fff" />
-                <StatBox label="This Month" value={tradesThisMonth} color="#fff" />
-                <StatBox label="Trading Days" value={localTradingDays} color="#fff" />
-                <StatBox label="Avg/Day" value={localTradingDays > 0 ? (displayTrades.length / localTradingDays).toFixed(1) : '0'} color="#fff" />
-                <StatBox label="Avg/Week" value={avgTradesPerWeek} color="#fff" />
+                <StatBox label="Total Trades" value={displayTrades.length} color="#fff" />
+                <StatBox label="Trades This Week" value={tradesThisWeek} color="#fff" />
+                <StatBox label="Trades This Month" value={tradesThisMonth} color="#fff" />
+                <StatBox label="Total Trading Days" value={localTradingDays} color="#fff" />
+                <StatBox label="Average Per Day" value={localTradingDays > 0 ? (displayTrades.length / localTradingDays).toFixed(1) : '0'} color="#fff" />
+                <StatBox label="Average Per Week" value={avgTradesPerWeek} color="#fff" />
                 <StatBox label="Unique Pairs" value={uniqueSymbols} color="#fff" />
-                <StatBox label="Best Day" value={mostCommonDay} color="#fff" />
+                <StatBox label="Most Active Day" value={mostCommonDay} color="#fff" />
               </div>
               {/* Risk & Reward */}
               <div style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '10px 12px' }}>
                 <div style={{ fontSize: '11px', color: '#aaa', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '6px', borderBottom: '1px solid #1a1a22', paddingBottom: '5px', fontWeight: 600 }}>Risk & Reward</div>
-                <StatBox label="Avg RR" value={displayAvgRR + 'R'} color={parseFloat(displayAvgRR) >= 1.5 ? '#22c55e' : '#fff'} />
-                <StatBox label="Highest RR" value={highestRR + 'R'} color="#22c55e" />
-                <StatBox label="Lowest RR" value={lowestRR + 'R'} color="#ef4444" />
-                <StatBox label="Most Used RR" value={mostUsedRR} color="#fff" />
-                <StatBox label="Best RR" value={mostProfitableRR} color="#22c55e" />
+                <StatBox label="Average R-Multiple" value={displayAvgRR + 'R'} color={parseFloat(displayAvgRR) >= 1.5 ? '#22c55e' : '#fff'} />
+                <StatBox label="Highest R-Multiple" value={highestRR + 'R'} color="#22c55e" />
+                <StatBox label="Lowest R-Multiple" value={lowestRR + 'R'} color="#ef4444" />
+                <StatBox label="Most Used R-Multiple" value={mostUsedRR} color="#fff" />
+                <StatBox label="Best Performing R" value={mostProfitableRR} color="#22c55e" />
                 <StatBox label="Win/Loss Ratio" value={(displayAvgWin / Math.max(displayAvgLoss, 1)).toFixed(2) + 'x'} color={displayAvgWin >= displayAvgLoss ? '#22c55e' : '#ef4444'} />
-                {account?.max_drawdown && <StatBox label="DD Limit" value={account.max_drawdown + '%'} color={parseFloat(currentDrawdown.pct) >= account.max_drawdown ? '#ef4444' : '#22c55e'} />}
+                <StatBox label="Max Drawdown" value={currentDrawdown.pct + '%'} color={parseFloat(currentDrawdown.pct) > 5 ? '#ef4444' : '#fff'} />
+                <StatBox label="Max Drawdown $" value={'$' + Math.round(currentDrawdown.amount).toLocaleString()} color={parseFloat(currentDrawdown.amount) > 0 ? '#ef4444' : '#22c55e'} />
               </div>
               {/* Win/Loss */}
               <div style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '10px 12px' }}>
                 <div style={{ fontSize: '11px', color: '#aaa', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '6px', borderBottom: '1px solid #1a1a22', paddingBottom: '5px', fontWeight: 600 }}>Win/Loss</div>
-                <StatBox label="Avg Win" value={'+$' + displayAvgWin} color="#22c55e" />
-                <StatBox label="Avg Loss" value={'-$' + displayAvgLoss} color="#ef4444" />
-                <StatBox label="Best Trade" value={'+$' + Math.round(localBiggestWin).toLocaleString()} color="#22c55e" />
-                <StatBox label="Worst Trade" value={'-$' + Math.abs(Math.round(localBiggestLoss)).toLocaleString()} color="#ef4444" />
+                <StatBox label="Average Winning Trade" value={'+$' + displayAvgWin} color="#22c55e" />
+                <StatBox label="Average Losing Trade" value={'-$' + displayAvgLoss} color="#ef4444" />
+                <StatBox label="Average Trade P&L" value={(displayTotalPnl / Math.max(displayTrades.length, 1) >= 0 ? '+' : '-') + '$' + Math.abs(Math.round(displayTotalPnl / Math.max(displayTrades.length, 1))).toLocaleString()} color={displayTotalPnl >= 0 ? '#22c55e' : '#ef4444'} />
+                <StatBox label="Largest Profit" value={'+$' + Math.round(localBiggestWin).toLocaleString()} color="#22c55e" />
+                <StatBox label="Largest Loss" value={'-$' + Math.abs(Math.round(localBiggestLoss)).toLocaleString()} color="#ef4444" />
                 <StatBox label="Gross Profit" value={'+$' + Math.round(grossProfit).toLocaleString()} color="#22c55e" />
                 <StatBox label="Gross Loss" value={'-$' + Math.round(grossLoss).toLocaleString()} color="#ef4444" />
+                <StatBox label="Net Profit/Loss" value={(displayTotalPnl >= 0 ? '+' : '-') + '$' + Math.abs(Math.round(displayTotalPnl)).toLocaleString()} color={displayTotalPnl >= 0 ? '#22c55e' : '#ef4444'} />
               </div>
               {/* Direction */}
               <div style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '10px 12px' }}>
                 <div style={{ fontSize: '11px', color: '#aaa', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '6px', borderBottom: '1px solid #1a1a22', paddingBottom: '5px', fontWeight: 600 }}>Direction</div>
-                <StatBox label="Best" value={bestDirection} color={bestDirection === 'Long' ? '#22c55e' : '#ef4444'} />
-                <StatBox label="Long / Short" value={displayTrades.filter(t => t.direction === 'long').length + ' / ' + displayTrades.filter(t => t.direction === 'short').length} color="#fff" />
-                <StatBox label="Long WR" value={longWr + '%'} color={longWr >= 50 ? '#22c55e' : '#ef4444'} />
-                <StatBox label="Long P&L" value={(longPnl >= 0 ? '+' : '') + '$' + Math.round(longPnl).toLocaleString()} color={longPnl >= 0 ? '#22c55e' : '#ef4444'} />
-                <StatBox label="Long PF" value={longPF} color={longPF === '∞' ? '#22c55e' : parseFloat(longPF) >= 1.5 ? '#22c55e' : '#fff'} />
-                <StatBox label="Short WR" value={shortWr + '%'} color={shortWr >= 50 ? '#22c55e' : '#ef4444'} />
-                <StatBox label="Short P&L" value={(shortPnl >= 0 ? '+' : '') + '$' + Math.round(shortPnl).toLocaleString()} color={shortPnl >= 0 ? '#22c55e' : '#ef4444'} />
-                <StatBox label="Short PF" value={shortPF} color={shortPF === '∞' ? '#22c55e' : parseFloat(shortPF) >= 1.5 ? '#22c55e' : '#fff'} />
+                <StatBox label="Best Direction" value={bestDirection} color={bestDirection === 'Long' ? '#22c55e' : '#ef4444'} />
+                <StatBox label="Long Trades" value={displayTrades.filter(t => t.direction === 'long').length} color="#22c55e" />
+                <StatBox label="Short Trades" value={displayTrades.filter(t => t.direction === 'short').length} color="#ef4444" />
+                <StatBox label="Long Win Rate" value={longWr + '%'} color={longWr >= 50 ? '#22c55e' : '#ef4444'} />
+                <StatBox label="Long Profit/Loss" value={(longPnl >= 0 ? '+' : '') + '$' + Math.round(longPnl).toLocaleString()} color={longPnl >= 0 ? '#22c55e' : '#ef4444'} />
+                <StatBox label="Long Profit Factor" value={longPF} color={longPF === '∞' ? '#22c55e' : parseFloat(longPF) >= 1.5 ? '#22c55e' : '#fff'} />
+                <StatBox label="Short Win Rate" value={shortWr + '%'} color={shortWr >= 50 ? '#22c55e' : '#ef4444'} />
+                <StatBox label="Short Profit Factor" value={shortPF} color={shortPF === '∞' ? '#22c55e' : parseFloat(shortPF) >= 1.5 ? '#22c55e' : '#fff'} />
               </div>
               {/* Streaks */}
               <div style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '10px 12px' }}>
                 <div style={{ fontSize: '11px', color: '#aaa', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '6px', borderBottom: '1px solid #1a1a22', paddingBottom: '5px', fontWeight: 600 }}>Streaks</div>
-                <StatBox label="Current" value={(displayStreaks.cs >= 0 ? '+' : '') + displayStreaks.cs} color={displayStreaks.cs >= 0 ? '#22c55e' : '#ef4444'} />
-                <StatBox label="Best Win" value={'+' + displayStreaks.mw} color="#22c55e" />
-                <StatBox label="Max Loss" value={'-' + displayStreaks.ml} color="#ef4444" />
-                <StatBox label="Avg Win Streak" value={avgWinStreak} color="#22c55e" />
-                <StatBox label="Green Days" value={greenDays} color="#22c55e" />
-                <StatBox label="Red Days" value={redDays} color="#ef4444" />
-                <StatBox label="BE Days" value={beDays} color="#f59e0b" />
+                <StatBox label="Current Trade Streak" value={(displayStreaks.cs >= 0 ? '+' : '') + displayStreaks.cs} color={displayStreaks.cs >= 0 ? '#22c55e' : '#ef4444'} />
+                <StatBox label="Max Consecutive Wins" value={'+' + displayStreaks.mw} color="#22c55e" />
+                <StatBox label="Max Consecutive Losses" value={'-' + displayStreaks.ml} color="#ef4444" />
+                <StatBox label="Average Win Streak" value={avgWinStreak} color="#22c55e" />
+                <StatBox label="Winning Days" value={greenDays} color="#22c55e" />
+                <StatBox label="Losing Days" value={redDays} color="#ef4444" />
+                <StatBox label="Breakeven Days" value={beDays} color="#f59e0b" />
+                <StatBox label="Best Day Streak" value={'+' + bestGreenStreak} color="#22c55e" />
               </div>
               {/* Overview */}
               <div style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '10px 12px' }}>
                 <div style={{ fontSize: '11px', color: '#aaa', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '6px', borderBottom: '1px solid #1a1a22', paddingBottom: '5px', fontWeight: 600 }}>Overview</div>
-                <StatBox label="Consistency" value={displayDayWinrate + '%'} color={displayDayWinrate >= 60 ? '#22c55e' : displayDayWinrate >= 50 ? '#fff' : '#ef4444'} />
-                <StatBox label="Active Days" value={activeDaysPct + '%'} color={activeDaysPct >= 50 ? '#22c55e' : '#fff'} />
-                <StatBox label="Avg Trend" value={avgTrend} color="#fff" />
-                <StatBox label="Most Traded" value={mostTradedPair} color="#fff" />
-                <StatBox label="Total Pairs" value={uniqueSymbols} color="#fff" />
-                <StatBox label="Best Day P&L" value={bestDay ? `+$${Math.round(bestDay.pnl)}` : '-'} color="#22c55e" />
-                <StatBox label="Worst Day P&L" value={worstDay ? `$${Math.round(worstDay.pnl)}` : '-'} color="#ef4444" />
+                <StatBox label="Consistency Score" value={displayDayWinrate + '%'} color={displayDayWinrate >= 60 ? '#22c55e' : displayDayWinrate >= 50 ? '#fff' : '#ef4444'} />
+                <StatBox label="Average Daily P&L" value={localTradingDays > 0 ? (displayTotalPnl / localTradingDays >= 0 ? '+' : '-') + '$' + Math.abs(Math.round(displayTotalPnl / localTradingDays)).toLocaleString() : '-'} color={displayTotalPnl >= 0 ? '#22c55e' : '#ef4444'} />
+                <StatBox label="Best Profitable Day" value={bestDay ? `+$${Math.round(bestDay.pnl).toLocaleString()}` : '-'} color="#22c55e" />
+                <StatBox label="Worst Losing Day" value={worstDay ? `$${Math.round(worstDay.pnl).toLocaleString()}` : '-'} color="#ef4444" />
+                <StatBox label="Most Traded Pair" value={mostTradedPair} color="#fff" />
+                <StatBox label="Average Trend" value={avgTrend} color="#fff" />
+                <StatBox label="Total Unique Pairs" value={uniqueSymbols} color="#fff" />
+                <StatBox label="Account Age" value={accountAge} color="#fff" />
               </div>
               {/* Notes */}
               <div style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '10px 12px' }}>
-                <div style={{ fontSize: '11px', color: '#aaa', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '6px', borderBottom: '1px solid #1a1a22', paddingBottom: '5px', fontWeight: 600 }}>Notes</div>
-                <StatBox label="Trades w/ Notes" value={tradesWithNotes} color="#fff" />
-                <StatBox label="Notes Rate" value={displayTrades.length > 0 ? Math.round((tradesWithNotes / displayTrades.length) * 100) + '%' : '0%'} color={tradesWithNotes / Math.max(displayTrades.length, 1) >= 0.5 ? '#22c55e' : '#fff'} />
-                <StatBox label="With Images" value={tradesWithImages} color="#fff" />
-                <StatBox label="Image Rate" value={displayTrades.length > 0 ? Math.round((tradesWithImages / displayTrades.length) * 100) + '%' : '0%'} color={tradesWithImages / Math.max(displayTrades.length, 1) >= 0.3 ? '#22c55e' : '#fff'} />
-                <StatBox label="This Week" value={tradesThisWeek} color="#fff" />
-                <StatBox label="Account Age" value={accountAge} color="#fff" />
+                <div style={{ fontSize: '11px', color: '#aaa', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '6px', borderBottom: '1px solid #1a1a22', paddingBottom: '5px', fontWeight: 600 }}>Notes & Images</div>
+                <StatBox label="Trades With Notes" value={tradesWithNotes} color="#fff" />
+                <StatBox label="Notes Completion Rate" value={displayTrades.length > 0 ? Math.round((tradesWithNotes / displayTrades.length) * 100) + '%' : '0%'} color={tradesWithNotes / Math.max(displayTrades.length, 1) >= 0.5 ? '#22c55e' : '#fff'} />
+                <StatBox label="Trades With Images" value={tradesWithImages} color="#fff" />
+                <StatBox label="Image Completion Rate" value={displayTrades.length > 0 ? Math.round((tradesWithImages / displayTrades.length) * 100) + '%' : '0%'} color={tradesWithImages / Math.max(displayTrades.length, 1) >= 0.3 ? '#22c55e' : '#fff'} />
+                <StatBox label="Total Winning Days" value={greenDays} color="#22c55e" />
+                <StatBox label="Total Losing Days" value={redDays} color="#ef4444" />
+                <StatBox label="Active Days %" value={activeDaysPct + '%'} color={activeDaysPct >= 50 ? '#22c55e' : '#fff'} />
+                <StatBox label="Average Winning Day" value={greenDays > 0 ? '+$' + Math.round(displayDailyPnL.filter(d => d.pnl > 0).reduce((s, d) => s + d.pnl, 0) / greenDays).toLocaleString() : '-'} color="#22c55e" />
               </div>
               </div>
               {/* RIGHT: Visual widgets stacked */}
@@ -3903,8 +3908,8 @@ export default function AccountPage() {
                 )
               })()}
               </div>
-              {/* Stats Sidebar - Larger, white text, improved UI - extends to x-axis level */}
-              <div style={{ width: '280px', background: '#0a0a0e', borderRadius: '12px', border: '1px solid #1a1a22', padding: '16px', flexShrink: 0, display: 'flex', flexDirection: 'column', alignSelf: 'stretch' }}>
+              {/* Stats Sidebar - Matches chart height exactly */}
+              <div style={{ width: '280px', background: '#0a0a0e', borderRadius: '12px', border: '1px solid #1a1a22', padding: '16px', flexShrink: 0, display: 'flex', flexDirection: 'column', maxHeight: '500px', overflow: 'hidden' }}>
                 <div style={{ fontSize: '13px', color: '#fff', textTransform: 'uppercase', marginBottom: '12px', fontWeight: 700, letterSpacing: '1px', borderBottom: '1px solid #1a1a22', paddingBottom: '8px' }}>Statistics</div>
                 {(() => {
                   // Calculate stats based on selected lines/data
@@ -3993,11 +3998,11 @@ export default function AccountPage() {
                   ]
 
                   return (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', flex: 1, overflowY: 'auto' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '3px', flex: 1 }}>
                       {stats.map((stat, i) => (
-                        <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: stat.big ? '10px 12px' : '6px 10px', background: stat.big ? 'linear-gradient(135deg, #0d0d12 0%, #141418 100%)' : '#0d0d12', borderRadius: '6px', border: stat.big ? '1px solid #1a1a22' : 'none' }}>
-                          <span style={{ fontSize: stat.big ? '12px' : '11px', color: '#fff', fontWeight: stat.big ? 600 : 500 }}>{stat.label}</span>
-                          <span style={{ fontSize: stat.big ? '16px' : '13px', fontWeight: 700, color: stat.color }}>{stat.value}</span>
+                        <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: stat.big ? '8px 10px' : '5px 8px', background: stat.big ? 'linear-gradient(135deg, #0d0d12 0%, #141418 100%)' : '#0d0d12', borderRadius: '4px', border: stat.big ? '1px solid #1a1a22' : 'none' }}>
+                          <span style={{ fontSize: stat.big ? '11px' : '10px', color: '#fff', fontWeight: stat.big ? 600 : 500 }}>{stat.label}</span>
+                          <span style={{ fontSize: stat.big ? '14px' : '12px', fontWeight: 700, color: stat.color }}>{stat.value}</span>
                         </div>
                       ))}
                     </div>
