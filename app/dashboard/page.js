@@ -555,12 +555,12 @@ export default function DashboardPage() {
         </div>
 
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, overflow: 'visible' }}>
-          <div style={{ flex: 1, position: 'relative', borderBottom: hasNegative ? 'none' : '1px solid #2a2a35', overflow: 'visible' }}>
-            {/* Horizontal grid lines - exact percentage positioning */}
+          <div style={{ flex: 1, position: 'relative', overflow: 'visible' }}>
+            {/* Horizontal grid lines - exact percentage positioning, same color as ticks */}
             <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}>
               {yLabels.map((_, i) => {
                 const topPct = yLabels.length > 1 ? (i / (yLabels.length - 1)) * 100 : 0
-                return <div key={i} style={{ position: 'absolute', left: 0, right: 0, top: `${topPct}%`, height: '1px', background: '#1a1a22', transform: 'translateY(-50%)' }} />
+                return <div key={i} style={{ position: 'absolute', left: 0, right: 0, top: `${topPct}%`, height: '1px', background: '#2a2a35', transform: 'translateY(-50%)' }} />
               })}
             </div>
             <svg ref={svgRef} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', overflow: 'visible' }} viewBox={`0 0 ${svgW} ${svgH}`} preserveAspectRatio="none" onMouseMove={handleMouseMove} onMouseLeave={() => setHoverPoint(null)}>
@@ -1272,7 +1272,7 @@ export default function DashboardPage() {
                               <thead style={{ position: 'sticky', top: 0, background: '#0d0d12', zIndex: 1 }}>
                                 <tr>
                                   {visibleCols.map((col, i) => (
-                                    <th key={col.id} style={{ padding: '10px', textAlign: 'center', color: '#999', fontSize: '11px', fontWeight: 600, textTransform: 'uppercase', minWidth: '70px', background: '#0d0d12', borderBottom: '1px solid #2a2a35' }}>{col.label}</th>
+                                    <th key={col.id} style={{ padding: '10px', textAlign: 'center', color: '#999', fontSize: '11px', fontWeight: 600, textTransform: 'uppercase', minWidth: '70px', background: '#0d0d12', borderBottom: '1px solid #1a1a22' }}>{col.label}</th>
                                   ))}
                                 </tr>
                               </thead>

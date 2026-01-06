@@ -1843,12 +1843,12 @@ export default function AccountPage() {
                                     })}
                                   </div>
                                   {/* Chart area */}
-                                  <div style={{ flex: 1, position: 'relative', borderBottom: hasNegative ? 'none' : '1px solid #2a2a35', overflow: 'visible' }}>
+                                  <div style={{ flex: 1, position: 'relative', overflow: 'visible' }}>
                                     {/* Horizontal grid lines - thin like axis lines */}
                                     <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}>
                                       {yLabels.map((_, i) => {
                                         const topPct = yLabels.length > 1 ? (i / (yLabels.length - 1)) * 100 : 0
-                                        return <div key={i} style={{ position: 'absolute', left: 0, right: 0, top: `${topPct}%`, height: '1px', background: 'rgba(42,42,53,0.5)', transform: 'translateY(-50%)' }} />
+                                        return <div key={i} style={{ position: 'absolute', left: 0, right: 0, top: `${topPct}%`, height: '1px', background: '#2a2a35', transform: 'translateY(-50%)' }} />
                                       })}
                                     </div>
                                     {/* Zero line if negative */}
@@ -2216,7 +2216,7 @@ export default function AccountPage() {
                               <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}>
                                 {yLabels.map((_, i) => {
                                   const topPct = yLabels.length > 1 ? (i / (yLabels.length - 1)) * 100 : 0
-                                  return <div key={i} style={{ position: 'absolute', left: 0, right: 0, top: `${topPct}%`, height: '1px', background: '#1a1a22', transform: 'translateY(-50%)' }} />
+                                  return <div key={i} style={{ position: 'absolute', left: 0, right: 0, top: `${topPct}%`, height: '1px', background: '#2a2a35', transform: 'translateY(-50%)' }} />
                                 })}
                               </div>
                               {/* Bars */}
@@ -2367,7 +2367,7 @@ export default function AccountPage() {
                             <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}>
                               {yLabels.map((_, i) => {
                                 const topPct = yLabels.length > 1 ? (i / (yLabels.length - 1)) * 100 : 0
-                                return <div key={i} style={{ position: 'absolute', left: 0, right: 0, top: `${topPct}%`, height: '1px', background: '#1a1a22', transform: 'translateY(-50%)' }} />
+                                return <div key={i} style={{ position: 'absolute', left: 0, right: 0, top: `${topPct}%`, height: '1px', background: '#2a2a35', transform: 'translateY(-50%)' }} />
                               })}
                             </div>
                             {/* Bars */}
@@ -3767,12 +3767,12 @@ export default function AccountPage() {
                         })}
                       </div>
                       {/* Chart area */}
-                      <div style={{ flex: 1, position: 'relative', borderBottom: hasNegative ? 'none' : '1px solid #2a2a35', overflow: 'visible' }}>
+                      <div style={{ flex: 1, position: 'relative', overflow: 'visible' }}>
                           {/* Horizontal grid lines - percentage positioned and centered */}
                           <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}>
                             {yLabels.map((_, i) => {
                               const topPct = yLabels.length > 1 ? (i / (yLabels.length - 1)) * 100 : 0
-                              return <div key={i} style={{ position: 'absolute', left: 0, right: 0, top: `${topPct}%`, height: '1px', background: '#1a1a22', transform: 'translateY(-50%)' }} />
+                              return <div key={i} style={{ position: 'absolute', left: 0, right: 0, top: `${topPct}%`, height: '1px', background: '#2a2a35', transform: 'translateY(-50%)' }} />
                             })}
                           </div>
                           {zeroY !== null && <div style={{ position: 'absolute', left: 0, right: 0, top: `${zeroY}%`, height: '1px', background: '#2a2a35', transform: 'translateY(-50%)', zIndex: 1 }}><span style={{ position: 'absolute', left: '-60px', top: '-6px', fontSize: '11px', color: '#666' }}>$0</span></div>}
@@ -4072,7 +4072,7 @@ export default function AccountPage() {
                         <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}>
                           {yLabelsBar.map((_, i) => {
                             const topPct = yLabelsBar.length > 1 ? (i / (yLabelsBar.length - 1)) * 100 : 0
-                            return <div key={i} style={{ position: 'absolute', left: 0, right: 0, top: `${topPct}%`, height: '1px', background: '#1a1a22', transform: 'translateY(-50%)' }} />
+                            return <div key={i} style={{ position: 'absolute', left: 0, right: 0, top: `${topPct}%`, height: '1px', background: '#2a2a35', transform: 'translateY(-50%)' }} />
                           })}
                         </div>
                         {/* Bars */}
