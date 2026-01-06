@@ -1270,8 +1270,8 @@ export default function DashboardPage() {
                         return (
                           <div style={{ maxHeight: '200px', overflowY: 'auto', overflowX: 'auto', border: '1px solid #1a1a22', borderRadius: '8px' }}>
                             <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: isMobile ? '600px' : 'auto' }}>
-                              <thead style={{ position: 'sticky', top: 0, background: '#0d0d12', zIndex: 1 }}>
-                                <tr style={{ borderBottom: '2px solid #ef4444' }}>
+                              <thead style={{ position: 'sticky', top: 0, background: '#0d0d12', zIndex: 1, boxShadow: '0 2px 0 0 #ef4444' }}>
+                                <tr>
                                   {visibleCols.map((col, i) => (
                                     <th key={col.id} style={{ padding: '10px', textAlign: 'center', color: '#999', fontSize: '11px', fontWeight: 600, textTransform: 'uppercase', minWidth: '70px', background: '#0d0d12' }}>{col.label}</th>
                                   ))}
