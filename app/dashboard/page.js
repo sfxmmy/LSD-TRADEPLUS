@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
+import { useRouter } from 'next/navigation'
 import { createClient } from '@supabase/supabase-js'
 
 // Color mappings for select options (same as account page) - textColor and bgColor
@@ -74,6 +75,7 @@ function getAccountOptionStyles(account, field, value) {
 }
 
 export default function DashboardPage() {
+  const router = useRouter()
   const [user, setUser] = useState(null)
   const [accounts, setAccounts] = useState([])
   const [trades, setTrades] = useState({})
@@ -84,7 +86,11 @@ export default function DashboardPage() {
   const [deleteConfirm, setDeleteConfirm] = useState('')
   const [name, setName] = useState('')
   const [balance, setBalance] = useState('')
+  const [profitTarget, setProfitTarget] = useState('')
+  const [maxDrawdown, setMaxDrawdown] = useState('')
   const [editName, setEditName] = useState('')
+  const [editProfitTarget, setEditProfitTarget] = useState('')
+  const [editMaxDrawdown, setEditMaxDrawdown] = useState('')
   const [creating, setCreating] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
   const [viewMode, setViewMode] = useState('cards') // 'cards' or 'list'
@@ -232,19 +238,34 @@ export default function DashboardPage() {
     if (!name.trim() || !balance) return
     setCreating(true)
     const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY)
-    const { data, error } = await supabase.from('accounts').insert({ user_id: user.id, name: name.trim(), starting_balance: parseFloat(balance) || 0 }).select().single()
+    const { data, error } = await supabase.from('accounts').insert({
+      user_id: user.id,
+      name: name.trim(),
+      starting_balance: parseFloat(balance) || 0,
+      profit_target: profitTarget ? parseFloat(profitTarget) : null,
+      max_drawdown: maxDrawdown ? parseFloat(maxDrawdown) : null
+    }).select().single()
     if (error) { alert('Error: ' + error.message); setCreating(false); return }
     setAccounts([...accounts, data])
     setTrades({ ...trades, [data.id]: [] })
-    setName(''); setBalance(''); setShowModal(false); setCreating(false)
+    setName(''); setBalance(''); setProfitTarget(''); setMaxDrawdown(''); setShowModal(false); setCreating(false)
   }
 
-  async function renameAccount(accountId) {
+  async function updateAccount(accountId) {
     if (!editName.trim()) return
     const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY)
-    await supabase.from('accounts').update({ name: editName.trim() }).eq('id', accountId)
-    setAccounts(accounts.map(a => a.id === accountId ? { ...a, name: editName.trim() } : a))
-    setShowEditModal(null); setEditName('')
+    await supabase.from('accounts').update({
+      name: editName.trim(),
+      profit_target: editProfitTarget ? parseFloat(editProfitTarget) : null,
+      max_drawdown: editMaxDrawdown ? parseFloat(editMaxDrawdown) : null
+    }).eq('id', accountId)
+    setAccounts(accounts.map(a => a.id === accountId ? {
+      ...a,
+      name: editName.trim(),
+      profit_target: editProfitTarget ? parseFloat(editProfitTarget) : null,
+      max_drawdown: editMaxDrawdown ? parseFloat(editMaxDrawdown) : null
+    } : a))
+    setShowEditModal(null); setEditName(''); setEditProfitTarget(''); setEditMaxDrawdown('')
   }
 
   async function deleteAccount(accountId) {
@@ -512,11 +533,12 @@ export default function DashboardPage() {
       <div style={{ position: 'absolute', inset: 0, display: 'flex' }}>
         {/* Y-axis - matches chart area height with spacer for x-axis */}
         <div style={{ width: '46px', flexShrink: 0, display: 'flex', flexDirection: 'column' }}>
-          <div style={{ flex: 1, position: 'relative' }}>
+          <div style={{ flex: 1, position: 'relative', borderRight: '1px solid #2a2a35' }}>
             {yLabels.map((v, i) => {
+              const isLast = i === yLabels.length - 1
               const topPct = yLabels.length > 1 ? (i / (yLabels.length - 1)) * 100 : 0
               return (
-                <div key={i} style={{ position: 'absolute', right: 0, top: `${topPct}%`, transform: 'translateY(-50%)', display: 'flex', alignItems: 'center' }}>
+                <div key={i} style={{ position: 'absolute', right: '-1px', top: `${topPct}%`, transform: `translateY(${isLast ? '-100%' : '-50%'})`, display: 'flex', alignItems: 'center', paddingBottom: isLast ? '0' : '0' }}>
                   <span style={{ fontSize: '10px', color: '#999', lineHeight: 1, textAlign: 'right' }}>{v >= 1000000 ? `$${(v/1000000).toFixed(1)}M` : v >= 1000 ? `$${(v/1000).toFixed(0)}k` : `$${v}`}</span>
                   <div style={{ width: '4px', height: '1px', background: '#2a2a35', marginLeft: '3px' }} />
                 </div>
@@ -534,7 +556,7 @@ export default function DashboardPage() {
         </div>
 
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, overflow: 'visible' }}>
-          <div style={{ flex: 1, position: 'relative', borderLeft: '1px solid #2a2a35', borderBottom: hasNegative ? 'none' : '1px solid #2a2a35', overflow: 'visible' }}>
+          <div style={{ flex: 1, position: 'relative', borderBottom: hasNegative ? 'none' : '1px solid #2a2a35', overflow: 'visible' }}>
             {/* Horizontal grid lines - exact percentage positioning */}
             <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}>
               {yLabels.map((_, i) => {
@@ -630,7 +652,7 @@ export default function DashboardPage() {
     <div style={{ minHeight: '100vh', background: '#0a0a0f' }}>
       {/* Header */}
       <header style={{ padding: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #1a1a22', flexWrap: isMobile ? 'wrap' : 'nowrap', gap: '12px' }}>
-        <a href="/" style={{ fontSize: isMobile ? '24px' : '32px', fontWeight: 700, textDecoration: 'none' }}>
+        <a href="/" style={{ fontSize: isMobile ? '28px' : '42px', fontWeight: 700, textDecoration: 'none' }}>
           <span style={{ color: '#22c55e' }}>LSD</span><span style={{ color: '#fff' }}>TRADE</span><span style={{ color: '#22c55e' }}>+</span>
         </a>
         {!isMobile && <div style={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)', fontSize: '32px', fontWeight: 700, letterSpacing: '-0.5px', color: '#fff' }}>JOURNAL DASHBOARD</div>}
@@ -645,7 +667,7 @@ export default function DashboardPage() {
             </button>
           </div>
           <button onClick={() => setShowModal(true)} style={{ padding: isMobile ? '8px 12px' : '12px 24px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '6px', color: '#fff', fontSize: isMobile ? '12px' : '14px', cursor: 'pointer' }}>{isMobile ? '+ Add' : '+ Add Journal Account'}</button>
-          <a href="/settings" style={{ padding: isMobile ? '8px' : '10px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '6px', color: '#999', textDecoration: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }} title="Settings">
+          <a href="/settings" style={{ padding: isMobile ? '8px 12px' : '12px 24px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '6px', color: '#999', textDecoration: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }} title="Settings">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
           </a>
         </div>
@@ -838,7 +860,7 @@ export default function DashboardPage() {
                             onMouseMove={(e) => { const rect = e.currentTarget.getBoundingClientRect(); const x = e.clientX - rect.left; setHoverRating(x < rect.width / 2 ? star - 0.5 : star) }}
                             onClick={(e) => { const rect = e.currentTarget.getBoundingClientRect(); const x = e.clientX - rect.left; const newRating = x < rect.width / 2 ? star - 0.5 : star; setQuickTradeRating(parseFloat(quickTradeRating) === newRating ? '' : String(newRating)) }}>
                             <span style={{ position: 'absolute', color: '#2a2a35', fontSize: '24px', lineHeight: 1 }}>★</span>
-                            {isHalfStar && <span style={{ position: 'absolute', color: '#22c55e', fontSize: '24px', lineHeight: 1, width: '12px', overflow: 'hidden' }}>★</span>}
+                            {isHalfStar && <span style={{ position: 'absolute', color: '#22c55e', fontSize: '24px', lineHeight: 1, width: '50%', overflow: 'hidden' }}>★</span>}
                             {isFullStar && <span style={{ position: 'absolute', color: '#22c55e', fontSize: '24px', lineHeight: 1 }}>★</span>}
                           </div>
                         )
@@ -1082,7 +1104,7 @@ export default function DashboardPage() {
                         <td style={{ padding: '14px 16px' }}>
                           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                             <span style={{ fontSize: '15px', fontWeight: 600, color: '#fff' }}>{account.name}</span>
-                            <button onClick={() => { setEditName(account.name); setShowEditModal(account.id) }} style={{ background: 'transparent', border: 'none', cursor: 'pointer', padding: '2px' }}>
+                            <button onClick={() => { setEditName(account.name); setEditProfitTarget(account.profit_target || ''); setEditMaxDrawdown(account.max_drawdown || ''); setShowEditModal(account.id) }} style={{ background: 'transparent', border: 'none', cursor: 'pointer', padding: '2px' }}>
                               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#666" strokeWidth="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" /><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" /></svg>
                             </button>
                           </div>
@@ -1095,7 +1117,7 @@ export default function DashboardPage() {
                         <td style={{ padding: '14px 16px', textAlign: 'center', fontSize: '14px', color: '#999' }}>{avgRR}R</td>
                         <td style={{ padding: '14px 16px', textAlign: 'center' }}>
                           <div style={{ display: 'flex', gap: '8px', justifyContent: 'center' }}>
-                            <a href={`/account/${account.id}`} style={{ padding: '8px 14px', background: '#22c55e', borderRadius: '4px', color: '#fff', fontWeight: 600, fontSize: '12px', textDecoration: 'none' }}>Enter</a>
+                            <a href={`/account/${account.id}`} style={{ padding: '8px 14px', background: '#22c55e', borderRadius: '4px', color: '#fff', fontWeight: 600, fontSize: '12px', textDecoration: 'none' }}>Enter Journal</a>
                             <a href={`/account/${account.id}?tab=statistics`} style={{ padding: '8px 14px', background: 'transparent', border: '1px solid #22c55e', borderRadius: '4px', color: '#22c55e', fontWeight: 600, fontSize: '12px', textDecoration: 'none' }}>Stats</a>
                           </div>
                         </td>
@@ -1124,12 +1146,12 @@ export default function DashboardPage() {
               const recentTrades = [...accTrades].reverse()
 
               return (
-                <div key={account.id} style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '10px', overflow: 'hidden' }}>
+                <div key={account.id} onClick={() => router.push(`/account/${account.id}`)} style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '10px', overflow: 'hidden', cursor: 'pointer', transition: 'border-color 0.15s' }}>
                   {/* Account Name */}
                   <div style={{ padding: isMobile ? '14px 16px' : '20px 24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: isMobile ? '10px' : '14px' }}>
                       <span style={{ fontSize: isMobile ? '20px' : '28px', fontWeight: 700, color: '#fff' }}>{account.name}</span>
-                      <button onClick={() => { setEditName(account.name); setShowEditModal(account.id) }} style={{ background: 'transparent', border: 'none', cursor: 'pointer', padding: '4px' }}>
+                      <button onClick={(e) => { e.stopPropagation(); setEditName(account.name); setEditProfitTarget(account.profit_target || ''); setEditMaxDrawdown(account.max_drawdown || ''); setShowEditModal(account.id) }} style={{ background: 'transparent', border: 'none', cursor: 'pointer', padding: '4px' }}>
                         <svg width={isMobile ? '14' : '18'} height={isMobile ? '14' : '18'} viewBox="0 0 24 24" fill="none" stroke="#666" strokeWidth="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" /><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" /></svg>
                       </button>
                     </div>
@@ -1171,92 +1193,110 @@ export default function DashboardPage() {
                   </div>
 
                   {/* Recent Trades */}
-                  <div style={{ padding: isMobile ? '0 16px 16px' : '0 24px 16px' }}>
+                  <div onClick={e => e.stopPropagation()} style={{ padding: isMobile ? '0 16px 16px' : '0 24px 16px' }}>
                     <div style={{ fontSize: '12px', color: '#999', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '8px', marginLeft: isMobile ? '0' : '42px' }}>Recent Trades</div>
                     {recentTrades.length === 0 ? (
                       <div style={{ padding: '20px', textAlign: 'center', color: '#999', fontSize: '14px', border: '1px solid #1a1a22', borderRadius: '8px' }}>No trades yet</div>
-                    ) : (
-                      <div style={{ maxHeight: '200px', overflowY: 'auto', overflowX: 'auto', border: '1px solid #1a1a22', borderRadius: '8px' }}>
-                        <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: isMobile ? '600px' : 'auto' }}>
-                          <thead style={{ position: 'sticky', top: 0, background: '#0d0d12' }}>
-                            <tr style={{ borderBottom: '1px solid #1a1a22' }}>
-                              {[
-                                { label: 'Symbol', width: '90px' },
-                                { label: 'W/L', width: '70px' },
-                                { label: 'PnL', width: '80px' },
-                                { label: 'RR', width: '50px' },
-                                { label: '%', width: '50px' },
-                                { label: 'Dir', width: '80px' },
-                                { label: 'Confidence', width: '90px' },
-                                { label: 'Session', width: '90px' },
-                                { label: 'TF', width: '60px' },
-                                { label: 'Rating', width: '80px' },
-                                { label: 'Placed', width: '70px' }
-                              ].map((h, i) => (
-                                <th key={i} style={{ padding: '10px', textAlign: 'center', color: '#999', fontSize: '11px', fontWeight: 600, textTransform: 'uppercase', borderBottom: '1px solid #1a1a22', minWidth: h.width }}>{h.label}</th>
-                              ))}
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {recentTrades.map((trade, idx) => {
-                              const extra = getExtraData(trade)
-                              return (
-                                <tr key={trade.id} style={{ borderBottom: '1px solid #1a1a22' }}>
-                                  <td style={{ padding: '12px', fontWeight: 600, fontSize: '14px', textAlign: 'center', color: '#fff' }}>{trade.symbol}</td>
-                                  <td style={{ padding: '12px', textAlign: 'center' }}>
-                                    {(() => { const s = getAccountOptionStyles(account, 'outcome', trade.outcome); return (
-                                      <span style={{ padding: '5px 12px', borderRadius: '6px', fontSize: '14px', fontWeight: 600, background: s.bgColor || (trade.outcome === 'win' ? 'rgba(34,197,94,0.15)' : trade.outcome === 'loss' ? 'rgba(239,68,68,0.15)' : 'rgba(255,255,255,0.1)'), color: s.textColor || (trade.outcome === 'win' ? '#22c55e' : trade.outcome === 'loss' ? '#ef4444' : '#888'), border: s.borderColor ? `1px solid ${s.borderColor}` : 'none' }}>
-                                        {trade.outcome === 'win' ? 'WIN' : trade.outcome === 'loss' ? 'LOSS' : 'BE'}
-                                      </span>
-                                    )})()}
-                                  </td>
-                                  <td style={{ padding: '12px', textAlign: 'center', fontWeight: 600, fontSize: '14px', color: parseFloat(trade.pnl) >= 0 ? '#22c55e' : '#ef4444' }}>{parseFloat(trade.pnl) >= 0 ? '+' : ''}${parseFloat(trade.pnl || 0).toFixed(0)}</td>
-                                  <td style={{ padding: '12px', textAlign: 'center', fontWeight: 600, fontSize: '14px', color: '#fff' }}>{trade.rr || '-'}</td>
-                                  <td style={{ padding: '12px', textAlign: 'center', fontWeight: 600, fontSize: '14px', color: '#fff' }}>{extra.riskPercent || '1'}%</td>
-                                  <td style={{ padding: '12px', textAlign: 'center' }}>
-                                    {trade.direction ? (
-                                      (() => { const s = getAccountOptionStyles(account, 'direction', trade.direction); return <span style={{ padding: '5px 12px', borderRadius: '6px', fontSize: '14px', fontWeight: 600, background: s.bgColor || 'transparent', color: s.textColor, border: s.borderColor ? `1px solid ${s.borderColor}` : 'none' }}>{trade.direction?.toUpperCase()}</span> })()
-                                    ) : <span style={{ fontWeight: 600, fontSize: '14px', color: '#444' }}>-</span>}
-                                  </td>
-                                  <td style={{ padding: '12px', textAlign: 'center' }}>
-                                    {extra.confidence ? (
-                                      (() => { const s = getAccountOptionStyles(account, 'confidence', extra.confidence); return <span style={{ padding: '5px 12px', borderRadius: '6px', fontSize: '14px', fontWeight: 600, background: s.bgColor || 'transparent', color: s.textColor, border: s.borderColor ? `1px solid ${s.borderColor}` : 'none' }}>{extra.confidence}</span> })()
-                                    ) : <span style={{ fontWeight: 600, fontSize: '14px', color: '#444' }}>-</span>}
-                                  </td>
-                                  <td style={{ padding: '12px', textAlign: 'center' }}>
-                                    {extra.session ? (
-                                      (() => { const s = getAccountOptionStyles(account, 'session', extra.session); return <span style={{ padding: '5px 12px', borderRadius: '6px', fontSize: '14px', fontWeight: 600, background: s.bgColor || 'transparent', color: s.textColor, border: s.borderColor ? `1px solid ${s.borderColor}` : 'none' }}>{extra.session}</span> })()
-                                    ) : <span style={{ fontWeight: 600, fontSize: '14px', color: '#444' }}>-</span>}
-                                  </td>
-                                  <td style={{ padding: '12px', textAlign: 'center' }}>
-                                    {extra.timeframe ? (
-                                      (() => { const s = getAccountOptionStyles(account, 'timeframe', extra.timeframe); return <span style={{ padding: '5px 12px', borderRadius: '6px', fontSize: '14px', fontWeight: 600, background: s.bgColor || 'transparent', color: s.textColor, border: s.borderColor ? `1px solid ${s.borderColor}` : 'none' }}>{extra.timeframe}</span> })()
-                                    ) : <span style={{ fontWeight: 600, fontSize: '14px', color: '#444' }}>-</span>}
-                                  </td>
-                                  <td style={{ padding: '12px', textAlign: 'center', minWidth: '80px' }}>
-                                    <div style={{ display: 'inline-flex', justifyContent: 'center', gap: '1px' }}>
-                                      {[1,2,3,4,5].map(star => {
-                                        const rating = parseFloat(extra.rating || 0)
-                                        const isFullStar = rating >= star
-                                        const isHalfStar = rating >= star - 0.5 && rating < star
-                                        return (
-                                          <span key={star} style={{ color: isFullStar ? '#22c55e' : isHalfStar ? '#22c55e' : '#2a2a35', fontSize: '12px' }}>★</span>
-                                        )
-                                      })}
-                                    </div>
-                                  </td>
-                                  <td style={{ padding: '12px', textAlign: 'center', fontWeight: 600, fontSize: '14px', color: '#999' }}>{getDaysAgo(trade.date)}</td>
+                    ) : (() => {
+                        // Get enabled columns from account's custom_inputs
+                        const getEnabledColumns = () => {
+                          let columns = []
+                          try {
+                            const customInputs = account?.custom_inputs ? JSON.parse(account.custom_inputs) : null
+                            if (customInputs && Array.isArray(customInputs)) {
+                              // Filter to only enabled inputs and map to column format
+                              columns = customInputs
+                                .filter(inp => inp.enabled !== false)
+                                .map(inp => ({
+                                  id: inp.id,
+                                  label: inp.label || inp.id,
+                                  type: inp.type,
+                                  options: inp.options
+                                }))
+                            }
+                          } catch {}
+                          // If no columns found, use minimal defaults
+                          if (columns.length === 0) {
+                            columns = [
+                              { id: 'symbol', label: 'Symbol', type: 'text' },
+                              { id: 'outcome', label: 'W/L', type: 'select' },
+                              { id: 'pnl', label: 'PnL', type: 'number' },
+                              { id: 'direction', label: 'Direction', type: 'select' }
+                            ]
+                          }
+                          // Always add Placed at end
+                          return [...columns, { id: '_placed', label: 'Placed', type: 'special' }]
+                        }
+                        const enabledCols = getEnabledColumns()
+
+                        // Render cell based on column type
+                        const renderCell = (col, trade, extra) => {
+                          const val = trade[col.id] || extra[col.id]
+                          if (col.id === 'symbol') return <span style={{ fontWeight: 600, fontSize: '14px', color: '#fff' }}>{trade.symbol}</span>
+                          if (col.id === 'outcome') {
+                            const s = getAccountOptionStyles(account, 'outcome', trade.outcome)
+                            return <span style={{ padding: '5px 12px', borderRadius: '6px', fontSize: '14px', fontWeight: 600, background: s.bgColor || (trade.outcome === 'win' ? 'rgba(34,197,94,0.15)' : trade.outcome === 'loss' ? 'rgba(239,68,68,0.15)' : 'rgba(245,158,11,0.15)'), color: s.textColor || (trade.outcome === 'win' ? '#22c55e' : trade.outcome === 'loss' ? '#ef4444' : '#f59e0b'), border: s.borderColor ? `1px solid ${s.borderColor}` : 'none' }}>{trade.outcome === 'win' ? 'WIN' : trade.outcome === 'loss' ? 'LOSS' : 'BE'}</span>
+                          }
+                          if (col.id === 'pnl') return <span style={{ fontWeight: 600, fontSize: '14px', color: parseFloat(trade.pnl) >= 0 ? '#22c55e' : '#ef4444' }}>{parseFloat(trade.pnl) >= 0 ? '+' : ''}${parseFloat(trade.pnl || 0).toFixed(0)}</span>
+                          if (col.id === 'rr') return <span style={{ fontWeight: 600, fontSize: '14px', color: '#fff' }}>{trade.rr || '-'}</span>
+                          if (col.id === 'riskPercent') return <span style={{ fontWeight: 600, fontSize: '14px', color: '#fff' }}>{extra.riskPercent || '-'}%</span>
+                          if (col.id === 'direction') {
+                            if (!trade.direction) return <span style={{ fontWeight: 600, fontSize: '14px', color: '#444' }}>-</span>
+                            const s = getAccountOptionStyles(account, 'direction', trade.direction)
+                            return <span style={{ padding: '5px 12px', borderRadius: '6px', fontSize: '14px', fontWeight: 600, background: s.bgColor || 'transparent', color: s.textColor, border: s.borderColor ? `1px solid ${s.borderColor}` : 'none' }}>{trade.direction?.toUpperCase()}</span>
+                          }
+                          if (col.id === 'date') return <span style={{ fontWeight: 600, fontSize: '14px', color: '#fff' }}>{trade.date ? new Date(trade.date).toLocaleDateString() : '-'}</span>
+                          if (col.id === 'time') return <span style={{ fontWeight: 600, fontSize: '14px', color: '#fff' }}>{extra.time || '-'}</span>
+                          if (col.id === '_placed') return <span style={{ fontWeight: 600, fontSize: '14px', color: '#999' }}>{getDaysAgo(trade.date)}</span>
+                          if (col.type === 'rating') {
+                            const rating = parseFloat(val || 0)
+                            return <div style={{ display: 'inline-flex', justifyContent: 'center', gap: '1px' }}>{[1,2,3,4,5].map(star => {
+                              const isFullStar = rating >= star
+                              const isHalfStar = rating >= star - 0.5 && rating < star
+                              return <span key={star} style={{ position: 'relative', display: 'inline-block', width: '12px', height: '12px' }}><span style={{ position: 'absolute', color: '#2a2a35', fontSize: '12px', lineHeight: 1 }}>★</span>{isHalfStar && <span style={{ position: 'absolute', color: '#22c55e', fontSize: '12px', lineHeight: 1, width: '50%', overflow: 'hidden' }}>★</span>}{isFullStar && <span style={{ position: 'absolute', color: '#22c55e', fontSize: '12px', lineHeight: 1 }}>★</span>}</span>
+                            })}</div>
+                          }
+                          if (col.type === 'select' && val) {
+                            const s = getAccountOptionStyles(account, col.id, val)
+                            return <span style={{ padding: '5px 12px', borderRadius: '6px', fontSize: '14px', fontWeight: 600, background: s.bgColor || 'transparent', color: s.textColor || '#fff', border: s.borderColor ? `1px solid ${s.borderColor}` : 'none' }}>{val}</span>
+                          }
+                          if (col.type === 'file' || col.type === 'textarea') return null // Skip images and notes in dashboard
+                          return <span style={{ fontWeight: 600, fontSize: '14px', color: '#fff' }}>{val || '-'}</span>
+                        }
+
+                        // Filter out columns that would render as null (file, textarea)
+                        const visibleCols = enabledCols.filter(c => c.type !== 'file' && c.type !== 'textarea')
+
+                        return (
+                          <div style={{ maxHeight: '200px', overflowY: 'auto', overflowX: 'auto', border: '1px solid #1a1a22', borderRadius: '8px' }}>
+                            <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: isMobile ? '600px' : 'auto' }}>
+                              <thead style={{ position: 'sticky', top: 0, background: '#0d0d12', zIndex: 1 }}>
+                                <tr style={{ borderBottom: '2px solid #ef4444' }}>
+                                  {visibleCols.map((col, i) => (
+                                    <th key={col.id} style={{ padding: '10px', textAlign: 'center', color: '#999', fontSize: '11px', fontWeight: 600, textTransform: 'uppercase', minWidth: '70px', background: '#0d0d12' }}>{col.label}</th>
+                                  ))}
                                 </tr>
-                              )
-                            })}
-                          </tbody>
-                        </table>
-                      </div>
-                    )}
+                              </thead>
+                              <tbody>
+                                {recentTrades.map((trade) => {
+                                  const extra = getExtraData(trade)
+                                  return (
+                                    <tr key={trade.id} style={{ borderBottom: '1px solid #1a1a22' }}>
+                                      {visibleCols.map(col => (
+                                        <td key={col.id} style={{ padding: '12px', textAlign: 'center' }}>{renderCell(col, trade, extra)}</td>
+                                      ))}
+                                    </tr>
+                                  )
+                                })}
+                              </tbody>
+                            </table>
+                          </div>
+                        )
+                      })()}
                     {/* Load More Button */}
                     {hasMoreTrades(account.id) && (
                       <button
-                        onClick={() => loadMoreTrades(account.id)}
+                        onClick={(e) => { e.stopPropagation(); loadMoreTrades(account.id) }}
                         disabled={loadingMore}
                         style={{
                           width: '100%',
@@ -1277,7 +1317,7 @@ export default function DashboardPage() {
                   </div>
 
                   {/* Buttons */}
-                  <div style={{ padding: '12px 24px 20px', display: 'flex', gap: '12px' }}>
+                  <div onClick={e => e.stopPropagation()} style={{ padding: '12px 24px 20px', display: 'flex', gap: '12px' }}>
                     <a href={`/account/${account.id}`} style={{ flex: 2, padding: '14px', background: '#22c55e', borderRadius: '6px', color: '#fff', fontWeight: 600, fontSize: '15px', textAlign: 'center', textDecoration: 'none' }}>ENTER JOURNAL</a>
                     <a href={`/account/${account.id}?tab=statistics`} style={{ flex: 1, padding: '14px', background: 'transparent', border: '1px solid #22c55e', borderRadius: '6px', color: '#22c55e', fontWeight: 600, fontSize: '15px', textAlign: 'center', textDecoration: 'none' }}>SEE STATISTICS</a>
                   </div>
@@ -1296,8 +1336,13 @@ export default function DashboardPage() {
             <div style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '10px', padding: '28px', width: '380px' }} onClick={e => e.stopPropagation()}>
               <h2 style={{ fontSize: '18px', fontWeight: 600, marginBottom: '20px' }}>Create New Journal</h2>
               <div style={{ marginBottom: '14px' }}><label style={{ display: 'block', fontSize: '11px', color: '#999', marginBottom: '6px', textTransform: 'uppercase' }}>Journal Name</label><input type="text" value={name} onChange={e => setName(e.target.value)} placeholder="e.g. FTMO 10k" autoFocus style={{ width: '100%', padding: '12px 14px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '14px', boxSizing: 'border-box' }} /></div>
-              <div style={{ marginBottom: '20px' }}><label style={{ display: 'block', fontSize: '11px', color: '#999', marginBottom: '6px', textTransform: 'uppercase' }}>Starting Balance ($)</label><input type="number" value={balance} onChange={e => setBalance(e.target.value)} placeholder="e.g. 10000" style={{ width: '100%', padding: '12px 14px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '14px', boxSizing: 'border-box' }} /></div>
-              <div style={{ display: 'flex', gap: '12px' }}><button onClick={createJournal} disabled={creating || !name.trim() || !balance} style={{ flex: 1, padding: '12px', background: '#22c55e', border: 'none', borderRadius: '6px', color: '#fff', fontWeight: 600, fontSize: '14px', cursor: 'pointer', opacity: (creating || !name.trim() || !balance) ? 0.5 : 1 }}>{creating ? 'Creating...' : 'Create'}</button><button onClick={() => setShowModal(false)} style={{ flex: 1, padding: '12px', background: 'transparent', border: '1px solid #1a1a22', borderRadius: '6px', color: '#999', fontWeight: 600, fontSize: '14px', cursor: 'pointer' }}>Cancel</button></div>
+              <div style={{ marginBottom: '14px' }}><label style={{ display: 'block', fontSize: '11px', color: '#999', marginBottom: '6px', textTransform: 'uppercase' }}>Starting Balance ($)</label><input type="number" value={balance} onChange={e => setBalance(e.target.value)} placeholder="e.g. 10000" style={{ width: '100%', padding: '12px 14px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '14px', boxSizing: 'border-box' }} /></div>
+              <div style={{ fontSize: '11px', color: '#666', marginBottom: '10px', paddingTop: '8px', borderTop: '1px solid #1a1a22' }}>PROP FIRM RULES (Optional)</div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '20px' }}>
+                <div><label style={{ display: 'block', fontSize: '11px', color: '#999', marginBottom: '6px', textTransform: 'uppercase' }}>Profit Target (%)</label><input type="number" step="0.1" value={profitTarget} onChange={e => setProfitTarget(e.target.value)} placeholder="e.g. 10" style={{ width: '100%', padding: '12px 14px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '14px', boxSizing: 'border-box' }} /></div>
+                <div><label style={{ display: 'block', fontSize: '11px', color: '#999', marginBottom: '6px', textTransform: 'uppercase' }}>Max Drawdown (%)</label><input type="number" step="0.1" value={maxDrawdown} onChange={e => setMaxDrawdown(e.target.value)} placeholder="e.g. 10" style={{ width: '100%', padding: '12px 14px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '14px', boxSizing: 'border-box' }} /></div>
+              </div>
+              <div style={{ display: 'flex', gap: '12px' }}><button onClick={createJournal} disabled={creating || !name.trim() || !balance} style={{ flex: 1, padding: '12px', background: '#22c55e', border: 'none', borderRadius: '6px', color: '#fff', fontWeight: 600, fontSize: '14px', cursor: 'pointer', opacity: (creating || !name.trim() || !balance) ? 0.5 : 1 }}>{creating ? 'Creating...' : 'Create'}</button><button onClick={() => { setShowModal(false); setName(''); setBalance(''); setProfitTarget(''); setMaxDrawdown('') }} style={{ flex: 1, padding: '12px', background: 'transparent', border: '1px solid #1a1a22', borderRadius: '6px', color: '#999', fontWeight: 600, fontSize: '14px', cursor: 'pointer' }}>Cancel</button></div>
             </div>
           </div>
         )}
@@ -1306,8 +1351,13 @@ export default function DashboardPage() {
           <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.9)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100 }} onClick={() => setShowEditModal(null)}>
             <div style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '10px', padding: '28px', width: '380px' }} onClick={e => e.stopPropagation()}>
               <h2 style={{ fontSize: '18px', fontWeight: 600, marginBottom: '20px' }}>Edit Journal</h2>
-              <div style={{ marginBottom: '20px' }}><label style={{ display: 'block', fontSize: '11px', color: '#999', marginBottom: '6px', textTransform: 'uppercase' }}>Journal Name</label><input type="text" value={editName} onChange={e => setEditName(e.target.value)} autoFocus style={{ width: '100%', padding: '12px 14px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '14px', boxSizing: 'border-box' }} /></div>
-              <div style={{ display: 'flex', gap: '12px', marginBottom: '16px' }}><button onClick={() => renameAccount(showEditModal)} disabled={!editName.trim()} style={{ flex: 1, padding: '12px', background: '#22c55e', border: 'none', borderRadius: '6px', color: '#fff', fontWeight: 600, fontSize: '14px', cursor: 'pointer', opacity: !editName.trim() ? 0.5 : 1 }}>Save</button><button onClick={() => setShowEditModal(null)} style={{ flex: 1, padding: '12px', background: 'transparent', border: '1px solid #1a1a22', borderRadius: '6px', color: '#999', fontWeight: 600, fontSize: '14px', cursor: 'pointer' }}>Cancel</button></div>
+              <div style={{ marginBottom: '14px' }}><label style={{ display: 'block', fontSize: '11px', color: '#999', marginBottom: '6px', textTransform: 'uppercase' }}>Journal Name</label><input type="text" value={editName} onChange={e => setEditName(e.target.value)} autoFocus style={{ width: '100%', padding: '12px 14px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '14px', boxSizing: 'border-box' }} /></div>
+              <div style={{ fontSize: '11px', color: '#666', marginBottom: '10px', paddingTop: '8px', borderTop: '1px solid #1a1a22' }}>PROP FIRM RULES</div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '20px' }}>
+                <div><label style={{ display: 'block', fontSize: '11px', color: '#999', marginBottom: '6px', textTransform: 'uppercase' }}>Profit Target (%)</label><input type="number" step="0.1" value={editProfitTarget} onChange={e => setEditProfitTarget(e.target.value)} placeholder="e.g. 10" style={{ width: '100%', padding: '12px 14px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '14px', boxSizing: 'border-box' }} /></div>
+                <div><label style={{ display: 'block', fontSize: '11px', color: '#999', marginBottom: '6px', textTransform: 'uppercase' }}>Max Drawdown (%)</label><input type="number" step="0.1" value={editMaxDrawdown} onChange={e => setEditMaxDrawdown(e.target.value)} placeholder="e.g. 10" style={{ width: '100%', padding: '12px 14px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '14px', boxSizing: 'border-box' }} /></div>
+              </div>
+              <div style={{ display: 'flex', gap: '12px', marginBottom: '16px' }}><button onClick={() => updateAccount(showEditModal)} disabled={!editName.trim()} style={{ flex: 1, padding: '12px', background: '#22c55e', border: 'none', borderRadius: '6px', color: '#fff', fontWeight: 600, fontSize: '14px', cursor: 'pointer', opacity: !editName.trim() ? 0.5 : 1 }}>Save</button><button onClick={() => { setShowEditModal(null); setEditName(''); setEditProfitTarget(''); setEditMaxDrawdown('') }} style={{ flex: 1, padding: '12px', background: 'transparent', border: '1px solid #1a1a22', borderRadius: '6px', color: '#999', fontWeight: 600, fontSize: '14px', cursor: 'pointer' }}>Cancel</button></div>
               <button onClick={() => { setShowDeleteModal(showEditModal); setShowEditModal(null) }} style={{ width: '100%', padding: '12px', background: 'transparent', border: '1px solid #ef4444', borderRadius: '6px', color: '#ef4444', fontWeight: 600, fontSize: '14px', cursor: 'pointer' }}>Delete Journal</button>
             </div>
           </div>
@@ -1628,7 +1678,7 @@ export default function DashboardPage() {
                             onMouseMove={(e) => { const rect = e.currentTarget.getBoundingClientRect(); const x = e.clientX - rect.left; setHoverRating(x < rect.width / 2 ? star - 0.5 : star) }}
                             onClick={(e) => { const rect = e.currentTarget.getBoundingClientRect(); const x = e.clientX - rect.left; const newRating = x < rect.width / 2 ? star - 0.5 : star; setQuickTradeRating(parseFloat(quickTradeRating) === newRating ? '' : String(newRating)) }}>
                             <span style={{ position: 'absolute', color: '#2a2a35', fontSize: '28px', lineHeight: 1 }}>★</span>
-                            {isHalfStar && <span style={{ position: 'absolute', color: '#22c55e', fontSize: '28px', lineHeight: 1, width: '14px', overflow: 'hidden' }}>★</span>}
+                            {isHalfStar && <span style={{ position: 'absolute', color: '#22c55e', fontSize: '28px', lineHeight: 1, width: '50%', overflow: 'hidden' }}>★</span>}
                             {isFullStar && <span style={{ position: 'absolute', color: '#22c55e', fontSize: '28px', lineHeight: 1 }}>★</span>}
                           </div>
                         )
@@ -1878,7 +1928,7 @@ export default function DashboardPage() {
                             onMouseMove={(e) => { const rect = e.currentTarget.getBoundingClientRect(); const x = e.clientX - rect.left; setHoverRating(x < rect.width / 2 ? star - 0.5 : star) }}
                             onClick={(e) => { const rect = e.currentTarget.getBoundingClientRect(); const x = e.clientX - rect.left; const newRating = x < rect.width / 2 ? star - 0.5 : star; setQuickTradeRating(parseFloat(quickTradeRating) === newRating ? '' : String(newRating)) }}>
                             <span style={{ position: 'absolute', color: '#2a2a35', fontSize: '22px', lineHeight: 1 }}>★</span>
-                            {isHalfStar && <span style={{ position: 'absolute', color: '#22c55e', fontSize: '22px', lineHeight: 1, width: '11px', overflow: 'hidden' }}>★</span>}
+                            {isHalfStar && <span style={{ position: 'absolute', color: '#22c55e', fontSize: '22px', lineHeight: 1, width: '50%', overflow: 'hidden' }}>★</span>}
                             {isFullStar && <span style={{ position: 'absolute', color: '#22c55e', fontSize: '22px', lineHeight: 1 }}>★</span>}
                           </div>
                         )

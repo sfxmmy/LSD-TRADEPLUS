@@ -7,8 +7,8 @@ import { createClient } from '@supabase/supabase-js'
 const defaultInputs = [
   { id: 'symbol', label: 'Symbol', type: 'text', required: true, enabled: true, fixed: true, color: '#22c55e' },
   { id: 'pnl', label: 'PnL ($)', type: 'number', required: true, enabled: true, fixed: true, color: '#22c55e' },
-  { id: 'direction', label: 'Direction', type: 'select', options: [{value: 'Long', textColor: '#22c55e', bgColor: 'rgba(34,197,94,0.15)'}, {value: 'Short', textColor: '#ef4444', bgColor: 'rgba(239,68,68,0.15)'}], required: true, enabled: true, fixed: true, color: '#3b82f6' },
-  { id: 'outcome', label: 'Outcome', type: 'select', options: [{value: 'Win', textColor: '#22c55e', bgColor: 'rgba(34,197,94,0.15)'}, {value: 'Loss', textColor: '#ef4444', bgColor: 'rgba(239,68,68,0.15)'}, {value: 'Breakeven', textColor: '#f59e0b', bgColor: 'rgba(245,158,11,0.15)'}], required: true, enabled: true, fixed: true, color: '#22c55e' },
+  { id: 'direction', label: 'Direction', type: 'select', options: [{value: 'long', textColor: '#22c55e', bgColor: 'rgba(34,197,94,0.15)'}, {value: 'short', textColor: '#ef4444', bgColor: 'rgba(239,68,68,0.15)'}], required: true, enabled: true, fixed: true, color: '#3b82f6' },
+  { id: 'outcome', label: 'W/L', type: 'select', options: [{value: 'win', textColor: '#22c55e', bgColor: 'rgba(34,197,94,0.15)'}, {value: 'loss', textColor: '#ef4444', bgColor: 'rgba(239,68,68,0.15)'}, {value: 'be', textColor: '#f59e0b', bgColor: 'rgba(245,158,11,0.15)'}], required: true, enabled: true, fixed: true, color: '#22c55e' },
   { id: 'rr', label: 'RR', type: 'number', required: false, enabled: true, fixed: true, color: '#f59e0b' },
   { id: 'riskPercent', label: '% Risk', type: 'number', required: false, enabled: true, fixed: true, color: '#ef4444' },
   { id: 'date', label: 'Date', type: 'date', required: true, enabled: true, fixed: true, color: '#8b5cf6' },
@@ -336,8 +336,13 @@ export default function AccountPage() {
     if (!sourceAccount) return
     try {
       const sourceInputs = sourceAccount.custom_inputs ? JSON.parse(sourceAccount.custom_inputs) : defaultInputs
-      setInputs(sourceInputs)
+      // Deep copy to ensure all nested properties (colors, options) are preserved
+      const copiedInputs = JSON.parse(JSON.stringify(sourceInputs))
+      setInputs(copiedInputs)
       setTransferFromJournal('')
+      // Auto-save to database so colors and all settings are immediately applied
+      const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY)
+      await supabase.from('accounts').update({ custom_inputs: JSON.stringify(copiedInputs) }).eq('id', accountId)
     } catch (e) {
       console.error('Error parsing source inputs:', e)
     }
@@ -616,7 +621,7 @@ export default function AccountPage() {
   if (loading) return (
     <div style={{ minHeight: '100vh', background: '#0a0a0f', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
       <div style={{ textAlign: 'center' }}>
-        <div style={{ fontSize: '32px', fontWeight: 700, marginBottom: '12px' }}><span style={{ color: '#22c55e' }}>LSD</span><span style={{ color: '#fff' }}>TRADE</span><span style={{ color: '#22c55e' }}>+</span></div>
+        <div style={{ fontSize: '40px', fontWeight: 700, marginBottom: '16px' }}><span style={{ color: '#22c55e' }}>LSD</span><span style={{ color: '#fff' }}>TRADE</span><span style={{ color: '#22c55e' }}>+</span></div>
         <div style={{ color: '#999' }}>Loading...</div>
       </div>
     </div>
@@ -752,6 +757,134 @@ export default function AccountPage() {
     const totalGrowth = ((currentBalance / startingBalance) - 1) * 100
     return (totalGrowth / monthsDiff).toFixed(1)
   })()
+
+  // Weekly growth %
+  const weeklyGrowth = (() => {
+    if (trades.length === 0) return '0'
+    const sorted = [...trades].sort((a, b) => new Date(a.date) - new Date(b.date))
+    const firstDate = new Date(sorted[0].date)
+    const lastDate = new Date(sorted[sorted.length - 1].date)
+    const daysDiff = Math.max(1, Math.ceil((lastDate - firstDate) / (1000 * 60 * 60 * 24)))
+    const weeksDiff = Math.max(1, Math.ceil(daysDiff / 7))
+    const totalGrowth = ((currentBalance / startingBalance) - 1) * 100
+    return (totalGrowth / weeksDiff).toFixed(1)
+  })()
+
+  // Yearly growth %
+  const yearlyGrowth = (() => {
+    if (trades.length === 0) return '0'
+    const sorted = [...trades].sort((a, b) => new Date(a.date) - new Date(b.date))
+    const firstDate = new Date(sorted[0].date)
+    const lastDate = new Date(sorted[sorted.length - 1].date)
+    const daysDiff = Math.max(1, Math.ceil((lastDate - firstDate) / (1000 * 60 * 60 * 24)))
+    const yearsDiff = Math.max(1, daysDiff / 365)
+    const totalGrowth = ((currentBalance / startingBalance) - 1) * 100
+    return (totalGrowth / yearsDiff).toFixed(1)
+  })()
+
+  // Distance from passing (for prop firm accounts with profit_target)
+  const distanceFromTarget = (() => {
+    if (!account?.profit_target) return null
+    const targetAmount = startingBalance * (1 + account.profit_target / 100)
+    const remaining = targetAmount - currentBalance
+    const pctRemaining = ((targetAmount - currentBalance) / startingBalance) * 100
+    return { remaining: Math.max(0, remaining), pct: Math.max(0, pctRemaining).toFixed(1), passed: currentBalance >= targetAmount }
+  })()
+
+  // Drawdown from peak
+  const currentDrawdown = (() => {
+    if (trades.length === 0) return { amount: 0, pct: '0' }
+    const sorted = [...trades].sort((a, b) => new Date(a.date) - new Date(b.date))
+    let runningBalance = startingBalance
+    let peak = startingBalance
+    sorted.forEach(t => {
+      runningBalance += parseFloat(t.pnl) || 0
+      if (runningBalance > peak) peak = runningBalance
+    })
+    const dd = peak - currentBalance
+    const ddPct = peak > 0 ? ((dd / peak) * 100).toFixed(1) : '0'
+    return { amount: dd, pct: ddPct, peak }
+  })()
+
+  // Additional stats calculations
+  const peakBalance = currentDrawdown.peak || startingBalance
+  const uniqueSymbols = [...new Set(trades.map(t => t.symbol))].length
+  const tradesThisWeek = trades.filter(t => {
+    const d = new Date(t.date)
+    const now = new Date()
+    const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)
+    return d >= weekAgo
+  }).length
+
+  // Recovery factor (net profit / max drawdown)
+  const recoveryFactor = currentDrawdown.amount > 0 ? (totalPnl / currentDrawdown.amount).toFixed(2) : totalPnl > 0 ? '∞' : '-'
+
+  // Win amount % (what % of total volume is wins)
+  const totalVolume = grossProfit + grossLoss
+  const winAmountPct = totalVolume > 0 ? Math.round((grossProfit / totalVolume) * 100) : 0
+
+  // Avg trades per week
+  const avgTradesPerWeek = (() => {
+    if (trades.length === 0) return '0'
+    const sorted = [...trades].sort((a, b) => new Date(a.date) - new Date(b.date))
+    const firstDate = new Date(sorted[0].date)
+    const lastDate = new Date(sorted[sorted.length - 1].date)
+    const daysDiff = Math.max(1, Math.ceil((lastDate - firstDate) / (1000 * 60 * 60 * 24)))
+    const weeksDiff = Math.max(1, daysDiff / 7)
+    return (trades.length / weeksDiff).toFixed(1)
+  })()
+
+  // Highest and lowest RR trades
+  const tradesWithRR = trades.filter(t => t.rr && !isNaN(parseFloat(t.rr)))
+  const highestRR = tradesWithRR.length > 0 ? Math.max(...tradesWithRR.map(t => parseFloat(t.rr))).toFixed(1) : '-'
+  const lowestRR = tradesWithRR.length > 0 ? Math.min(...tradesWithRR.map(t => parseFloat(t.rr))).toFixed(1) : '-'
+
+  // Best direction
+  const bestDirection = longPnl >= shortPnl ? 'Long' : 'Short'
+  const longPF = (() => {
+    const lWins = longTrades.filter(t => t.outcome === 'win').reduce((s, t) => s + (parseFloat(t.pnl) || 0), 0)
+    const lLosses = Math.abs(longTrades.filter(t => t.outcome === 'loss').reduce((s, t) => s + (parseFloat(t.pnl) || 0), 0))
+    return lLosses > 0 ? (lWins / lLosses).toFixed(2) : lWins > 0 ? '∞' : '-'
+  })()
+  const shortPF = (() => {
+    const sWins = shortTrades.filter(t => t.outcome === 'win').reduce((s, t) => s + (parseFloat(t.pnl) || 0), 0)
+    const sLosses = Math.abs(shortTrades.filter(t => t.outcome === 'loss').reduce((s, t) => s + (parseFloat(t.pnl) || 0), 0))
+    return sLosses > 0 ? (sWins / sLosses).toFixed(2) : sWins > 0 ? '∞' : '-'
+  })()
+
+  // Average win/loss streak
+  const avgWinStreak = (() => {
+    let streaks = [], current = 0
+    trades.forEach(t => {
+      if (t.outcome === 'win') { current++; }
+      else if (current > 0) { streaks.push(current); current = 0 }
+    })
+    if (current > 0) streaks.push(current)
+    return streaks.length > 0 ? (streaks.reduce((a, b) => a + b, 0) / streaks.length).toFixed(1) : '0'
+  })()
+
+  // BE days (days with 0 P&L)
+  const beDays = dailyPnL.filter(d => d.pnl === 0).length
+
+  // Active days % (trading days / calendar days)
+  const activeDaysPct = (() => {
+    if (trades.length === 0) return 0
+    const sorted = [...trades].sort((a, b) => new Date(a.date) - new Date(b.date))
+    const firstDate = new Date(sorted[0].date)
+    const lastDate = new Date(sorted[sorted.length - 1].date)
+    const calendarDays = Math.max(1, Math.ceil((lastDate - firstDate) / (1000 * 60 * 60 * 24)))
+    const tradingDays = new Set(trades.map(t => t.date)).size
+    return Math.round((tradingDays / calendarDays) * 100)
+  })()
+
+  // Peak to current
+  const peakToCurrent = peakBalance > 0 ? ((currentBalance / peakBalance - 1) * 100).toFixed(1) : '0'
+
+  // Images uploaded count
+  const tradesWithImages = trades.filter(t => {
+    const extra = getExtraData(t)
+    return extra.images && extra.images.length > 0
+  }).length
 
   const tabTitles = { trades: 'JOURNAL AREA', statistics: 'STATISTICS AREA', notes: 'NOTES AREA' }
   const tabDescriptions = {
@@ -926,10 +1059,9 @@ export default function AccountPage() {
             </button>
           ))}
 
-          {/* Stats View Selector - show when on statistics tab */}
-          {activeTab === 'statistics' && (
-            <div style={{ marginTop: '4px', marginBottom: '8px', padding: '10px', background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px' }}>
-              <div style={{ fontSize: '9px', color: '#666', textTransform: 'uppercase', marginBottom: '8px', letterSpacing: '0.5px' }}>Viewing Stats For</div>
+          {/* Stats View Selector - show on all tabs */}
+          <div style={{ marginTop: '4px', marginBottom: '8px', padding: '10px', background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px' }}>
+            <div style={{ fontSize: '9px', color: '#666', textTransform: 'uppercase', marginBottom: '8px', letterSpacing: '0.5px' }}>Viewing {activeTab === 'trades' ? 'Trades' : activeTab === 'notes' ? 'Notes' : 'Stats'} For</div>
 
               {/* Show "Selected Trades" indicator when viewing selected */}
               {viewingSelectedStats && (
@@ -1015,7 +1147,6 @@ export default function AccountPage() {
                 </div>
               )}
             </div>
-          )}
 
           {/* Slideshow Button */}
           {getTradesWithImages().length > 0 && (
@@ -1119,15 +1250,20 @@ export default function AccountPage() {
                             borderBottom: '1px solid #1a1a22',
                             background: dragOverColumn === inp.id ? 'rgba(34,197,94,0.1)' : '#0a0a0f',
                             minWidth: '100px',
+                            maxWidth: '150px',
                             cursor: 'grab',
                             userSelect: 'none',
                             opacity: draggedColumn === inp.id ? 0.5 : 1,
-                            transition: 'background 0.15s, color 0.15s'
+                            transition: 'background 0.15s, color 0.15s',
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                            whiteSpace: 'nowrap'
                           }}
                         >
-                          {inp.label}
+                          <span title={inp.label}>{inp.label}</span>
                         </th>
                       ))}
+                      <th style={{ padding: '14px 12px', textAlign: 'center', color: '#999', fontSize: '12px', fontWeight: 600, textTransform: 'uppercase', borderBottom: '1px solid #1a1a22', background: '#0a0a0f', minWidth: '70px' }}>Placed</th>
                       <th style={{ padding: '14px 12px', textAlign: 'center', color: '#999', fontSize: '12px', fontWeight: 600, borderBottom: '1px solid #1a1a22', background: '#0a0a0f', minWidth: '70px' }}></th>
                     </tr>
                   </thead>
@@ -1144,9 +1280,14 @@ export default function AccountPage() {
                               {inp.id === 'symbol' ? (
                                 <span style={{ fontWeight: 600, fontSize: '16px', color: '#fff' }}>{trade.symbol}</span>
                               ) : inp.id === 'outcome' ? (
-                                <span style={{ padding: '5px 12px', borderRadius: '6px', fontSize: '13px', fontWeight: 600, background: trade.outcome === 'win' ? 'rgba(34,197,94,0.15)' : trade.outcome === 'loss' ? 'rgba(239,68,68,0.15)' : 'rgba(255,255,255,0.1)', color: trade.outcome === 'win' ? '#22c55e' : trade.outcome === 'loss' ? '#ef4444' : '#888' }}>
-                                  {trade.outcome === 'win' ? 'WIN' : trade.outcome === 'loss' ? 'LOSS' : 'BE'}
-                                </span>
+                                (() => {
+                                  const styles = findOptStyles(inp.options, trade.outcome)
+                                  return (
+                                    <span style={{ padding: '5px 12px', borderRadius: '6px', fontSize: '13px', fontWeight: 600, background: styles.bgColor || 'transparent', color: styles.textColor, border: styles.borderColor ? `1px solid ${styles.borderColor}` : 'none' }}>
+                                      {trade.outcome?.toUpperCase()}
+                                    </span>
+                                  )
+                                })()
                               ) : inp.id === 'pnl' ? (
                                 <span style={{ fontWeight: 600, fontSize: '16px', color: pnlValue >= 0 ? '#22c55e' : '#ef4444' }}>{pnlValue >= 0 ? '+' : ''}${pnlValue.toFixed(0)}</span>
                               ) : inp.id === 'riskPercent' ? (
@@ -1166,7 +1307,7 @@ export default function AccountPage() {
                                     return (
                                       <div key={star} style={{ position: 'relative', width: '14px', height: '14px' }}>
                                         <span style={{ position: 'absolute', color: '#2a2a35', fontSize: '14px', lineHeight: 1 }}>★</span>
-                                        {isHalfStar && <span style={{ position: 'absolute', color: '#22c55e', fontSize: '14px', lineHeight: 1, width: '7px', overflow: 'hidden' }}>★</span>}
+                                        {isHalfStar && <span style={{ position: 'absolute', color: '#22c55e', fontSize: '14px', lineHeight: 1, width: '50%', overflow: 'hidden' }}>★</span>}
                                         {isFullStar && <span style={{ position: 'absolute', color: '#22c55e', fontSize: '14px', lineHeight: 1 }}>★</span>}
                                       </div>
                                     )
@@ -1201,6 +1342,9 @@ export default function AccountPage() {
                               )}
                             </td>
                           ))}
+                          <td style={{ padding: '14px 12px', textAlign: 'center', minWidth: '70px', color: '#666', fontSize: '13px', fontWeight: 500 }}>
+                            {getDaysAgo(trade.date)}
+                          </td>
                           <td style={{ padding: '14px 12px', textAlign: 'center', minWidth: '70px' }}>
                             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
                               <button onClick={() => startEditTrade(trade)} style={{ background: 'transparent', border: 'none', color: '#666', cursor: 'pointer', fontSize: '14px', padding: '4px' }} title="Edit trade">✎</button>
@@ -2048,12 +2192,15 @@ export default function AccountPage() {
                               </div>
                             </div>
                           </div>
-                          {/* X-axis row - spacer + labels, NO borders */}
+                          {/* X-axis row - spacer + labels with ticks */}
                           <div style={{ display: 'flex' }}>
                             <div style={{ width: '28px', flexShrink: 0 }} />
-                            <div style={{ flex: 1, display: 'flex', gap: '6px', padding: '6px 4px 0' }}>
+                            <div style={{ flex: 1, display: 'flex', gap: '6px', padding: '0 4px' }}>
                               {entries.map((item, i) => (
-                                <div key={i} style={{ flex: 1, textAlign: 'center', fontSize: '10px', color: '#999', fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.name}</div>
+                                <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                                  <div style={{ width: '1px', height: '4px', background: '#2a2a35' }} />
+                                  <div style={{ marginTop: '4px', textAlign: 'center', fontSize: '10px', color: '#999', fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', width: '100%' }}>{item.name}</div>
+                                </div>
                               ))}
                             </div>
                           </div>
@@ -2344,33 +2491,50 @@ export default function AccountPage() {
               <div style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '10px 12px' }}>
                 <div style={{ fontSize: '11px', color: '#aaa', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '6px', borderBottom: '1px solid #1a1a22', paddingBottom: '5px', fontWeight: 600 }}>Account</div>
                 <StatBox label="Balance" value={'$' + Math.round(displayCurrentBalance).toLocaleString()} color={displayCurrentBalance >= displayStartingBalance ? '#22c55e' : '#ef4444'} />
+                <StatBox label="Peak" value={'$' + Math.round(peakBalance).toLocaleString()} color="#22c55e" />
                 <StatBox label="Net P&L" value={(displayTotalPnl >= 0 ? '+' : '-') + '$' + Math.abs(Math.round(displayTotalPnl)).toLocaleString()} color={displayTotalPnl >= 0 ? '#22c55e' : '#ef4444'} />
                 <StatBox label="Growth" value={growth + '%'} color={parseFloat(growth) >= 0 ? '#22c55e' : '#ef4444'} />
+                <StatBox label="Weekly" value={weeklyGrowth + '%'} color={parseFloat(weeklyGrowth) >= 0 ? '#22c55e' : '#ef4444'} />
                 <StatBox label="Monthly" value={monthlyGrowth + '%'} color={parseFloat(monthlyGrowth) >= 0 ? '#22c55e' : '#ef4444'} />
+                <StatBox label="Yearly" value={yearlyGrowth + '%'} color={parseFloat(yearlyGrowth) >= 0 ? '#22c55e' : '#ef4444'} />
+                <StatBox label="Drawdown" value={currentDrawdown.pct + '%'} color={parseFloat(currentDrawdown.pct) > 5 ? '#ef4444' : parseFloat(currentDrawdown.pct) > 0 ? '#f59e0b' : '#22c55e'} />
+                <StatBox label="From Peak" value={peakToCurrent + '%'} color={parseFloat(peakToCurrent) >= 0 ? '#22c55e' : '#ef4444'} />
+                {distanceFromTarget && <StatBox label={distanceFromTarget.passed ? 'Target ✓' : 'To Target'} value={distanceFromTarget.passed ? 'Passed!' : distanceFromTarget.pct + '%'} color={distanceFromTarget.passed ? '#22c55e' : '#f59e0b'} />}
               </div>
               {/* Performance */}
               <div style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '10px 12px' }}>
                 <div style={{ fontSize: '11px', color: '#aaa', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '6px', borderBottom: '1px solid #1a1a22', paddingBottom: '5px', fontWeight: 600 }}>Performance</div>
                 <StatBox label="Winrate" value={displayWinrate + '%'} color={displayWinrate >= 50 ? '#22c55e' : '#ef4444'} />
+                <StatBox label="Day Winrate" value={displayDayWinrate + '%'} color={displayDayWinrate >= 50 ? '#22c55e' : '#ef4444'} />
                 <StatBox label="Wins / Losses" value={displayWins + ' / ' + displayLosses} color="#fff" />
+                <StatBox label="Breakeven" value={displayTrades.filter(t => t.outcome === 'be' || t.outcome === 'breakeven').length} color="#f59e0b" />
                 <StatBox label="Profit Factor" value={displayProfitFactor} color={displayProfitFactor === '-' ? '#666' : displayProfitFactor === '∞' ? '#22c55e' : parseFloat(displayProfitFactor) >= 1.5 ? '#22c55e' : parseFloat(displayProfitFactor) >= 1 ? '#fff' : '#ef4444'} />
+                <StatBox label="Recovery" value={recoveryFactor} color={recoveryFactor === '-' ? '#666' : recoveryFactor === '∞' ? '#22c55e' : parseFloat(recoveryFactor) >= 2 ? '#22c55e' : '#fff'} />
+                <StatBox label="Win Amount" value={winAmountPct + '%'} color={winAmountPct >= 55 ? '#22c55e' : winAmountPct >= 50 ? '#fff' : '#ef4444'} />
                 <StatBox label="Expectancy" value={'$' + displayExpectancy} color={parseFloat(displayExpectancy) >= 0 ? '#22c55e' : '#ef4444'} />
               </div>
               {/* Trades */}
               <div style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '10px 12px' }}>
                 <div style={{ fontSize: '11px', color: '#aaa', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '6px', borderBottom: '1px solid #1a1a22', paddingBottom: '5px', fontWeight: 600 }}>Trades</div>
                 <StatBox label="Total" value={displayTrades.length} color="#fff" />
-                <StatBox label="Trading Days" value={localTradingDays} color="#fff" />
+                <StatBox label="This Week" value={tradesThisWeek} color="#fff" />
                 <StatBox label="This Month" value={tradesThisMonth} color="#fff" />
+                <StatBox label="Trading Days" value={localTradingDays} color="#fff" />
+                <StatBox label="Avg/Day" value={localTradingDays > 0 ? (displayTrades.length / localTradingDays).toFixed(1) : '0'} color="#fff" />
+                <StatBox label="Avg/Week" value={avgTradesPerWeek} color="#fff" />
+                <StatBox label="Unique Pairs" value={uniqueSymbols} color="#fff" />
                 <StatBox label="Best Day" value={mostCommonDay} color="#fff" />
               </div>
               {/* Risk & Reward */}
               <div style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '10px 12px' }}>
                 <div style={{ fontSize: '11px', color: '#aaa', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '6px', borderBottom: '1px solid #1a1a22', paddingBottom: '5px', fontWeight: 600 }}>Risk & Reward</div>
                 <StatBox label="Avg RR" value={displayAvgRR + 'R'} color={parseFloat(displayAvgRR) >= 1.5 ? '#22c55e' : '#fff'} />
+                <StatBox label="Highest RR" value={highestRR + 'R'} color="#22c55e" />
+                <StatBox label="Lowest RR" value={lowestRR + 'R'} color="#ef4444" />
                 <StatBox label="Most Used RR" value={mostUsedRR} color="#fff" />
                 <StatBox label="Best RR" value={mostProfitableRR} color="#22c55e" />
                 <StatBox label="Win/Loss Ratio" value={(displayAvgWin / Math.max(displayAvgLoss, 1)).toFixed(2) + 'x'} color={displayAvgWin >= displayAvgLoss ? '#22c55e' : '#ef4444'} />
+                {account?.max_drawdown && <StatBox label="DD Limit" value={account.max_drawdown + '%'} color={parseFloat(currentDrawdown.pct) >= account.max_drawdown ? '#ef4444' : '#22c55e'} />}
               </div>
               {/* Win/Loss */}
               <div style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '10px 12px' }}>
@@ -2379,28 +2543,40 @@ export default function AccountPage() {
                 <StatBox label="Avg Loss" value={'-$' + displayAvgLoss} color="#ef4444" />
                 <StatBox label="Best Trade" value={'+$' + Math.round(localBiggestWin).toLocaleString()} color="#22c55e" />
                 <StatBox label="Worst Trade" value={'-$' + Math.abs(Math.round(localBiggestLoss)).toLocaleString()} color="#ef4444" />
+                <StatBox label="Gross Profit" value={'+$' + Math.round(grossProfit).toLocaleString()} color="#22c55e" />
+                <StatBox label="Gross Loss" value={'-$' + Math.round(grossLoss).toLocaleString()} color="#ef4444" />
               </div>
               {/* Direction */}
               <div style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '10px 12px' }}>
                 <div style={{ fontSize: '11px', color: '#aaa', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '6px', borderBottom: '1px solid #1a1a22', paddingBottom: '5px', fontWeight: 600 }}>Direction</div>
+                <StatBox label="Best" value={bestDirection} color={bestDirection === 'Long' ? '#22c55e' : '#ef4444'} />
+                <StatBox label="Long / Short" value={displayTrades.filter(t => t.direction === 'long').length + ' / ' + displayTrades.filter(t => t.direction === 'short').length} color="#fff" />
                 <StatBox label="Long WR" value={longWr + '%'} color={longWr >= 50 ? '#22c55e' : '#ef4444'} />
                 <StatBox label="Long P&L" value={(longPnl >= 0 ? '+' : '') + '$' + Math.round(longPnl).toLocaleString()} color={longPnl >= 0 ? '#22c55e' : '#ef4444'} />
+                <StatBox label="Long PF" value={longPF} color={longPF === '∞' ? '#22c55e' : parseFloat(longPF) >= 1.5 ? '#22c55e' : '#fff'} />
                 <StatBox label="Short WR" value={shortWr + '%'} color={shortWr >= 50 ? '#22c55e' : '#ef4444'} />
                 <StatBox label="Short P&L" value={(shortPnl >= 0 ? '+' : '') + '$' + Math.round(shortPnl).toLocaleString()} color={shortPnl >= 0 ? '#22c55e' : '#ef4444'} />
+                <StatBox label="Short PF" value={shortPF} color={shortPF === '∞' ? '#22c55e' : parseFloat(shortPF) >= 1.5 ? '#22c55e' : '#fff'} />
               </div>
               {/* Streaks */}
               <div style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '10px 12px' }}>
                 <div style={{ fontSize: '11px', color: '#aaa', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '6px', borderBottom: '1px solid #1a1a22', paddingBottom: '5px', fontWeight: 600 }}>Streaks</div>
                 <StatBox label="Current" value={(displayStreaks.cs >= 0 ? '+' : '') + displayStreaks.cs} color={displayStreaks.cs >= 0 ? '#22c55e' : '#ef4444'} />
                 <StatBox label="Best Win" value={'+' + displayStreaks.mw} color="#22c55e" />
+                <StatBox label="Max Loss" value={'-' + displayStreaks.ml} color="#ef4444" />
+                <StatBox label="Avg Win Streak" value={avgWinStreak} color="#22c55e" />
                 <StatBox label="Green Days" value={greenDays} color="#22c55e" />
                 <StatBox label="Red Days" value={redDays} color="#ef4444" />
+                <StatBox label="BE Days" value={beDays} color="#f59e0b" />
               </div>
               {/* Overview */}
               <div style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '10px 12px' }}>
                 <div style={{ fontSize: '11px', color: '#aaa', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '6px', borderBottom: '1px solid #1a1a22', paddingBottom: '5px', fontWeight: 600 }}>Overview</div>
+                <StatBox label="Consistency" value={displayDayWinrate + '%'} color={displayDayWinrate >= 60 ? '#22c55e' : displayDayWinrate >= 50 ? '#fff' : '#ef4444'} />
+                <StatBox label="Active Days" value={activeDaysPct + '%'} color={activeDaysPct >= 50 ? '#22c55e' : '#fff'} />
                 <StatBox label="Avg Trend" value={avgTrend} color="#fff" />
                 <StatBox label="Most Traded" value={mostTradedPair} color="#fff" />
+                <StatBox label="Total Pairs" value={uniqueSymbols} color="#fff" />
                 <StatBox label="Best Day P&L" value={bestDay ? `+$${Math.round(bestDay.pnl)}` : '-'} color="#22c55e" />
                 <StatBox label="Worst Day P&L" value={worstDay ? `$${Math.round(worstDay.pnl)}` : '-'} color="#ef4444" />
               </div>
@@ -2409,6 +2585,8 @@ export default function AccountPage() {
                 <div style={{ fontSize: '11px', color: '#aaa', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '6px', borderBottom: '1px solid #1a1a22', paddingBottom: '5px', fontWeight: 600 }}>Notes</div>
                 <StatBox label="Trades w/ Notes" value={tradesWithNotes} color="#fff" />
                 <StatBox label="Notes Rate" value={displayTrades.length > 0 ? Math.round((tradesWithNotes / displayTrades.length) * 100) + '%' : '0%'} color={tradesWithNotes / Math.max(displayTrades.length, 1) >= 0.5 ? '#22c55e' : '#fff'} />
+                <StatBox label="With Images" value={tradesWithImages} color="#fff" />
+                <StatBox label="Image Rate" value={displayTrades.length > 0 ? Math.round((tradesWithImages / displayTrades.length) * 100) + '%' : '0%'} color={tradesWithImages / Math.max(displayTrades.length, 1) >= 0.3 ? '#22c55e' : '#fff'} />
                 <StatBox label="This Week" value={tradesThisWeek} color="#fff" />
                 <StatBox label="Account Age" value={accountAge} color="#fff" />
               </div>
@@ -2417,17 +2595,17 @@ export default function AccountPage() {
               <div style={{ width: '220px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
               {/* Pair Analysis */}
               <div style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '14px' }}>
-                <div style={{ fontSize: '11px', color: '#666', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '10px', fontWeight: 600 }}>Pair Analysis</div>
+                <div style={{ fontSize: '11px', color: '#aaa', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '6px', borderBottom: '1px solid #1a1a22', paddingBottom: '5px', fontWeight: 600 }}>Pair Analysis</div>
                 <select value={pairAnalysisType} onChange={e => setPairAnalysisType(e.target.value)} style={{ width: '100%', fontSize: '12px', color: '#fff', marginBottom: '10px', background: '#141418', border: '1px solid #2a2a35', borderRadius: '6px', padding: '8px 10px', cursor: 'pointer' }}>
                   <option value="best">Best Pair</option>
                   <option value="worst">Worst Pair</option>
                   <option value="most">Most Traded</option>
                 </select>
-                {(() => { const ps = {}; displayTrades.forEach(t => { if (!ps[t.symbol]) ps[t.symbol] = { w: 0, l: 0, pnl: 0, count: 0, rrs: [], wins: [], losses: [] }; if (t.outcome === 'win') { ps[t.symbol].w++; ps[t.symbol].wins.push(parseFloat(t.pnl) || 0) } else if (t.outcome === 'loss') { ps[t.symbol].l++; ps[t.symbol].losses.push(Math.abs(parseFloat(t.pnl)) || 0) }; ps[t.symbol].pnl += parseFloat(t.pnl) || 0; ps[t.symbol].count++; if (t.rr) ps[t.symbol].rrs.push(parseFloat(t.rr)) }); let selected; if (pairAnalysisType === 'best') selected = Object.entries(ps).sort((a, b) => b[1].pnl - a[1].pnl)[0]; else if (pairAnalysisType === 'worst') selected = Object.entries(ps).sort((a, b) => a[1].pnl - b[1].pnl)[0]; else selected = Object.entries(ps).sort((a, b) => b[1].count - a[1].count)[0]; if (!selected) return <div style={{ color: '#999', textAlign: 'center', fontSize: '12px' }}>No data</div>; const data = selected[1]; const wr = data.w + data.l > 0 ? Math.round((data.w / (data.w + data.l)) * 100) : 0; const pairAvgRR = data.rrs.length > 0 ? (data.rrs.reduce((a, b) => a + b, 0) / data.rrs.length).toFixed(1) : '-'; const totalWins = data.wins.reduce((a, b) => a + b, 0); const totalLosses = data.losses.reduce((a, b) => a + b, 0); const pf = totalLosses > 0 ? (totalWins / totalLosses).toFixed(2) : totalWins > 0 ? '∞' : '-'; const size = 80, stroke = 7, r = (size - stroke) / 2, c = 2 * Math.PI * r; return (<div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}><div style={{ position: 'relative', width: size, height: size }}><svg width={size} height={size} style={{ transform: 'rotate(-90deg)' }}><circle cx={size/2} cy={size/2} r={r} fill="none" stroke="#ef4444" strokeWidth={stroke} /><circle cx={size/2} cy={size/2} r={r} fill="none" stroke="#22c55e" strokeWidth={stroke} strokeDasharray={c} strokeDashoffset={c * (1 - wr/100)} strokeLinecap="butt" /></svg><div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}><div style={{ fontSize: '12px', fontWeight: 700, color: '#fff' }}>{selected[0]}</div><div style={{ fontSize: '14px', fontWeight: 700, color: '#22c55e' }}>{wr}%</div></div></div><div style={{ display: 'flex', gap: '10px', marginTop: '8px', fontSize: '11px' }}><span><span style={{ color: '#22c55e' }}>●</span> Win</span><span><span style={{ color: '#ef4444' }}>●</span> Loss</span></div><div style={{ marginTop: '10px', width: '100%' }}><StatBox label="PnL" value={(data.pnl >= 0 ? '+' : '') + '$' + Math.round(data.pnl)} color={data.pnl >= 0 ? '#22c55e' : '#ef4444'} /><StatBox label="Avg RR" value={pairAvgRR} color="#fff" /><StatBox label="PF" value={pf} color="#fff" /></div></div>) })()}
+                {(() => { const ps = {}; displayTrades.forEach(t => { if (!ps[t.symbol]) ps[t.symbol] = { w: 0, l: 0, pnl: 0, count: 0, rrs: [], wins: [], losses: [] }; if (t.outcome === 'win') { ps[t.symbol].w++; ps[t.symbol].wins.push(parseFloat(t.pnl) || 0) } else if (t.outcome === 'loss') { ps[t.symbol].l++; ps[t.symbol].losses.push(Math.abs(parseFloat(t.pnl)) || 0) }; ps[t.symbol].pnl += parseFloat(t.pnl) || 0; ps[t.symbol].count++; if (t.rr) ps[t.symbol].rrs.push(parseFloat(t.rr)) }); let selected; if (pairAnalysisType === 'best') selected = Object.entries(ps).sort((a, b) => b[1].pnl - a[1].pnl)[0]; else if (pairAnalysisType === 'worst') selected = Object.entries(ps).sort((a, b) => a[1].pnl - b[1].pnl)[0]; else selected = Object.entries(ps).sort((a, b) => b[1].count - a[1].count)[0]; if (!selected) return <div style={{ color: '#999', textAlign: 'center', fontSize: '12px' }}>No data</div>; const data = selected[1]; const wr = data.w + data.l > 0 ? Math.round((data.w / (data.w + data.l)) * 100) : 0; const pairAvgRR = data.rrs.length > 0 ? (data.rrs.reduce((a, b) => a + b, 0) / data.rrs.length).toFixed(1) : '-'; const totalWins = data.wins.reduce((a, b) => a + b, 0); const totalLosses = data.losses.reduce((a, b) => a + b, 0); const pf = totalLosses > 0 ? (totalWins / totalLosses).toFixed(2) : totalWins > 0 ? '∞' : '-'; const size = 80, stroke = 7, r = (size - stroke) / 2, c = 2 * Math.PI * r; return (<div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}><div style={{ position: 'relative', width: size, height: size }}><svg width={size} height={size} style={{ transform: 'rotate(-90deg)' }}><circle cx={size/2} cy={size/2} r={r} fill="none" stroke="#ef4444" strokeWidth={stroke} /><circle cx={size/2} cy={size/2} r={r} fill="none" stroke="#22c55e" strokeWidth={stroke} strokeDasharray={c} strokeDashoffset={c * (1 - wr/100)} strokeLinecap="butt" /></svg><div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}><div style={{ fontSize: '12px', fontWeight: 700, color: '#fff' }}>{selected[0]}</div><div style={{ fontSize: '14px', fontWeight: 700, color: '#22c55e' }}>{wr}%</div></div></div><div style={{ display: 'flex', gap: '10px', marginTop: '8px', fontSize: '11px' }}><span><span style={{ color: '#22c55e' }}>●</span> Win</span><span><span style={{ color: '#ef4444' }}>●</span> Loss</span></div><div style={{ marginTop: '10px', width: '100%' }}><StatBox label="PnL" value={(data.pnl >= 0 ? '+' : '') + '$' + Math.round(data.pnl)} color={data.pnl >= 0 ? '#22c55e' : '#ef4444'} /><StatBox label="Avg RR" value={pairAvgRR} color="#fff" /><StatBox label="Profit Factor" value={pf} color="#fff" /></div></div>) })()}
               </div>
               {/* Avg Rating */}
               <div style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '14px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                <div style={{ fontSize: '11px', color: '#666', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '10px', fontWeight: 600, alignSelf: 'flex-start' }}>Avg Rating</div>
+                <div style={{ fontSize: '11px', color: '#aaa', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '6px', borderBottom: '1px solid #1a1a22', paddingBottom: '5px', fontWeight: 600, alignSelf: 'stretch' }}>Avg Rating</div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                   <div style={{ display: 'flex', gap: '3px' }}>{[1,2,3,4,5].map(star => { const rating = parseFloat(displayAvgRating); const isFullStar = rating >= star; const isHalfStar = rating >= star - 0.5 && rating < star; return (<div key={star} style={{ position: 'relative', width: '20px', height: '20px' }}><span style={{ position: 'absolute', color: '#1a1a22', fontSize: '20px', lineHeight: 1 }}>★</span>{isHalfStar && <span style={{ position: 'absolute', color: '#22c55e', fontSize: '20px', lineHeight: 1, width: '10px', overflow: 'hidden', filter: 'drop-shadow(0 0 4px rgba(34,197,94,0.5))' }}>★</span>}{isFullStar && <span style={{ position: 'absolute', color: '#22c55e', fontSize: '20px', lineHeight: 1, filter: 'drop-shadow(0 0 4px rgba(34,197,94,0.5))' }}>★</span>}</div>) })}</div>
                   <span style={{ fontSize: '28px', fontWeight: 700, color: '#fff' }}>{displayAvgRating}</span>
@@ -2435,174 +2613,18 @@ export default function AccountPage() {
               </div>
               {/* Weekly PnL */}
               <div style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '10px 14px' }}>
-                <div style={{ fontSize: '11px', color: '#666', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '8px', fontWeight: 600 }}>Weekly PnL</div>
+                <div style={{ fontSize: '11px', color: '#aaa', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '6px', borderBottom: '1px solid #1a1a22', paddingBottom: '5px', fontWeight: 600 }}>Weekly PnL</div>
                 {(() => { const dayNames = ['M', 'T', 'W', 'T', 'F']; const dayPnL = [0, 0, 0, 0, 0]; displayTrades.forEach(t => { const day = new Date(t.date).getDay(); if (day >= 1 && day <= 5) dayPnL[day - 1] += parseFloat(t.pnl) || 0 }); const maxAbs = Math.max(...dayPnL.map(p => Math.abs(p)), 1); return (<div style={{ display: 'flex', justifyContent: 'space-between', gap: '6px' }}>{dayPnL.map((pnl, i) => { const heightPct = Math.max(Math.min((Math.abs(pnl) / maxAbs) * 100, 100), 8); const isPositive = pnl >= 0; const color = isPositive ? '#22c55e' : '#ef4444'; return (<div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}><div style={{ fontSize: '10px', fontWeight: 600, color: pnl === 0 ? '#444' : color }}>{pnl !== 0 ? (pnl >= 0 ? '+' : '') + Math.round(pnl) : '0'}</div><div style={{ width: '100%', height: '24px', background: '#1a1a22', borderRadius: '3px', position: 'relative', overflow: 'hidden', display: 'flex', alignItems: 'flex-end' }}><div style={{ width: '100%', height: pnl === 0 ? '2px' : `${heightPct}%`, background: pnl === 0 ? '#2a2a35' : color, borderRadius: '2px', opacity: pnl === 0 ? 1 : 0.8 }} /></div><div style={{ fontSize: '9px', fontWeight: 600, color: '#666' }}>{dayNames[i]}</div></div>) })}</div>) })()}
               </div>
               {/* AI Insight */}
-              {trades.length >= 5 && (() => { const pf = parseFloat(profitFactor) || 0; const rr = parseFloat(avgRR) || 0; let insight = ''; if (winrate >= 60 && pf >= 2) insight = `Outstanding! ${winrate}% WR with ${profitFactor} PF.`; else if (winrate >= 50 && pf >= 1.5) insight = `Solid edge: ${winrate}% WR, ${profitFactor} PF.`; else if (winrate < 40) insight = `${winrate}% WR needs work. Focus on A+ setups.`; else insight = `${winrate}% WR is decent. Stay consistent.`; if (rr >= 2) insight += ` Great ${avgRR}R avg!`; if (streaks.cs < -3) insight = `On a ${Math.abs(streaks.cs)}-loss streak. Reduce size.`; return (<div style={{ flex: 1, background: 'linear-gradient(180deg, rgba(139,92,246,0.08) 0%, rgba(139,92,246,0.03) 100%)', border: '1px solid rgba(139,92,246,0.25)', borderRadius: '8px', padding: '14px', display: 'flex', flexDirection: 'column' }}><div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '8px' }}><span style={{ fontSize: '14px' }}>✨</span><span style={{ fontSize: '11px', color: '#8b5cf6', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px' }}>AI Insight</span></div><span style={{ fontSize: '12px', color: '#ccc', lineHeight: 1.5 }}>{insight}</span></div>) })()}
+              {trades.length >= 5 && (() => { const pf = parseFloat(profitFactor) || 0; const rr = parseFloat(avgRR) || 0; let insight = ''; if (winrate >= 60 && pf >= 2) insight = `Outstanding! ${winrate}% WR with ${profitFactor} profit factor.`; else if (winrate >= 50 && pf >= 1.5) insight = `Solid edge: ${winrate}% WR, ${profitFactor} profit factor.`; else if (winrate < 40) insight = `${winrate}% WR needs work. Focus on A+ setups.`; else insight = `${winrate}% WR is decent. Stay consistent.`; if (rr >= 2) insight += ` Great ${avgRR}R avg!`; if (streaks.cs < -3) insight = `On a ${Math.abs(streaks.cs)}-loss streak. Reduce size.`; return (<div style={{ flex: 1, background: 'linear-gradient(180deg, rgba(139,92,246,0.08) 0%, rgba(139,92,246,0.03) 100%)', border: '1px solid rgba(139,92,246,0.25)', borderRadius: '8px', padding: '14px', display: 'flex', flexDirection: 'column' }}><div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '8px' }}><span style={{ fontSize: '14px' }}>✨</span><span style={{ fontSize: '11px', color: '#8b5cf6', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px' }}>AI Insight</span></div><span style={{ fontSize: '12px', color: '#ccc', lineHeight: 1.5 }}>{insight}</span></div>) })()}
               </div>
             </div>
               )
             })()}
 
 
-            {/* Auto-generated widgets for ALL custom inputs */}
-            {(() => {
-              const selectInputs = getCustomSelectInputs().filter(i => !['direction', 'session', 'confidence', 'timeframe', 'symbol', 'rating'].includes(i.id))
-              const numberInputs = getCustomNumberInputs()
-              const ratingInputs = getCustomRatingInputs().filter(i => i.id !== 'rating')
-
-              if (selectInputs.length === 0 && numberInputs.length === 0 && ratingInputs.length === 0) return null
-
-              return (
-                <div style={{ marginTop: '12px' }}>
-                  {/* Section Header */}
-                  <div style={{ fontSize: '12px', color: '#666', textTransform: 'uppercase', marginBottom: '12px', letterSpacing: '0.5px' }}>Custom Input Analytics</div>
-
-                  <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
-                    {/* SELECT INPUT WIDGETS */}
-                    {selectInputs.map(input => {
-                      const stats = {}
-                      displayTrades.forEach(t => {
-                        const val = getExtraData(t)[input.id] || 'Not Set'
-                        if (!stats[val]) stats[val] = { wins: 0, losses: 0, pnl: 0, count: 0 }
-                        if (t.outcome === 'win') stats[val].wins++
-                        else if (t.outcome === 'loss') stats[val].losses++
-                        stats[val].pnl += parseFloat(t.pnl) || 0
-                        stats[val].count++
-                      })
-                      const entries = Object.entries(stats).sort((a, b) => b[1].count - a[1].count).slice(0, 5)
-                      if (entries.length === 0) return null
-                      const maxCount = Math.max(...entries.map(e => e[1].count))
-
-                      return (
-                        <div key={input.id} style={{ flex: '1 1 280px', maxWidth: '350px', background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '14px' }}>
-                          <div style={{ fontSize: '11px', color: '#999', textTransform: 'uppercase', marginBottom: '12px' }}>By {input.label}</div>
-                          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                            {entries.map(([val, data], idx) => {
-                              const wr = data.wins + data.losses > 0 ? Math.round((data.wins / (data.wins + data.losses)) * 100) : 0
-                              const barWidth = (data.count / maxCount) * 100
-                              return (
-                                <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                  <div style={{ width: '70px', fontSize: '11px', color: '#ccc', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{val}</div>
-                                  <div style={{ flex: 1, height: '18px', background: '#1a1a22', borderRadius: '3px', position: 'relative', overflow: 'hidden' }}>
-                                    <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: `${barWidth}%`, background: data.pnl >= 0 ? '#22c55e' : '#ef4444', opacity: 0.3, borderRadius: '3px' }} />
-                                    <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 6px', fontSize: '9px' }}>
-                                      <span style={{ color: '#999' }}>{data.count} trades</span>
-                                      <span style={{ color: wr >= 50 ? '#22c55e' : '#ef4444' }}>{wr}% WR</span>
-                                    </div>
-                                  </div>
-                                  <div style={{ width: '55px', fontSize: '10px', fontWeight: 600, color: data.pnl >= 0 ? '#22c55e' : '#ef4444', textAlign: 'right' }}>{data.pnl >= 0 ? '+' : ''}${Math.round(data.pnl)}</div>
-                                </div>
-                              )
-                            })}
-                          </div>
-                        </div>
-                      )
-                    })}
-
-                    {/* NUMBER INPUT WIDGETS - show ranges/buckets */}
-                    {numberInputs.map(input => {
-                      const values = displayTrades.map(t => parseFloat(getExtraData(t)[input.id])).filter(v => !isNaN(v))
-                      if (values.length === 0) return null
-
-                      const min = Math.min(...values)
-                      const max = Math.max(...values)
-                      const range = max - min
-                      const bucketSize = range / 4 || 1
-
-                      // Create 4 buckets
-                      const buckets = {}
-                      displayTrades.forEach(t => {
-                        const val = parseFloat(getExtraData(t)[input.id])
-                        if (isNaN(val)) return
-                        const bucketIdx = Math.min(3, Math.floor((val - min) / bucketSize))
-                        const bucketLabel = range === 0 ? String(min) : `${Math.round(min + bucketIdx * bucketSize)}-${Math.round(min + (bucketIdx + 1) * bucketSize)}`
-                        if (!buckets[bucketLabel]) buckets[bucketLabel] = { wins: 0, losses: 0, pnl: 0, count: 0, order: bucketIdx }
-                        if (t.outcome === 'win') buckets[bucketLabel].wins++
-                        else if (t.outcome === 'loss') buckets[bucketLabel].losses++
-                        buckets[bucketLabel].pnl += parseFloat(t.pnl) || 0
-                        buckets[bucketLabel].count++
-                      })
-
-                      const entries = Object.entries(buckets).sort((a, b) => a[1].order - b[1].order)
-                      if (entries.length === 0) return null
-                      const maxCount = Math.max(...entries.map(e => e[1].count))
-
-                      return (
-                        <div key={input.id} style={{ flex: '1 1 280px', maxWidth: '350px', background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '14px' }}>
-                          <div style={{ fontSize: '11px', color: '#999', textTransform: 'uppercase', marginBottom: '12px' }}>{input.label} Ranges</div>
-                          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                            {entries.map(([label, data], idx) => {
-                              const wr = data.wins + data.losses > 0 ? Math.round((data.wins / (data.wins + data.losses)) * 100) : 0
-                              const barWidth = (data.count / maxCount) * 100
-                              return (
-                                <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                  <div style={{ width: '70px', fontSize: '11px', color: '#ccc', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{label}</div>
-                                  <div style={{ flex: 1, height: '18px', background: '#1a1a22', borderRadius: '3px', position: 'relative', overflow: 'hidden' }}>
-                                    <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: `${barWidth}%`, background: data.pnl >= 0 ? '#22c55e' : '#ef4444', opacity: 0.3, borderRadius: '3px' }} />
-                                    <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 6px', fontSize: '9px' }}>
-                                      <span style={{ color: '#999' }}>{data.count} trades</span>
-                                      <span style={{ color: wr >= 50 ? '#22c55e' : '#ef4444' }}>{wr}% WR</span>
-                                    </div>
-                                  </div>
-                                  <div style={{ width: '55px', fontSize: '10px', fontWeight: 600, color: data.pnl >= 0 ? '#22c55e' : '#ef4444', textAlign: 'right' }}>{data.pnl >= 0 ? '+' : ''}${Math.round(data.pnl)}</div>
-                                </div>
-                              )
-                            })}
-                          </div>
-                        </div>
-                      )
-                    })}
-
-                    {/* RATING INPUT WIDGETS - show performance by star rating */}
-                    {ratingInputs.map(input => {
-                      const stats = {}
-                      displayTrades.forEach(t => {
-                        const val = parseFloat(getExtraData(t)[input.id]) || 0
-                        if (val === 0) return
-                        const ratingLabel = val % 1 === 0 ? `${val}★` : `${val}★`
-                        if (!stats[ratingLabel]) stats[ratingLabel] = { wins: 0, losses: 0, pnl: 0, count: 0, rating: val }
-                        if (t.outcome === 'win') stats[ratingLabel].wins++
-                        else if (t.outcome === 'loss') stats[ratingLabel].losses++
-                        stats[ratingLabel].pnl += parseFloat(t.pnl) || 0
-                        stats[ratingLabel].count++
-                      })
-
-                      const entries = Object.entries(stats).sort((a, b) => b[1].rating - a[1].rating)
-                      if (entries.length === 0) return null
-                      const maxCount = Math.max(...entries.map(e => e[1].count))
-
-                      return (
-                        <div key={input.id} style={{ flex: '1 1 280px', maxWidth: '350px', background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '14px' }}>
-                          <div style={{ fontSize: '11px', color: '#999', textTransform: 'uppercase', marginBottom: '12px' }}>By {input.label}</div>
-                          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                            {entries.map(([label, data], idx) => {
-                              const wr = data.wins + data.losses > 0 ? Math.round((data.wins / (data.wins + data.losses)) * 100) : 0
-                              const barWidth = (data.count / maxCount) * 100
-                              return (
-                                <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                  <div style={{ width: '50px', fontSize: '12px', color: '#fff' }}>{label}</div>
-                                  <div style={{ flex: 1, height: '18px', background: '#1a1a22', borderRadius: '3px', position: 'relative', overflow: 'hidden' }}>
-                                    <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: `${barWidth}%`, background: data.pnl >= 0 ? '#22c55e' : '#ef4444', opacity: 0.3, borderRadius: '3px' }} />
-                                    <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 6px', fontSize: '9px' }}>
-                                      <span style={{ color: '#999' }}>{data.count} trades</span>
-                                      <span style={{ color: wr >= 50 ? '#22c55e' : '#ef4444' }}>{wr}% WR</span>
-                                    </div>
-                                  </div>
-                                  <div style={{ width: '55px', fontSize: '10px', fontWeight: 600, color: data.pnl >= 0 ? '#22c55e' : '#ef4444', textAlign: 'right' }}>{data.pnl >= 0 ? '+' : ''}${Math.round(data.pnl)}</div>
-                                </div>
-                              )
-                            })}
-                          </div>
-                        </div>
-                      )
-                    })}
-                  </div>
-                </div>
-              )
-            })()}
-          </div>
+                      </div>
           )
         })()}
 
@@ -2848,7 +2870,7 @@ export default function AccountPage() {
                 <div style={{ display: 'flex', gap: '8px' }}>
                   <button type="button" onClick={() => setTradeForm({...tradeForm, outcome: 'win'})} style={{ flex: 1, padding: '9px', background: (tradeForm.outcome || 'win') === 'win' ? 'rgba(34,197,94,0.2)' : '#0a0a0f', border: `2px solid ${(tradeForm.outcome || 'win') === 'win' ? '#22c55e' : '#1a1a22'}`, borderRadius: '8px', color: (tradeForm.outcome || 'win') === 'win' ? '#22c55e' : '#666', fontSize: '12px', fontWeight: 600, cursor: 'pointer' }}>W</button>
                   <button type="button" onClick={() => setTradeForm({...tradeForm, outcome: 'loss'})} style={{ flex: 1, padding: '9px', background: tradeForm.outcome === 'loss' ? 'rgba(239,68,68,0.2)' : '#0a0a0f', border: `2px solid ${tradeForm.outcome === 'loss' ? '#ef4444' : '#1a1a22'}`, borderRadius: '8px', color: tradeForm.outcome === 'loss' ? '#ef4444' : '#666', fontSize: '12px', fontWeight: 600, cursor: 'pointer' }}>L</button>
-                  <button type="button" onClick={() => setTradeForm({...tradeForm, outcome: 'be'})} style={{ flex: 1, padding: '9px', background: tradeForm.outcome === 'be' ? 'rgba(255,255,255,0.1)' : '#0a0a0f', border: `2px solid ${tradeForm.outcome === 'be' ? '#888' : '#1a1a22'}`, borderRadius: '8px', color: tradeForm.outcome === 'be' ? '#888' : '#666', fontSize: '12px', fontWeight: 600, cursor: 'pointer' }}>BE</button>
+                  <button type="button" onClick={() => setTradeForm({...tradeForm, outcome: 'be'})} style={{ flex: 1, padding: '9px', background: tradeForm.outcome === 'be' ? 'rgba(245,158,11,0.2)' : '#0a0a0f', border: `2px solid ${tradeForm.outcome === 'be' ? '#f59e0b' : '#1a1a22'}`, borderRadius: '8px', color: tradeForm.outcome === 'be' ? '#f59e0b' : '#666', fontSize: '12px', fontWeight: 600, cursor: 'pointer' }}>BE</button>
                 </div>
               </div>
             </div>
@@ -2884,7 +2906,7 @@ export default function AccountPage() {
                           onMouseMove={(e) => { const rect = e.currentTarget.getBoundingClientRect(); const x = e.clientX - rect.left; setHoverRating(x < rect.width / 2 ? star - 0.5 : star) }}
                           onClick={(e) => { const rect = e.currentTarget.getBoundingClientRect(); const x = e.clientX - rect.left; const newRating = x < rect.width / 2 ? star - 0.5 : star; setTradeForm({...tradeForm, rating: parseFloat(tradeForm.rating) === newRating ? '' : String(newRating)}) }}>
                           <span style={{ position: 'absolute', color: '#2a2a35', fontSize: '24px', lineHeight: 1 }}>★</span>
-                          {isHalfStar && <span style={{ position: 'absolute', color: '#22c55e', fontSize: '24px', lineHeight: 1, width: '12px', overflow: 'hidden' }}>★</span>}
+                          {isHalfStar && <span style={{ position: 'absolute', color: '#22c55e', fontSize: '24px', lineHeight: 1, width: '50%', overflow: 'hidden' }}>★</span>}
                           {isFullStar && <span style={{ position: 'absolute', color: '#22c55e', fontSize: '24px', lineHeight: 1 }}>★</span>}
                         </div>
                       )
@@ -2925,7 +2947,7 @@ export default function AccountPage() {
                                 onMouseMove={(e) => { const rect = e.currentTarget.getBoundingClientRect(); const x = e.clientX - rect.left; setHoverRating(x < rect.width / 2 ? star - 0.5 : star) }}
                                 onClick={(e) => { const rect = e.currentTarget.getBoundingClientRect(); const x = e.clientX - rect.left; const newRating = x < rect.width / 2 ? star - 0.5 : star; setTradeForm({...tradeForm, [input.id]: parseFloat(tradeForm[input.id]) === newRating ? '' : String(newRating)}) }}>
                                 <span style={{ position: 'absolute', color: '#2a2a35', fontSize: '28px', lineHeight: 1 }}>★</span>
-                                {isHalfStar && <span style={{ position: 'absolute', color: '#22c55e', fontSize: '28px', lineHeight: 1, width: '14px', overflow: 'hidden' }}>★</span>}
+                                {isHalfStar && <span style={{ position: 'absolute', color: '#22c55e', fontSize: '28px', lineHeight: 1, width: '50%', overflow: 'hidden' }}>★</span>}
                                 {isFullStar && <span style={{ position: 'absolute', color: '#22c55e', fontSize: '28px', lineHeight: 1 }}>★</span>}
                               </div>
                             )
@@ -2979,14 +3001,14 @@ export default function AccountPage() {
             {/* Scrollable Content */}
             <div style={{ flex: 1, overflowY: 'auto', padding: '20px 28px' }}>
 
-            {/* Core Fields Section - in bordered container */}
+            {/* All Fields Section - unified */}
             <div style={{ marginBottom: '20px', padding: '16px', background: '#0a0a0e', borderRadius: '10px', border: '1px solid #1a1a22' }}>
-              <div style={{ fontSize: '12px', color: '#888', marginBottom: '14px', fontWeight: 600 }}>Default Fields</div>
+              <div style={{ fontSize: '12px', color: '#888', marginBottom: '14px', fontWeight: 600 }}>Fields</div>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
-                {inputs.map((input, i) => input.fixed && !input.hidden && (
+                {inputs.map((input, i) => !input.hidden && (
                   <div key={input.id} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 12px', background: '#141418', borderRadius: '6px', minWidth: 0 }}>
                     <input type="checkbox" checked={input.enabled} onChange={e => updateInput(i, 'enabled', e.target.checked)} style={{ width: '15px', height: '15px', accentColor: '#22c55e', flexShrink: 0 }} />
-                    <input type="text" value={input.label} onChange={e => updateInput(i, 'label', e.target.value)} style={{ flex: 1, minWidth: '80px', padding: '6px 8px', background: '#0a0a0e', border: '1px solid #2a2a35', borderRadius: '4px', color: input.enabled ? '#fff' : '#555', fontSize: '12px' }} />
+                    <input type="text" value={input.label} onChange={e => updateInput(i, 'label', e.target.value)} style={{ flex: 1, minWidth: '80px', padding: '6px 8px', background: '#0a0a0e', border: '1px solid #2a2a35', borderRadius: '4px', color: input.enabled ? '#fff' : '#555', fontSize: '12px' }} placeholder="Name" />
                     <select value={input.type} onChange={e => updateInput(i, 'type', e.target.value)} style={{ padding: '6px 8px', background: '#0a0a0e', border: '1px solid #2a2a35', borderRadius: '4px', color: '#fff', fontSize: '11px', flexShrink: 0 }}>
                       <option value="text">Text</option>
                       <option value="number">Number</option>
@@ -3002,44 +3024,13 @@ export default function AccountPage() {
                         Options ▾
                       </button>
                     )}
+                    {!input.fixed && (
+                      <button onClick={() => setDeleteInputConfirm({ index: i, label: input.label || input.id, id: input.id })} style={{ padding: '4px 8px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '4px', color: '#555', cursor: 'pointer', fontSize: '12px', flexShrink: 0 }}>×</button>
+                    )}
                   </div>
                 ))}
               </div>
-            </div>
-
-            {/* Custom Fields Section - in bordered container */}
-            <div style={{ marginBottom: '20px', padding: '16px', background: '#0a0a0e', borderRadius: '10px', border: '1px solid #1a1a22' }}>
-              <div style={{ fontSize: '12px', color: '#888', marginBottom: inputs.filter(inp => !inp.fixed && !inp.hidden).length === 0 ? '0' : '14px', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '8px' }}>
-                Custom Fields
-                {inputs.filter(inp => !inp.fixed && !inp.hidden).length === 0 && <span style={{ color: '#555', fontWeight: 400 }}>— none yet</span>}
-              </div>
-              {inputs.filter(inp => !inp.fixed && !inp.hidden).length > 0 && (
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
-                  {inputs.map((input, i) => !input.fixed && !input.hidden && (
-                    <div key={input.id} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 12px', background: '#141418', borderRadius: '6px', minWidth: 0 }}>
-                      <input type="checkbox" checked={input.enabled} onChange={e => updateInput(i, 'enabled', e.target.checked)} style={{ width: '15px', height: '15px', accentColor: '#22c55e', flexShrink: 0 }} />
-                      <input type="text" value={input.label} onChange={e => updateInput(i, 'label', e.target.value)} style={{ flex: 1, padding: '6px 8px', background: '#0a0a0e', border: '1px solid #2a2a35', borderRadius: '4px', color: '#fff', fontSize: '12px', minWidth: '80px' }} placeholder="Name" />
-                      <select value={input.type} onChange={e => updateInput(i, 'type', e.target.value)} style={{ padding: '6px 8px', background: '#0a0a0e', border: '1px solid #2a2a35', borderRadius: '4px', color: '#fff', fontSize: '11px', flexShrink: 0 }}>
-                        <option value="text">Text</option>
-                        <option value="number">Number</option>
-                        <option value="select">Dropdown</option>
-                        <option value="textarea">Notes</option>
-                        <option value="rating">Rating</option>
-                        <option value="date">Date</option>
-                        <option value="time">Time</option>
-                        <option value="file">Image</option>
-                      </select>
-                      {input.type === 'select' && (
-                        <button onClick={() => openOptionsEditor(i)} style={{ padding: '6px 8px', background: '#0a0a0e', border: '1px solid #2a2a35', borderRadius: '4px', color: '#fff', fontSize: '11px', cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0 }}>
-                          Options ▾
-                        </button>
-                      )}
-                      <button onClick={() => setDeleteInputConfirm({ index: i, label: input.label || input.id, id: input.id })} style={{ padding: '4px 8px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '4px', color: '#555', cursor: 'pointer', fontSize: '12px', flexShrink: 0 }}>×</button>
-                    </div>
-                  ))}
-                </div>
-              )}
-              <button onClick={addNewInput} style={{ width: '100%', padding: '10px', marginTop: '10px', background: 'transparent', border: '1px dashed #2a2a35', borderRadius: '6px', color: '#555', fontSize: '12px', cursor: 'pointer' }}>+ Add Field</button>
+              <button onClick={addNewInput} style={{ width: '100%', padding: '10px', marginTop: '12px', background: 'transparent', border: '1px dashed #2a2a35', borderRadius: '6px', color: '#555', fontSize: '12px', cursor: 'pointer' }}>+ Add Field</button>
             </div>
 
             {/* Hidden Fields */}
@@ -3273,7 +3264,10 @@ export default function AccountPage() {
                 maxHeight: '90vh',
                 borderRadius: '8px',
                 objectFit: 'contain',
-                imageRendering: 'auto'
+                imageRendering: 'high-quality',
+                WebkitBackfaceVisibility: 'hidden',
+                backfaceVisibility: 'hidden',
+                transform: 'translateZ(0)'
               }}
             />
             <button onClick={() => setShowExpandedImage(null)} style={{ position: 'absolute', top: '-40px', right: '0', background: 'rgba(0,0,0,0.5)', border: 'none', color: '#fff', fontSize: '24px', cursor: 'pointer', padding: '4px 12px', borderRadius: '4px' }}>×</button>
@@ -3289,20 +3283,20 @@ export default function AccountPage() {
         const { trade, image } = imgs[idx]
         const pnl = parseFloat(trade.pnl) || 0
         return (
-          <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.98)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', zIndex: 100 }}>
-            <div style={{ position: 'absolute', top: 20, left: '50%', transform: 'translateX(-50%)', display: 'flex', alignItems: 'center', gap: 16, padding: '12px 24px', background: '#0d0d12', borderRadius: 8, border: '1px solid #1a1a22' }}>
+          <div onClick={() => setSlideshowMode(false)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.98)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', zIndex: 100, cursor: 'pointer' }}>
+            <div onClick={e => e.stopPropagation()} style={{ position: 'absolute', top: 20, left: '50%', transform: 'translateX(-50%)', display: 'flex', alignItems: 'center', gap: 16, padding: '12px 24px', background: '#0d0d12', borderRadius: 8, border: '1px solid #1a1a22', cursor: 'default' }}>
               <span style={{ fontWeight: 600, color: '#fff', fontSize: 16 }}>{trade.symbol}</span>
-              <span style={{ padding: '4px 10px', borderRadius: 4, fontSize: 12, fontWeight: 600, background: trade.outcome === 'win' ? 'rgba(34,197,94,0.15)' : trade.outcome === 'loss' ? 'rgba(239,68,68,0.15)' : 'rgba(255,255,255,0.1)', color: trade.outcome === 'win' ? '#22c55e' : trade.outcome === 'loss' ? '#ef4444' : '#888' }}>{trade.outcome?.toUpperCase()}</span>
+              <span style={{ padding: '4px 10px', borderRadius: 4, fontSize: 12, fontWeight: 600, background: trade.outcome === 'win' ? 'rgba(34,197,94,0.15)' : trade.outcome === 'loss' ? 'rgba(239,68,68,0.15)' : 'rgba(245,158,11,0.15)', color: trade.outcome === 'win' ? '#22c55e' : trade.outcome === 'loss' ? '#ef4444' : '#f59e0b' }}>{trade.outcome?.toUpperCase()}</span>
               <span style={{ fontWeight: 600, color: pnl >= 0 ? '#22c55e' : '#ef4444' }}>{pnl >= 0 ? '+' : ''}${pnl.toFixed(0)}</span>
               <span style={{ color: '#666', fontSize: 12 }}>{new Date(trade.date).toLocaleDateString()}</span>
             </div>
             <button onClick={() => setSlideshowMode(false)} style={{ position: 'absolute', top: 20, right: 20, background: 'transparent', border: 'none', color: '#999', fontSize: 32, cursor: 'pointer', zIndex: 101 }}>×</button>
             {imgs.length > 1 && <>
-              <button onClick={() => setSlideshowIndex(idx === 0 ? imgs.length - 1 : idx - 1)} style={{ position: 'absolute', left: 20, top: '50%', transform: 'translateY(-50%)', background: '#1a1a22', border: '1px solid #2a2a35', borderRadius: '50%', width: 48, height: 48, color: '#fff', fontSize: 24, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>‹</button>
-              <button onClick={() => setSlideshowIndex(idx === imgs.length - 1 ? 0 : idx + 1)} style={{ position: 'absolute', right: 20, top: '50%', transform: 'translateY(-50%)', background: '#1a1a22', border: '1px solid #2a2a35', borderRadius: '50%', width: 48, height: 48, color: '#fff', fontSize: 24, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>›</button>
+              <button onClick={e => { e.stopPropagation(); setSlideshowIndex(idx === 0 ? imgs.length - 1 : idx - 1) }} style={{ position: 'absolute', left: 20, top: '50%', transform: 'translateY(-50%)', background: '#1a1a22', border: '1px solid #2a2a35', borderRadius: '50%', width: 48, height: 48, color: '#fff', fontSize: 24, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>‹</button>
+              <button onClick={e => { e.stopPropagation(); setSlideshowIndex(idx === imgs.length - 1 ? 0 : idx + 1) }} style={{ position: 'absolute', right: 20, top: '50%', transform: 'translateY(-50%)', background: '#1a1a22', border: '1px solid #2a2a35', borderRadius: '50%', width: 48, height: 48, color: '#fff', fontSize: 24, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>›</button>
             </>}
-            <img src={image} alt="" style={{ maxWidth: '90vw', maxHeight: '75vh', borderRadius: 8, objectFit: 'contain', imageRendering: 'auto' }} />
-            <div style={{ position: 'absolute', bottom: 30, display: 'flex', alignItems: 'center', gap: 12 }}>
+            <img onClick={e => e.stopPropagation()} src={image} alt="" style={{ maxWidth: '90vw', maxHeight: '75vh', borderRadius: 8, objectFit: 'contain', imageRendering: 'high-quality', WebkitBackfaceVisibility: 'hidden', backfaceVisibility: 'hidden', transform: 'translateZ(0)', cursor: 'default' }} />
+            <div onClick={e => e.stopPropagation()} style={{ position: 'absolute', bottom: 30, display: 'flex', alignItems: 'center', gap: 12, cursor: 'default' }}>
               <span style={{ color: '#666', fontSize: 14 }}>{idx + 1} / {imgs.length}</span>
               {imgs.length <= 10 && <div style={{ display: 'flex', gap: 6 }}>{imgs.map((_, i) => <button key={i} onClick={() => setSlideshowIndex(i)} style={{ width: 8, height: 8, borderRadius: '50%', background: i === idx ? '#22c55e' : '#333', border: 'none', cursor: 'pointer', padding: 0 }} />)}</div>}
             </div>
@@ -3882,8 +3876,8 @@ export default function AccountPage() {
                 )
               })()}
               </div>
-              {/* Stats Sidebar - Larger, white text, improved UI */}
-              <div style={{ width: '280px', background: '#0a0a0e', borderRadius: '12px', border: '1px solid #1a1a22', padding: '16px', flexShrink: 0, display: 'flex', flexDirection: 'column' }}>
+              {/* Stats Sidebar - Larger, white text, improved UI - extends to x-axis level */}
+              <div style={{ width: '280px', background: '#0a0a0e', borderRadius: '12px', border: '1px solid #1a1a22', padding: '16px', flexShrink: 0, display: 'flex', flexDirection: 'column', alignSelf: 'stretch' }}>
                 <div style={{ fontSize: '13px', color: '#fff', textTransform: 'uppercase', marginBottom: '12px', fontWeight: 700, letterSpacing: '1px', borderBottom: '1px solid #1a1a22', paddingBottom: '8px' }}>Statistics</div>
                 {(() => {
                   // Calculate stats based on selected lines/data

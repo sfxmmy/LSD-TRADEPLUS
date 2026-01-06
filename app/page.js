@@ -51,7 +51,12 @@ export default function HomePage() {
   if (loading) {
     return (
       <div style={{ minHeight: '100vh', background: '#0a0a0f', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <div style={{ color: '#999' }}>Loading...</div>
+        <div style={{ textAlign: 'center' }}>
+          <div style={{ fontSize: '40px', marginBottom: '16px', fontWeight: 700 }}>
+            <span style={{ color: '#22c55e' }}>LSD</span><span style={{ color: '#fff' }}>TRADE</span><span style={{ color: '#22c55e' }}>+</span>
+          </div>
+          <div style={{ color: '#999' }}>Loading...</div>
+        </div>
       </div>
     )
   }
