@@ -1198,7 +1198,7 @@ export default function DashboardPage() {
                     {recentTrades.length === 0 ? (
                       <div style={{ padding: '20px', textAlign: 'center', color: '#999', fontSize: '14px', border: '1px solid #1a1a22', borderRadius: '8px' }}>No trades yet</div>
                     ) : (() => {
-                        // Get ALL enabled columns from journal settings
+                        // Get enabled columns from journal settings - LIMITED TO 12 (first 11 + placed)
                         const getEnabledColumns = () => {
                           let columns = []
                           try {
@@ -1224,8 +1224,9 @@ export default function DashboardPage() {
                               { id: 'direction', label: 'Direction', type: 'select' }
                             ]
                           }
-                          // Always add Placed at end
-                          return [...columns, { id: '_placed', label: 'Placed', type: 'special' }]
+                          // Limit to first 11 columns, then add Placed as 12th
+                          const limitedCols = columns.slice(0, 11)
+                          return [...limitedCols, { id: '_placed', label: 'Placed', type: 'special' }]
                         }
                         const enabledCols = getEnabledColumns()
 
