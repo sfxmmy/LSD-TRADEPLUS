@@ -2763,7 +2763,7 @@ export default function AccountPage() {
 
         {/* NOTES TAB */}
         {activeTab === 'notes' && (
-          <div style={{ padding: isMobile ? '0' : '0 16px 16px 0' }}>
+          <div style={{ padding: isMobile ? '0' : '0 16px 16px 12px' }}>
             <div style={{ display: 'flex', gap: '12px', marginBottom: '12px' }}>
               {['daily', 'weekly', 'custom'].map(sub => (
                 <button key={sub} onClick={() => setNotesSubTab(sub)} style={{ padding: '12px 24px', background: notesSubTab === sub ? '#22c55e' : 'transparent', border: notesSubTab === sub ? 'none' : '1px solid #2a2a35', borderRadius: '8px', color: notesSubTab === sub ? '#fff' : '#888', fontSize: '14px', fontWeight: 600, cursor: 'pointer', textTransform: 'capitalize' }}>{sub}</button>
