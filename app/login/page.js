@@ -38,11 +38,16 @@ export default function LoginPage() {
       }
 
       // Check subscription status before redirecting
-      const { data: profile } = await supabase
+      const { data: profile, error: profileError } = await supabase
         .from('profiles')
         .select('subscription_status, subscription_end')
         .eq('id', data.user.id)
         .single()
+
+      // Debug: log profile data
+      console.log('Profile data:', profile)
+      console.log('Profile error:', profileError)
+      console.log('Subscription status:', profile?.subscription_status)
 
       // Check if user has valid subscription
       // 'admin' = admin user, 'subscribing' = paying, 'free subscription' = free access
@@ -53,6 +58,8 @@ export default function LoginPage() {
         if (profile.subscription_status === 'free subscription') return true
         return false
       })()
+
+      console.log('hasAccess:', hasAccess)
 
       if (hasAccess) {
         window.location.href = '/dashboard'
