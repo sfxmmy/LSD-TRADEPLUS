@@ -652,7 +652,7 @@ export default function DashboardPage() {
     <div style={{ minHeight: '100vh', background: '#0a0a0f' }}>
       {/* Header */}
       <header style={{ padding: '4px 40px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #1a1a22', flexWrap: isMobile ? 'wrap' : 'nowrap', gap: '12px' }}>
-        <a href="/" style={{ fontSize: isMobile ? '24px' : '32px', fontWeight: 700, textDecoration: 'none' }}>
+        <a href="/" style={{ fontSize: isMobile ? '28px' : '42px', fontWeight: 700, textDecoration: 'none', letterSpacing: '-0.5px' }}>
           <span style={{ color: '#22c55e' }}>LSD</span><span style={{ color: '#fff' }}>TRADE</span><span style={{ color: '#22c55e' }}>+</span>
         </a>
         {!isMobile && <div style={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)', fontSize: '32px', fontWeight: 700, letterSpacing: '-0.5px', color: '#fff' }}>JOURNAL DASHBOARD</div>}
