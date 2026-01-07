@@ -1380,7 +1380,7 @@ export default function AccountPage() {
                                 </div>
                               ) : inp.id === 'image' && extra[inp.id] ? (
                                 <button onClick={() => setShowExpandedImage(extra[inp.id])} style={{ width: '50px', height: '50px', background: '#1a1a22', borderRadius: '6px', border: '1px solid #2a2a35', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto', overflow: 'hidden', padding: 0 }}>
-                                  <img src={extra[inp.id]} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} onError={e => { e.target.style.display = 'none' }} />
+                                  <img src={extra[inp.id]} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', imageRendering: 'auto' }} onError={e => { e.target.style.display = 'none' }} />
                                 </button>
                               ) : inp.id === 'image' ? (
                                 <span style={{ color: '#444' }}>-</span>
@@ -3505,10 +3505,9 @@ export default function AccountPage() {
                 maxHeight: '90vh',
                 borderRadius: '8px',
                 objectFit: 'contain',
-                imageRendering: 'high-quality',
-                WebkitBackfaceVisibility: 'hidden',
-                backfaceVisibility: 'hidden',
-                transform: 'translateZ(0)'
+                imageRendering: 'auto',
+                WebkitImageSmoothing: 'high',
+                msInterpolationMode: 'bicubic'
               }}
             />
             <button onClick={() => setShowExpandedImage(null)} style={{ position: 'absolute', top: '-40px', right: '0', background: 'rgba(0,0,0,0.5)', border: 'none', color: '#fff', fontSize: '24px', cursor: 'pointer', padding: '4px 12px', borderRadius: '4px' }}>×</button>
@@ -3536,7 +3535,7 @@ export default function AccountPage() {
               <button onClick={e => { e.stopPropagation(); setSlideshowIndex(idx === 0 ? imgs.length - 1 : idx - 1) }} style={{ position: 'absolute', left: 20, top: '50%', transform: 'translateY(-50%)', background: '#1a1a22', border: '1px solid #2a2a35', borderRadius: '50%', width: 48, height: 48, color: '#fff', fontSize: 24, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>‹</button>
               <button onClick={e => { e.stopPropagation(); setSlideshowIndex(idx === imgs.length - 1 ? 0 : idx + 1) }} style={{ position: 'absolute', right: 20, top: '50%', transform: 'translateY(-50%)', background: '#1a1a22', border: '1px solid #2a2a35', borderRadius: '50%', width: 48, height: 48, color: '#fff', fontSize: 24, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>›</button>
             </>}
-            <img onClick={e => e.stopPropagation()} src={image} alt="" style={{ maxWidth: '90vw', maxHeight: '75vh', borderRadius: 8, objectFit: 'contain', imageRendering: 'high-quality', WebkitBackfaceVisibility: 'hidden', backfaceVisibility: 'hidden', transform: 'translateZ(0)', cursor: 'default' }} />
+            <img onClick={e => e.stopPropagation()} src={image} alt="" style={{ maxWidth: '90vw', maxHeight: '75vh', borderRadius: 8, objectFit: 'contain', imageRendering: 'auto', cursor: 'default' }} />
             <div onClick={e => e.stopPropagation()} style={{ position: 'absolute', bottom: 30, display: 'flex', alignItems: 'center', gap: 12, cursor: 'default' }}>
               <span style={{ color: '#666', fontSize: 14 }}>{idx + 1} / {imgs.length}</span>
               {imgs.length <= 10 && <div style={{ display: 'flex', gap: 6 }}>{imgs.map((_, i) => <button key={i} onClick={() => setSlideshowIndex(i)} style={{ width: 8, height: 8, borderRadius: '50%', background: i === idx ? '#22c55e' : '#333', border: 'none', cursor: 'pointer', padding: 0 }} />)}</div>}
