@@ -92,6 +92,9 @@ export default function AccountPage() {
   const [deleteSelectedConfirm, setDeleteSelectedConfirm] = useState(false)
   const [showRestoreDefaults, setShowRestoreDefaults] = useState(false)
   const [showCumulativeStats, setShowCumulativeStats] = useState(searchParams.get('cumulative') === 'true')
+  const [viewMode, setViewMode] = useState(searchParams.get('cumulative') === 'true' ? 'all' : 'this') // 'this', 'all', 'selected'
+  const [selectedJournalIds, setSelectedJournalIds] = useState(new Set())
+  const [showJournalDropdown, setShowJournalDropdown] = useState(false)
   const [allAccountsTrades, setAllAccountsTrades] = useState({})
   const [selectMode, setSelectMode] = useState(false)
   const [selectedTrades, setSelectedTrades] = useState(new Set())
@@ -117,6 +120,16 @@ export default function AccountPage() {
     window.addEventListener('resize', checkMobile)
     return () => window.removeEventListener('resize', checkMobile)
   }, [])
+
+  // Close journal dropdown when clicking outside
+  useEffect(() => {
+    if (!showJournalDropdown) return
+    const handleClickOutside = (e) => {
+      if (!e.target.closest('[data-journal-dropdown]')) setShowJournalDropdown(false)
+    }
+    document.addEventListener('click', handleClickOutside)
+    return () => document.removeEventListener('click', handleClickOutside)
+  }, [showJournalDropdown])
 
   // Sync scroll between trades table and fixed scrollbar
   useEffect(() => {
@@ -665,10 +678,13 @@ export default function AccountPage() {
     return target.map(t => { const e = getExtraData(t); return { trade: t, image: e.image || e.Image } }).filter(x => x.image)
   }
 
-  // Calculate cumulative stats across all accounts
+  // Calculate cumulative stats across all or selected accounts
   function getCumulativeStats() {
     const allTrades = []
-    allAccounts.forEach(acc => {
+    const accountsToUse = viewMode === 'selected' && selectedJournalIds.size > 0
+      ? allAccounts.filter(acc => selectedJournalIds.has(acc.id))
+      : allAccounts
+    accountsToUse.forEach(acc => {
       const accTrades = allAccountsTrades[acc.id] || []
       accTrades.forEach(t => allTrades.push({ ...t, accountName: acc.name, startingBalance: acc.starting_balance }))
     })
@@ -681,7 +697,7 @@ export default function AccountPage() {
     const cGrossProfit = allTrades.filter(t => parseFloat(t.pnl) > 0).reduce((sum, t) => sum + parseFloat(t.pnl), 0)
     const cGrossLoss = Math.abs(allTrades.filter(t => parseFloat(t.pnl) < 0).reduce((sum, t) => sum + parseFloat(t.pnl), 0))
     const cProfitFactor = cGrossLoss > 0 ? (cGrossProfit / cGrossLoss).toFixed(2) : cGrossProfit > 0 ? '∞' : '0'
-    const totalStartingBalance = allAccounts.reduce((sum, acc) => sum + (parseFloat(acc.starting_balance) || 0), 0)
+    const totalStartingBalance = accountsToUse.reduce((sum, acc) => sum + (parseFloat(acc.starting_balance) || 0), 0)
     const cCurrentBalance = totalStartingBalance + cTotalPnl
     const cAvgWin = cWins > 0 ? Math.round(cGrossProfit / cWins) : 0
     const cAvgLoss = cLosses > 0 ? Math.round(cGrossLoss / cLosses) : 0
@@ -701,10 +717,18 @@ export default function AccountPage() {
     </div>
   )
 
-  // Get base trades - either current account or all accounts when viewing cumulative
-  const baseTradesToFilter = showCumulativeStats && allAccounts.length > 1
-    ? Object.values(allAccountsTrades).flat().sort((a, b) => new Date(b.date) - new Date(a.date))
-    : trades
+  // Get base trades based on view mode
+  const baseTradesToFilter = (() => {
+    if (viewMode === 'all' && allAccounts.length > 1) {
+      return Object.values(allAccountsTrades).flat().sort((a, b) => new Date(b.date) - new Date(a.date))
+    } else if (viewMode === 'selected' && selectedJournalIds.size > 0) {
+      return Object.entries(allAccountsTrades)
+        .filter(([accId]) => selectedJournalIds.has(accId))
+        .flatMap(([, t]) => t)
+        .sort((a, b) => new Date(b.date) - new Date(a.date))
+    }
+    return trades
+  })()
 
   // Apply filters to trades for display
   const filteredTrades = baseTradesToFilter.filter(t => {
@@ -1210,58 +1234,98 @@ export default function AccountPage() {
               {!viewingSelectedStats && (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                   <button
-                    onClick={() => setShowCumulativeStats(false)}
+                    onClick={() => { setViewMode('this'); setShowCumulativeStats(false); setShowJournalDropdown(false) }}
                     style={{
                       width: '100%',
                       padding: '8px 10px',
-                      background: !showCumulativeStats ? '#22c55e' : 'transparent',
-                      border: !showCumulativeStats ? 'none' : '1px solid #1a1a22',
+                      background: viewMode === 'this' ? '#22c55e' : 'transparent',
+                      border: viewMode === 'this' ? 'none' : '1px solid #1a1a22',
                       borderRadius: '6px',
-                      color: !showCumulativeStats ? '#fff' : '#666',
+                      color: viewMode === 'this' ? '#fff' : '#666',
                       fontSize: '11px',
                       fontWeight: 600,
                       cursor: 'pointer',
                       textAlign: 'left',
-                      boxShadow: !showCumulativeStats ? '0 0 12px rgba(34,197,94,0.5), 0 0 24px rgba(34,197,94,0.3)' : 'none'
+                      boxShadow: viewMode === 'this' ? '0 0 12px rgba(34,197,94,0.5), 0 0 24px rgba(34,197,94,0.3)' : 'none'
                     }}
                   >
                     <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                      <div style={{
-                        width: '5px',
-                        height: '5px',
-                        borderRadius: '50%',
-                        background: !showCumulativeStats ? '#fff' : '#444'
-                      }} />
+                      <div style={{ width: '5px', height: '5px', borderRadius: '50%', background: viewMode === 'this' ? '#fff' : '#444' }} />
                       This Journal
                     </div>
                   </button>
                   {allAccounts.length > 1 && (
-                    <button
-                      onClick={() => setShowCumulativeStats(true)}
-                      style={{
-                        width: '100%',
-                        padding: '8px 10px',
-                        background: showCumulativeStats ? '#22c55e' : 'transparent',
-                        border: showCumulativeStats ? 'none' : '1px solid #1a1a22',
-                        borderRadius: '6px',
-                        color: showCumulativeStats ? '#fff' : '#666',
-                        fontSize: '11px',
-                        fontWeight: 600,
-                        cursor: 'pointer',
-                        textAlign: 'left',
-                        boxShadow: showCumulativeStats ? '0 0 12px rgba(34,197,94,0.5), 0 0 24px rgba(34,197,94,0.3)' : 'none'
-                      }}
-                    >
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                        <div style={{
-                          width: '5px',
-                          height: '5px',
-                          borderRadius: '50%',
-                          background: showCumulativeStats ? '#fff' : '#444'
-                        }} />
-                        All Journals
+                    <>
+                      <button
+                        onClick={() => { setViewMode('all'); setShowCumulativeStats(true); setShowJournalDropdown(false) }}
+                        style={{
+                          width: '100%',
+                          padding: '8px 10px',
+                          background: viewMode === 'all' ? '#3b82f6' : 'transparent',
+                          border: viewMode === 'all' ? 'none' : '1px solid #1a1a22',
+                          borderRadius: '6px',
+                          color: viewMode === 'all' ? '#fff' : '#666',
+                          fontSize: '11px',
+                          fontWeight: 600,
+                          cursor: 'pointer',
+                          textAlign: 'left',
+                          boxShadow: viewMode === 'all' ? '0 0 12px rgba(59,130,246,0.5), 0 0 24px rgba(59,130,246,0.3)' : 'none'
+                        }}
+                      >
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                          <div style={{ width: '5px', height: '5px', borderRadius: '50%', background: viewMode === 'all' ? '#fff' : '#444' }} />
+                          All Journals
+                        </div>
+                      </button>
+                      <div style={{ position: 'relative' }} data-journal-dropdown>
+                        <button
+                          onClick={() => setShowJournalDropdown(!showJournalDropdown)}
+                          style={{
+                            width: '100%',
+                            padding: '8px 10px',
+                            background: viewMode === 'selected' ? '#ef4444' : 'transparent',
+                            border: viewMode === 'selected' ? 'none' : '1px solid #1a1a22',
+                            borderRadius: '6px',
+                            color: viewMode === 'selected' ? '#fff' : '#666',
+                            fontSize: '11px',
+                            fontWeight: 600,
+                            cursor: 'pointer',
+                            textAlign: 'left',
+                            boxShadow: viewMode === 'selected' ? '0 0 12px rgba(239,68,68,0.5), 0 0 24px rgba(239,68,68,0.3)' : 'none'
+                          }}
+                        >
+                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                              <div style={{ width: '5px', height: '5px', borderRadius: '50%', background: viewMode === 'selected' ? '#fff' : '#444' }} />
+                              Selected{selectedJournalIds.size > 0 ? ` (${selectedJournalIds.size})` : ''}
+                            </div>
+                            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke={viewMode === 'selected' ? '#fff' : '#666'} strokeWidth="2"><path d="M6 9l6 6 6-6"/></svg>
+                          </div>
+                        </button>
+                        {showJournalDropdown && (
+                          <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, marginTop: '4px', background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '6px', zIndex: 100, maxHeight: '200px', overflowY: 'auto' }}>
+                            {allAccounts.map(acc => (
+                              <label key={acc.id} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 10px', cursor: 'pointer', borderBottom: '1px solid #1a1a22' }}>
+                                <input
+                                  type="checkbox"
+                                  checked={selectedJournalIds.has(acc.id)}
+                                  onChange={() => {
+                                    const newSet = new Set(selectedJournalIds)
+                                    if (newSet.has(acc.id)) newSet.delete(acc.id)
+                                    else newSet.add(acc.id)
+                                    setSelectedJournalIds(newSet)
+                                    if (newSet.size > 0) { setViewMode('selected'); setShowCumulativeStats(true) }
+                                    else { setViewMode('this'); setShowCumulativeStats(false) }
+                                  }}
+                                  style={{ accentColor: '#ef4444' }}
+                                />
+                                <span style={{ fontSize: '11px', color: acc.id === accountId ? '#22c55e' : '#fff' }}>{acc.name}</span>
+                              </label>
+                            ))}
+                          </div>
+                        )}
                       </div>
-                    </button>
+                    </>
                   )}
                 </div>
               )}
@@ -1334,21 +1398,11 @@ export default function AccountPage() {
               </div>
             ) : (
               <>
-              {/* All Journals Note */}
-              {showCumulativeStats && allAccounts.length > 1 && (
-                <div style={{ position: 'absolute', top: 0, left: 0, right: 0, zIndex: 11, padding: '8px 16px', background: 'rgba(59,130,246,0.1)', borderBottom: '1px solid rgba(59,130,246,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                    <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#3b82f6', boxShadow: '0 0 6px #3b82f6' }} />
-                    <span style={{ fontSize: '12px', fontWeight: 600, color: '#3b82f6' }}>VIEWING ALL JOURNALS ({allAccounts.length} journals, {filteredTrades.length} trades)</span>
-                  </div>
-                  <button onClick={() => setShowCumulativeStats(false)} style={{ padding: '4px 10px', background: '#1a1a22', border: 'none', borderRadius: '4px', color: '#fff', fontSize: '11px', cursor: 'pointer' }}>View This Journal</button>
-                </div>
-              )}
               <div
                 ref={tradesScrollRef}
                 style={{
                   position: 'absolute',
-                  top: showCumulativeStats && allAccounts.length > 1 ? '40px' : 0,
+                  top: 0,
                   left: 0,
                   right: 0,
                   bottom: 0,
@@ -1544,8 +1598,8 @@ export default function AccountPage() {
           const bAvgLoss = bLosses > 0 ? Math.round(bGrossLoss / bLosses) : 0
           const bAvgRR = baseTrades.length > 0 ? (baseTrades.reduce((s, t) => s + (parseFloat(t.rr) || 0), 0) / baseTrades.length).toFixed(1) : '0'
 
-          // Get stats based on toggle - either this journal or all journals (disabled when viewing selected)
-          const cumStats = showCumulativeStats && allAccounts.length > 1 && !viewingSelectedStats ? getCumulativeStats() : null
+          // Get stats based on toggle - either this journal, all journals, or selected journals (disabled when viewing selected trades)
+          const cumStats = (viewMode === 'all' || viewMode === 'selected') && allAccounts.length > 1 && !viewingSelectedStats ? getCumulativeStats() : null
           const displayTotalPnl = cumStats ? cumStats.totalPnl : bPnl
           const displayTrades = cumStats ? cumStats.allTrades : baseTrades
           const displayWinrate = cumStats ? cumStats.winrate : bWinrate
@@ -2864,8 +2918,11 @@ export default function AccountPage() {
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#22c55e" strokeWidth="2"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
                 <span style={{ fontSize: '14px', color: '#fff', fontWeight: 600 }}>Filter Trades</span>
-                {showCumulativeStats && allAccounts.length > 1 && (
+                {viewMode === 'all' && allAccounts.length > 1 && (
                   <span style={{ fontSize: '10px', color: '#3b82f6', background: 'rgba(59,130,246,0.15)', padding: '2px 6px', borderRadius: '4px' }}>All Journals</span>
+                )}
+                {viewMode === 'selected' && selectedJournalIds.size > 0 && (
+                  <span style={{ fontSize: '10px', color: '#ef4444', background: 'rgba(239,68,68,0.15)', padding: '2px 6px', borderRadius: '4px' }}>Selected ({selectedJournalIds.size})</span>
                 )}
               </div>
               <button onClick={() => setShowFilters(false)} style={{ width: '28px', height: '28px', background: 'transparent', border: 'none', color: '#666', cursor: 'pointer', fontSize: '18px' }}>×</button>
