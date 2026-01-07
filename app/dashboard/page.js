@@ -286,8 +286,17 @@ export default function DashboardPage() {
     const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY)
 
     // Build extra_data with all fields including rating
+    // Convert custom input IDs to labels for readability
+    const customInputs = getSelectedAccountCustomInputs()
+    const convertedExtraData = {}
+    Object.entries(quickTradeExtraData).forEach(([id, value]) => {
+      const input = customInputs.find(i => i.id === id)
+      const key = input?.label || id // Use label if found, fallback to id
+      convertedExtraData[key] = value
+    })
+
     const extraData = {
-      ...quickTradeExtraData,
+      ...convertedExtraData,
       riskPercent: quickTradeRiskPercent || '',
       confidence: quickTradeConfidence || '',
       timeframe: quickTradeTimeframe || '',

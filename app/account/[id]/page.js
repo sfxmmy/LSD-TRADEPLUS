@@ -63,6 +63,7 @@ export default function AccountPage() {
   const [optionsList, setOptionsList] = useState([])  // [{value, textColor, bgColor}]
   const [editingColor, setEditingColor] = useState(null)  // For simple color picker
   const [saving, setSaving] = useState(false)
+  const [uploadingImage, setUploadingImage] = useState(false)
   const [inputs, setInputs] = useState(defaultInputs)
   const [tradeForm, setTradeForm] = useState({})
   const [noteDate, setNoteDate] = useState(new Date().toISOString().split('T')[0])
@@ -243,10 +244,13 @@ export default function AccountPage() {
     const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY)
     
     // Collect all custom field data (including image)
+    // Use input LABEL as key (not ID) so data is human-readable
     const extraData = {}
     inputs.forEach(inp => {
       if (!['symbol', 'outcome', 'pnl', 'rr', 'date', 'notes', 'direction'].includes(inp.id)) {
-        extraData[inp.id] = tradeForm[inp.id] || ''
+        // Use label as key for readability, fallback to id if no label
+        const key = inp.label || inp.id
+        extraData[key] = tradeForm[inp.id] || ''
       }
     })
     
@@ -284,6 +288,15 @@ export default function AccountPage() {
 
   function startEditTrade(trade) {
     const extra = getExtraData(trade)
+    // Convert label-keyed extra_data back to ID-keyed for form
+    const convertedExtra = {}
+    Object.entries(extra).forEach(([key, value]) => {
+      // Try to find input by label first (new format), then by id (old format)
+      const inputByLabel = inputs.find(i => i.label === key)
+      const inputById = inputs.find(i => i.id === key)
+      const targetId = inputByLabel?.id || inputById?.id || key
+      convertedExtra[targetId] = value
+    })
     const form = {
       symbol: trade.symbol || '',
       pnl: trade.pnl?.toString() || '',
@@ -292,7 +305,7 @@ export default function AccountPage() {
       rr: trade.rr?.toString() || '',
       date: trade.date || new Date().toISOString().split('T')[0],
       notes: trade.notes || '',
-      ...extra
+      ...convertedExtra
     }
     setTradeForm(form)
     setEditingTrade(trade)
@@ -306,10 +319,12 @@ export default function AccountPage() {
     setSaving(true)
     const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY)
 
+    // Use input LABEL as key (not ID) so data is human-readable
     const extraData = {}
     inputs.forEach(inp => {
       if (!['symbol', 'outcome', 'pnl', 'rr', 'date', 'notes', 'direction'].includes(inp.id)) {
-        extraData[inp.id] = tradeForm[inp.id] || ''
+        const key = inp.label || inp.id
+        extraData[key] = tradeForm[inp.id] || ''
       }
     })
 
@@ -534,6 +549,54 @@ export default function AccountPage() {
   }
   function addOption() { setOptionsList([...optionsList, { value: '', textColor: '#fff', bgColor: null }]) }
   function removeOption(idx) { setOptionsList(optionsList.filter((_, i) => i !== idx)) }
+
+  // Upload image to Supabase Storage (with base64 fallback)
+  async function uploadImage(file, inputId) {
+    if (!file || !user?.id || !accountId) {
+      console.log('Upload skipped - missing:', { file: !!file, userId: user?.id, accountId })
+      return null
+    }
+    setUploadingImage(true)
+    console.log('Starting upload...', { fileName: file.name, size: file.size, type: file.type })
+    try {
+      const formData = new FormData()
+      formData.append('file', file)
+      formData.append('userId', user.id)
+      formData.append('accountId', accountId)
+
+      console.log('Calling /api/upload-image...')
+      const response = await fetch('/api/upload-image', {
+        method: 'POST',
+        body: formData
+      })
+
+      console.log('Response status:', response.status)
+      if (!response.ok) {
+        const errData = await response.json().catch(() => ({}))
+        console.error('Upload failed:', errData)
+        throw new Error(errData.error || 'Storage upload failed')
+      }
+
+      const { url } = await response.json()
+      console.log('Upload success! URL:', url)
+      setTradeForm(prev => ({ ...prev, [inputId]: url }))
+      return url
+    } catch (err) {
+      // Fallback to base64 if storage upload fails
+      console.warn('Storage upload failed, using base64 fallback:', err.message)
+      return new Promise((resolve) => {
+        const reader = new FileReader()
+        reader.onloadend = () => {
+          setTradeForm(prev => ({ ...prev, [inputId]: reader.result }))
+          resolve(reader.result)
+        }
+        reader.readAsDataURL(file)
+      })
+    } finally {
+      setUploadingImage(false)
+    }
+  }
+
   function getExtraData(t) {
     // First get extra_data (from JSONB)
     let extra = {}
@@ -3032,8 +3095,12 @@ export default function AccountPage() {
                       </div>
                     ) : input.type === 'file' ? (
                       <div>
-                        <input id={`file-upload-${input.id}`} type="file" accept="image/*" onChange={e => { const file = e.target.files[0]; if (file) { const reader = new FileReader(); reader.onloadend = () => setTradeForm({...tradeForm, [input.id]: reader.result}); reader.readAsDataURL(file) } }} style={{ display: 'none' }} />
-                        {tradeForm[input.id] ? (
+                        <input id={`file-upload-${input.id}`} type="file" accept="image/*" onChange={e => { const file = e.target.files[0]; if (file) uploadImage(file, input.id) }} style={{ display: 'none' }} />
+                        {uploadingImage ? (
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 12px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px' }}>
+                            <span style={{ color: '#f59e0b', fontSize: '12px' }}>Uploading...</span>
+                          </div>
+                        ) : tradeForm[input.id] ? (
                           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 12px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px' }}>
                             <span style={{ color: '#22c55e', fontSize: '12px' }}>✓ Uploaded</span>
                             <button type="button" onClick={() => setTradeForm({...tradeForm, [input.id]: ''})} style={{ padding: '4px 8px', background: '#1a1a22', border: 'none', borderRadius: '4px', color: '#999', fontSize: '11px', cursor: 'pointer' }}>×</button>
@@ -3476,8 +3543,7 @@ export default function AccountPage() {
                 maxHeight: '90vh',
                 width: 'auto',
                 height: 'auto',
-                objectFit: 'contain',
-                imageRendering: '-webkit-optimize-contrast'
+                objectFit: 'contain'
               }}
             />
             <button onClick={() => setShowExpandedImage(null)} style={{ position: 'absolute', top: '-40px', right: '0', background: 'rgba(0,0,0,0.5)', border: 'none', color: '#fff', fontSize: '24px', cursor: 'pointer', padding: '4px 12px', borderRadius: '4px' }}>×</button>
@@ -3505,7 +3571,7 @@ export default function AccountPage() {
               <button onClick={e => { e.stopPropagation(); setSlideshowIndex(idx === 0 ? imgs.length - 1 : idx - 1) }} style={{ position: 'absolute', left: 20, top: '50%', transform: 'translateY(-50%)', background: '#1a1a22', border: '1px solid #2a2a35', borderRadius: '50%', width: 48, height: 48, color: '#fff', fontSize: 24, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>‹</button>
               <button onClick={e => { e.stopPropagation(); setSlideshowIndex(idx === imgs.length - 1 ? 0 : idx + 1) }} style={{ position: 'absolute', right: 20, top: '50%', transform: 'translateY(-50%)', background: '#1a1a22', border: '1px solid #2a2a35', borderRadius: '50%', width: 48, height: 48, color: '#fff', fontSize: 24, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>›</button>
             </>}
-            <img onClick={e => e.stopPropagation()} src={image} alt="" draggable={false} style={{ maxWidth: '90vw', maxHeight: '75vh', width: 'auto', height: 'auto', objectFit: 'contain', imageRendering: '-webkit-optimize-contrast', cursor: 'default' }} />
+            <img onClick={e => e.stopPropagation()} src={image} alt="" draggable={false} style={{ maxWidth: '90vw', maxHeight: '75vh', width: 'auto', height: 'auto', objectFit: 'contain', cursor: 'default' }} />
             <div onClick={e => e.stopPropagation()} style={{ position: 'absolute', bottom: 30, display: 'flex', alignItems: 'center', gap: 12, cursor: 'default' }}>
               <span style={{ color: '#666', fontSize: 14 }}>{idx + 1} / {imgs.length}</span>
               {imgs.length <= 10 && <div style={{ display: 'flex', gap: 6 }}>{imgs.map((_, i) => <button key={i} onClick={() => setSlideshowIndex(i)} style={{ width: 8, height: 8, borderRadius: '50%', background: i === idx ? '#22c55e' : '#333', border: 'none', cursor: 'pointer', padding: 0 }} />)}</div>}
