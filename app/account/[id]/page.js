@@ -725,7 +725,7 @@ export default function AccountPage() {
 
   const enabledInputs = mergedInputsForAllJournals.filter(i => i.enabled && !i.hidden)
   const fixedInputs = enabledInputs.filter(i => ['symbol', 'outcome', 'pnl', 'riskPercent', 'rr', 'date'].includes(i.id))
-  const customInputs = enabledInputs.filter(i => !['symbol', 'outcome', 'pnl', 'riskPercent', 'rr', 'date'].includes(i.id))
+  const customInputs = enabledInputs // All enabled inputs for dynamic form rendering
 
   const avgRating = trades.length > 0 ? (trades.reduce((s, t) => s + (parseInt(getExtraData(t).rating) || 0), 0) / trades.length).toFixed(1) : '0'
   const avgPnl = trades.length > 0 ? Math.round(totalPnl / trades.length) : 0
@@ -2991,151 +2991,60 @@ export default function AccountPage() {
               <button onClick={() => { setShowAddTrade(false); setEditingTrade(null) }} style={{ padding: '6px 8px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '6px', color: '#666', fontSize: '14px', cursor: 'pointer', lineHeight: 1 }}>×</button>
             </div>
 
-            {/* Core Fields Grid */}
+            {/* All inputs - unified dynamic grid */}
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '12px' }}>
-              <div>
-                <label style={{ display: 'block', fontSize: '10px', color: '#666', marginBottom: '5px', textTransform: 'uppercase' }}>Symbol</label>
-                <input type="text" value={tradeForm.symbol || ''} onChange={e => setTradeForm({...tradeForm, symbol: e.target.value})} placeholder="XAUUSD" style={{ width: '100%', padding: '10px 12px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '13px', boxSizing: 'border-box' }} />
-              </div>
-              <div>
-                <label style={{ display: 'block', fontSize: '10px', color: '#666', marginBottom: '5px', textTransform: 'uppercase' }}>P&L ($)</label>
-                <input type="number" value={tradeForm.pnl || ''} onChange={e => setTradeForm({...tradeForm, pnl: e.target.value})} placeholder="0" style={{ width: '100%', padding: '10px 12px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '13px', boxSizing: 'border-box' }} />
-              </div>
-            </div>
-
-            {/* Direction + Outcome Row */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '12px' }}>
-              <div>
-                <label style={{ display: 'block', fontSize: '10px', color: '#666', marginBottom: '5px', textTransform: 'uppercase' }}>Direction</label>
-                <select value={tradeForm.direction || ''} onChange={e => setTradeForm({...tradeForm, direction: e.target.value})} style={{ width: '100%', padding: '10px 12px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '13px', boxSizing: 'border-box' }}>
-                  <option value="">-</option>
-                  <option value="long">Long</option>
-                  <option value="short">Short</option>
-                </select>
-              </div>
-              <div>
-                <label style={{ display: 'block', fontSize: '10px', color: '#666', marginBottom: '5px', textTransform: 'uppercase' }}>Outcome</label>
-                <select value={tradeForm.outcome || ''} onChange={e => setTradeForm({...tradeForm, outcome: e.target.value})} style={{ width: '100%', padding: '10px 12px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '13px', boxSizing: 'border-box' }}>
-                  <option value="">-</option>
-                  <option value="win">Win</option>
-                  <option value="loss">Loss</option>
-                  <option value="be">Breakeven</option>
-                </select>
-              </div>
-            </div>
-
-            {/* Secondary Fields */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '12px' }}>
-              <div>
-                <label style={{ display: 'block', fontSize: '10px', color: '#666', marginBottom: '5px', textTransform: 'uppercase' }}>RR</label>
-                <input type="text" value={tradeForm.rr || ''} onChange={e => setTradeForm({...tradeForm, rr: e.target.value})} placeholder="2.5" style={{ width: '100%', padding: '10px 12px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '13px', boxSizing: 'border-box' }} />
-              </div>
-              <div>
-                <label style={{ display: 'block', fontSize: '10px', color: '#666', marginBottom: '5px', textTransform: 'uppercase' }}>% Risk</label>
-                <input type="number" value={tradeForm.riskPercent || ''} onChange={e => setTradeForm({...tradeForm, riskPercent: e.target.value})} placeholder="1" style={{ width: '100%', padding: '10px 12px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '13px', boxSizing: 'border-box' }} />
-              </div>
-            </div>
-
-            {/* Date + Image Row */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '12px' }}>
-              <div>
-                <label style={{ display: 'block', fontSize: '10px', color: '#666', marginBottom: '5px', textTransform: 'uppercase' }}>Date</label>
-                <input type="date" value={tradeForm.date || ''} onChange={e => setTradeForm({...tradeForm, date: e.target.value})} style={{ width: '100%', padding: '10px 12px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '13px', boxSizing: 'border-box' }} />
-              </div>
-              <div>
-                <label style={{ display: 'block', fontSize: '10px', color: '#666', marginBottom: '5px', textTransform: 'uppercase' }}>Image</label>
-                <input id="modal-image-upload-main" type="file" accept="image/*" onChange={e => { const file = e.target.files[0]; if (file) { const reader = new FileReader(); reader.onloadend = () => setTradeForm({...tradeForm, image: reader.result}); reader.readAsDataURL(file) } }} style={{ display: 'none' }} />
-                {tradeForm.image ? (
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 12px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px' }}>
-                    <span style={{ color: '#22c55e', fontSize: '12px' }}>✓ Uploaded</span>
-                    <button type="button" onClick={() => setTradeForm({...tradeForm, image: ''})} style={{ padding: '4px 8px', background: '#1a1a22', border: 'none', borderRadius: '4px', color: '#999', fontSize: '11px', cursor: 'pointer' }}>×</button>
-                  </div>
-                ) : (
-                  <button type="button" onClick={() => document.getElementById('modal-image-upload-main').click()} style={{ width: '100%', padding: '10px 12px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px', color: '#666', fontSize: '12px', cursor: 'pointer', textAlign: 'left' }}>+ Image</button>
-                )}
-              </div>
-            </div>
-
-            {/* Rating + Custom inputs - render in unified grid */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '12px' }}>
-              {/* Rating */}
-              <div>
-                <label style={{ display: 'block', fontSize: '10px', color: '#666', marginBottom: '5px', textTransform: 'uppercase' }}>Rating</label>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <div style={{ display: 'flex', gap: '2px', padding: '8px 10px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px', alignItems: 'center' }} onMouseLeave={() => setHoverRating(0)}>
-                    {[1, 2, 3, 4, 5].map(star => {
-                      const displayRating = hoverRating || parseFloat(tradeForm.rating || 0)
-                      const isFullStar = displayRating >= star
-                      const isHalfStar = displayRating >= star - 0.5 && displayRating < star
-                      return (
-                        <div key={star} style={{ position: 'relative', width: '24px', height: '24px', cursor: 'pointer' }}
-                          onMouseMove={(e) => { const rect = e.currentTarget.getBoundingClientRect(); const x = e.clientX - rect.left; setHoverRating(x < rect.width / 2 ? star - 0.5 : star) }}
-                          onClick={(e) => { const rect = e.currentTarget.getBoundingClientRect(); const x = e.clientX - rect.left; const newRating = x < rect.width / 2 ? star - 0.5 : star; setTradeForm({...tradeForm, rating: parseFloat(tradeForm.rating) === newRating ? '' : String(newRating)}) }}>
-                          <span style={{ position: 'absolute', color: '#2a2a35', fontSize: '24px', lineHeight: 1 }}>★</span>
-                          {isHalfStar && <span style={{ position: 'absolute', color: '#22c55e', fontSize: '24px', lineHeight: 1, clipPath: 'inset(0 50% 0 0)' }}>★</span>}
-                          {isFullStar && <span style={{ position: 'absolute', color: '#22c55e', fontSize: '24px', lineHeight: 1 }}>★</span>}
-                        </div>
-                      )
-                    })}
-                  </div>
-                  <span style={{ background: '#1a1a22', padding: '4px 8px', borderRadius: '4px', fontSize: '12px', color: '#fff', whiteSpace: 'nowrap', minWidth: '40px', textAlign: 'center' }}>
-                    {hoverRating || parseFloat(tradeForm.rating) || 0} / 5
-                  </span>
-                </div>
-              </div>
-              {/* Custom inputs */}
-              {customInputs.filter(i => !['symbol', 'outcome', 'pnl', 'riskPercent', 'rr', 'date', 'direction', 'rating', 'image'].includes(i.id)).map(input => {
-                  const inputColor = input.color || '#fff'
-                  const optionsArr = Array.isArray(input.options) ? input.options : []
-                  return (
-                  <div key={input.id} style={{ gridColumn: input.type === 'textarea' || input.type === 'file' ? 'span 2' : 'span 1' }}>
-                    <label style={{ display: 'block', fontSize: '10px', color: '#666', marginBottom: '5px', textTransform: 'uppercase', whiteSpace: 'nowrap', overflow: 'visible' }}>{input.label}</label>
+              {customInputs.map(input => {
+                const optionsArr = Array.isArray(input.options) ? input.options : []
+                return (
+                  <div key={input.id} style={{ gridColumn: input.type === 'textarea' ? 'span 2' : 'span 1' }}>
+                    <label style={{ display: 'block', fontSize: '10px', color: '#666', marginBottom: '5px', textTransform: 'uppercase' }}>{input.label}</label>
                     {input.type === 'select' ? (
-                      <select value={tradeForm[input.id] || ''} onChange={e => setTradeForm({...tradeForm, [input.id]: e.target.value})} style={{ width: '100%', padding: '10px 12px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '13px' }}>
+                      <select value={tradeForm[input.id] || ''} onChange={e => setTradeForm({...tradeForm, [input.id]: e.target.value})} style={{ width: '100%', padding: '10px 12px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '13px', boxSizing: 'border-box' }}>
                         <option value="">-</option>
                         {optionsArr.map((o, idx) => <option key={idx} value={getOptVal(o).toLowerCase()}>{getOptVal(o)}</option>)}
                       </select>
                     ) : input.type === 'textarea' ? (
                       <textarea value={tradeForm[input.id] || ''} onChange={e => setTradeForm({...tradeForm, [input.id]: e.target.value})} placeholder="..." rows={3} style={{ width: '100%', padding: '10px 12px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '13px', boxSizing: 'border-box', resize: 'vertical', fontFamily: 'inherit' }} />
                     ) : input.type === 'rating' ? (
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                        <div style={{ display: 'inline-flex', gap: '4px', padding: '10px 14px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px', alignItems: 'center' }} onMouseLeave={() => setHoverRating(0)}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <div style={{ display: 'flex', gap: '2px', padding: '8px 10px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px', alignItems: 'center' }} onMouseLeave={() => setHoverRating(0)}>
                           {[1, 2, 3, 4, 5].map(star => {
                             const displayRating = hoverRating || parseFloat(tradeForm[input.id] || 0)
                             const isFullStar = displayRating >= star
                             const isHalfStar = displayRating >= star - 0.5 && displayRating < star
                             return (
-                              <div key={star} style={{ position: 'relative', width: '28px', height: '28px', cursor: 'pointer' }}
+                              <div key={star} style={{ position: 'relative', width: '24px', height: '24px', cursor: 'pointer' }}
                                 onMouseMove={(e) => { const rect = e.currentTarget.getBoundingClientRect(); const x = e.clientX - rect.left; setHoverRating(x < rect.width / 2 ? star - 0.5 : star) }}
                                 onClick={(e) => { const rect = e.currentTarget.getBoundingClientRect(); const x = e.clientX - rect.left; const newRating = x < rect.width / 2 ? star - 0.5 : star; setTradeForm({...tradeForm, [input.id]: parseFloat(tradeForm[input.id]) === newRating ? '' : String(newRating)}) }}>
-                                <span style={{ position: 'absolute', color: '#2a2a35', fontSize: '28px', lineHeight: 1 }}>★</span>
-                                {isHalfStar && <span style={{ position: 'absolute', color: '#22c55e', fontSize: '28px', lineHeight: 1, clipPath: 'inset(0 50% 0 0)' }}>★</span>}
-                                {isFullStar && <span style={{ position: 'absolute', color: '#22c55e', fontSize: '28px', lineHeight: 1 }}>★</span>}
+                                <span style={{ position: 'absolute', color: '#2a2a35', fontSize: '24px', lineHeight: 1 }}>★</span>
+                                {isHalfStar && <span style={{ position: 'absolute', color: '#22c55e', fontSize: '24px', lineHeight: 1, clipPath: 'inset(0 50% 0 0)' }}>★</span>}
+                                {isFullStar && <span style={{ position: 'absolute', color: '#22c55e', fontSize: '24px', lineHeight: 1 }}>★</span>}
                               </div>
                             )
                           })}
                         </div>
-                        <span style={{ background: '#1a1a22', padding: '6px 10px', borderRadius: '6px', fontSize: '13px', color: '#fff', whiteSpace: 'nowrap', minWidth: '45px', textAlign: 'center' }}>
+                        <span style={{ background: '#1a1a22', padding: '4px 8px', borderRadius: '4px', fontSize: '12px', color: '#fff', whiteSpace: 'nowrap', minWidth: '40px', textAlign: 'center' }}>
                           {hoverRating || parseFloat(tradeForm[input.id]) || 0} / 5
                         </span>
                       </div>
                     ) : input.type === 'file' ? (
                       <div>
-                        <input id="modal-image-upload" type="file" accept="image/*" onChange={e => { const file = e.target.files[0]; if (file) { const reader = new FileReader(); reader.onloadend = () => setTradeForm({...tradeForm, [input.id]: reader.result}); reader.readAsDataURL(file) } }} style={{ display: 'none' }} />
+                        <input id={`file-upload-${input.id}`} type="file" accept="image/*" onChange={e => { const file = e.target.files[0]; if (file) { const reader = new FileReader(); reader.onloadend = () => setTradeForm({...tradeForm, [input.id]: reader.result}); reader.readAsDataURL(file) } }} style={{ display: 'none' }} />
                         {tradeForm[input.id] ? (
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 12px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px' }}>
                             <span style={{ color: '#22c55e', fontSize: '12px' }}>✓ Uploaded</span>
                             <button type="button" onClick={() => setTradeForm({...tradeForm, [input.id]: ''})} style={{ padding: '4px 8px', background: '#1a1a22', border: 'none', borderRadius: '4px', color: '#999', fontSize: '11px', cursor: 'pointer' }}>×</button>
                           </div>
                         ) : (
-                          <button type="button" onClick={() => document.getElementById('modal-image-upload').click()} style={{ padding: '10px 14px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px', color: '#666', fontSize: '12px', cursor: 'pointer' }}>+ Image</button>
+                          <button type="button" onClick={() => document.getElementById(`file-upload-${input.id}`).click()} style={{ width: '100%', padding: '10px 12px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px', color: '#666', fontSize: '12px', cursor: 'pointer', textAlign: 'left' }}>+ Image</button>
                         )}
                       </div>
                     ) : (
-                      <input type={input.type} value={tradeForm[input.id] || ''} onChange={e => setTradeForm({...tradeForm, [input.id]: e.target.value})} style={{ width: '100%', padding: '10px 12px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '13px', boxSizing: 'border-box' }} />
+                      <input type={input.type === 'number' ? 'number' : input.type === 'date' ? 'date' : input.type === 'time' ? 'time' : 'text'} value={tradeForm[input.id] || ''} onChange={e => setTradeForm({...tradeForm, [input.id]: e.target.value})} placeholder={input.id === 'symbol' ? 'XAUUSD' : input.id === 'rr' ? '2.5' : input.id === 'riskPercent' ? '1' : ''} style={{ width: '100%', padding: '10px 12px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '13px', boxSizing: 'border-box' }} />
                     )}
                   </div>
-                )})}
+                )
+              })}
             </div>
 
             {/* Buttons */}
