@@ -117,6 +117,8 @@ export default function SettingsPage() {
     if (profile.is_admin) return { status: 'Admin', color: '#f59e0b' }
 
     switch (profile.subscription_status) {
+      case 'admin':
+        return { status: 'Admin', color: '#f59e0b' }
       case 'subscribing':
         return { status: 'Active Subscription', color: '#22c55e' }
       case 'free subscription':
@@ -144,11 +146,11 @@ export default function SettingsPage() {
   return (
     <div style={{ minHeight: '100vh', background: '#0a0a0f' }}>
       {/* Header */}
-      <header style={{ padding: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #1a1a22' }}>
-        <a href="/" style={{ fontSize: '42px', fontWeight: 700, textDecoration: 'none' }}>
+      <header style={{ padding: '4px 40px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #1a1a22' }}>
+        <a href="/" style={{ fontSize: '32px', fontWeight: 700, textDecoration: 'none' }}>
           <span style={{ color: '#22c55e' }}>LSD</span><span style={{ color: '#fff' }}>TRADE</span><span style={{ color: '#22c55e' }}>+</span>
         </a>
-        <a href="/dashboard" style={{ padding: '12px 24px', background: '#22c55e', borderRadius: '8px', color: '#fff', fontWeight: 600, fontSize: '14px', textDecoration: 'none' }}>
+        <a href="/dashboard" style={{ padding: '10px 20px', background: '#22c55e', borderRadius: '8px', color: '#fff', fontWeight: 600, fontSize: '13px', textDecoration: 'none' }}>
           Back to Journal
         </a>
       </header>
