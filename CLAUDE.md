@@ -25,23 +25,26 @@
 
 ## FINALISED Layout Values (Account Page) - DO NOT MODIFY
 These values are LOCKED. Do not change them under any circumstances:
+
+### Header & Navigation
 - **Header padding**: `4px 40px`
 - **Subheader top**: `60px`
+- **Subheader padding**: `17px 40px 13px 40px` (total 30px vertical)
 - **Sidebar top**: `60px`
 - **Sidebar padding**: `12px`
+
+### Sidebar Buttons
 - **Buttons container marginTop**: `4px`
 - **Buttons container gap**: `12px`
+- Stats View Selector has NO marginTop (flex gap handles spacing)
+
+### Main Content
 - **Main content marginTop**: `130px`
 - **Trades tab height**: `calc(100vh - 130px)`
 
-For sidebar flex items (buttons, Stats View Selector):
-- Use flex `gap: '12px'` for spacing between items
-- Stats View Selector has NO marginTop (flex gap handles spacing)
+### Table Header
+- **Table header th padding**: `3px 12px 11px 12px` (total 14px vertical)
 
-## Subheader Content Centering
-- Subheader padding: `17px 40px 13px 40px` (asymmetric to shift content down, total 30px keeps borders same)
-- DO NOT use marginTop on elements - it affects layout
-- To shift content without moving borders: increase top padding, decrease bottom by same amount
-
-## Table Header
-- Table header th padding: `3px 12px 11px 12px` (asymmetric to shift text up, total 14px)
+## Content Centering Notes
+- DO NOT use marginTop on subheader elements - it affects layout
+- To shift content without moving borders: adjust top/bottom padding asymmetrically while keeping total the same
