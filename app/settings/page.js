@@ -22,8 +22,8 @@ export default function SettingsPage() {
   // Check if user has valid subscription
   function hasValidSubscription(profile) {
     if (!profile) return false
-    if (profile.is_admin) return true
     const { subscription_status } = profile
+    if (subscription_status === 'admin') return true
     if (subscription_status === 'subscribing') return true
     if (subscription_status === 'free subscription') return true
     return false
@@ -151,8 +151,6 @@ export default function SettingsPage() {
 
   function getSubscriptionDisplay() {
     if (!profile) return { status: 'Unknown', color: '#999' }
-
-    if (profile.is_admin) return { status: 'Admin', color: '#f59e0b' }
 
     switch (profile.subscription_status) {
       case 'admin':
@@ -342,7 +340,7 @@ export default function SettingsPage() {
             </button>
           )}
 
-          {(profile?.is_admin || profile?.subscription_status === 'admin') && (
+          {profile?.subscription_status === 'admin' && (
             <div style={{ padding: '12px', background: 'rgba(245,158,11,0.1)', border: '1px solid rgba(245,158,11,0.3)', borderRadius: '8px', color: '#f59e0b', fontSize: '14px' }}>
               Admin accounts have permanent full access
             </div>
@@ -356,7 +354,7 @@ export default function SettingsPage() {
         </div>
 
         {/* Admin Panel Section - Only visible to admins */}
-        {(profile?.is_admin || profile?.subscription_status === 'admin') && (
+        {profile?.subscription_status === 'admin' && (
           <div style={{ background: '#14141a', border: '1px solid #f59e0b', borderRadius: '16px', padding: '24px', marginBottom: '24px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '12px' }}>
               <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#f59e0b' }} />
