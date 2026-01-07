@@ -1096,8 +1096,8 @@ export default function AccountPage() {
 
       {/* FIXED SIDEBAR - desktop only, starts under header */}
       {!isMobile && (
-        <div style={{ position: 'fixed', top: '53px', left: 0, bottom: 0, width: '180px', padding: '16px 12px 12px 12px', background: '#0a0a0f', zIndex: 45, display: 'flex', flexDirection: 'column', borderRight: '1px solid #1a1a22' }}>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+        <div style={{ position: 'fixed', top: '53px', left: 0, bottom: 0, width: '180px', padding: '12px', background: '#0a0a0f', zIndex: 45, display: 'flex', flexDirection: 'column', borderRight: '1px solid #1a1a22' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginTop: '24px' }}>
           {['trades', 'statistics', 'notes'].map((tab) => (
             <button
               key={tab}
@@ -1535,7 +1535,7 @@ export default function AccountPage() {
           const displayAvgRating = displayTrades.length > 0 ? (displayTrades.reduce((s, t) => s + (parseInt(getExtraData(t).rating) || 0), 0) / displayTrades.length).toFixed(1) : '0'
 
           return (
-          <div style={{ padding: isMobile ? '0' : '8px 12px' }}>
+          <div style={{ padding: isMobile ? '0' : '0 12px' }}>
             {/* Stats View Indicator Banner */}
             {viewingSelectedStats && selectedTrades.size > 0 ? (
               <div style={{ marginBottom: '12px', padding: '12px 16px', background: 'rgba(34,197,94,0.1)', border: '1px solid #22c55e', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', boxShadow: '0 0 12px rgba(34,197,94,0.15)' }}>
