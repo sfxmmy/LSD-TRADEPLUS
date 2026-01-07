@@ -100,7 +100,7 @@ export default function AccountPage() {
   const [showFilters, setShowFilters] = useState(false)
   const [filters, setFilters] = useState({ dateFrom: '', dateTo: '', outcome: '', direction: '', symbol: '', session: '', timeframe: '', confidence: '', rr: '', rating: '', custom: {} })
   const [draftFilters, setDraftFilters] = useState({ dateFrom: '', dateTo: '', outcome: '', direction: '', symbol: '', session: '', timeframe: '', confidence: '', rr: '', rating: '', quickSelect: '', custom: {} })
-  const [hoverRating, setHoverRating] = useState(0)
+  const [hoverRatings, setHoverRatings] = useState({}) // Track hover per input ID
   const [editingTrade, setEditingTrade] = useState(null)
   const [transferFromJournal, setTransferFromJournal] = useState('')
   const [draggedColumn, setDraggedColumn] = useState(null)
@@ -3010,24 +3010,24 @@ export default function AccountPage() {
                       <textarea value={tradeForm[input.id] || ''} onChange={e => setTradeForm({...tradeForm, [input.id]: e.target.value})} placeholder="..." rows={3} style={{ width: '100%', padding: '10px 12px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '13px', boxSizing: 'border-box', resize: 'vertical', fontFamily: 'inherit' }} />
                     ) : input.type === 'rating' ? (
                       <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <div style={{ display: 'flex', gap: '2px', padding: '8px 10px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px', alignItems: 'center' }} onMouseLeave={() => setHoverRating(0)}>
+                        <div style={{ display: 'flex', gap: '2px', padding: '8px 10px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px', alignItems: 'center' }} onMouseLeave={() => setHoverRatings(prev => ({...prev, [input.id]: 0}))}>
                           {[1, 2, 3, 4, 5].map(star => {
-                            const displayRating = hoverRating || parseFloat(tradeForm[input.id] || 0)
+                            const displayRating = hoverRatings[input.id] || parseFloat(tradeForm[input.id] || 0)
                             const isFullStar = displayRating >= star
                             const isHalfStar = displayRating >= star - 0.5 && displayRating < star
                             return (
                               <div key={star} style={{ position: 'relative', width: '24px', height: '24px', cursor: 'pointer' }}
-                                onMouseMove={(e) => { const rect = e.currentTarget.getBoundingClientRect(); const x = e.clientX - rect.left; setHoverRating(x < rect.width / 2 ? star - 0.5 : star) }}
+                                onMouseMove={(e) => { const rect = e.currentTarget.getBoundingClientRect(); const x = e.clientX - rect.left; setHoverRatings(prev => ({...prev, [input.id]: x < rect.width / 2 ? star - 0.5 : star})) }}
                                 onClick={(e) => { const rect = e.currentTarget.getBoundingClientRect(); const x = e.clientX - rect.left; const newRating = x < rect.width / 2 ? star - 0.5 : star; setTradeForm({...tradeForm, [input.id]: parseFloat(tradeForm[input.id]) === newRating ? '' : String(newRating)}) }}>
                                 <span style={{ position: 'absolute', color: '#2a2a35', fontSize: '24px', lineHeight: 1 }}>★</span>
-                                {isHalfStar && <span style={{ position: 'absolute', color: '#22c55e', fontSize: '24px', lineHeight: 1, clipPath: 'inset(0 50% 0 0)' }}>★</span>}
-                                {isFullStar && <span style={{ position: 'absolute', color: '#22c55e', fontSize: '24px', lineHeight: 1 }}>★</span>}
+                                {isHalfStar && <span style={{ position: 'absolute', color: input.textColor || '#22c55e', fontSize: '24px', lineHeight: 1, clipPath: 'inset(0 50% 0 0)' }}>★</span>}
+                                {isFullStar && <span style={{ position: 'absolute', color: input.textColor || '#22c55e', fontSize: '24px', lineHeight: 1 }}>★</span>}
                               </div>
                             )
                           })}
                         </div>
                         <span style={{ background: '#1a1a22', padding: '4px 8px', borderRadius: '4px', fontSize: '12px', color: '#fff', whiteSpace: 'nowrap', minWidth: '40px', textAlign: 'center' }}>
-                          {hoverRating || parseFloat(tradeForm[input.id]) || 0} / 5
+                          {hoverRatings[input.id] || parseFloat(tradeForm[input.id]) || 0} / 5
                         </span>
                       </div>
                     ) : input.type === 'file' ? (
@@ -3286,17 +3286,38 @@ export default function AccountPage() {
 
       {/* Color Editor Modal */}
       {editingColor !== null && (() => {
-        const isNumber = inputs[editingColor]?.type === 'number'
         const inp = inputs[editingColor] || {}
+        const isNumber = inp.type === 'number'
+        const isRating = inp.type === 'rating'
+        const isFile = inp.type === 'file'
         return (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.9)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 102 }} onClick={() => setEditingColor(null)}>
           <div style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '12px', padding: '24px', width: '420px', maxWidth: '95vw' }} onClick={e => e.stopPropagation()}>
             <h2 style={{ fontSize: '18px', fontWeight: 700, marginBottom: '4px', color: '#fff' }}>Style Settings</h2>
-            <p style={{ fontSize: '12px', color: '#555', marginBottom: '16px' }}>{isNumber ? 'Numbers use automatic green/red coloring' : 'Customize colors for this field'}</p>
+            <p style={{ fontSize: '12px', color: '#555', marginBottom: '16px' }}>{isNumber ? 'Numbers use automatic green/red coloring' : isRating ? 'Customize star appearance' : isFile ? 'Image fields have no style options' : 'Customize colors for this field'}</p>
 
             {isNumber ? (
               <div style={{ padding: '16px', background: '#0a0a0e', borderRadius: '8px', marginBottom: '16px' }}>
                 <div style={{ fontSize: '13px', color: '#888', textAlign: 'center' }}>Positive values show as <span style={{ color: '#22c55e' }}>green</span>, negative as <span style={{ color: '#ef4444' }}>red</span></div>
+              </div>
+            ) : isFile ? (
+              <div style={{ padding: '16px', background: '#0a0a0e', borderRadius: '8px', marginBottom: '16px' }}>
+                <div style={{ fontSize: '13px', color: '#888', textAlign: 'center' }}>Image uploads display as thumbnails with no custom styling</div>
+              </div>
+            ) : isRating ? (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '16px' }}>
+                {/* Star Color */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px', background: '#0a0a0e', borderRadius: '8px' }}>
+                  <div style={{ position: 'relative', width: '36px', height: '36px' }}>
+                    <div style={{ width: '36px', height: '36px', borderRadius: '6px', background: inp.textColor || '#22c55e', border: '2px solid #2a2a35', cursor: 'pointer' }} />
+                    <input type="color" value={inp.textColor || '#22c55e'} onChange={e => updateInput(editingColor, 'textColor', e.target.value)} style={{ position: 'absolute', inset: 0, opacity: 0, width: '100%', height: '100%', cursor: 'pointer' }} />
+                  </div>
+                  <span style={{ fontSize: '13px', color: '#888', flex: 1 }}>Star Color</span>
+                </div>
+                {/* Preview */}
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '12px', background: '#0a0a0e', borderRadius: '8px', gap: '4px' }}>
+                  {[1,2,3,4,5].map(s => <span key={s} style={{ fontSize: '24px', color: s <= 3 ? (inp.textColor || '#22c55e') : '#2a2a35' }}>★</span>)}
+                </div>
               </div>
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '16px' }}>
@@ -3363,7 +3384,7 @@ export default function AccountPage() {
 
             <div style={{ display: 'flex', gap: '12px' }}>
               <button onClick={() => setEditingColor(null)} style={{ flex: 1, padding: '12px', background: '#22c55e', border: 'none', borderRadius: '8px', color: '#fff', fontWeight: 600, fontSize: '13px', cursor: 'pointer' }}>Done</button>
-              {!isNumber && <button onClick={() => { updateInput(editingColor, 'textColor', null); updateInput(editingColor, 'bgColor', null); updateInput(editingColor, 'borderColor', null); setEditingColor(null) }} style={{ flex: 1, padding: '12px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '8px', color: '#888', fontWeight: 600, fontSize: '13px', cursor: 'pointer' }}>Reset</button>}
+              {!isNumber && !isFile && <button onClick={() => { updateInput(editingColor, 'textColor', null); updateInput(editingColor, 'bgColor', null); updateInput(editingColor, 'borderColor', null); setEditingColor(null) }} style={{ flex: 1, padding: '12px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '8px', color: '#888', fontWeight: 600, fontSize: '13px', cursor: 'pointer' }}>Reset</button>}
             </div>
           </div>
         </div>
