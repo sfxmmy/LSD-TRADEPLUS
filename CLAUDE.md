@@ -39,6 +39,9 @@ For sidebar flex items (buttons, Stats View Selector):
 - Stats View Selector has NO marginTop (flex gap handles spacing)
 
 ## Subheader Content Centering
-- Subheader padding: `15px 40px` (symmetric, centers buttons/title)
+- Subheader padding: `17px 40px 13px 40px` (asymmetric to shift content down, total 30px keeps borders same)
 - DO NOT use marginTop on elements - it affects layout
-- If you need to move border down, increase padding and adjust main content marginTop accordingly
+- To shift content without moving borders: increase top padding, decrease bottom by same amount
+
+## Table Header
+- Table header th padding: `7px 12px` (centered, half of original 28px)
