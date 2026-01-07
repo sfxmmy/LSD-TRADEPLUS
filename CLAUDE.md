@@ -37,3 +37,10 @@ These values are LOCKED. Do not change them under any circumstances:
 For sidebar flex items (buttons, Stats View Selector):
 - Use flex `gap: '12px'` for spacing between items
 - Stats View Selector has NO marginTop (flex gap handles spacing)
+
+## Subheader Content Centering
+To center content vertically in the subheader WITHOUT moving borders:
+- Use asymmetric padding: `15px 40px 11px 40px` (more top, less bottom)
+- Total vertical padding stays 26px so border position unchanged
+- DO NOT use marginTop on elements - it affects layout
+- Asymmetric padding shifts content down within fixed container height
