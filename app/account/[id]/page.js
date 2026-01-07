@@ -1049,7 +1049,7 @@ export default function AccountPage() {
               </button>
             ))}
           </div>
-          <button onClick={() => { setTradeForm({ date: new Date().toISOString().split('T')[0], direction: 'long', outcome: 'win' }); setEditingTrade(null); setShowAddTrade(true) }} style={{ width: '100%', marginTop: '12px', padding: '16px', background: '#22c55e', border: 'none', borderRadius: '8px', color: '#fff', fontWeight: 600, fontSize: '16px', cursor: 'pointer' }}>+ LOG NEW TRADE</button>
+          <button onClick={() => { setTradeForm({ date: new Date().toISOString().split('T')[0] }); setEditingTrade(null); setShowAddTrade(true) }} style={{ width: '100%', marginTop: '12px', padding: '16px', background: '#22c55e', border: 'none', borderRadius: '8px', color: '#fff', fontWeight: 600, fontSize: '16px', cursor: 'pointer' }}>+ LOG NEW TRADE</button>
         </div>
       )}
 
@@ -1079,7 +1079,7 @@ export default function AccountPage() {
               {activeTab === 'trades' && !selectMode && (
                 <>
                   <button onClick={() => setShowEditInputs(true)} style={{ height: '28px', margin: 0, padding: '0 16px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '6px', color: '#fff', fontSize: '13px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>Edit Columns</button>
-                  <button onClick={() => { setTradeForm({ date: new Date().toISOString().split('T')[0], direction: 'long', outcome: 'win' }); setEditingTrade(null); setShowAddTrade(true) }} style={{ height: '28px', margin: 0, padding: '0 20px', background: 'linear-gradient(135deg, #9333ea 0%, #7c3aed 100%)', border: 'none', borderRadius: '6px', color: '#fff', fontWeight: 600, fontSize: '13px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 0 20px rgba(147,51,234,0.4)' }}>+ LOG TRADE</button>
+                  <button onClick={() => { setTradeForm({ date: new Date().toISOString().split('T')[0] }); setEditingTrade(null); setShowAddTrade(true) }} style={{ height: '28px', margin: 0, padding: '0 20px', background: 'linear-gradient(135deg, #9333ea 0%, #7c3aed 100%)', border: 'none', borderRadius: '6px', color: '#fff', fontWeight: 600, fontSize: '13px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 0 20px rgba(147,51,234,0.4)' }}>+ LOG TRADE</button>
                 </>
               )}
           </div>
@@ -1090,7 +1090,7 @@ export default function AccountPage() {
       {isMobile && (
         <div style={{ position: 'fixed', top: '53px', left: 0, right: 0, zIndex: 40, padding: '10px 16px', background: '#0a0a0f', borderBottom: '1px solid #1a1a22', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <span style={{ fontSize: '18px', fontWeight: 700, color: '#fff' }}>{account?.name}</span>
-          <button onClick={() => { setTradeForm({ date: new Date().toISOString().split('T')[0], direction: 'long', outcome: 'win' }); setEditingTrade(null); setShowAddTrade(true) }} style={{ padding: '8px 16px', background: 'linear-gradient(135deg, #9333ea 0%, #7c3aed 100%)', border: 'none', borderRadius: '6px', color: '#fff', fontWeight: 600, fontSize: '12px', cursor: 'pointer', boxShadow: '0 0 15px rgba(147,51,234,0.5)' }}>+ ADD</button>
+          <button onClick={() => { setTradeForm({ date: new Date().toISOString().split('T')[0] }); setEditingTrade(null); setShowAddTrade(true) }} style={{ padding: '8px 16px', background: 'linear-gradient(135deg, #9333ea 0%, #7c3aed 100%)', border: 'none', borderRadius: '6px', color: '#fff', fontWeight: 600, fontSize: '12px', cursor: 'pointer', boxShadow: '0 0 15px rgba(147,51,234,0.5)' }}>+ ADD</button>
         </div>
       )}
 
@@ -3007,14 +3007,16 @@ export default function AccountPage() {
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '12px' }}>
               <div>
                 <label style={{ display: 'block', fontSize: '10px', color: '#666', marginBottom: '5px', textTransform: 'uppercase' }}>Direction</label>
-                <select value={tradeForm.direction || 'long'} onChange={e => setTradeForm({...tradeForm, direction: e.target.value})} style={{ width: '100%', padding: '10px 12px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '13px', boxSizing: 'border-box' }}>
+                <select value={tradeForm.direction || ''} onChange={e => setTradeForm({...tradeForm, direction: e.target.value})} style={{ width: '100%', padding: '10px 12px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '13px', boxSizing: 'border-box' }}>
+                  <option value="">-</option>
                   <option value="long">Long</option>
                   <option value="short">Short</option>
                 </select>
               </div>
               <div>
                 <label style={{ display: 'block', fontSize: '10px', color: '#666', marginBottom: '5px', textTransform: 'uppercase' }}>Outcome</label>
-                <select value={tradeForm.outcome || 'win'} onChange={e => setTradeForm({...tradeForm, outcome: e.target.value})} style={{ width: '100%', padding: '10px 12px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '13px', boxSizing: 'border-box' }}>
+                <select value={tradeForm.outcome || ''} onChange={e => setTradeForm({...tradeForm, outcome: e.target.value})} style={{ width: '100%', padding: '10px 12px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '13px', boxSizing: 'border-box' }}>
+                  <option value="">-</option>
                   <option value="win">Win</option>
                   <option value="loss">Loss</option>
                   <option value="be">Breakeven</option>
