@@ -372,54 +372,44 @@ export default function AdminPage() {
                 No trades found
               </div>
             ) : (
-              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '11px' }}>
-                <thead>
-                  <tr style={{ background: '#141418', position: 'sticky', top: 0 }}>
-                    <th style={{ padding: '8px', textAlign: 'left', color: '#666', fontWeight: 600 }}>Date</th>
-                    <th style={{ padding: '8px', textAlign: 'left', color: '#666', fontWeight: 600 }}>Symbol</th>
-                    <th style={{ padding: '8px', textAlign: 'left', color: '#666', fontWeight: 600 }}>Direction</th>
-                    <th style={{ padding: '8px', textAlign: 'right', color: '#666', fontWeight: 600 }}>PnL</th>
-                    <th style={{ padding: '8px', textAlign: 'center', color: '#666', fontWeight: 600 }}>RR</th>
-                    <th style={{ padding: '8px', textAlign: 'center', color: '#666', fontWeight: 600 }}>Outcome</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {trades.map(trade => (
-                    <tr key={trade.id} style={{ borderBottom: '1px solid #1a1a22' }}>
-                      <td style={{ padding: '8px', color: '#999' }}>{trade.date}</td>
-                      <td style={{ padding: '8px', color: '#fff', fontWeight: 600 }}>{trade.symbol || '-'}</td>
-                      <td style={{ padding: '8px' }}>
-                        <span style={{
-                          fontSize: '9px',
-                          padding: '2px 6px',
-                          background: trade.direction === 'long' ? 'rgba(34,197,94,0.2)' : 'rgba(239,68,68,0.2)',
-                          color: trade.direction === 'long' ? '#22c55e' : '#ef4444',
-                          borderRadius: '4px',
-                          fontWeight: 600
-                        }}>
-                          {trade.direction?.toUpperCase() || '-'}
-                        </span>
-                      </td>
-                      <td style={{ padding: '8px', textAlign: 'right', color: parseFloat(trade.pnl) >= 0 ? '#22c55e' : '#ef4444', fontWeight: 600 }}>
-                        {parseFloat(trade.pnl) >= 0 ? '+' : ''}${parseFloat(trade.pnl).toLocaleString()}
-                      </td>
-                      <td style={{ padding: '8px', textAlign: 'center', color: '#fff' }}>{trade.rr || '-'}</td>
-                      <td style={{ padding: '8px', textAlign: 'center' }}>
-                        <span style={{
-                          fontSize: '9px',
-                          padding: '2px 6px',
-                          background: trade.outcome === 'win' ? '#22c55e' : trade.outcome === 'loss' ? '#ef4444' : '#666',
-                          color: '#fff',
-                          borderRadius: '4px',
-                          fontWeight: 600
-                        }}>
-                          {trade.outcome?.toUpperCase() || '-'}
-                        </span>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', padding: '8px' }}>
+                {trades.map(trade => {
+                  const extraData = trade.extra_data ? (typeof trade.extra_data === 'string' ? JSON.parse(trade.extra_data) : trade.extra_data) : {}
+                  return (
+                    <div key={trade.id} style={{ background: '#141418', borderRadius: '8px', padding: '12px', border: '1px solid #1a1a22' }}>
+                      {/* Trade Header */}
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <span style={{ color: '#999', fontSize: '11px' }}>{trade.date}</span>
+                          <span style={{ color: '#fff', fontWeight: 600, fontSize: '13px' }}>{trade.symbol || '-'}</span>
+                          <span style={{ fontSize: '9px', padding: '2px 6px', background: trade.direction === 'long' ? 'rgba(34,197,94,0.2)' : 'rgba(239,68,68,0.2)', color: trade.direction === 'long' ? '#22c55e' : '#ef4444', borderRadius: '4px', fontWeight: 600 }}>{trade.direction?.toUpperCase() || '-'}</span>
+                        </div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                          <span style={{ color: parseFloat(trade.pnl) >= 0 ? '#22c55e' : '#ef4444', fontWeight: 600, fontSize: '13px' }}>{parseFloat(trade.pnl) >= 0 ? '+' : ''}${parseFloat(trade.pnl || 0).toLocaleString()}</span>
+                          <span style={{ fontSize: '9px', padding: '2px 6px', background: trade.outcome === 'win' ? '#22c55e' : trade.outcome === 'loss' ? '#ef4444' : '#666', color: '#fff', borderRadius: '4px', fontWeight: 600 }}>{trade.outcome?.toUpperCase() || '-'}</span>
+                        </div>
+                      </div>
+                      {/* Trade Details Grid */}
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', fontSize: '10px' }}>
+                        {trade.rr && <span style={{ padding: '3px 8px', background: '#0d0d12', borderRadius: '4px', color: '#888' }}>RR: <span style={{ color: '#fff' }}>{trade.rr}</span></span>}
+                        {trade.risk_percent && <span style={{ padding: '3px 8px', background: '#0d0d12', borderRadius: '4px', color: '#888' }}>Risk: <span style={{ color: '#fff' }}>{trade.risk_percent}%</span></span>}
+                        {trade.rating && <span style={{ padding: '3px 8px', background: '#0d0d12', borderRadius: '4px', color: '#888' }}>Rating: <span style={{ color: '#f59e0b' }}>{'★'.repeat(trade.rating)}</span></span>}
+                        {trade.time && <span style={{ padding: '3px 8px', background: '#0d0d12', borderRadius: '4px', color: '#888' }}>Time: <span style={{ color: '#fff' }}>{trade.time}</span></span>}
+                        {/* Extra Data Fields */}
+                        {Object.entries(extraData).map(([key, value]) => value && (
+                          <span key={key} style={{ padding: '3px 8px', background: '#0d0d12', borderRadius: '4px', color: '#888' }}>{key}: <span style={{ color: '#fff' }}>{String(value)}</span></span>
+                        ))}
+                      </div>
+                      {/* Notes */}
+                      {trade.notes && (
+                        <div style={{ marginTop: '8px', padding: '8px', background: '#0d0d12', borderRadius: '4px', fontSize: '11px', color: '#999', borderLeft: '2px solid #333' }}>
+                          {trade.notes}
+                        </div>
+                      )}
+                    </div>
+                  )
+                })}
+              </div>
             )}
           </div>
         </div>
@@ -455,7 +445,7 @@ export default function AdminPage() {
           <div style={{ color: '#f59e0b', fontWeight: 700, marginBottom: '6px' }}>ADMIN</div>
           <div style={{ color: '#999', fontSize: '11px', lineHeight: 1.4 }}>
             Full access + can view all users data. Bypasses subscription check.
-            <br /><code style={{ color: '#f59e0b', background: '#1a1a22', padding: '2px 4px', borderRadius: '3px', fontSize: '10px' }}>is_admin = TRUE</code>
+            <br /><code style={{ color: '#f59e0b', background: '#1a1a22', padding: '2px 4px', borderRadius: '3px', fontSize: '10px' }}>subscription_status = 'admin'</code>
           </div>
         </div>
         <div style={{ marginTop: '16px', padding: '12px', background: '#1a1a22', borderRadius: '6px', fontSize: '11px', color: '#999' }}>
@@ -465,7 +455,7 @@ export default function AdminPage() {
           <code style={{ display: 'block', marginBottom: '4px', color: '#3b82f6' }}>-- Give someone free access:</code>
           <code style={{ display: 'block', marginBottom: '8px', color: '#ccc' }}>UPDATE profiles SET subscription_status = 'free subscription' WHERE email = 'user@email.com';</code>
           <code style={{ display: 'block', marginBottom: '4px', color: '#f59e0b' }}>-- Make someone admin:</code>
-          <code style={{ display: 'block', color: '#ccc' }}>UPDATE profiles SET is_admin = TRUE WHERE email = 'user@email.com';</code>
+          <code style={{ display: 'block', color: '#ccc' }}>UPDATE profiles SET subscription_status = 'admin' WHERE email = 'user@email.com';</code>
         </div>
       </div>
     </div>
