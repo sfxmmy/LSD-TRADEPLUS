@@ -1049,7 +1049,7 @@ export default function AccountPage() {
               </button>
             ))}
           </div>
-          <button onClick={() => setShowAddTrade(true)} style={{ width: '100%', marginTop: '12px', padding: '16px', background: '#22c55e', border: 'none', borderRadius: '8px', color: '#fff', fontWeight: 600, fontSize: '16px', cursor: 'pointer' }}>+ LOG NEW TRADE</button>
+          <button onClick={() => { setTradeForm({ date: new Date().toISOString().split('T')[0], direction: 'long', outcome: 'win' }); setEditingTrade(null); setShowAddTrade(true) }} style={{ width: '100%', marginTop: '12px', padding: '16px', background: '#22c55e', border: 'none', borderRadius: '8px', color: '#fff', fontWeight: 600, fontSize: '16px', cursor: 'pointer' }}>+ LOG NEW TRADE</button>
         </div>
       )}
 
@@ -1079,7 +1079,7 @@ export default function AccountPage() {
               {activeTab === 'trades' && !selectMode && (
                 <>
                   <button onClick={() => setShowEditInputs(true)} style={{ height: '28px', margin: 0, padding: '0 16px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '6px', color: '#fff', fontSize: '13px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>Edit Columns</button>
-                  <button onClick={() => setShowAddTrade(true)} style={{ height: '28px', margin: 0, padding: '0 20px', background: 'linear-gradient(135deg, #9333ea 0%, #7c3aed 100%)', border: 'none', borderRadius: '6px', color: '#fff', fontWeight: 600, fontSize: '13px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 0 20px rgba(147,51,234,0.4)' }}>+ LOG TRADE</button>
+                  <button onClick={() => { setTradeForm({ date: new Date().toISOString().split('T')[0], direction: 'long', outcome: 'win' }); setEditingTrade(null); setShowAddTrade(true) }} style={{ height: '28px', margin: 0, padding: '0 20px', background: 'linear-gradient(135deg, #9333ea 0%, #7c3aed 100%)', border: 'none', borderRadius: '6px', color: '#fff', fontWeight: 600, fontSize: '13px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 0 20px rgba(147,51,234,0.4)' }}>+ LOG TRADE</button>
                 </>
               )}
           </div>
@@ -1090,7 +1090,7 @@ export default function AccountPage() {
       {isMobile && (
         <div style={{ position: 'fixed', top: '53px', left: 0, right: 0, zIndex: 40, padding: '10px 16px', background: '#0a0a0f', borderBottom: '1px solid #1a1a22', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <span style={{ fontSize: '18px', fontWeight: 700, color: '#fff' }}>{account?.name}</span>
-          <button onClick={() => setShowAddTrade(true)} style={{ padding: '8px 16px', background: 'linear-gradient(135deg, #9333ea 0%, #7c3aed 100%)', border: 'none', borderRadius: '6px', color: '#fff', fontWeight: 600, fontSize: '12px', cursor: 'pointer', boxShadow: '0 0 15px rgba(147,51,234,0.5)' }}>+ ADD</button>
+          <button onClick={() => { setTradeForm({ date: new Date().toISOString().split('T')[0], direction: 'long', outcome: 'win' }); setEditingTrade(null); setShowAddTrade(true) }} style={{ padding: '8px 16px', background: 'linear-gradient(135deg, #9333ea 0%, #7c3aed 100%)', border: 'none', borderRadius: '6px', color: '#fff', fontWeight: 600, fontSize: '12px', cursor: 'pointer', boxShadow: '0 0 15px rgba(147,51,234,0.5)' }}>+ ADD</button>
         </div>
       )}
 
@@ -3007,14 +3007,14 @@ export default function AccountPage() {
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '12px' }}>
               <div>
                 <label style={{ display: 'block', fontSize: '10px', color: '#666', marginBottom: '5px', textTransform: 'uppercase' }}>Direction</label>
-                <select value={tradeForm.direction || 'long'} onChange={e => setTradeForm({...tradeForm, direction: e.target.value})} style={{ width: '100%', padding: '10px 12px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px', color: (tradeForm.direction || 'long') === 'long' ? '#22c55e' : '#ef4444', fontSize: '13px', boxSizing: 'border-box' }}>
+                <select value={tradeForm.direction || 'long'} onChange={e => setTradeForm({...tradeForm, direction: e.target.value})} style={{ width: '100%', padding: '10px 12px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '13px', boxSizing: 'border-box' }}>
                   <option value="long">Long</option>
                   <option value="short">Short</option>
                 </select>
               </div>
               <div>
                 <label style={{ display: 'block', fontSize: '10px', color: '#666', marginBottom: '5px', textTransform: 'uppercase' }}>Outcome</label>
-                <select value={tradeForm.outcome || 'win'} onChange={e => setTradeForm({...tradeForm, outcome: e.target.value})} style={{ width: '100%', padding: '10px 12px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px', color: (tradeForm.outcome || 'win') === 'win' ? '#22c55e' : tradeForm.outcome === 'loss' ? '#ef4444' : '#f59e0b', fontSize: '13px', boxSizing: 'border-box' }}>
+                <select value={tradeForm.outcome || 'win'} onChange={e => setTradeForm({...tradeForm, outcome: e.target.value})} style={{ width: '100%', padding: '10px 12px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '13px', boxSizing: 'border-box' }}>
                   <option value="win">Win</option>
                   <option value="loss">Loss</option>
                   <option value="be">Breakeven</option>
@@ -3034,11 +3034,25 @@ export default function AccountPage() {
               </div>
             </div>
 
-            {/* Date + Rating Row */}
+            {/* Date Row */}
+            <div style={{ marginBottom: '12px' }}>
+              <label style={{ display: 'block', fontSize: '10px', color: '#666', marginBottom: '5px', textTransform: 'uppercase' }}>Date</label>
+              <input type="date" value={tradeForm.date || ''} onChange={e => setTradeForm({...tradeForm, date: e.target.value})} style={{ width: '100%', padding: '10px 12px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '13px', boxSizing: 'border-box' }} />
+            </div>
+
+            {/* Image + Rating Row */}
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '12px' }}>
               <div>
-                <label style={{ display: 'block', fontSize: '10px', color: '#666', marginBottom: '5px', textTransform: 'uppercase' }}>Date</label>
-                <input type="date" value={tradeForm.date || ''} onChange={e => setTradeForm({...tradeForm, date: e.target.value})} style={{ width: '100%', padding: '10px 12px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '13px', boxSizing: 'border-box' }} />
+                <label style={{ display: 'block', fontSize: '10px', color: '#666', marginBottom: '5px', textTransform: 'uppercase' }}>Image</label>
+                <input id="modal-image-upload-main" type="file" accept="image/*" onChange={e => { const file = e.target.files[0]; if (file) { const reader = new FileReader(); reader.onloadend = () => setTradeForm({...tradeForm, image: reader.result}); reader.readAsDataURL(file) } }} style={{ display: 'none' }} />
+                {tradeForm.image ? (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 12px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px' }}>
+                    <span style={{ color: '#22c55e', fontSize: '12px' }}>✓ Uploaded</span>
+                    <button type="button" onClick={() => setTradeForm({...tradeForm, image: ''})} style={{ padding: '4px 8px', background: '#1a1a22', border: 'none', borderRadius: '4px', color: '#999', fontSize: '11px', cursor: 'pointer' }}>×</button>
+                  </div>
+                ) : (
+                  <button type="button" onClick={() => document.getElementById('modal-image-upload-main').click()} style={{ width: '100%', padding: '10px 12px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px', color: '#666', fontSize: '12px', cursor: 'pointer', textAlign: 'left' }}>+ Image</button>
+                )}
               </div>
               <div>
                 <label style={{ display: 'block', fontSize: '10px', color: '#666', marginBottom: '5px', textTransform: 'uppercase' }}>Rating</label>
@@ -3067,9 +3081,9 @@ export default function AccountPage() {
             </div>
 
             {/* Custom inputs - render dynamically in grid */}
-            {customInputs.filter(i => !['symbol', 'outcome', 'pnl', 'riskPercent', 'rr', 'date', 'direction', 'rating'].includes(i.id)).length > 0 && (
+            {customInputs.filter(i => !['symbol', 'outcome', 'pnl', 'riskPercent', 'rr', 'date', 'direction', 'rating', 'image'].includes(i.id)).length > 0 && (
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '12px' }}>
-                {customInputs.filter(i => !['symbol', 'outcome', 'pnl', 'riskPercent', 'rr', 'date', 'direction', 'rating'].includes(i.id)).map(input => {
+                {customInputs.filter(i => !['symbol', 'outcome', 'pnl', 'riskPercent', 'rr', 'date', 'direction', 'rating', 'image'].includes(i.id)).map(input => {
                   const inputColor = input.color || '#fff'
                   const optionsArr = Array.isArray(input.options) ? input.options : []
                   return (
