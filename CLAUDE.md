@@ -44,4 +44,4 @@ For sidebar flex items (buttons, Stats View Selector):
 - To shift content without moving borders: increase top padding, decrease bottom by same amount
 
 ## Table Header
-- Table header th padding: `5px 12px 9px 12px` (asymmetric to shift text up, total 14px)
+- Table header th padding: `3px 12px 11px 12px` (asymmetric to shift text up, total 14px)
