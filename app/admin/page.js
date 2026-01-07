@@ -29,11 +29,11 @@ export default function AdminPage() {
     // Check if admin
     const { data: profile } = await supabase
       .from('profiles')
-      .select('is_admin')
+      .select('is_admin, subscription_status')
       .eq('id', user.id)
       .single()
 
-    if (!profile?.is_admin) {
+    if (!profile?.is_admin && profile?.subscription_status !== 'admin') {
       router.push('/dashboard')
       return
     }

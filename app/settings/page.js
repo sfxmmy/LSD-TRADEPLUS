@@ -10,6 +10,10 @@ export default function SettingsPage() {
   const [username, setUsername] = useState('')
   const [saving, setSaving] = useState(false)
   const [message, setMessage] = useState('')
+  const [newPassword, setNewPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
+  const [passwordSaving, setPasswordSaving] = useState(false)
+  const [passwordMessage, setPasswordMessage] = useState('')
 
   useEffect(() => {
     loadProfile()
@@ -71,6 +75,40 @@ export default function SettingsPage() {
       setProfile({ ...profile, username: username.trim() })
     }
     setSaving(false)
+  }
+
+  async function handleChangePassword() {
+    if (!newPassword || !confirmPassword) {
+      setPasswordMessage('Please fill in both fields')
+      return
+    }
+    if (newPassword.length < 6) {
+      setPasswordMessage('Password must be at least 6 characters')
+      return
+    }
+    if (newPassword !== confirmPassword) {
+      setPasswordMessage('Passwords do not match')
+      return
+    }
+
+    setPasswordSaving(true)
+    setPasswordMessage('')
+
+    const supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+    )
+
+    const { error } = await supabase.auth.updateUser({ password: newPassword })
+
+    if (error) {
+      setPasswordMessage('Error: ' + error.message)
+    } else {
+      setPasswordMessage('Password updated successfully!')
+      setNewPassword('')
+      setConfirmPassword('')
+    }
+    setPasswordSaving(false)
   }
 
   async function handleManageSubscription() {
@@ -206,6 +244,56 @@ export default function SettingsPage() {
           </button>
         </div>
 
+        {/* Security Section */}
+        <div style={{ background: '#14141a', border: '1px solid #222230', borderRadius: '16px', padding: '24px', marginBottom: '24px' }}>
+          <h2 style={{ fontSize: '16px', fontWeight: 600, marginBottom: '20px', color: '#fff' }}>Security</h2>
+
+          <div style={{ marginBottom: '16px' }}>
+            <label style={{ display: 'block', fontSize: '12px', color: '#999', marginBottom: '8px', textTransform: 'uppercase' }}>New Password</label>
+            <input
+              type="password"
+              value={newPassword}
+              onChange={e => setNewPassword(e.target.value)}
+              placeholder="Enter new password"
+              style={{ width: '100%', padding: '12px', background: '#0a0a0f', border: '1px solid #222230', borderRadius: '8px', color: '#fff', fontSize: '15px', boxSizing: 'border-box' }}
+            />
+          </div>
+
+          <div style={{ marginBottom: '16px' }}>
+            <label style={{ display: 'block', fontSize: '12px', color: '#999', marginBottom: '8px', textTransform: 'uppercase' }}>Confirm New Password</label>
+            <input
+              type="password"
+              value={confirmPassword}
+              onChange={e => setConfirmPassword(e.target.value)}
+              placeholder="Confirm new password"
+              style={{ width: '100%', padding: '12px', background: '#0a0a0f', border: '1px solid #222230', borderRadius: '8px', color: '#fff', fontSize: '15px', boxSizing: 'border-box' }}
+            />
+          </div>
+
+          {passwordMessage && (
+            <div style={{ marginBottom: '16px', padding: '12px', background: passwordMessage.includes('Error') || passwordMessage.includes('match') || passwordMessage.includes('least') || passwordMessage.includes('fill') ? 'rgba(239,68,68,0.1)' : 'rgba(34,197,94,0.1)', border: `1px solid ${passwordMessage.includes('Error') || passwordMessage.includes('match') || passwordMessage.includes('least') || passwordMessage.includes('fill') ? 'rgba(239,68,68,0.3)' : 'rgba(34,197,94,0.3)'}`, borderRadius: '8px', color: passwordMessage.includes('Error') || passwordMessage.includes('match') || passwordMessage.includes('least') || passwordMessage.includes('fill') ? '#ef4444' : '#22c55e', fontSize: '14px' }}>
+              {passwordMessage}
+            </div>
+          )}
+
+          <button
+            onClick={handleChangePassword}
+            disabled={passwordSaving || !newPassword || !confirmPassword}
+            style={{
+              padding: '12px 24px',
+              background: passwordSaving || !newPassword || !confirmPassword ? '#166534' : '#22c55e',
+              border: 'none',
+              borderRadius: '8px',
+              color: '#fff',
+              fontWeight: 600,
+              fontSize: '14px',
+              cursor: passwordSaving || !newPassword || !confirmPassword ? 'not-allowed' : 'pointer'
+            }}
+          >
+            {passwordSaving ? 'Updating...' : 'Update Password'}
+          </button>
+        </div>
+
         {/* Subscription Section */}
         <div style={{ background: '#14141a', border: '1px solid #222230', borderRadius: '16px', padding: '24px', marginBottom: '24px' }}>
           <h2 style={{ fontSize: '16px', fontWeight: 600, marginBottom: '20px', color: '#fff' }}>Subscription</h2>
@@ -254,7 +342,7 @@ export default function SettingsPage() {
             </button>
           )}
 
-          {profile?.is_admin && (
+          {(profile?.is_admin || profile?.subscription_status === 'admin') && (
             <div style={{ padding: '12px', background: 'rgba(245,158,11,0.1)', border: '1px solid rgba(245,158,11,0.3)', borderRadius: '8px', color: '#f59e0b', fontSize: '14px' }}>
               Admin accounts have permanent full access
             </div>
@@ -268,7 +356,7 @@ export default function SettingsPage() {
         </div>
 
         {/* Admin Panel Section - Only visible to admins */}
-        {profile?.is_admin && (
+        {(profile?.is_admin || profile?.subscription_status === 'admin') && (
           <div style={{ background: '#14141a', border: '1px solid #f59e0b', borderRadius: '16px', padding: '24px', marginBottom: '24px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '12px' }}>
               <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#f59e0b' }} />
