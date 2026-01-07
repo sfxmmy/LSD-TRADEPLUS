@@ -1055,7 +1055,7 @@ export default function AccountPage() {
 
       {/* FIXED SUBHEADER - starts at sidebar edge */}
       {!isMobile && (
-        <div style={{ position: 'fixed', top: '60px', left: '180px', right: 0, zIndex: 46, padding: '8px 40px', background: '#0a0a0f', borderBottom: '1px solid #1a1a22', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div style={{ position: 'fixed', top: '60px', left: '180px', right: 0, zIndex: 46, padding: '12px 40px', background: '#0a0a0f', borderBottom: '1px solid #1a1a22', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <span style={{ fontSize: '28px', fontWeight: 700, color: '#fff' }}>{account?.name}</span>
           <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
               {activeTab === 'trades' && trades.length > 0 && !selectMode && (
