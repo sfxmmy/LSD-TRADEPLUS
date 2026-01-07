@@ -1224,13 +1224,20 @@ export default function DashboardPage() {
                                 }))
                             }
                           } catch {}
-                          // If no columns found, use defaults
+                          // If no columns found, use defaults (matches account page defaults, excluding file/textarea)
                           if (columns.length === 0) {
                             columns = [
                               { id: 'symbol', label: 'Symbol', type: 'text' },
-                              { id: 'outcome', label: 'Outcome', type: 'select' },
                               { id: 'pnl', label: 'PnL ($)', type: 'number' },
-                              { id: 'direction', label: 'Direction', type: 'select' }
+                              { id: 'direction', label: 'Direction', type: 'select' },
+                              { id: 'outcome', label: 'W/L', type: 'select' },
+                              { id: 'rr', label: 'RR', type: 'number' },
+                              { id: 'riskPercent', label: '% Risk', type: 'number' },
+                              { id: 'date', label: 'Date', type: 'date' },
+                              { id: 'time', label: 'Time', type: 'time' },
+                              { id: 'confidence', label: 'Confidence', type: 'select' },
+                              { id: 'rating', label: 'Rating', type: 'rating' },
+                              { id: 'session', label: 'Session', type: 'select' }
                             ]
                           }
                           // Limit to first 11 columns, then add Placed as 12th
