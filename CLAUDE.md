@@ -16,6 +16,7 @@
 - Before editing any file, state which file you're editing and why
 - Only edit the specific section requested — don't refactor surrounding code
 - If a previous edit is working, don't touch it when working on something else
+- Moving one segment or anything can potentially move others. Make sure this is kept in mind, and you are aware of what is being impacted by your code. 
 
 ## Workflow
 - When asked to fix/add something, ONLY touch the relevant code
