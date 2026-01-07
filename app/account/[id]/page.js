@@ -2991,9 +2991,12 @@ export default function AccountPage() {
               <button onClick={() => { setShowAddTrade(false); setEditingTrade(null) }} style={{ padding: '6px 8px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '6px', color: '#666', fontSize: '14px', cursor: 'pointer', lineHeight: 1 }}>×</button>
             </div>
 
-            {/* All inputs - unified dynamic grid */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '12px' }}>
-              {customInputs.map(input => {
+            {/* All inputs - unified dynamic grid (file/textarea at bottom) */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '12px', gridAutoFlow: 'dense' }}>
+              {[...customInputs].sort((a, b) => {
+                const order = (t) => t === 'textarea' ? 2 : t === 'file' ? 1 : 0
+                return order(a.type) - order(b.type)
+              }).map(input => {
                 const optionsArr = Array.isArray(input.options) ? input.options : []
                 return (
                   <div key={input.id} style={{ gridColumn: input.type === 'textarea' ? 'span 2' : 'span 1' }}>
