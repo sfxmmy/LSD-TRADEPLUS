@@ -1055,9 +1055,9 @@ export default function AccountPage() {
 
       {/* FIXED SUBHEADER - starts at sidebar edge */}
       {!isMobile && (
-        <div style={{ position: 'fixed', top: '60px', left: '180px', right: 0, zIndex: 46, padding: '13px 40px', background: '#0a0a0f', borderBottom: '1px solid #1a1a22', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <span style={{ fontSize: '28px', fontWeight: 700, color: '#fff', lineHeight: 1, marginTop: '2px' }}>{account?.name}</span>
-          <div style={{ display: 'flex', gap: '12px', alignItems: 'center', marginTop: '2px' }}>
+        <div style={{ position: 'fixed', top: '60px', left: '180px', right: 0, zIndex: 46, padding: '15px 40px 11px 40px', background: '#0a0a0f', borderBottom: '1px solid #1a1a22', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <span style={{ fontSize: '28px', fontWeight: 700, color: '#fff', lineHeight: 1 }}>{account?.name}</span>
+          <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
               {activeTab === 'trades' && trades.length > 0 && !selectMode && (
                 <button onClick={() => setSelectMode(true)} style={{ height: '28px', margin: 0, padding: '0 16px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '6px', color: '#fff', fontSize: '13px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>Select</button>
               )}
