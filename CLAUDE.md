@@ -31,16 +31,14 @@ These values are LOCKED. Do not change them under any circumstances:
 - **Sidebar padding**: `12px`
 - **Buttons container marginTop**: `4px`
 - **Buttons container gap**: `12px`
-- **Main content marginTop**: `126px`
-- **Trades tab height**: `calc(100vh - 126px)`
+- **Main content marginTop**: `130px`
+- **Trades tab height**: `calc(100vh - 130px)`
 
 For sidebar flex items (buttons, Stats View Selector):
 - Use flex `gap: '12px'` for spacing between items
 - Stats View Selector has NO marginTop (flex gap handles spacing)
 
 ## Subheader Content Centering
-To center content vertically in the subheader WITHOUT moving borders:
-- Use asymmetric padding: `15px 40px 11px 40px` (more top, less bottom)
-- Total vertical padding stays 26px so border position unchanged
+- Subheader padding: `15px 40px` (symmetric, centers buttons/title)
 - DO NOT use marginTop on elements - it affects layout
-- Asymmetric padding shifts content down within fixed container height
+- If you need to move border down, increase padding and adjust main content marginTop accordingly
