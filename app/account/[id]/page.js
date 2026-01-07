@@ -637,7 +637,7 @@ export default function AccountPage() {
 
   // Get trades with images
   function getTradesWithImages() {
-    return trades.filter(t => { const e = getExtraData(t); return e.image && e.image.length > 0 })
+    return trades.filter(t => { const e = getExtraData(t); const img = e.image || e.Image; return img && img.length > 0 })
   }
   // Toggle trade selection
   function toggleTradeSelection(id) {
@@ -662,7 +662,7 @@ export default function AccountPage() {
   // Get slideshow images
   function getSlideshowImages() {
     const target = selectedTrades.size > 0 ? trades.filter(t => selectedTrades.has(t.id)) : trades
-    return target.map(t => ({ trade: t, image: getExtraData(t).image })).filter(x => x.image)
+    return target.map(t => { const e = getExtraData(t); return { trade: t, image: e.image || e.Image } }).filter(x => x.image)
   }
 
   // Calculate cumulative stats across all accounts
@@ -1001,7 +1001,8 @@ export default function AccountPage() {
   // Images uploaded count
   const tradesWithImages = trades.filter(t => {
     const extra = getExtraData(t)
-    return extra.images && extra.images.length > 0
+    const img = extra.image || extra.Image
+    return img && img.length > 0
   }).length
 
   const tabTitles = { trades: 'JOURNAL AREA', statistics: 'STATISTICS AREA', notes: 'NOTES AREA' }
@@ -1441,9 +1442,9 @@ export default function AccountPage() {
                                     )
                                   })}
                                 </div>
-                              ) : inp.id === 'image' && extra[inp.id] ? (
-                                <button onClick={() => setShowExpandedImage(extra[inp.id])} style={{ width: '50px', height: '50px', background: '#1a1a22', borderRadius: '6px', border: '1px solid #2a2a35', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto', overflow: 'hidden', padding: 0 }}>
-                                  <img src={extra[inp.id]} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', imageRendering: 'auto' }} onError={e => { e.target.style.display = 'none' }} />
+                              ) : inp.id === 'image' && (extra[inp.id] || extra[inp.label]) ? (
+                                <button onClick={() => setShowExpandedImage(extra[inp.id] || extra[inp.label])} style={{ width: '50px', height: '50px', background: '#1a1a22', borderRadius: '6px', border: '1px solid #2a2a35', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto', overflow: 'hidden', padding: 0 }}>
+                                  <img src={extra[inp.id] || extra[inp.label]} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', imageRendering: 'auto' }} onError={e => { e.target.style.display = 'none' }} />
                                 </button>
                               ) : inp.id === 'image' ? (
                                 <span style={{ color: '#444' }}>-</span>
@@ -2602,7 +2603,7 @@ export default function AccountPage() {
               const accountAgeDays = firstTradeDate ? Math.floor((new Date() - firstTradeDate) / (1000 * 60 * 60 * 24)) : 0
               const accountAge = accountAgeDays > 30 ? Math.floor(accountAgeDays / 30) + 'mo' : accountAgeDays + 'd'
               const tradesWithNotes = displayTrades.filter(t => { const e = getExtraData(t); const noteContent = t.notes || e.notes || ''; return noteContent.trim().length > 0 }).length
-              const tradesWithImages = displayTrades.filter(t => { const extra = getExtraData(t); return extra.images && extra.images.length > 0 }).length
+              const tradesWithImages = displayTrades.filter(t => { const extra = getExtraData(t); const img = extra.image || extra.Image; return img && img.length > 0 }).length
 
               // Notes counts
               const dailyNotesCount = Object.keys(notes.daily || {}).length
