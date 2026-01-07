@@ -3056,36 +3056,35 @@ export default function AccountPage() {
               </div>
             </div>
 
-            {/* Rating Row */}
-            <div style={{ width: 'calc(50% - 6px)', marginBottom: '12px' }}>
-              <label style={{ display: 'block', fontSize: '10px', color: '#666', marginBottom: '5px', textTransform: 'uppercase' }}>Rating</label>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <div style={{ display: 'flex', gap: '2px', padding: '8px 10px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px', alignItems: 'center' }} onMouseLeave={() => setHoverRating(0)}>
-                  {[1, 2, 3, 4, 5].map(star => {
-                    const displayRating = hoverRating || parseFloat(tradeForm.rating || 0)
-                    const isFullStar = displayRating >= star
-                    const isHalfStar = displayRating >= star - 0.5 && displayRating < star
-                    return (
-                      <div key={star} style={{ position: 'relative', width: '24px', height: '24px', cursor: 'pointer' }}
-                        onMouseMove={(e) => { const rect = e.currentTarget.getBoundingClientRect(); const x = e.clientX - rect.left; setHoverRating(x < rect.width / 2 ? star - 0.5 : star) }}
-                        onClick={(e) => { const rect = e.currentTarget.getBoundingClientRect(); const x = e.clientX - rect.left; const newRating = x < rect.width / 2 ? star - 0.5 : star; setTradeForm({...tradeForm, rating: parseFloat(tradeForm.rating) === newRating ? '' : String(newRating)}) }}>
-                        <span style={{ position: 'absolute', color: '#2a2a35', fontSize: '24px', lineHeight: 1 }}>★</span>
-                        {isHalfStar && <span style={{ position: 'absolute', color: '#22c55e', fontSize: '24px', lineHeight: 1, clipPath: 'inset(0 50% 0 0)' }}>★</span>}
-                        {isFullStar && <span style={{ position: 'absolute', color: '#22c55e', fontSize: '24px', lineHeight: 1 }}>★</span>}
-                      </div>
-                    )
-                  })}
+            {/* Rating + Custom inputs - render in unified grid */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '12px' }}>
+              {/* Rating */}
+              <div>
+                <label style={{ display: 'block', fontSize: '10px', color: '#666', marginBottom: '5px', textTransform: 'uppercase' }}>Rating</label>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <div style={{ display: 'flex', gap: '2px', padding: '8px 10px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px', alignItems: 'center' }} onMouseLeave={() => setHoverRating(0)}>
+                    {[1, 2, 3, 4, 5].map(star => {
+                      const displayRating = hoverRating || parseFloat(tradeForm.rating || 0)
+                      const isFullStar = displayRating >= star
+                      const isHalfStar = displayRating >= star - 0.5 && displayRating < star
+                      return (
+                        <div key={star} style={{ position: 'relative', width: '24px', height: '24px', cursor: 'pointer' }}
+                          onMouseMove={(e) => { const rect = e.currentTarget.getBoundingClientRect(); const x = e.clientX - rect.left; setHoverRating(x < rect.width / 2 ? star - 0.5 : star) }}
+                          onClick={(e) => { const rect = e.currentTarget.getBoundingClientRect(); const x = e.clientX - rect.left; const newRating = x < rect.width / 2 ? star - 0.5 : star; setTradeForm({...tradeForm, rating: parseFloat(tradeForm.rating) === newRating ? '' : String(newRating)}) }}>
+                          <span style={{ position: 'absolute', color: '#2a2a35', fontSize: '24px', lineHeight: 1 }}>★</span>
+                          {isHalfStar && <span style={{ position: 'absolute', color: '#22c55e', fontSize: '24px', lineHeight: 1, clipPath: 'inset(0 50% 0 0)' }}>★</span>}
+                          {isFullStar && <span style={{ position: 'absolute', color: '#22c55e', fontSize: '24px', lineHeight: 1 }}>★</span>}
+                        </div>
+                      )
+                    })}
+                  </div>
+                  <span style={{ background: '#1a1a22', padding: '4px 8px', borderRadius: '4px', fontSize: '12px', color: '#fff', whiteSpace: 'nowrap', minWidth: '40px', textAlign: 'center' }}>
+                    {hoverRating || parseFloat(tradeForm.rating) || 0} / 5
+                  </span>
                 </div>
-                <span style={{ background: '#1a1a22', padding: '4px 8px', borderRadius: '4px', fontSize: '12px', color: '#fff', whiteSpace: 'nowrap', minWidth: '40px', textAlign: 'center' }}>
-                  {hoverRating || parseFloat(tradeForm.rating) || 0} / 5
-                </span>
               </div>
-            </div>
-
-            {/* Custom inputs - render dynamically in grid */}
-            {customInputs.filter(i => !['symbol', 'outcome', 'pnl', 'riskPercent', 'rr', 'date', 'direction', 'rating', 'image'].includes(i.id)).length > 0 && (
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '12px' }}>
-                {customInputs.filter(i => !['symbol', 'outcome', 'pnl', 'riskPercent', 'rr', 'date', 'direction', 'rating', 'image'].includes(i.id)).map(input => {
+              {/* Custom inputs */}
+              {customInputs.filter(i => !['symbol', 'outcome', 'pnl', 'riskPercent', 'rr', 'date', 'direction', 'rating', 'image'].includes(i.id)).map(input => {
                   const inputColor = input.color || '#fff'
                   const optionsArr = Array.isArray(input.options) ? input.options : []
                   return (
@@ -3137,8 +3136,7 @@ export default function AccountPage() {
                     )}
                   </div>
                 )})}
-              </div>
-            )}
+            </div>
 
             {/* Buttons */}
             <div style={{ display: 'flex', gap: '12px', marginTop: '12px' }}>
