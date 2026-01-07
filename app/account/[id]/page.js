@@ -3042,6 +3042,11 @@ export default function AccountPage() {
                           <button type="button" onClick={() => document.getElementById(`file-upload-${input.id}`).click()} style={{ width: '100%', padding: '10px 12px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px', color: '#666', fontSize: '12px', cursor: 'pointer', textAlign: 'left' }}>+ Image</button>
                         )}
                       </div>
+                    ) : input.type === 'value' ? (
+                      <div style={{ display: 'flex', gap: '0' }}>
+                        <span style={{ padding: '10px 12px', background: '#141418', border: '1px solid #1a1a22', borderRight: 'none', borderRadius: '6px 0 0 6px', color: '#888', fontSize: '13px' }}>{input.currency || '$'}</span>
+                        <input type="number" value={tradeForm[input.id] || ''} onChange={e => setTradeForm({...tradeForm, [input.id]: e.target.value})} placeholder="0" style={{ flex: 1, padding: '10px 12px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '0 6px 6px 0', color: '#fff', fontSize: '13px', boxSizing: 'border-box' }} />
+                      </div>
                     ) : (
                       <input type={input.type === 'number' ? 'number' : input.type === 'date' ? 'date' : input.type === 'time' ? 'time' : 'text'} value={tradeForm[input.id] || ''} onChange={e => setTradeForm({...tradeForm, [input.id]: e.target.value})} placeholder={input.id === 'symbol' ? 'XAUUSD' : input.id === 'rr' ? '2.5' : input.id === 'riskPercent' ? '1' : ''} style={{ width: '100%', padding: '10px 12px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '13px', boxSizing: 'border-box' }} />
                     )}
@@ -3091,6 +3096,7 @@ export default function AccountPage() {
                     <select value={input.type} onChange={e => updateInput(i, 'type', e.target.value)} style={{ padding: '6px 8px', background: '#0a0a0e', border: '1px solid #2a2a35', borderRadius: '6px', color: '#fff', fontSize: '11px', cursor: 'pointer' }}>
                       <option value="text">Text</option>
                       <option value="number">Number</option>
+                      <option value="value">Value ($)</option>
                       <option value="select">Dropdown</option>
                       <option value="textarea">Notes</option>
                       <option value="rating">Rating</option>
@@ -3098,7 +3104,7 @@ export default function AccountPage() {
                       <option value="time">Time</option>
                       <option value="file">Image</option>
                     </select>
-                    {input.type === 'number' ? (
+                    {input.type === 'number' || input.type === 'value' ? (
                       <button onClick={() => openColorEditor(i)} style={{ padding: '6px 10px', background: '#0a0a0e', border: '1px solid #2a2a35', borderRadius: '6px', color: '#22c55e', fontSize: '11px', cursor: 'pointer' }}>Options</button>
                     ) : input.type === 'select' ? (
                       <button onClick={() => openOptionsEditor(i)} style={{ padding: '6px 10px', background: '#0a0a0e', border: '1px solid #2a2a35', borderRadius: '6px', color: '#22c55e', fontSize: '11px', cursor: 'pointer' }}>Options</button>
@@ -3288,17 +3294,38 @@ export default function AccountPage() {
       {editingColor !== null && (() => {
         const inp = inputs[editingColor] || {}
         const isNumber = inp.type === 'number'
+        const isValue = inp.type === 'value'
         const isRating = inp.type === 'rating'
         const isFile = inp.type === 'file'
         return (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.9)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 102 }} onClick={() => setEditingColor(null)}>
           <div style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '12px', padding: '24px', width: '420px', maxWidth: '95vw' }} onClick={e => e.stopPropagation()}>
             <h2 style={{ fontSize: '18px', fontWeight: 700, marginBottom: '4px', color: '#fff' }}>Style Settings</h2>
-            <p style={{ fontSize: '12px', color: '#555', marginBottom: '16px' }}>{isNumber ? 'Numbers use automatic green/red coloring' : isRating ? 'Customize star appearance' : isFile ? 'Image fields have no style options' : 'Customize colors for this field'}</p>
+            <p style={{ fontSize: '12px', color: '#555', marginBottom: '16px' }}>{isNumber ? 'Numbers use automatic green/red coloring' : isValue ? 'Configure currency and display' : isRating ? 'Customize star appearance' : isFile ? 'Image fields have no style options' : 'Customize colors for this field'}</p>
 
             {isNumber ? (
               <div style={{ padding: '16px', background: '#0a0a0e', borderRadius: '8px', marginBottom: '16px' }}>
                 <div style={{ fontSize: '13px', color: '#888', textAlign: 'center' }}>Positive values show as <span style={{ color: '#22c55e' }}>green</span>, negative as <span style={{ color: '#ef4444' }}>red</span></div>
+              </div>
+            ) : isValue ? (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '16px' }}>
+                {/* Currency Selector */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px', background: '#0a0a0e', borderRadius: '8px' }}>
+                  <select value={inp.currency || '$'} onChange={e => updateInput(editingColor, 'currency', e.target.value)} style={{ padding: '8px 12px', background: '#141418', border: '1px solid #2a2a35', borderRadius: '6px', color: '#fff', fontSize: '14px', cursor: 'pointer' }}>
+                    <option value="$">$ Dollar</option>
+                    <option value="£">£ Pound</option>
+                    <option value="€">€ Euro</option>
+                    <option value="¥">¥ Yen</option>
+                    <option value="₹">₹ Rupee</option>
+                    <option value="₿">₿ Bitcoin</option>
+                    <option value="">No symbol</option>
+                  </select>
+                  <span style={{ fontSize: '13px', color: '#888', flex: 1 }}>Currency Symbol</span>
+                </div>
+                {/* Info */}
+                <div style={{ padding: '12px', background: '#0a0a0e', borderRadius: '8px' }}>
+                  <div style={{ fontSize: '12px', color: '#666', textAlign: 'center' }}>Values show as <span style={{ color: '#22c55e' }}>green</span> (positive) / <span style={{ color: '#ef4444' }}>red</span> (negative)</div>
+                </div>
               </div>
             ) : isFile ? (
               <div style={{ padding: '16px', background: '#0a0a0e', borderRadius: '8px', marginBottom: '16px' }}>
@@ -3384,7 +3411,7 @@ export default function AccountPage() {
 
             <div style={{ display: 'flex', gap: '12px' }}>
               <button onClick={() => setEditingColor(null)} style={{ flex: 1, padding: '12px', background: '#22c55e', border: 'none', borderRadius: '8px', color: '#fff', fontWeight: 600, fontSize: '13px', cursor: 'pointer' }}>Done</button>
-              {!isNumber && !isFile && <button onClick={() => { updateInput(editingColor, 'textColor', null); updateInput(editingColor, 'bgColor', null); updateInput(editingColor, 'borderColor', null); setEditingColor(null) }} style={{ flex: 1, padding: '12px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '8px', color: '#888', fontWeight: 600, fontSize: '13px', cursor: 'pointer' }}>Reset</button>}
+              {!isNumber && !isValue && !isFile && <button onClick={() => { updateInput(editingColor, 'textColor', null); updateInput(editingColor, 'bgColor', null); updateInput(editingColor, 'borderColor', null); setEditingColor(null) }} style={{ flex: 1, padding: '12px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '8px', color: '#888', fontWeight: 600, fontSize: '13px', cursor: 'pointer' }}>Reset</button>}
             </div>
           </div>
         </div>
