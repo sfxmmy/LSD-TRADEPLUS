@@ -1990,7 +1990,7 @@ export default function AccountPage() {
                                     )}
                                     {/* Starting balance dotted line - ends before label */}
                                     {startLineY !== null && (
-                                      <div style={{ position: 'absolute', left: 0, right: '7%', top: `${startLineY}%`, borderTop: '1px dashed #666', zIndex: 1 }} />
+                                      <div style={{ position: 'absolute', left: 0, right: '32px', top: `${startLineY}%`, borderTop: '1px dashed #666', zIndex: 1 }} />
                                     )}
                                     {/* Start label at end of line - grey "Start" text */}
                                     {startLineY !== null && (
@@ -3889,7 +3889,7 @@ export default function AccountPage() {
                           {/* Start line - dashed horizontal line at starting balance, ends before label */}
                           {equityCurveGroupBy === 'total' && startYEnl >= 0 && startYEnl <= svgH && (
                             <>
-                              <div style={{ position: 'absolute', left: 0, right: '7%', top: `${(startYEnl / svgH) * 100}%`, borderTop: '1px dashed #666', transform: 'translateY(-50%)', zIndex: 1 }} />
+                              <div style={{ position: 'absolute', left: 0, right: '38px', top: `${(startYEnl / svgH) * 100}%`, borderTop: '1px dashed #666', transform: 'translateY(-50%)', zIndex: 1 }} />
                               <span style={{ position: 'absolute', right: '4px', top: `${(startYEnl / svgH) * 100}%`, transform: 'translateY(-50%)', fontSize: '10px', color: '#666', fontWeight: 500 }}>Start</span>
                             </>
                           )}
