@@ -1998,7 +1998,7 @@ export default function AccountPage() {
                                         Start
                                       </span>
                                     )}
-                                    <svg style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', overflow: 'visible' }} viewBox={`0 0 ${svgW} ${svgH}`} preserveAspectRatio="none"
+                                    <svg style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', overflow: 'visible', zIndex: 2 }} viewBox={`0 0 ${svgW} ${svgH}`} preserveAspectRatio="none"
                                       onMouseMove={e => {
                                         const rect = e.currentTarget.getBoundingClientRect()
                                         const mouseX = ((e.clientX - rect.left) / rect.width) * svgW
@@ -2204,21 +2204,8 @@ export default function AccountPage() {
                                         {hoverPoint.symbol && <div style={{ color: hoverPoint.pnl >= 0 ? '#22c55e' : '#ef4444' }}>{hoverPoint.symbol}: {hoverPoint.pnl >= 0 ? '+' : ''}${hoverPoint.pnl?.toFixed(0)}</div>}
                                       </div>
                                     )}
-                                    {/* Legend */}
-                                    {equityCurveGroupBy === 'total' ? (
-                                      <div style={{ position: 'absolute', bottom: '4px', left: '4px', display: 'flex', alignItems: 'center', gap: '8px', background: 'rgba(13,13,18,0.9)', padding: '3px 6px', borderRadius: '3px', fontSize: '9px' }}>
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: '3px' }}>
-                                          <div style={{ width: '10px', height: '2px', background: '#22c55e' }} />
-                                          <span style={{ color: '#999' }}>Above</span>
-                                        </div>
-                                        {belowStart && (
-                                          <div style={{ display: 'flex', alignItems: 'center', gap: '3px' }}>
-                                            <div style={{ width: '10px', height: '2px', background: '#ef4444' }} />
-                                            <span style={{ color: '#999' }}>Below</span>
-                                          </div>
-                                        )}
-                                      </div>
-                                    ) : (
+                                    {/* Legend - only for multi-line mode */}
+                                    {equityCurveGroupBy !== 'total' && (
                                       <div style={{ position: 'absolute', top: '4px', left: '4px', display: 'flex', flexDirection: 'column', gap: '3px', background: 'rgba(13,13,18,0.9)', padding: '6px 8px', borderRadius: '4px', fontSize: '8px' }}>
                                         {lineData.map((line, idx) => (
                                           <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
@@ -3906,7 +3893,7 @@ export default function AccountPage() {
                               <span style={{ position: 'absolute', right: '4px', top: `${(startYEnl / svgH) * 100}%`, transform: 'translateY(-50%)', fontSize: '10px', color: '#666', fontWeight: 500 }}>Start</span>
                             </>
                           )}
-                          <svg style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', overflow: 'visible' }} viewBox={`0 0 ${svgW} ${svgH}`} preserveAspectRatio="none"
+                          <svg style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', overflow: 'visible', zIndex: 2 }} viewBox={`0 0 ${svgW} ${svgH}`} preserveAspectRatio="none"
                             onMouseMove={e => {
                               const rect = e.currentTarget.getBoundingClientRect()
                               const mouseX = ((e.clientX - rect.left) / rect.width) * svgW
@@ -4120,19 +4107,6 @@ export default function AccountPage() {
                         ))}
                       </div>
                     </div>
-                    {/* Legend - only for total mode (multi-line has legend in top-left of chart) */}
-                    {equityCurveGroupBy === 'total' && (
-                      <div style={{ display: 'flex', justifyContent: 'center', gap: '12px', padding: '8px 0', flexWrap: 'wrap' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                          <div style={{ width: '16px', height: '3px', background: '#22c55e' }} />
-                          <span style={{ fontSize: '10px', color: '#999' }}>Above Start</span>
-                        </div>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                          <div style={{ width: '16px', height: '3px', background: '#ef4444' }} />
-                          <span style={{ fontSize: '10px', color: '#999' }}>Below Start</span>
-                        </div>
-                      </div>
-                    )}
                   </div>
                 )
               })()}
