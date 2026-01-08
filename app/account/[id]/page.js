@@ -255,15 +255,13 @@ export default function AccountPage() {
     if (tradeForm.rr && isNaN(parseFloat(tradeForm.rr))) { alert('Please enter a valid RR number'); return }
     setSaving(true)
     const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY)
-    
+
     // Collect all custom field data (including image)
-    // Use input LABEL as key (not ID) so data is human-readable
+    // Use input ID as key for consistent access across pages
     const extraData = {}
     inputs.forEach(inp => {
       if (!['symbol', 'outcome', 'pnl', 'rr', 'date', 'notes', 'direction'].includes(inp.id)) {
-        // Use label as key for readability, fallback to id if no label
-        const key = inp.label || inp.id
-        extraData[key] = tradeForm[inp.id] || ''
+        extraData[inp.id] = tradeForm[inp.id] || ''
       }
     })
     
@@ -332,12 +330,11 @@ export default function AccountPage() {
     setSaving(true)
     const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY)
 
-    // Use input LABEL as key (not ID) so data is human-readable
+    // Use input ID as key for consistent access across pages
     const extraData = {}
     inputs.forEach(inp => {
       if (!['symbol', 'outcome', 'pnl', 'rr', 'date', 'notes', 'direction'].includes(inp.id)) {
-        const key = inp.label || inp.id
-        extraData[key] = tradeForm[inp.id] || ''
+        extraData[inp.id] = tradeForm[inp.id] || ''
       }
     })
 
@@ -612,11 +609,20 @@ export default function AccountPage() {
 
   function getExtraData(t) {
     // First get extra_data (from JSONB)
-    let extra = {}
+    let rawExtra = {}
     if (t.extra_data) {
-      if (typeof t.extra_data === 'object') extra = t.extra_data
-      else try { extra = JSON.parse(t.extra_data) } catch {}
+      if (typeof t.extra_data === 'object') rawExtra = t.extra_data
+      else try { rawExtra = JSON.parse(t.extra_data) } catch {}
     }
+    // Normalize keys: convert label-keyed data to ID-keyed data for consistent access
+    const extra = {}
+    Object.entries(rawExtra).forEach(([key, value]) => {
+      // Try to find input by label first (new format), then by id (old format)
+      const inputByLabel = inputs.find(i => i.label === key)
+      const inputById = inputs.find(i => i.id === key)
+      const targetId = inputByLabel?.id || inputById?.id || key
+      extra[targetId] = value
+    })
     // Fallback to direct columns if not in extra_data
     if (!extra.confidence && t.confidence) extra.confidence = t.confidence
     if (!extra.rating && t.rating) extra.rating = String(t.rating)
