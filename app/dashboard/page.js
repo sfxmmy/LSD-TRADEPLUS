@@ -900,12 +900,11 @@ export default function DashboardPage() {
       <div style={{ position: 'absolute', inset: 0, display: 'flex' }}>
         {/* Y-axis - matches chart area height with spacer for x-axis */}
         <div style={{ width: '46px', flexShrink: 0, display: 'flex', flexDirection: 'column' }}>
-          <div style={{ flex: 1, position: 'relative', borderRight: '1px solid #2a2a35', overflow: 'visible' }}>
+          <div style={{ flex: 1, position: 'relative', borderRight: '1px solid #2a2a35', borderBottom: '1px solid transparent', overflow: 'visible' }}>
             {yLabels.map((v, i) => {
               const topPct = yLabels.length > 1 ? (i / (yLabels.length - 1)) * 100 : 0
-              const isLast = i === yLabels.length - 1
               return (
-                <div key={i} style={{ position: 'absolute', right: 0, top: isLast ? 'auto' : `${topPct}%`, bottom: isLast ? 0 : 'auto', transform: isLast ? 'translateY(calc(50% - 1px))' : 'translateY(-50%)', display: 'flex', alignItems: 'center' }}>
+                <div key={i} style={{ position: 'absolute', right: 0, top: `${topPct}%`, transform: 'translateY(-50%)', display: 'flex', alignItems: 'center' }}>
                   <span style={{ fontSize: '10px', color: '#999', lineHeight: 1, textAlign: 'right' }}>{v >= 1000000 ? `$${(v/1000000).toFixed(1)}M` : v >= 1000 ? `$${(v/1000).toFixed(0)}k` : `$${v}`}</span>
                   <div style={{ width: '4px', height: '1px', background: '#333', marginLeft: '2px' }} />
                 </div>
@@ -943,9 +942,9 @@ export default function DashboardPage() {
                   <stop offset="100%" stopColor="#ef4444" stopOpacity="0" />
                 </linearGradient>
               </defs>
-              {/* Start line inside SVG - extends full width */}
+              {/* Start line inside SVG - ends before label */}
               {startLineY !== null && (
-                <line x1="0" y1={startY} x2={svgW} y2={startY} stroke="#666" strokeWidth="1" strokeDasharray="4,3" vectorEffect="non-scaling-stroke" />
+                <line x1="0" y1={startY} x2={svgW * 0.93} y2={startY} stroke="#666" strokeWidth="1" strokeDasharray="4,3" vectorEffect="non-scaling-stroke" />
               )}
               {greenAreaPath && <path d={greenAreaPath} fill="url(#areaGradGreen)" />}
               {redAreaPath && <path d={redAreaPath} fill="url(#areaGradRed)" />}
@@ -954,7 +953,7 @@ export default function DashboardPage() {
             </svg>
             {/* Start label - grey "Start" text at end of line */}
             {startLineY !== null && (
-              <span style={{ position: 'absolute', right: '4px', top: `${startLineY}%`, transform: 'translateY(-50%)', fontSize: '9px', color: '#666', background: '#0d0d12', padding: '0 4px', fontWeight: 500 }}>
+              <span style={{ position: 'absolute', right: '4px', top: `${startLineY}%`, transform: 'translateY(-50%)', fontSize: '9px', color: '#666', fontWeight: 500 }}>
                 Start
               </span>
             )}

@@ -1955,12 +1955,11 @@ export default function AccountPage() {
                                 {/* Chart row - Y-axis and chart area aligned */}
                                 <div style={{ flex: 1, display: 'flex' }}>
                                   {/* Y-axis labels - same height as chart */}
-                                  <div style={{ width: '28px', flexShrink: 0, position: 'relative', borderRight: '1px solid #2a2a35', overflow: 'visible' }}>
+                                  <div style={{ width: '28px', flexShrink: 0, position: 'relative', borderRight: '1px solid #2a2a35', borderBottom: '1px solid transparent', overflow: 'visible' }}>
                                     {yLabels.map((v, i) => {
                                       const topPct = yLabels.length > 1 ? (i / (yLabels.length - 1)) * 100 : 0
-                                      const isLast = i === yLabels.length - 1
                                       return (
-                                        <div key={i} style={{ position: 'absolute', right: 0, top: isLast ? 'auto' : `${topPct}%`, bottom: isLast ? 0 : 'auto', transform: isLast ? 'translateY(calc(50% - 1px))' : 'translateY(-50%)', display: 'flex', alignItems: 'center' }}>
+                                        <div key={i} style={{ position: 'absolute', right: 0, top: `${topPct}%`, transform: 'translateY(-50%)', display: 'flex', alignItems: 'center' }}>
                                           <span style={{ fontSize: '8px', color: '#999', lineHeight: 1, textAlign: 'right' }}>{equityCurveGroupBy === 'total' ? `$${(v/1000).toFixed(v >= 1000 ? 0 : 1)}k` : `$${v}`}</span>
                                           <div style={{ width: '4px', height: '1px', background: '#333', marginLeft: '2px' }} />
                                         </div>
@@ -1987,13 +1986,13 @@ export default function AccountPage() {
                                     {zeroY !== null && (
                                       <div style={{ position: 'absolute', left: 0, right: 0, top: `${zeroY}%`, borderTop: '1px solid rgba(51,51,51,0.5)', zIndex: 1 }} />
                                     )}
-                                    {/* Starting balance dotted line - extends full width */}
+                                    {/* Starting balance dotted line - ends before label */}
                                     {startLineY !== null && (
-                                      <div style={{ position: 'absolute', left: 0, right: 0, top: `${startLineY}%`, borderTop: '1px dashed #666', zIndex: 1 }} />
+                                      <div style={{ position: 'absolute', left: 0, right: '7%', top: `${startLineY}%`, borderTop: '1px dashed #666', zIndex: 1 }} />
                                     )}
                                     {/* Start label at end of line - grey "Start" text */}
                                     {startLineY !== null && (
-                                      <span style={{ position: 'absolute', right: '4px', top: `${startLineY}%`, transform: 'translateY(-50%)', fontSize: '9px', color: '#666', background: '#0d0d12', padding: '0 4px', fontWeight: 500 }}>
+                                      <span style={{ position: 'absolute', right: '4px', top: `${startLineY}%`, transform: 'translateY(-50%)', fontSize: '9px', color: '#666', fontWeight: 500 }}>
                                         Start
                                       </span>
                                     )}
@@ -2331,12 +2330,11 @@ export default function AccountPage() {
                           {/* Chart row - Y-axis and chart area aligned */}
                           <div style={{ flex: 1, display: 'flex' }}>
                             {/* Y-axis labels - same height as chart */}
-                            <div style={{ width: '28px', flexShrink: 0, position: 'relative' }}>
+                            <div style={{ width: '28px', flexShrink: 0, position: 'relative', borderBottom: '1px solid transparent' }}>
                               {yLabels.map((v, i) => {
                                 const topPct = yLabels.length > 1 ? (i / (yLabels.length - 1)) * 100 : 0
-                                const isLast = i === yLabels.length - 1
                                 return (
-                                  <div key={i} style={{ position: 'absolute', right: 0, top: isLast ? 'auto' : `${topPct}%`, bottom: isLast ? 0 : 'auto', transform: isLast ? 'translateY(calc(50% - 1px))' : 'translateY(-50%)', display: 'flex', alignItems: 'center' }}>
+                                  <div key={i} style={{ position: 'absolute', right: 0, top: `${topPct}%`, transform: 'translateY(-50%)', display: 'flex', alignItems: 'center' }}>
                                     <span style={{ fontSize: '8px', color: '#999', lineHeight: 1, textAlign: 'right' }}>{v}</span>
                                     <div style={{ width: '3px', height: '1px', background: '#333', marginLeft: '2px' }} />
                                   </div>
@@ -2344,7 +2342,7 @@ export default function AccountPage() {
                               })}
                             </div>
                             {/* Chart area */}
-                            <div style={{ flex: 1, position: 'relative', borderLeft: '1px solid #2a2a35' }}>
+                            <div style={{ flex: 1, position: 'relative', borderLeft: '1px solid #2a2a35', borderBottom: '1px solid transparent' }}>
                               {/* Horizontal grid lines - all lines including bottom */}
                               <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}>
                                 {yLabels.map((_, i) => {
@@ -2483,12 +2481,12 @@ export default function AccountPage() {
                         {/* Chart row - Y-axis and chart area aligned */}
                         <div style={{ flex: 1, display: 'flex' }}>
                           {/* Y-axis labels - same height as chart */}
-                          <div style={{ width: '28px', flexShrink: 0, position: 'relative' }}>
+                          <div style={{ width: '28px', flexShrink: 0, position: 'relative', borderBottom: '1px solid transparent' }}>
                             {yLabels.map((v, i) => {
                               const topPct = yLabels.length > 1 ? (i / (yLabels.length - 1)) * 100 : 0
                               const isLast = i === yLabels.length - 1
                               return (
-                                <div key={i} style={{ position: 'absolute', right: 0, top: isLast ? 'auto' : `${topPct}%`, bottom: isLast ? 0 : 'auto', transform: isLast ? 'translateY(calc(50% - 1px))' : 'translateY(-50%)', display: 'flex', alignItems: 'center' }}>
+                                <div key={i} style={{ position: 'absolute', right: 0, top: `${topPct}%`, transform: 'translateY(-50%)', display: 'flex', alignItems: 'center' }}>
                                   <span style={{ fontSize: '8px', color: '#999', lineHeight: 1, textAlign: 'right' }}>{isLast ? '$0' : `$${v}`}</span>
                                   <div style={{ width: '3px', height: '1px', background: '#333', marginLeft: '2px' }} />
                                 </div>
@@ -2496,7 +2494,7 @@ export default function AccountPage() {
                             })}
                           </div>
                           {/* Chart area */}
-                          <div style={{ flex: 1, position: 'relative', borderLeft: '1px solid #2a2a35' }}>
+                          <div style={{ flex: 1, position: 'relative', borderLeft: '1px solid #2a2a35', borderBottom: '1px solid transparent' }}>
                             {/* Horizontal grid lines - all lines including bottom */}
                             <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}>
                               {yLabels.map((_, i) => {
@@ -3865,12 +3863,11 @@ export default function AccountPage() {
                     {/* Chart row - Y-axis and chart area aligned */}
                     <div style={{ flex: 1, display: 'flex' }}>
                       {/* Y-axis labels - same height as chart */}
-                      <div style={{ width: '44px', flexShrink: 0, position: 'relative', borderRight: '1px solid #2a2a35', overflow: 'visible' }}>
+                      <div style={{ width: '44px', flexShrink: 0, position: 'relative', borderRight: '1px solid #2a2a35', borderBottom: '1px solid transparent', overflow: 'visible' }}>
                         {yLabels.map((v, i) => {
                           const topPct = yLabels.length > 1 ? (i / (yLabels.length - 1)) * 100 : 0
-                          const isLast = i === yLabels.length - 1
                           return (
-                            <div key={i} style={{ position: 'absolute', right: 0, top: isLast ? 'auto' : `${topPct}%`, bottom: isLast ? 0 : 'auto', transform: isLast ? 'translateY(calc(50% - 1px))' : 'translateY(-50%)', display: 'flex', alignItems: 'center' }}>
+                            <div key={i} style={{ position: 'absolute', right: 0, top: `${topPct}%`, transform: 'translateY(-50%)', display: 'flex', alignItems: 'center' }}>
                               <span style={{ fontSize: '10px', color: '#999', textAlign: 'right' }}>{equityCurveGroupBy === 'total' ? `$${(v/1000).toFixed(v >= 1000 ? 0 : 1)}k` : `$${v}`}</span>
                               <div style={{ width: '4px', height: '1px', background: '#333', marginLeft: '3px' }} />
                             </div>
@@ -3894,11 +3891,11 @@ export default function AccountPage() {
                             })}
                           </div>
                           {zeroY !== null && <div style={{ position: 'absolute', left: 0, right: 0, top: `${zeroY}%`, borderTop: '1px solid rgba(51,51,51,0.5)', zIndex: 1 }}><span style={{ position: 'absolute', left: '-60px', top: '-6px', fontSize: '11px', color: '#666' }}>$0</span></div>}
-                          {/* Start line - dashed horizontal line at starting balance */}
+                          {/* Start line - dashed horizontal line at starting balance, ends before label */}
                           {equityCurveGroupBy === 'total' && startYEnl >= 0 && startYEnl <= svgH && (
                             <>
-                              <div style={{ position: 'absolute', left: 0, right: 0, top: `${(startYEnl / svgH) * 100}%`, borderTop: '1px dashed #666', transform: 'translateY(-50%)', zIndex: 1 }} />
-                              <span style={{ position: 'absolute', right: '4px', top: `${(startYEnl / svgH) * 100}%`, transform: 'translateY(-50%)', fontSize: '10px', color: '#666', background: '#0d0d12', padding: '0 4px', fontWeight: 500 }}>Start</span>
+                              <div style={{ position: 'absolute', left: 0, right: '7%', top: `${(startYEnl / svgH) * 100}%`, borderTop: '1px dashed #666', transform: 'translateY(-50%)', zIndex: 1 }} />
+                              <span style={{ position: 'absolute', right: '4px', top: `${(startYEnl / svgH) * 100}%`, transform: 'translateY(-50%)', fontSize: '10px', color: '#666', fontWeight: 500 }}>Start</span>
                             </>
                           )}
                           <svg style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', overflow: 'visible' }} viewBox={`0 0 ${svgW} ${svgH}`} preserveAspectRatio="none"
@@ -4173,12 +4170,11 @@ export default function AccountPage() {
                     {/* Chart row - Y-axis and chart area aligned */}
                     <div style={{ flex: 1, display: 'flex' }}>
                       {/* Y-axis labels - same height as chart */}
-                      <div style={{ width: '44px', flexShrink: 0, position: 'relative', overflow: 'visible' }}>
+                      <div style={{ width: '44px', flexShrink: 0, position: 'relative', borderBottom: '1px solid transparent', overflow: 'visible' }}>
                         {yLabelsBar.map((v, i) => {
                           const topPct = yLabelsBar.length > 1 ? (i / (yLabelsBar.length - 1)) * 100 : 0
-                          const isLast = i === yLabelsBar.length - 1
                           return (
-                            <div key={i} style={{ position: 'absolute', right: 0, top: isLast ? 'auto' : `${topPct}%`, bottom: isLast ? 0 : 'auto', transform: isLast ? 'translateY(calc(50% - 1px))' : 'translateY(-50%)', display: 'flex', alignItems: 'center' }}>
+                            <div key={i} style={{ position: 'absolute', right: 0, top: `${topPct}%`, transform: 'translateY(-50%)', display: 'flex', alignItems: 'center' }}>
                               <span style={{ fontSize: '10px', color: '#999', textAlign: 'right' }}>{v.disp}</span>
                               <div style={{ width: '4px', height: '1px', background: '#333', marginLeft: '3px' }} />
                             </div>
@@ -4186,7 +4182,7 @@ export default function AccountPage() {
                         })}
                       </div>
                       {/* Chart area */}
-                      <div style={{ flex: 1, position: 'relative', borderLeft: '1px solid #2a2a35' }}>
+                      <div style={{ flex: 1, position: 'relative', borderLeft: '1px solid #2a2a35', borderBottom: '1px solid transparent' }}>
                         {/* Horizontal grid lines - all lines including bottom */}
                         <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}>
                           {yLabelsBar.map((_, i) => {
