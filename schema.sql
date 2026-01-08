@@ -57,6 +57,9 @@ BEGIN
   IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'profiles' AND column_name = 'updated_at') THEN
     ALTER TABLE profiles ADD COLUMN updated_at TIMESTAMPTZ DEFAULT NOW();
   END IF;
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'profiles' AND column_name = 'notes_data') THEN
+    ALTER TABLE profiles ADD COLUMN notes_data JSONB DEFAULT NULL;
+  END IF;
 END $$;
 
 -- =====================================================

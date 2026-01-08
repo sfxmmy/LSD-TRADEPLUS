@@ -243,7 +243,9 @@ export default function AccountPage() {
         setInputs(defaultInputs)
       }
     }
-    if (accountData.notes_data) { try { setNotes(JSON.parse(accountData.notes_data)) } catch {} }
+    // Load notes from profiles (user-level, not account-level)
+    const { data: profileData } = await supabase.from('profiles').select('notes_data').eq('id', user.id).single()
+    if (profileData?.notes_data) { try { setNotes(JSON.parse(profileData.notes_data)) } catch {} }
     const { data: tradesData } = await supabase.from('trades').select('*').eq('account_id', accountId).order('date', { ascending: false })
     setTrades(tradesData || [])
     setLoading(false)
@@ -389,7 +391,8 @@ export default function AccountPage() {
     if (notesSubTab === 'daily') newNotes.daily = { ...newNotes.daily, [noteDate]: noteText }
     else if (notesSubTab === 'weekly') { const weekStart = getWeekStart(noteDate); newNotes.weekly = { ...newNotes.weekly, [weekStart]: noteText } }
     else newNotes.custom = [...(newNotes.custom || []), { title: customNoteTitle || 'Note', text: noteText, date: new Date().toISOString() }]
-    await supabase.from('accounts').update({ notes_data: JSON.stringify(newNotes) }).eq('id', accountId)
+    // Save notes to profiles (user-level)
+    await supabase.from('profiles').update({ notes_data: JSON.stringify(newNotes) }).eq('id', user.id)
     setNotes(newNotes)
     setNoteText('')
     setCustomNoteTitle('')
@@ -401,7 +404,8 @@ export default function AccountPage() {
     if (type === 'daily') delete newNotes.daily[key]
     else if (type === 'weekly') delete newNotes.weekly[key]
     else newNotes.custom = notes.custom.filter((_, i) => i !== key)
-    await supabase.from('accounts').update({ notes_data: JSON.stringify(newNotes) }).eq('id', accountId)
+    // Save notes to profiles (user-level)
+    await supabase.from('profiles').update({ notes_data: JSON.stringify(newNotes) }).eq('id', user.id)
     setNotes(newNotes)
   }
 
@@ -1208,9 +1212,10 @@ export default function AccountPage() {
             </button>
           ))}
 
-          {/* Stats View Selector - show on all tabs */}
+          {/* Stats View Selector - hide on notes tab since notes are user-level */}
+          {activeTab !== 'notes' && (
           <div style={{ marginBottom: '8px', padding: '10px', background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px' }}>
-            <div style={{ fontSize: '9px', color: '#666', textTransform: 'uppercase', marginBottom: '8px', letterSpacing: '0.5px' }}>Viewing {activeTab === 'trades' ? 'Trades' : activeTab === 'notes' ? 'Notes' : 'Stats'} For</div>
+            <div style={{ fontSize: '9px', color: '#666', textTransform: 'uppercase', marginBottom: '8px', letterSpacing: '0.5px' }}>Viewing {activeTab === 'trades' ? 'Trades' : 'Stats'} For</div>
 
               {/* Show "Selected Trades" indicator when viewing selected */}
               {viewingSelectedStats && (
@@ -1336,6 +1341,7 @@ export default function AccountPage() {
                 </div>
               )}
             </div>
+          )}
 
           {/* Slideshow Button */}
           {getTradesWithImages().length > 0 && (
