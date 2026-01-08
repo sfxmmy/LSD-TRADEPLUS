@@ -2081,11 +2081,11 @@ export default function AccountPage() {
                                         </Fragment>
                                       )
                                     })}
-                                    {/* Green start value on Y-axis */}
+                                    {/* Start value on Y-axis - grey */}
                                     {startLineY !== null && (
                                       <Fragment>
-                                        <span style={{ position: 'absolute', right: '5px', top: `${startLineY}%`, transform: 'translateY(-50%)', fontSize: '8px', color: '#22c55e', lineHeight: 1, textAlign: 'right', fontWeight: 600 }}>{displayStartingBalance >= 1000000 ? `$${(displayStartingBalance/1000000).toFixed(1)}M` : displayStartingBalance >= 1000 ? `$${(displayStartingBalance/1000).toFixed(0)}k` : `$${displayStartingBalance}`}</span>
-                                        <div style={{ position: 'absolute', right: 0, top: `${startLineY}%`, width: '4px', borderTop: '1px solid #22c55e' }} />
+                                        <span style={{ position: 'absolute', right: '5px', top: `${startLineY}%`, transform: 'translateY(-50%)', fontSize: '8px', color: '#888', lineHeight: 1, textAlign: 'right', fontWeight: 600 }}>{displayStartingBalance >= 1000000 ? `$${(displayStartingBalance/1000000).toFixed(1)}M` : displayStartingBalance >= 1000 ? `$${(displayStartingBalance/1000).toFixed(0)}k` : `$${displayStartingBalance}`}</span>
+                                        <div style={{ position: 'absolute', right: 0, top: `${startLineY}%`, width: '4px', borderTop: '1px solid #888' }} />
                                       </Fragment>
                                     )}
                                     {/* Red DD floor value on Y-axis */}
@@ -4221,11 +4221,11 @@ export default function AccountPage() {
                             </Fragment>
                           )
                         })}
-                        {/* Green start value on Y-axis */}
+                        {/* Start value on Y-axis - grey */}
                         {equityCurveGroupBy === 'total' && startYEnl >= 0 && startYEnl <= svgH && (
                           <Fragment>
-                            <span style={{ position: 'absolute', right: '5px', top: `${(startYEnl / svgH) * 100}%`, transform: 'translateY(-50%)', fontSize: '10px', color: '#22c55e', textAlign: 'right', fontWeight: 600 }}>{startingBalance >= 1000000 ? `$${(startingBalance/1000000).toFixed(1)}M` : startingBalance >= 1000 ? `$${(startingBalance/1000).toFixed(0)}k` : `$${startingBalance}`}</span>
-                            <div style={{ position: 'absolute', right: 0, top: `${(startYEnl / svgH) * 100}%`, width: '4px', borderTop: '1px solid #22c55e' }} />
+                            <span style={{ position: 'absolute', right: '5px', top: `${(startYEnl / svgH) * 100}%`, transform: 'translateY(-50%)', fontSize: '10px', color: '#888', textAlign: 'right', fontWeight: 600 }}>{startingBalance >= 1000000 ? `$${(startingBalance/1000000).toFixed(1)}M` : startingBalance >= 1000 ? `$${(startingBalance/1000).toFixed(0)}k` : `$${startingBalance}`}</span>
+                            <div style={{ position: 'absolute', right: 0, top: `${(startYEnl / svgH) * 100}%`, width: '4px', borderTop: '1px solid #888' }} />
                           </Fragment>
                         )}
                         {/* DD Floor value on Y-axis */}

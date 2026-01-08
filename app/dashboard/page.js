@@ -1752,25 +1752,70 @@ export default function DashboardPage() {
         )}
 
         {showEditModal && (
-          <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.9)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100 }} onClick={() => setShowEditModal(null)}>
-            <div style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '10px', padding: '28px', width: '380px' }} onClick={e => e.stopPropagation()}>
-              <h2 style={{ fontSize: '18px', fontWeight: 600, marginBottom: '20px' }}>Edit Journal</h2>
-              <div style={{ marginBottom: '14px' }}><label style={{ display: 'block', fontSize: '11px', color: '#999', marginBottom: '6px', textTransform: 'uppercase' }}>Journal Name</label><input type="text" value={editName} onChange={e => setEditName(e.target.value)} autoFocus style={{ width: '100%', padding: '12px 14px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '14px', boxSizing: 'border-box' }} /></div>
-              <div style={{ fontSize: '11px', color: '#666', marginBottom: '10px', paddingTop: '8px', borderTop: '1px solid #1a1a22' }}>PROP FIRM RULES</div>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '12px' }}>
-                <div><label style={{ display: 'block', fontSize: '11px', color: '#999', marginBottom: '6px', textTransform: 'uppercase' }}>Profit Target (%)</label><input type="number" step="0.1" value={editProfitTarget} onChange={e => setEditProfitTarget(e.target.value)} placeholder="e.g. 10" style={{ width: '100%', padding: '12px 14px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '14px', boxSizing: 'border-box' }} /></div>
-                <div><label style={{ display: 'block', fontSize: '11px', color: '#999', marginBottom: '6px', textTransform: 'uppercase' }}>Max Drawdown (%)</label><input type="number" step="0.1" value={editMaxDrawdown} onChange={e => setEditMaxDrawdown(e.target.value)} placeholder="e.g. 10" style={{ width: '100%', padding: '12px 14px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '14px', boxSizing: 'border-box' }} /></div>
+          <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.85)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100, backdropFilter: 'blur(4px)' }} onClick={() => setShowEditModal(null)}>
+            <div style={{ background: '#0d0d12', border: '1px solid #2a2a35', borderRadius: '12px', padding: '24px', width: '420px', boxShadow: '0 20px 60px rgba(0,0,0,0.5)' }} onClick={e => e.stopPropagation()}>
+              <h2 style={{ fontSize: '20px', fontWeight: 600, marginBottom: '24px', color: '#fff' }}>Edit Journal</h2>
+
+              {/* Journal Name */}
+              <div style={{ marginBottom: '20px' }}>
+                <label style={{ display: 'block', fontSize: '11px', color: '#888', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Journal Name</label>
+                <input type="text" value={editName} onChange={e => setEditName(e.target.value)} autoFocus style={{ width: '100%', padding: '14px 16px', background: '#141418', border: '1px solid #2a2a35', borderRadius: '8px', color: '#fff', fontSize: '15px', boxSizing: 'border-box', outline: 'none', transition: 'border-color 0.2s' }} onFocus={e => e.target.style.borderColor = '#22c55e'} onBlur={e => e.target.style.borderColor = '#2a2a35'} />
               </div>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '12px' }}>
-                <div><label style={{ display: 'block', fontSize: '11px', color: '#999', marginBottom: '6px', textTransform: 'uppercase' }}>Drawdown Type</label><select value={editDrawdownType} onChange={e => setEditDrawdownType(e.target.value)} style={{ width: '100%', padding: '12px 14px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '14px', boxSizing: 'border-box' }}><option value="static">Static (Balance)</option><option value="trailing">Trailing (Equity)</option></select></div>
-                {editDrawdownType === 'trailing' && <div><label style={{ display: 'block', fontSize: '11px', color: '#999', marginBottom: '6px', textTransform: 'uppercase' }}>Trailing Mode</label><select value={editTrailingMode} onChange={e => setEditTrailingMode(e.target.value)} style={{ width: '100%', padding: '12px 14px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '14px', boxSizing: 'border-box' }}><option value="eod">End of Day</option><option value="realtime">Real-time</option></select></div>}
+
+              {/* Prop Firm Section */}
+              <div style={{ background: '#141418', border: '1px solid #1a1a22', borderRadius: '10px', padding: '16px', marginBottom: '20px' }}>
+                <div style={{ fontSize: '12px', color: '#22c55e', marginBottom: '16px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px' }}>Prop Firm Rules</div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px', marginBottom: '14px' }}>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '10px', color: '#666', marginBottom: '6px', textTransform: 'uppercase' }}>Profit Target (%)</label>
+                    <input type="number" step="0.1" value={editProfitTarget} onChange={e => setEditProfitTarget(e.target.value)} placeholder="e.g. 10" style={{ width: '100%', padding: '12px 14px', background: '#0d0d12', border: '1px solid #2a2a35', borderRadius: '6px', color: '#fff', fontSize: '14px', boxSizing: 'border-box' }} />
+                  </div>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '10px', color: '#666', marginBottom: '6px', textTransform: 'uppercase' }}>Max Drawdown (%)</label>
+                    <input type="number" step="0.1" value={editMaxDrawdown} onChange={e => setEditMaxDrawdown(e.target.value)} placeholder="e.g. 10" style={{ width: '100%', padding: '12px 14px', background: '#0d0d12', border: '1px solid #2a2a35', borderRadius: '6px', color: '#fff', fontSize: '14px', boxSizing: 'border-box' }} />
+                  </div>
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: editDrawdownType === 'trailing' ? '1fr 1fr' : '1fr', gap: '14px', marginBottom: '14px' }}>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '10px', color: '#666', marginBottom: '6px', textTransform: 'uppercase' }}>Drawdown Type</label>
+                    <select value={editDrawdownType} onChange={e => setEditDrawdownType(e.target.value)} style={{ width: '100%', padding: '12px 14px', background: '#0d0d12', border: '1px solid #2a2a35', borderRadius: '6px', color: '#fff', fontSize: '14px', boxSizing: 'border-box', cursor: 'pointer' }}>
+                      <option value="static">Static (Balance)</option>
+                      <option value="trailing">Trailing (Equity)</option>
+                    </select>
+                  </div>
+                  {editDrawdownType === 'trailing' && (
+                    <div>
+                      <label style={{ display: 'block', fontSize: '10px', color: '#666', marginBottom: '6px', textTransform: 'uppercase' }}>Trailing Mode</label>
+                      <select value={editTrailingMode} onChange={e => setEditTrailingMode(e.target.value)} style={{ width: '100%', padding: '12px 14px', background: '#0d0d12', border: '1px solid #2a2a35', borderRadius: '6px', color: '#fff', fontSize: '14px', boxSizing: 'border-box', cursor: 'pointer' }}>
+                        <option value="eod">End of Day</option>
+                        <option value="realtime">Real-time</option>
+                      </select>
+                    </div>
+                  )}
+                </div>
+
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 12px', background: '#0d0d12', borderRadius: '6px', border: '1px solid #2a2a35' }}>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer' }}>
+                    <input type="checkbox" checked={editConsistencyEnabled} onChange={e => setEditConsistencyEnabled(e.target.checked)} style={{ width: '18px', height: '18px', accentColor: '#22c55e' }} />
+                    <span style={{ fontSize: '13px', color: '#ccc' }}>Consistency Rule</span>
+                  </label>
+                  {editConsistencyEnabled && (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <input type="number" value={editConsistencyPct} onChange={e => setEditConsistencyPct(e.target.value)} style={{ width: '55px', padding: '6px 8px', background: '#141418', border: '1px solid #2a2a35', borderRadius: '4px', color: '#fff', fontSize: '13px', textAlign: 'center' }} />
+                      <span style={{ fontSize: '11px', color: '#666' }}>% max/day</span>
+                    </div>
+                  )}
+                </div>
               </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '20px' }}>
-                <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}><input type="checkbox" checked={editConsistencyEnabled} onChange={e => setEditConsistencyEnabled(e.target.checked)} style={{ width: '16px', height: '16px', accentColor: '#22c55e' }} /><span style={{ fontSize: '12px', color: '#999' }}>Consistency Rule</span></label>
-                {editConsistencyEnabled && <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><input type="number" value={editConsistencyPct} onChange={e => setEditConsistencyPct(e.target.value)} style={{ width: '60px', padding: '8px 10px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '13px', textAlign: 'center' }} /><span style={{ fontSize: '11px', color: '#666' }}>% max/day</span></div>}
+
+              {/* Action Buttons */}
+              <div style={{ display: 'flex', gap: '12px', marginBottom: '12px' }}>
+                <button onClick={() => updateAccount(showEditModal)} disabled={!editName.trim()} style={{ flex: 1, padding: '14px', background: '#22c55e', border: 'none', borderRadius: '8px', color: '#fff', fontWeight: 600, fontSize: '14px', cursor: 'pointer', opacity: !editName.trim() ? 0.5 : 1, transition: 'opacity 0.2s' }}>Save Changes</button>
+                <button onClick={() => { setShowEditModal(null); setEditName(''); setEditProfitTarget(''); setEditMaxDrawdown('') }} style={{ flex: 1, padding: '14px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '8px', color: '#888', fontWeight: 600, fontSize: '14px', cursor: 'pointer' }}>Cancel</button>
               </div>
-              <div style={{ display: 'flex', gap: '12px', marginBottom: '16px' }}><button onClick={() => updateAccount(showEditModal)} disabled={!editName.trim()} style={{ flex: 1, padding: '12px', background: '#22c55e', border: 'none', borderRadius: '6px', color: '#fff', fontWeight: 600, fontSize: '14px', cursor: 'pointer', opacity: !editName.trim() ? 0.5 : 1 }}>Save</button><button onClick={() => { setShowEditModal(null); setEditName(''); setEditProfitTarget(''); setEditMaxDrawdown('') }} style={{ flex: 1, padding: '12px', background: 'transparent', border: '1px solid #1a1a22', borderRadius: '6px', color: '#999', fontWeight: 600, fontSize: '14px', cursor: 'pointer' }}>Cancel</button></div>
-              <button onClick={() => { setShowDeleteModal(showEditModal); setShowEditModal(null) }} style={{ width: '100%', padding: '12px', background: 'transparent', border: '1px solid #ef4444', borderRadius: '6px', color: '#ef4444', fontWeight: 600, fontSize: '14px', cursor: 'pointer' }}>Delete Journal</button>
+              <button onClick={() => { setShowDeleteModal(showEditModal); setShowEditModal(null) }} style={{ width: '100%', padding: '12px', background: 'rgba(239, 68, 68, 0.1)', border: '1px solid #ef4444', borderRadius: '8px', color: '#ef4444', fontWeight: 500, fontSize: '13px', cursor: 'pointer' }}>Delete Journal</button>
             </div>
           </div>
         )}
