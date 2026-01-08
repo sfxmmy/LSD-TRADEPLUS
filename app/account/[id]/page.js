@@ -1948,16 +1948,26 @@ export default function AccountPage() {
                             <div style={{ height: '100%', width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#999' }}>Need 2+ trades</div>
                           ) : (() => {
                             const allBalances = visibleLines.flatMap(l => l.points.map(p => p.balance))
-                            const maxBal = allBalances.length > 0 ? Math.max(...allBalances) : startingBalance
-                            const minBal = allBalances.length > 0 ? Math.min(...allBalances) : startingBalance
+                            let maxBal = allBalances.length > 0 ? Math.max(...allBalances) : startingBalance
+                            let minBal = allBalances.length > 0 ? Math.min(...allBalances) : startingBalance
+
+                            // Include profit target and drawdown floor in range for single journal view
+                            const ddFloorVal = viewMode === 'this' && propFirmDrawdown?.floor ? propFirmDrawdown.floor : null
+                            const profitTargetVal = viewMode === 'this' && account?.profit_target ? displayStartingBalance * (1 + parseFloat(account.profit_target) / 100) : null
+                            if (equityCurveGroupBy === 'total') {
+                              if (ddFloorVal) minBal = Math.min(minBal, ddFloorVal)
+                              if (profitTargetVal) maxBal = Math.max(maxBal, profitTargetVal)
+                            }
+
                             const range = maxBal - minBal || 1000
-                            
+
                             // Calculate tight Y-axis range - no huge gaps
                             const actualMin = equityCurveGroupBy === 'total' ? Math.min(minBal, displayStartingBalance) : minBal
-                            const actualRange = maxBal - actualMin || 1000
+                            const actualMax = equityCurveGroupBy === 'total' ? Math.max(maxBal, displayStartingBalance) : maxBal
+                            const actualRange = actualMax - actualMin || 1000
                             const targetLabels = enlargedChart === 'equity' ? 10 : 6
                             const yStep = Math.ceil(actualRange / targetLabels / 1000) * 1000 || 1000
-                            const yMax = Math.ceil(maxBal / yStep) * yStep
+                            const yMax = Math.ceil(actualMax / yStep) * yStep
                             // yMin is just one step below actual minimum - no huge gaps
                             const yMin = Math.max(0, Math.floor(actualMin / yStep) * yStep)
                             const yRange = yMax - yMin || yStep
@@ -1970,9 +1980,12 @@ export default function AccountPage() {
                             const zeroY = hasNegative ? ((yMax - 0) / yRange) * 100 : null
                             // Starting balance line - always show if within range
                             const startLineY = equityCurveGroupBy === 'total' && !hasNegative && displayStartingBalance >= yMin && displayStartingBalance <= yMax ? ((yMax - displayStartingBalance) / yRange) * 100 : null
-                            // Drawdown floor line - show if prop firm settings configured
+                            // Drawdown floor line - only show when viewing single journal (viewMode === 'this')
                             const ddFloor = propFirmDrawdown?.floor
-                            const ddFloorY = equityCurveGroupBy === 'total' && ddFloor && ddFloor >= yMin && ddFloor <= yMax ? ((yMax - ddFloor) / yRange) * 100 : null
+                            const ddFloorY = viewMode === 'this' && equityCurveGroupBy === 'total' && ddFloor && ddFloor >= yMin && ddFloor <= yMax ? ((yMax - ddFloor) / yRange) * 100 : null
+                            // Profit target line - only show when viewing single journal
+                            const profitTarget = viewMode === 'this' && account?.profit_target ? displayStartingBalance * (1 + parseFloat(account.profit_target) / 100) : null
+                            const profitTargetY = profitTarget && equityCurveGroupBy === 'total' && profitTarget >= yMin && profitTarget <= yMax ? ((yMax - profitTarget) / yRange) * 100 : null
 
                             const svgW = 100, svgH = 100
 
@@ -2082,6 +2095,13 @@ export default function AccountPage() {
                                         <div style={{ position: 'absolute', right: 0, top: `${ddFloorY}%`, width: '4px', borderTop: `1px solid ${propFirmDrawdown?.breached ? '#ef4444' : '#f59e0b'}` }} />
                                       </Fragment>
                                     )}
+                                    {/* Profit target value on Y-axis */}
+                                    {profitTargetY !== null && (
+                                      <Fragment>
+                                        <span style={{ position: 'absolute', right: '5px', top: `${profitTargetY}%`, transform: 'translateY(-50%)', fontSize: '8px', color: distanceFromTarget?.passed ? '#22c55e' : '#3b82f6', lineHeight: 1, textAlign: 'right', fontWeight: 600 }}>{profitTarget >= 1000000 ? `$${(profitTarget/1000000).toFixed(1)}M` : profitTarget >= 1000 ? `$${(profitTarget/1000).toFixed(0)}k` : `$${profitTarget}`}</span>
+                                        <div style={{ position: 'absolute', right: 0, top: `${profitTargetY}%`, width: '4px', borderTop: `1px solid ${distanceFromTarget?.passed ? '#22c55e' : '#3b82f6'}` }} />
+                                      </Fragment>
+                                    )}
                                   </div>
                                   {/* Chart area */}
                                   <div style={{ flex: 1, position: 'relative', overflow: 'visible', borderBottom: '1px solid #2a2a35' }}>
@@ -2116,6 +2136,16 @@ export default function AccountPage() {
                                     {ddFloorY !== null && (
                                       <span style={{ position: 'absolute', right: '4px', top: `${ddFloorY}%`, transform: 'translateY(-50%)', fontSize: '9px', color: propFirmDrawdown?.breached ? '#ef4444' : '#f59e0b', fontWeight: 500 }}>
                                         {propFirmDrawdown?.breached ? 'BREACHED' : 'DD Floor'}
+                                      </span>
+                                    )}
+                                    {/* Profit target line - dashed blue/green */}
+                                    {profitTargetY !== null && (
+                                      <div style={{ position: 'absolute', left: 0, right: '38px', top: `${profitTargetY}%`, borderTop: `1px dashed ${distanceFromTarget?.passed ? '#22c55e' : '#3b82f6'}`, zIndex: 1 }} />
+                                    )}
+                                    {/* Profit target label */}
+                                    {profitTargetY !== null && (
+                                      <span style={{ position: 'absolute', right: '4px', top: `${profitTargetY}%`, transform: 'translateY(-50%)', fontSize: '9px', color: distanceFromTarget?.passed ? '#22c55e' : '#3b82f6', fontWeight: 500 }}>
+                                        {distanceFromTarget?.passed ? 'PASSED' : 'Target'}
                                       </span>
                                     )}
                                     <svg style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', overflow: 'visible', zIndex: 2 }} viewBox={`0 0 ${svgW} ${svgH}`} preserveAspectRatio="none"
@@ -2904,7 +2934,7 @@ export default function AccountPage() {
                 <StatBox label="Total Notes" value={dailyNotesCount + weeklyNotesCount + customNotesCount} color="#fff" />
               </div>
               {/* Prop Firm Challenge Progress */}
-              {challengeStatus && (
+              {viewMode === 'this' && challengeStatus && (
                 <div style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '14px', gridColumn: '1 / -1' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '12px' }}>
                     <span style={{ background: challengeStatus.color, padding: '3px 10px', borderRadius: '4px', fontSize: '10px', fontWeight: 600, color: '#fff', textTransform: 'uppercase' }}>{challengeStatus.status}</span>
@@ -2963,6 +2993,134 @@ export default function AccountPage() {
                   </div>
                 </div>
               )}
+              {/* Multi-Account Prop Firm Stats */}
+              {viewMode !== 'this' && (() => {
+                const accountsToShow = viewMode === 'selected' && selectedJournalIds.size > 0
+                  ? allAccounts.filter(acc => selectedJournalIds.has(acc.id))
+                  : allAccounts
+                const propFirmAccounts = accountsToShow.filter(acc => acc.profit_target || acc.max_drawdown || acc.consistency_enabled)
+                if (propFirmAccounts.length === 0) return null
+
+                // Calculate stats for each account
+                const accountStats = propFirmAccounts.map(acc => {
+                  const accTrades = allAccountsTrades[acc.id] || []
+                  const accStartBal = parseFloat(acc.starting_balance) || 0
+                  const accTotalPnl = accTrades.reduce((sum, t) => sum + (parseFloat(t.pnl) || 0), 0)
+                  const accCurrentBal = accStartBal + accTotalPnl
+
+                  // Profit target calc
+                  let profitTargetPct = null
+                  let profitTargetPassed = false
+                  if (acc.profit_target) {
+                    const targetAmount = accStartBal * (parseFloat(acc.profit_target) / 100)
+                    profitTargetPct = targetAmount > 0 ? Math.min(100, (accTotalPnl / targetAmount) * 100) : 0
+                    profitTargetPassed = accTotalPnl >= targetAmount
+                  }
+
+                  // Drawdown calc
+                  let ddStatus = null
+                  if (acc.max_drawdown) {
+                    const maxDDPct = parseFloat(acc.max_drawdown) || 0
+                    const ddType = acc.drawdown_type || 'static'
+                    const trailingMode = acc.trailing_mode || 'eod'
+                    let floor = accStartBal * (1 - maxDDPct / 100)
+                    let breached = false
+
+                    if (accTrades.length > 0) {
+                      const sorted = [...accTrades].sort((a, b) => new Date(a.date) - new Date(b.date))
+                      if (ddType === 'static') {
+                        let runningBal = accStartBal
+                        sorted.forEach(t => {
+                          runningBal += parseFloat(t.pnl) || 0
+                          if (!breached && runningBal < floor) breached = true
+                        })
+                      } else {
+                        if (trailingMode === 'eod') {
+                          const byDay = {}
+                          let runningBal = accStartBal
+                          sorted.forEach(t => { runningBal += parseFloat(t.pnl) || 0; byDay[t.date] = runningBal })
+                          let peakEOD = accStartBal
+                          Object.entries(byDay).sort((a, b) => new Date(a[0]) - new Date(b[0])).forEach(([_, balance]) => {
+                            if (balance > peakEOD) { peakEOD = balance; floor = peakEOD * (1 - maxDDPct / 100) }
+                            if (!breached && balance < floor) breached = true
+                          })
+                        } else {
+                          let runningBal = accStartBal, peak = accStartBal
+                          sorted.forEach(t => {
+                            runningBal += parseFloat(t.pnl) || 0
+                            if (runningBal > peak) { peak = runningBal; floor = peak * (1 - maxDDPct / 100) }
+                            if (!breached && runningBal < floor) breached = true
+                          })
+                        }
+                      }
+                    }
+
+                    const remaining = accCurrentBal - floor
+                    const maxAllowedDD = accStartBal * (maxDDPct / 100)
+                    const usedPct = breached ? 100 : maxAllowedDD > 0 ? Math.min(100, (Math.max(0, floor - accCurrentBal + maxAllowedDD) / maxAllowedDD) * 100) : 0
+                    ddStatus = { floor, remaining, usedPct: Math.max(0, 100 - (remaining / maxAllowedDD) * 100), breached, ddType, trailingMode, maxDDPct }
+                  }
+
+                  // Consistency calc
+                  let conStatus = null
+                  if (acc.consistency_enabled) {
+                    const pct = parseFloat(acc.consistency_pct) || 30
+                    const profitTotal = Math.max(0, accTotalPnl)
+                    const maxAllowedPerDay = profitTotal > 0 ? profitTotal * (pct / 100) : 0
+                    const dailyPnL = {}
+                    accTrades.forEach(t => { dailyPnL[t.date] = (dailyPnL[t.date] || 0) + (parseFloat(t.pnl) || 0) })
+                    const violations = Object.entries(dailyPnL).filter(([_, pnl]) => pnl > maxAllowedPerDay && maxAllowedPerDay > 0)
+                    conStatus = { passed: violations.length === 0, violations: violations.length, maxAllowed: maxAllowedPerDay, pct }
+                  }
+
+                  // Overall status
+                  let status = 'IN PROGRESS', statusColor = '#f59e0b'
+                  if (ddStatus?.breached || (conStatus && !conStatus.passed)) { status = 'FAILED'; statusColor = '#ef4444' }
+                  else if (profitTargetPassed) { status = 'PASSED'; statusColor = '#22c55e' }
+
+                  return { acc, accCurrentBal, accStartBal, accTotalPnl, profitTargetPct, profitTargetPassed, ddStatus, conStatus, status, statusColor }
+                })
+
+                return (
+                  <div style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '14px', gridColumn: '1 / -1' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '12px' }}>
+                      <span style={{ fontSize: '13px', fontWeight: 600, color: '#fff' }}>Prop Firm Challenges ({accountStats.length} account{accountStats.length > 1 ? 's' : ''})</span>
+                      <span style={{ fontSize: '11px', color: '#666', marginLeft: 'auto' }}>{viewMode === 'all' ? 'All Journals' : 'Selected Journals'}</span>
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                      {accountStats.map(({ acc, accCurrentBal, accStartBal, accTotalPnl, profitTargetPct, profitTargetPassed, ddStatus, conStatus, status, statusColor }) => (
+                        <div key={acc.id} style={{ background: '#141418', border: '1px solid #1a1a22', borderRadius: '6px', padding: '12px' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px' }}>
+                            <span style={{ background: statusColor, padding: '2px 8px', borderRadius: '4px', fontSize: '9px', fontWeight: 600, color: '#fff' }}>{status}</span>
+                            <span style={{ fontSize: '12px', fontWeight: 600, color: '#fff' }}>{acc.name}</span>
+                            <span style={{ fontSize: '11px', color: accCurrentBal >= accStartBal ? '#22c55e' : '#ef4444', marginLeft: 'auto' }}>${Math.round(accCurrentBal).toLocaleString()}</span>
+                          </div>
+                          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '10px', fontSize: '11px' }}>
+                            {acc.profit_target && (
+                              <div>
+                                <span style={{ color: '#666' }}>Target ({acc.profit_target}%): </span>
+                                <span style={{ color: profitTargetPassed ? '#22c55e' : '#3b82f6', fontWeight: 600 }}>{profitTargetPassed ? 'PASSED' : `${Math.round(profitTargetPct || 0)}%`}</span>
+                              </div>
+                            )}
+                            {ddStatus && (
+                              <div>
+                                <span style={{ color: '#666' }}>{ddStatus.ddType === 'trailing' ? 'Trail' : 'Max'} DD ({ddStatus.maxDDPct}%): </span>
+                                <span style={{ color: ddStatus.breached ? '#ef4444' : ddStatus.remaining < 0 ? '#ef4444' : '#22c55e', fontWeight: 600 }}>{ddStatus.breached ? 'BREACHED' : `$${Math.round(ddStatus.remaining).toLocaleString()}`}</span>
+                              </div>
+                            )}
+                            {conStatus && (
+                              <div>
+                                <span style={{ color: '#666' }}>Consistency ({conStatus.pct}%): </span>
+                                <span style={{ color: conStatus.passed ? '#22c55e' : '#ef4444', fontWeight: 600 }}>{conStatus.passed ? 'PASSING' : `${conStatus.violations} violation${conStatus.violations > 1 ? 's' : ''}`}</span>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )
+              })()}
               </div>
               {/* RIGHT: Visual widgets stacked */}
               <div style={{ width: '220px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
@@ -3959,19 +4117,34 @@ export default function AccountPage() {
 
                 const visibleLines = equityCurveGroupBy === 'total' ? lines : lines.filter(l => selectedCurveLines[l.name] !== false)
                 const allBalances = visibleLines.flatMap(l => l.points.map(p => p.balance))
-                const maxBal = allBalances.length > 0 ? Math.max(...allBalances) : startingBalance
-                const minBal = allBalances.length > 0 ? Math.min(...allBalances) : startingBalance
+                let maxBal = allBalances.length > 0 ? Math.max(...allBalances) : startingBalance
+                let minBal = allBalances.length > 0 ? Math.min(...allBalances) : startingBalance
+
+                // Include profit target and drawdown floor in range for single journal view
+                const ddFloorValEnl = viewMode === 'this' && propFirmDrawdown?.floor ? propFirmDrawdown.floor : null
+                const profitTargetValEnl = viewMode === 'this' && account?.profit_target ? startingBalance * (1 + parseFloat(account.profit_target) / 100) : null
+                if (equityCurveGroupBy === 'total') {
+                  if (ddFloorValEnl) minBal = Math.min(minBal, ddFloorValEnl)
+                  if (profitTargetValEnl) maxBal = Math.max(maxBal, profitTargetValEnl)
+                }
+
                 const range = maxBal - minBal || 1000
-                const yStep = Math.ceil(range / 10 / 100) * 100 || 100
-                const yMax = Math.ceil(maxBal / yStep) * yStep
-                const yMin = Math.floor(minBal / yStep) * yStep
+                const actualMinEnl = equityCurveGroupBy === 'total' ? Math.min(minBal, startingBalance) : minBal
+                const actualMaxEnl = equityCurveGroupBy === 'total' ? Math.max(maxBal, startingBalance) : maxBal
+                const actualRangeEnl = actualMaxEnl - actualMinEnl || 1000
+                const yStep = Math.ceil(actualRangeEnl / 10 / 100) * 100 || 100
+                const yMax = Math.ceil(actualMaxEnl / yStep) * yStep
+                const yMin = Math.floor(actualMinEnl / yStep) * yStep
                 const yRange = yMax - yMin || yStep
                 const hasNegative = minBal < 0
                 const belowStartEnl = equityCurveGroupBy === 'total' && minBal < startingBalance
                 const zeroY = hasNegative ? ((yMax - 0) / yRange) * 100 : null
-                // Drawdown floor for enlarged chart
+                // Drawdown floor for enlarged chart - only show when viewing single journal
                 const ddFloorEnl = propFirmDrawdown?.floor
-                const ddFloorYEnl = equityCurveGroupBy === 'total' && ddFloorEnl && ddFloorEnl >= yMin && ddFloorEnl <= yMax ? ((yMax - ddFloorEnl) / yRange) * 100 : null
+                const ddFloorYEnl = viewMode === 'this' && equityCurveGroupBy === 'total' && ddFloorEnl && ddFloorEnl >= yMin && ddFloorEnl <= yMax ? ((yMax - ddFloorEnl) / yRange) * 100 : null
+                // Profit target for enlarged chart
+                const profitTargetEnl = viewMode === 'this' && account?.profit_target ? startingBalance * (1 + parseFloat(account.profit_target) / 100) : null
+                const profitTargetYEnl = profitTargetEnl && equityCurveGroupBy === 'total' && profitTargetEnl >= yMin && profitTargetEnl <= yMax ? ((yMax - profitTargetEnl) / yRange) * 100 : null
 
                 const yLabels = []
                 for (let v = yMax; v >= yMin; v -= yStep) yLabels.push(v)
@@ -4062,6 +4235,13 @@ export default function AccountPage() {
                             <div style={{ position: 'absolute', right: 0, top: `${ddFloorYEnl}%`, width: '4px', borderTop: `1px solid ${propFirmDrawdown?.breached ? '#ef4444' : '#f59e0b'}` }} />
                           </Fragment>
                         )}
+                        {/* Profit target value on Y-axis */}
+                        {profitTargetYEnl !== null && (
+                          <Fragment>
+                            <span style={{ position: 'absolute', right: '5px', top: `${profitTargetYEnl}%`, transform: 'translateY(-50%)', fontSize: '10px', color: distanceFromTarget?.passed ? '#22c55e' : '#3b82f6', textAlign: 'right', fontWeight: 600 }}>{profitTargetEnl >= 1000000 ? `$${(profitTargetEnl/1000000).toFixed(1)}M` : profitTargetEnl >= 1000 ? `$${(profitTargetEnl/1000).toFixed(0)}k` : `$${profitTargetEnl}`}</span>
+                            <div style={{ position: 'absolute', right: 0, top: `${profitTargetYEnl}%`, width: '4px', borderTop: `1px solid ${distanceFromTarget?.passed ? '#22c55e' : '#3b82f6'}` }} />
+                          </Fragment>
+                        )}
                       </div>
                       {/* Chart area */}
                       <div style={{ flex: 1, position: 'relative', overflow: 'visible', borderBottom: '1px solid #2a2a35' }}>
@@ -4087,6 +4267,13 @@ export default function AccountPage() {
                             <>
                               <div style={{ position: 'absolute', left: 0, right: '55px', top: `${ddFloorYEnl}%`, borderTop: `1px dashed ${propFirmDrawdown?.breached ? '#ef4444' : '#f59e0b'}`, zIndex: 1 }} />
                               <span style={{ position: 'absolute', right: '4px', top: `${ddFloorYEnl}%`, transform: 'translateY(-50%)', fontSize: '10px', color: propFirmDrawdown?.breached ? '#ef4444' : '#f59e0b', fontWeight: 500 }}>{propFirmDrawdown?.breached ? 'BREACHED' : 'DD Floor'}</span>
+                            </>
+                          )}
+                          {/* Profit target line - dashed blue/green horizontal line */}
+                          {profitTargetYEnl !== null && (
+                            <>
+                              <div style={{ position: 'absolute', left: 0, right: '45px', top: `${profitTargetYEnl}%`, borderTop: `1px dashed ${distanceFromTarget?.passed ? '#22c55e' : '#3b82f6'}`, zIndex: 1 }} />
+                              <span style={{ position: 'absolute', right: '4px', top: `${profitTargetYEnl}%`, transform: 'translateY(-50%)', fontSize: '10px', color: distanceFromTarget?.passed ? '#22c55e' : '#3b82f6', fontWeight: 500 }}>{distanceFromTarget?.passed ? 'PASSED' : 'Target'}</span>
                             </>
                           )}
                           <svg style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', overflow: 'visible', zIndex: 2 }} viewBox={`0 0 ${svgW} ${svgH}`} preserveAspectRatio="none"

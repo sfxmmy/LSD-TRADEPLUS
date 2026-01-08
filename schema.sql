@@ -1,6 +1,7 @@
 -- =====================================================
--- LSDTRADE+ DATABASE SCHEMA v3
+-- LSDTRADE+ DATABASE SCHEMA v4
 -- Run this ENTIRE script in Supabase SQL Editor
+-- Safe to run multiple times (idempotent)
 -- =====================================================
 
 -- =====================================================
@@ -8,8 +9,7 @@
 --
 -- profiles (users)
 --   └── accounts (trading journals)
---         ├── trades (individual trades)
---         ├── trade_extras (custom fields for each trade)
+--         ├── trades (individual trades, extra_data JSONB for custom fields)
 --         └── notes (daily/weekly journal entries)
 -- =====================================================
 
@@ -97,6 +97,9 @@ CREATE TABLE IF NOT EXISTS accounts (
 -- Add missing columns to existing accounts table (safe to run multiple times)
 DO $$
 BEGIN
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'accounts' AND column_name = 'starting_balance') THEN
+    ALTER TABLE accounts ADD COLUMN starting_balance DECIMAL(12,2) DEFAULT 0;
+  END IF;
   IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'accounts' AND column_name = 'profit_target') THEN
     ALTER TABLE accounts ADD COLUMN profit_target DECIMAL(5,2) DEFAULT NULL;
   END IF;
@@ -117,6 +120,9 @@ BEGIN
   END IF;
   IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'accounts' AND column_name = 'custom_inputs') THEN
     ALTER TABLE accounts ADD COLUMN custom_inputs JSONB DEFAULT NULL;
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'accounts' AND column_name = 'updated_at') THEN
+    ALTER TABLE accounts ADD COLUMN updated_at TIMESTAMPTZ DEFAULT NOW();
   END IF;
 END $$;
 
@@ -149,17 +155,10 @@ BEGIN
 END $$;
 
 -- =====================================================
--- TRADE_EXTRAS TABLE
--- Custom fields for each trade (session, confidence, etc.)
--- Stored as JSON for flexibility
+-- CLEANUP: Remove deprecated trade_extras table (no longer used)
+-- Custom fields are now stored in trades.extra_data JSONB column
 -- =====================================================
-CREATE TABLE IF NOT EXISTS trade_extras (
-  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  trade_id UUID REFERENCES trades(id) ON DELETE CASCADE NOT NULL UNIQUE,
-  data JSONB DEFAULT '{}',
-  created_at TIMESTAMPTZ DEFAULT NOW(),
-  updated_at TIMESTAMPTZ DEFAULT NOW()
-);
+DROP TABLE IF EXISTS trade_extras;
 
 -- =====================================================
 -- NOTES TABLE
@@ -183,7 +182,6 @@ CREATE TABLE IF NOT EXISTS notes (
 ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
 ALTER TABLE accounts ENABLE ROW LEVEL SECURITY;
 ALTER TABLE trades ENABLE ROW LEVEL SECURITY;
-ALTER TABLE trade_extras ENABLE ROW LEVEL SECURITY;
 ALTER TABLE notes ENABLE ROW LEVEL SECURITY;
 
 -- =====================================================
@@ -207,10 +205,6 @@ BEGIN
   -- Drop all policies on trades
   FOR pol IN SELECT policyname FROM pg_policies WHERE tablename = 'trades' LOOP
     EXECUTE format('DROP POLICY IF EXISTS %I ON trades', pol.policyname);
-  END LOOP;
-  -- Drop all policies on trade_extras
-  FOR pol IN SELECT policyname FROM pg_policies WHERE tablename = 'trade_extras' LOOP
-    EXECUTE format('DROP POLICY IF EXISTS %I ON trade_extras', pol.policyname);
   END LOOP;
   -- Drop all policies on notes
   FOR pol IN SELECT policyname FROM pg_policies WHERE tablename = 'notes' LOOP
@@ -253,15 +247,6 @@ DROP POLICY IF EXISTS "Users can update own trades" ON trades;
 DROP POLICY IF EXISTS "Users can delete own trades" ON trades;
 DROP POLICY IF EXISTS "Enable read access for users" ON trades;
 
--- Trade extras policies
-DROP POLICY IF EXISTS "trade_extras_all" ON trade_extras;
-DROP POLICY IF EXISTS "admin_trade_extras" ON trade_extras;
-DROP POLICY IF EXISTS "Users can read own trade_extras" ON trade_extras;
-DROP POLICY IF EXISTS "Users can insert own trade_extras" ON trade_extras;
-DROP POLICY IF EXISTS "Users can update own trade_extras" ON trade_extras;
-DROP POLICY IF EXISTS "Users can delete own trade_extras" ON trade_extras;
-DROP POLICY IF EXISTS "Enable read access for users" ON trade_extras;
-
 -- Notes policies
 DROP POLICY IF EXISTS "notes_all" ON notes;
 DROP POLICY IF EXISTS "admin_notes" ON notes;
@@ -288,16 +273,6 @@ CREATE POLICY "accounts_all" ON accounts
 CREATE POLICY "trades_all" ON trades
   FOR ALL USING (
     account_id IN (SELECT id FROM accounts WHERE user_id = auth.uid())
-  );
-
--- Trade Extras: Users can access extras for their trades
-CREATE POLICY "trade_extras_all" ON trade_extras
-  FOR ALL USING (
-    trade_id IN (
-      SELECT t.id FROM trades t
-      JOIN accounts a ON t.account_id = a.id
-      WHERE a.user_id = auth.uid()
-    )
   );
 
 -- Notes: Users can access notes in their accounts
@@ -337,9 +312,6 @@ CREATE POLICY "admin_accounts" ON accounts
   FOR SELECT USING (is_admin());
 
 CREATE POLICY "admin_trades" ON trades
-  FOR SELECT USING (is_admin());
-
-CREATE POLICY "admin_trade_extras" ON trade_extras
   FOR SELECT USING (is_admin());
 
 CREATE POLICY "admin_notes" ON notes
@@ -396,10 +368,6 @@ DROP TRIGGER IF EXISTS update_accounts_updated_at ON accounts;
 CREATE TRIGGER update_accounts_updated_at
   BEFORE UPDATE ON accounts FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
-DROP TRIGGER IF EXISTS update_trade_extras_updated_at ON trade_extras;
-CREATE TRIGGER update_trade_extras_updated_at
-  BEFORE UPDATE ON trade_extras FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-
 DROP TRIGGER IF EXISTS update_notes_updated_at ON notes;
 CREATE TRIGGER update_notes_updated_at
   BEFORE UPDATE ON notes FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
@@ -410,7 +378,6 @@ CREATE TRIGGER update_notes_updated_at
 CREATE INDEX IF NOT EXISTS idx_accounts_user_id ON accounts(user_id);
 CREATE INDEX IF NOT EXISTS idx_trades_account_id ON trades(account_id);
 CREATE INDEX IF NOT EXISTS idx_trades_date ON trades(date);
-CREATE INDEX IF NOT EXISTS idx_trade_extras_trade_id ON trade_extras(trade_id);
 CREATE INDEX IF NOT EXISTS idx_notes_account_id ON notes(account_id);
 CREATE INDEX IF NOT EXISTS idx_notes_date ON notes(date);
 CREATE INDEX IF NOT EXISTS idx_profiles_email ON profiles(email);
