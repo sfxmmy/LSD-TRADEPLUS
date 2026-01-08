@@ -2306,6 +2306,44 @@ export default function DashboardPage() {
                     <p style={{ color: '#666', fontSize: '13px' }}>or click to browse</p>
                     <p style={{ color: '#555', fontSize: '11px', marginTop: '12px' }}>Supports .xlsx, .xls, and .csv files</p>
                   </div>
+
+                  {/* Format Guide */}
+                  <div style={{ marginTop: '20px', padding: '16px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '10px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9333ea" strokeWidth="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+                      <span style={{ fontSize: '12px', fontWeight: 600, color: '#9333ea' }}>Required Format</span>
+                    </div>
+                    <p style={{ fontSize: '11px', color: '#888', marginBottom: '12px', lineHeight: 1.5 }}>
+                      Your file must contain <strong style={{ color: '#fff' }}>one row per trade</strong>. Summary data (weekly/monthly totals) cannot be imported.
+                    </p>
+                    <div style={{ fontSize: '11px', color: '#666', marginBottom: '8px' }}>Required columns:</div>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginBottom: '12px' }}>
+                      <span style={{ padding: '4px 8px', background: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.3)', borderRadius: '4px', color: '#22c55e', fontSize: '10px' }}>Symbol / Pair</span>
+                      <span style={{ padding: '4px 8px', background: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.3)', borderRadius: '4px', color: '#22c55e', fontSize: '10px' }}>PnL ($)</span>
+                    </div>
+                    <div style={{ fontSize: '11px', color: '#666', marginBottom: '8px' }}>Recommended columns:</div>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginBottom: '12px' }}>
+                      <span style={{ padding: '4px 8px', background: 'rgba(59,130,246,0.1)', border: '1px solid rgba(59,130,246,0.3)', borderRadius: '4px', color: '#3b82f6', fontSize: '10px' }}>Date</span>
+                      <span style={{ padding: '4px 8px', background: 'rgba(59,130,246,0.1)', border: '1px solid rgba(59,130,246,0.3)', borderRadius: '4px', color: '#3b82f6', fontSize: '10px' }}>Win/Loss</span>
+                      <span style={{ padding: '4px 8px', background: 'rgba(59,130,246,0.1)', border: '1px solid rgba(59,130,246,0.3)', borderRadius: '4px', color: '#3b82f6', fontSize: '10px' }}>Direction</span>
+                      <span style={{ padding: '4px 8px', background: 'rgba(59,130,246,0.1)', border: '1px solid rgba(59,130,246,0.3)', borderRadius: '4px', color: '#3b82f6', fontSize: '10px' }}>RR</span>
+                    </div>
+                    <div style={{ background: '#0d0d12', borderRadius: '6px', padding: '10px', border: '1px solid #1a1a22' }}>
+                      <div style={{ fontSize: '10px', color: '#555', marginBottom: '6px' }}>Example format:</div>
+                      <div style={{ fontFamily: 'monospace', fontSize: '10px', color: '#888', lineHeight: 1.6 }}>
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '8px', color: '#9333ea', marginBottom: '4px' }}>
+                          <span>Date</span><span>Symbol</span><span>Direction</span><span>PnL</span><span>Outcome</span>
+                        </div>
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '8px' }}>
+                          <span>2024-01-15</span><span>EURUSD</span><span>Long</span><span>$150</span><span>Win</span>
+                        </div>
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '8px' }}>
+                          <span>2024-01-16</span><span>GBPJPY</span><span>Short</span><span>-$80</span><span>Loss</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
                   {importError && <div style={{ marginTop: '16px', padding: '12px', background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.3)', borderRadius: '8px', color: '#ef4444', fontSize: '13px' }}>{importError}</div>}
                 </div>
               )}
@@ -2326,7 +2364,29 @@ export default function DashboardPage() {
                     </div>
                   </div>
                   <div style={{ fontSize: '11px', color: '#666', textTransform: 'uppercase', marginBottom: '12px' }}>Map Your Columns</div>
-                  <p style={{ color: '#888', fontSize: '12px', marginBottom: '16px' }}>Auto-detected fields are highlighted. Unmapped columns will be created as custom inputs.</p>
+                  <p style={{ color: '#888', fontSize: '12px', marginBottom: '12px' }}>Auto-detected fields are highlighted. Unmapped columns will be created as custom inputs.</p>
+
+                  {/* Warning if essential columns not mapped */}
+                  {(!Object.values(importMapping).includes('symbol') || !Object.values(importMapping).includes('pnl')) && (
+                    <div style={{ marginBottom: '16px', padding: '10px 12px', background: 'rgba(245,158,11,0.1)', border: '1px solid rgba(245,158,11,0.3)', borderRadius: '8px', display: 'flex', alignItems: 'flex-start', gap: '10px' }}>
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" strokeWidth="2" style={{ flexShrink: 0, marginTop: '1px' }}><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                      <div style={{ fontSize: '12px', color: '#f59e0b' }}>
+                        <strong>Missing required columns:</strong>
+                        {!Object.values(importMapping).includes('symbol') && <span> Symbol/Pair</span>}
+                        {!Object.values(importMapping).includes('symbol') && !Object.values(importMapping).includes('pnl') && <span>,</span>}
+                        {!Object.values(importMapping).includes('pnl') && <span> PnL</span>}
+                        <div style={{ color: '#b45309', fontSize: '11px', marginTop: '4px' }}>Please map these columns or your data may not display correctly.</div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Warning if no date column */}
+                  {!Object.values(importMapping).includes('date') && Object.values(importMapping).includes('symbol') && Object.values(importMapping).includes('pnl') && (
+                    <div style={{ marginBottom: '16px', padding: '10px 12px', background: 'rgba(59,130,246,0.1)', border: '1px solid rgba(59,130,246,0.3)', borderRadius: '8px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" strokeWidth="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+                      <span style={{ fontSize: '11px', color: '#3b82f6' }}>No date column mapped. All trades will use today's date.</span>
+                    </div>
+                  )}
                   <div style={{ maxHeight: '300px', overflow: 'auto', marginBottom: '20px' }}>
                     {importHeaders.map((header, idx) => (
                       <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '10px 12px', background: importMapping[idx] ? 'rgba(147,51,234,0.05)' : '#0a0a0f', border: `1px solid ${importMapping[idx] ? 'rgba(147,51,234,0.3)' : '#1a1a22'}`, borderRadius: '8px', marginBottom: '8px' }}>

@@ -48,14 +48,19 @@ export async function POST(request) {
           }
 
           if (userId) {
+            // Check if subscription is trialing or active - both get access
+            const subStatus = subscription.status === 'trialing' || subscription.status === 'active'
+              ? 'subscribing'
+              : subscription.status
+
             const { error } = await supabase
               .from('profiles')
               .update({
-                subscription_status: 'subscribing',
+                subscription_status: subStatus,
                 subscription_id: session.subscription,
                 customer_id: session.customer,
                 subscription_start: new Date().toISOString(),
-                subscription_end: null,
+                subscription_end: subscription.trial_end ? new Date(subscription.trial_end * 1000).toISOString() : null,
                 cancelled_at: null
               })
               .eq('id', userId)
@@ -81,7 +86,11 @@ export async function POST(request) {
         }
 
         if (userId) {
+          // Map Stripe status to our subscription_status
+          // 'trialing' = free trial period (has access)
+          // 'active' = paying subscriber (has access)
           const status = subscription.status === 'active' ? 'subscribing' :
+                        subscription.status === 'trialing' ? 'subscribing' :
                         subscription.status === 'past_due' ? 'past_due' :
                         subscription.status === 'canceled' ? 'not subscribing' : subscription.status
 
