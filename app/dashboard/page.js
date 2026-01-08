@@ -944,7 +944,7 @@ export default function DashboardPage() {
               </defs>
               {/* Start line inside SVG - ends before label */}
               {startLineY !== null && (
-                <line x1="0" y1={startY} x2={svgW * 0.97} y2={startY} stroke="#666" strokeWidth="1" strokeDasharray="4,3" vectorEffect="non-scaling-stroke" />
+                <line x1="0" y1={startY} x2={svgW * 0.985} y2={startY} stroke="#666" strokeWidth="1" strokeDasharray="4,3" vectorEffect="non-scaling-stroke" />
               )}
               {greenAreaPath && <path d={greenAreaPath} fill="url(#areaGradGreen)" />}
               {redAreaPath && <path d={redAreaPath} fill="url(#areaGradRed)" />}
