@@ -903,14 +903,20 @@ export default function DashboardPage() {
           <div style={{ flex: 1, position: 'relative', borderRight: '1px solid #2a2a35', overflow: 'visible' }}>
             {yLabels.map((v, i) => {
               const topPct = yLabels.length > 1 ? (i / (yLabels.length - 1)) * 100 : 0
-              const isLast = i === yLabels.length - 1
               return (
-                <div key={i} style={{ position: 'absolute', right: 0, top: `${topPct}%`, transform: isLast ? 'translateY(-100%)' : 'translateY(-50%)', display: 'flex', alignItems: 'center' }}>
+                <div key={i} style={{ position: 'absolute', right: 0, top: `${topPct}%`, transform: 'translateY(-50%)', display: 'flex', alignItems: 'center' }}>
                   <span style={{ fontSize: '10px', color: '#999', lineHeight: 1, textAlign: 'right' }}>{v >= 1000000 ? `$${(v/1000000).toFixed(1)}M` : v >= 1000 ? `$${(v/1000).toFixed(0)}k` : `$${v}`}</span>
-                  <div style={{ width: '4px', height: '1px', background: '#2a2a35', marginLeft: '2px' }} />
+                  <div style={{ width: '4px', height: '1px', background: '#333', marginLeft: '2px' }} />
                 </div>
               )
             })}
+            {/* Green start value on Y-axis */}
+            {startLineY !== null && (
+              <div style={{ position: 'absolute', right: 0, top: `${startLineY}%`, transform: 'translateY(-50%)', display: 'flex', alignItems: 'center' }}>
+                <span style={{ fontSize: '10px', color: '#22c55e', lineHeight: 1, textAlign: 'right', fontWeight: 600 }}>{start >= 1000000 ? `$${(start/1000000).toFixed(1)}M` : start >= 1000 ? `$${(start/1000).toFixed(0)}k` : `$${start}`}</span>
+                <div style={{ width: '4px', height: '1px', background: '#22c55e', marginLeft: '2px' }} />
+              </div>
+            )}
           </div>
           <div style={{ height: '26px' }} />
         </div>
@@ -973,17 +979,11 @@ export default function DashboardPage() {
               const isLast = i === xLabels.length - 1
               return (
                 <div key={i} style={{ position: 'absolute', left: `${l.pct}%`, transform: 'translateX(-50%)', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                  <div style={{ width: '1px', height: '4px', background: '#2a2a35', marginTop: '-4px' }} />
+                  <div style={{ width: '1px', height: '4px', background: '#2a2a35' }} />
                   <span style={{ fontSize: '10px', color: '#999', whiteSpace: 'nowrap', marginTop: '4px' }}>{l.label}</span>
                 </div>
               )
             })}
-            {/* Green start value on x-axis */}
-            {startLineY !== null && (
-              <span style={{ position: 'absolute', right: '0', top: '4px', fontSize: '10px', color: '#22c55e', fontWeight: 600 }}>
-                {start >= 1000000 ? `$${(start/1000000).toFixed(1)}M` : start >= 1000 ? `$${(start/1000).toFixed(0)}k` : `$${start}`}
-              </span>
-            )}
           </div>
         </div>
       </div>
