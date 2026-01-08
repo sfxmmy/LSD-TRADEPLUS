@@ -26,6 +26,7 @@ export default function SettingsPage() {
     if (subscription_status === 'admin') return true
     if (subscription_status === 'subscribing') return true
     if (subscription_status === 'free subscription') return true
+    if (subscription_status === 'free trial') return true
     return false
   }
 
@@ -157,8 +158,12 @@ export default function SettingsPage() {
         return { status: 'Admin', color: '#f59e0b' }
       case 'subscribing':
         return { status: 'Active Subscription', color: '#22c55e' }
+      case 'free trial':
+        return { status: 'Free Trial', color: '#8b5cf6' }
       case 'free subscription':
         return { status: 'Free Access', color: '#3b82f6' }
+      case 'past_due':
+        return { status: 'Payment Failed', color: '#ef4444' }
       default:
         return { status: 'Not Subscribed', color: '#ef4444' }
     }
@@ -315,14 +320,17 @@ export default function SettingsPage() {
 
           {profile?.subscription_end && (
             <div style={{ marginBottom: '16px' }}>
-              <label style={{ display: 'block', fontSize: '12px', color: '#999', marginBottom: '8px', textTransform: 'uppercase' }}>Access Until</label>
-              <div style={{ color: '#f59e0b', fontSize: '15px' }}>
+              <label style={{ display: 'block', fontSize: '12px', color: '#999', marginBottom: '8px', textTransform: 'uppercase' }}>
+                {profile.subscription_status === 'free trial' ? 'Trial Ends' : 'Access Until'}
+              </label>
+              <div style={{ color: profile.subscription_status === 'free trial' ? '#8b5cf6' : '#f59e0b', fontSize: '15px' }}>
                 {new Date(profile.subscription_end).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}
               </div>
             </div>
           )}
 
-          {profile?.subscription_status === 'subscribing' && (
+          {/* Manage Subscription button - for subscribing and free trial */}
+          {(profile?.subscription_status === 'subscribing' || profile?.subscription_status === 'free trial') && (
             <button
               onClick={handleManageSubscription}
               style={{
@@ -340,6 +348,13 @@ export default function SettingsPage() {
             </button>
           )}
 
+          {/* Free trial info */}
+          {profile?.subscription_status === 'free trial' && (
+            <div style={{ marginTop: '16px', padding: '12px', background: 'rgba(139,92,246,0.1)', border: '1px solid rgba(139,92,246,0.3)', borderRadius: '8px', color: '#8b5cf6', fontSize: '14px' }}>
+              You&apos;re on a 7-day free trial. Your card will be charged when the trial ends. You can cancel anytime before then.
+            </div>
+          )}
+
           {profile?.subscription_status === 'admin' && (
             <div style={{ padding: '12px', background: 'rgba(245,158,11,0.1)', border: '1px solid rgba(245,158,11,0.3)', borderRadius: '8px', color: '#f59e0b', fontSize: '14px' }}>
               Admin accounts have permanent full access
@@ -349,6 +364,29 @@ export default function SettingsPage() {
           {profile?.subscription_status === 'free subscription' && (
             <div style={{ padding: '12px', background: 'rgba(59,130,246,0.1)', border: '1px solid rgba(59,130,246,0.3)', borderRadius: '8px', color: '#3b82f6', fontSize: '14px' }}>
               You have free access to LSDTRADE+
+            </div>
+          )}
+
+          {profile?.subscription_status === 'past_due' && (
+            <div style={{ marginTop: '16px' }}>
+              <div style={{ padding: '12px', background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.3)', borderRadius: '8px', color: '#ef4444', fontSize: '14px', marginBottom: '12px' }}>
+                Your payment failed. Please update your payment method to continue access.
+              </div>
+              <button
+                onClick={handleManageSubscription}
+                style={{
+                  padding: '12px 24px',
+                  background: '#ef4444',
+                  border: 'none',
+                  borderRadius: '8px',
+                  color: '#fff',
+                  fontWeight: 600,
+                  fontSize: '14px',
+                  cursor: 'pointer'
+                }}
+              >
+                Update Payment Method
+              </button>
             </div>
           )}
         </div>

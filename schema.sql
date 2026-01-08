@@ -64,8 +64,10 @@ END $$;
 -- =====================================================
 -- 'admin'            = Full admin access (can see ALL data)
 -- 'subscribing'      = Paying subscriber (has access)
+-- 'free trial'       = 7-day free trial (has access, one per email)
 -- 'free subscription'= Free entry/giveaway (has access)
 -- 'not subscribing'  = No subscription (NO access, redirect to pricing)
+-- 'past_due'         = Payment failed (NO access until resolved)
 -- =====================================================
 
 -- =====================================================

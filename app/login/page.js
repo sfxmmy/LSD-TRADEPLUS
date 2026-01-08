@@ -50,12 +50,13 @@ export default function LoginPage() {
       console.log('Subscription status:', profile?.subscription_status)
 
       // Check if user has valid subscription
-      // 'admin' = admin user, 'subscribing' = paying, 'free subscription' = free access
+      // 'admin' = admin user, 'subscribing' = paying, 'free subscription' = free access, 'free trial' = 7-day trial
       const hasAccess = (() => {
         if (!profile) return false
         if (profile.subscription_status === 'admin') return true
         if (profile.subscription_status === 'subscribing') return true
         if (profile.subscription_status === 'free subscription') return true
+        if (profile.subscription_status === 'free trial') return true
         return false
       })()
 

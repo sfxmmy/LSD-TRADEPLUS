@@ -291,20 +291,114 @@ export default function DashboardPage() {
 
   // Import journal functions
   const knownFields = [
-    { id: 'symbol', label: 'Symbol', type: 'text', aliases: ['symbol', 'pair', 'ticker', 'instrument', 'asset', 'currency', 'market', 'coin'] },
-    { id: 'pnl', label: 'PnL ($)', type: 'number', aliases: ['pnl', 'p&l', 'profit', 'profit/loss', 'profit loss', 'net profit', 'net pnl', 'gain', 'return', 'amount', 'realized', 'realised'] },
-    { id: 'outcome', label: 'W/L', type: 'select', aliases: ['outcome', 'win/loss', 'w/l', 'win loss', 'trade result', 'won/lost'] },
-    { id: 'direction', label: 'Direction', type: 'select', aliases: ['direction', 'side', 'position', 'long/short', 'buy/sell', 'trade type', 'order type'] },
-    { id: 'rr', label: 'RR', type: 'number', aliases: ['rr', 'r:r', 'risk reward', 'risk/reward', 'r/r', 'reward ratio', 'risk to reward'] },
-    { id: 'date', label: 'Date', type: 'date', aliases: ['date', 'trade date', 'entry date', 'open date', 'day', 'opened', 'entry'] },
-    { id: 'time', label: 'Time', type: 'time', aliases: ['time', 'entry time', 'open time', 'trade time'] },
-    { id: 'riskPercent', label: '% Risk', type: 'number', aliases: ['risk', 'risk %', '% risk', 'risk percent', 'lot size', 'position size', 'size'] },
-    { id: 'confidence', label: 'Confidence', type: 'select', aliases: ['confidence', 'conviction', 'certainty', 'conf'] },
-    { id: 'session', label: 'Session', type: 'select', aliases: ['session', 'market session', 'trading session', 'market'] },
-    { id: 'timeframe', label: 'Timeframe', type: 'select', aliases: ['timeframe', 'time frame', 'chart', 'tf', 'period'] },
-    { id: 'notes', label: 'Notes', type: 'textarea', aliases: ['notes', 'comments', 'description', 'remarks', 'thoughts', 'analysis', 'review', 'journal'] },
-    { id: 'rating', label: 'Rating', type: 'rating', aliases: ['rating', 'score', 'grade', 'quality', 'stars'] }
+    { id: 'symbol', label: 'Symbol', type: 'text', aliases: ['symbol', 'pair', 'ticker', 'instrument', 'asset', 'currency', 'market', 'coin', 'stock', 'forex', 'crypto', 'name', 'trade'] },
+    { id: 'pnl', label: 'PnL ($)', type: 'number', aliases: ['pnl', 'p&l', 'p/l', 'profit', 'profit/loss', 'profit loss', 'net profit', 'net pnl', 'gain', 'return', 'amount', 'realized', 'realised', 'result', 'earnings', 'money', 'value', '$', 'usd', 'gbp', 'eur', 'returns'] },
+    { id: 'outcome', label: 'W/L', type: 'select', aliases: ['outcome', 'win/loss', 'w/l', 'win loss', 'trade result', 'won/lost', 'status', 'success', 'winner', 'loser'] },
+    { id: 'direction', label: 'Direction', type: 'select', aliases: ['direction', 'side', 'position', 'long/short', 'buy/sell', 'trade type', 'order type', 'action', 'order', 'bias'] },
+    { id: 'rr', label: 'RR', type: 'number', aliases: ['rr', 'r:r', 'risk reward', 'risk/reward', 'r/r', 'reward ratio', 'risk to reward', 'r', 'reward', 'ratio'] },
+    { id: 'date', label: 'Date', type: 'date', aliases: ['date', 'trade date', 'entry date', 'open date', 'day', 'opened', 'entry', 'when', 'datetime', 'timestamp', 'time stamp', 'open', 'created', 'executed'] },
+    { id: 'time', label: 'Time', type: 'time', aliases: ['time', 'entry time', 'open time', 'trade time', 'clock', 'hour'] },
+    { id: 'riskPercent', label: '% Risk', type: 'number', aliases: ['risk', 'risk %', '% risk', 'risk percent', 'lot size', 'position size', 'size', 'lots', 'volume', 'qty', 'quantity', 'units'] },
+    { id: 'confidence', label: 'Confidence', type: 'select', aliases: ['confidence', 'conviction', 'certainty', 'conf', 'sure', 'feeling'] },
+    { id: 'session', label: 'Session', type: 'select', aliases: ['session', 'market session', 'trading session', 'london', 'new york', 'asian', 'sydney'] },
+    { id: 'timeframe', label: 'Timeframe', type: 'select', aliases: ['timeframe', 'time frame', 'chart', 'tf', 'period', 'interval', 'candle', 'candles'] },
+    { id: 'notes', label: 'Notes', type: 'textarea', aliases: ['notes', 'comments', 'description', 'remarks', 'thoughts', 'analysis', 'review', 'journal', 'memo', 'text', 'comment', 'note', 'reason', 'why', 'setup'] },
+    { id: 'rating', label: 'Rating', type: 'rating', aliases: ['rating', 'score', 'grade', 'quality', 'stars', 'rank', 'points'] }
   ]
+
+  // Parse various date formats (DD/MM/YYYY, D/M/YY, MM-DD-YYYY, etc.)
+  function parseFlexibleDate(value) {
+    if (!value) return null
+    const strValue = String(value).trim()
+
+    // Excel serial date (number > 10000)
+    if (!isNaN(value) && parseFloat(value) > 10000) {
+      const excelEpoch = new Date(1899, 11, 30)
+      const parsed = new Date(excelEpoch.getTime() + parseFloat(value) * 86400000)
+      if (!isNaN(parsed.getTime())) return parsed
+    }
+
+    // Try ISO format first (YYYY-MM-DD)
+    if (/^\d{4}-\d{1,2}-\d{1,2}/.test(strValue)) {
+      const parsed = new Date(strValue)
+      if (!isNaN(parsed.getTime())) return parsed
+    }
+
+    // Handle DD/MM/YYYY, DD-MM-YYYY, DD.MM.YYYY (and single digit variants)
+    const dmyMatch = strValue.match(/^(\d{1,2})[\/\-\.](\d{1,2})[\/\-\.](\d{2,4})$/)
+    if (dmyMatch) {
+      let [, d, m, y] = dmyMatch
+      d = parseInt(d); m = parseInt(m); y = parseInt(y)
+      // Handle 2-digit year
+      if (y < 100) y += y < 50 ? 2000 : 1900
+      // Assume DD/MM/YYYY if day > 12, otherwise could be ambiguous
+      // Default to DD/MM/YYYY (more common internationally)
+      if (d <= 31 && m <= 12) {
+        const parsed = new Date(y, m - 1, d)
+        if (!isNaN(parsed.getTime())) return parsed
+      }
+      // Try MM/DD/YYYY if first didn't work
+      if (m <= 31 && d <= 12) {
+        const parsed = new Date(y, d - 1, m)
+        if (!isNaN(parsed.getTime())) return parsed
+      }
+    }
+
+    // Handle YYYY/MM/DD
+    const ymdMatch = strValue.match(/^(\d{4})[\/\-\.](\d{1,2})[\/\-\.](\d{1,2})$/)
+    if (ymdMatch) {
+      const [, y, m, d] = ymdMatch
+      const parsed = new Date(parseInt(y), parseInt(m) - 1, parseInt(d))
+      if (!isNaN(parsed.getTime())) return parsed
+    }
+
+    // Handle month names: "25 Jan 2024", "Jan 25, 2024", "25-Jan-24"
+    const monthNames = { jan: 0, feb: 1, mar: 2, apr: 3, may: 4, jun: 5, jul: 6, aug: 7, sep: 8, oct: 9, nov: 10, dec: 11 }
+    const monthMatch = strValue.toLowerCase().match(/(\d{1,2})[\s\-\/]*(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*[\s\-\/,]*(\d{2,4})/i)
+    if (monthMatch) {
+      let [, d, mon, y] = monthMatch
+      d = parseInt(d); y = parseInt(y)
+      if (y < 100) y += y < 50 ? 2000 : 1900
+      const parsed = new Date(y, monthNames[mon], d)
+      if (!isNaN(parsed.getTime())) return parsed
+    }
+    const monthMatch2 = strValue.toLowerCase().match(/(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*[\s\-\/]*(\d{1,2})[\s,\-\/]+(\d{2,4})/i)
+    if (monthMatch2) {
+      let [, mon, d, y] = monthMatch2
+      d = parseInt(d); y = parseInt(y)
+      if (y < 100) y += y < 50 ? 2000 : 1900
+      const parsed = new Date(y, monthNames[mon], d)
+      if (!isNaN(parsed.getTime())) return parsed
+    }
+
+    // Fallback to native Date parsing
+    const fallback = new Date(strValue)
+    if (!isNaN(fallback.getTime())) return fallback
+
+    return null
+  }
+
+  // Parse PnL value (handles $, %, various formats)
+  function parsePnlValue(value, startingBalance = 0) {
+    if (value === null || value === undefined || value === '') return { value: 0, isPercent: false }
+    const strValue = String(value).trim()
+
+    // Check if it's a percentage
+    const isPercent = strValue.includes('%')
+
+    // Remove currency symbols and formatting
+    let cleanedValue = strValue
+      .replace(/[$€£¥₹₽¥₩]/g, '') // Currency symbols
+      .replace(/%/g, '')           // Percent sign
+      .replace(/,/g, '')           // Thousands separator
+      .replace(/\s/g, '')          // Whitespace
+      .replace(/^\((.+)\)$/, '-$1') // Accounting format (500) -> -500
+
+    const parsed = parseFloat(cleanedValue)
+    if (isNaN(parsed)) return { value: 0, isPercent: false }
+
+    return { value: parsed, isPercent }
+  }
 
   function handleImportFile(file) {
     setImportError('')
@@ -451,6 +545,7 @@ export default function DashboardPage() {
       }).select().single()
       if (accountError) throw accountError
       // Process and insert trades
+      const startingBal = parseFloat(importStartingBalance) || 0
       const tradesToInsert = []
       for (const row of importData) {
         const trade = { account_id: accountData.id }
@@ -462,39 +557,35 @@ export default function DashboardPage() {
           // Map to trade fields or extra_data
           if (['symbol', 'pnl', 'outcome', 'direction', 'rr', 'date'].includes(fieldId)) {
             if (fieldId === 'pnl') {
-              // Remove currency symbols and parse number
-              const cleanedValue = strValue.replace(/[$€£¥,\s]/g, '').replace(/^\((.+)\)$/, '-$1')
-              trade[fieldId] = parseFloat(cleanedValue) || 0
+              // Parse PnL (handles $, %, various formats)
+              const { value: pnlValue, isPercent } = parsePnlValue(strValue)
+              if (isPercent && startingBal > 0) {
+                // Convert percentage to dollar amount
+                trade[fieldId] = (pnlValue / 100) * startingBal
+              } else {
+                trade[fieldId] = pnlValue
+              }
             } else if (fieldId === 'rr') {
               // RR can be null if not provided
-              const cleanedValue = strValue.replace(/[$€£¥,\s]/g, '').replace(/^\((.+)\)$/, '-$1')
-              const parsed = parseFloat(cleanedValue)
-              trade[fieldId] = !isNaN(parsed) ? parsed : null
+              const { value: rrValue } = parsePnlValue(strValue)
+              trade[fieldId] = rrValue !== 0 ? rrValue : null
             }
             else if (fieldId === 'date') {
-              // Try to parse date
-              let parsedDate = null
-              if (!isNaN(value) && value > 10000) {
-                // Excel serial date
-                const excelEpoch = new Date(1899, 11, 30)
-                parsedDate = new Date(excelEpoch.getTime() + value * 86400000)
-              } else {
-                parsedDate = new Date(strValue)
-              }
-              if (parsedDate && !isNaN(parsedDate.getTime())) {
+              // Use flexible date parser
+              const parsedDate = parseFlexibleDate(value)
+              if (parsedDate) {
                 trade.date = parsedDate.toISOString().split('T')[0]
               }
             } else if (fieldId === 'outcome') {
               const lower = strValue.toLowerCase().trim()
-              if (lower.includes('win') || lower === 'w' || lower === '1' || lower === 'won') trade.outcome = 'win'
-              else if (lower.includes('loss') || lower.includes('lose') || lower.includes('lost') || lower === '-1' || lower === '0') trade.outcome = 'loss'
-              else if (lower.includes('be') || lower.includes('break') || lower.includes('even')) trade.outcome = 'breakeven'
+              if (lower.includes('win') || lower === 'w' || lower === '1' || lower === 'won' || lower === 'profit' || lower === 'tp' || lower === 'target') trade.outcome = 'win'
+              else if (lower.includes('loss') || lower.includes('lose') || lower.includes('lost') || lower === '-1' || lower === '0' || lower === 'sl' || lower === 'stop') trade.outcome = 'loss'
+              else if (lower.includes('be') || lower.includes('break') || lower.includes('even') || lower === 'scratch') trade.outcome = 'breakeven'
               else trade.outcome = strValue
             } else if (fieldId === 'direction') {
               const lower = strValue.toLowerCase().trim()
-              if (lower.includes('long') || lower.includes('buy') || lower === 'b') trade.direction = 'long'
-              else if (lower.includes('short') || lower.includes('sell') || lower === 's') trade.direction = 'short'
-              // 'l' alone is ambiguous - check if it looks like long based on context
+              if (lower.includes('long') || lower.includes('buy') || lower === 'b' || lower === 'bull' || lower === 'bullish' || lower === 'call') trade.direction = 'long'
+              else if (lower.includes('short') || lower.includes('sell') || lower === 's' || lower === 'bear' || lower === 'bearish' || lower === 'put') trade.direction = 'short'
               else if (lower === 'l') trade.direction = 'long'
               else trade.direction = strValue
             } else {
