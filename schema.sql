@@ -286,13 +286,18 @@ CREATE POLICY "notes_all" ON notes
 -- Uses SECURITY DEFINER to bypass RLS (prevents infinite recursion)
 -- =====================================================
 CREATE OR REPLACE FUNCTION is_admin()
-RETURNS boolean AS $$
+RETURNS boolean
+LANGUAGE sql
+SECURITY DEFINER
+STABLE
+SET search_path = public
+AS $$
   SELECT EXISTS (
-    SELECT 1 FROM profiles
+    SELECT 1 FROM public.profiles
     WHERE id = auth.uid()
     AND subscription_status = 'admin'
   );
-$$ LANGUAGE sql SECURITY DEFINER STABLE;
+$$;
 
 -- =====================================================
 -- ADMIN POLICIES
