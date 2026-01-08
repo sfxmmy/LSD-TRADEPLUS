@@ -2306,10 +2306,9 @@ export default function AccountPage() {
                             </select>
                             <select value={graphGroupBy} onChange={e => setGraphGroupBy(e.target.value)} style={{ padding: '4px 8px', background: '#141418', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '4px', color: '#fff', fontSize: '11px', boxShadow: '0 0 4px rgba(255,255,255,0.1)' }}>
                               <option value="symbol">Pairs</option>
-                              <option value="direction">Direction</option>
-                              <option value="session">Session</option>
-                              <option value="confidence">Confidence</option>
-                              <option value="timeframe">Timeframe</option>
+                              {inputs.filter(inp => inp.type === 'select' && inp.enabled).map(inp => (
+                                <option key={inp.id} value={inp.id}>{inp.label}</option>
+                              ))}
                             </select>
                             <button onClick={() => setEnlargedChart(enlargedChart === 'bar' ? null : 'bar')} style={{ background: '#1a1a22', border: '1px solid #2a2a35', borderRadius: '4px', padding: '4px 8px', color: '#999', fontSize: '10px', cursor: 'pointer' }}>⛶</button>
                           </div>
@@ -3740,9 +3739,9 @@ export default function AccountPage() {
                     </select>
                     <select value={graphGroupBy} onChange={e => setGraphGroupBy(e.target.value)} style={{ padding: '4px 8px', background: '#141418', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '4px', color: '#fff', fontSize: '11px', boxShadow: '0 0 4px rgba(255,255,255,0.1)' }}>
                       <option value="symbol">Pairs</option>
-                      <option value="direction">Direction</option>
-                      <option value="session">Session</option>
-                      <option value="confidence">Confidence</option>
+                      {inputs.filter(inp => inp.type === 'select' && inp.enabled).map(inp => (
+                        <option key={inp.id} value={inp.id}>{inp.label}</option>
+                      ))}
                     </select>
                   </>
                 )}
