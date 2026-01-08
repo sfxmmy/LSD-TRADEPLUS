@@ -89,9 +89,17 @@ export default function DashboardPage() {
   const [balance, setBalance] = useState('')
   const [profitTarget, setProfitTarget] = useState('')
   const [maxDrawdown, setMaxDrawdown] = useState('')
+  const [drawdownType, setDrawdownType] = useState('static')
+  const [trailingMode, setTrailingMode] = useState('eod')
+  const [consistencyEnabled, setConsistencyEnabled] = useState(false)
+  const [consistencyPct, setConsistencyPct] = useState('30')
   const [editName, setEditName] = useState('')
   const [editProfitTarget, setEditProfitTarget] = useState('')
   const [editMaxDrawdown, setEditMaxDrawdown] = useState('')
+  const [editDrawdownType, setEditDrawdownType] = useState('static')
+  const [editTrailingMode, setEditTrailingMode] = useState('eod')
+  const [editConsistencyEnabled, setEditConsistencyEnabled] = useState(false)
+  const [editConsistencyPct, setEditConsistencyPct] = useState('30')
   const [creating, setCreating] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
   const [viewMode, setViewMode] = useState('cards') // 'cards' or 'list'
@@ -255,12 +263,16 @@ export default function DashboardPage() {
       name: name.trim(),
       starting_balance: parseFloat(balance) || 0,
       profit_target: profitTarget ? parseFloat(profitTarget) : null,
-      max_drawdown: maxDrawdown ? parseFloat(maxDrawdown) : null
+      max_drawdown: maxDrawdown ? parseFloat(maxDrawdown) : null,
+      drawdown_type: drawdownType,
+      trailing_mode: trailingMode,
+      consistency_enabled: consistencyEnabled,
+      consistency_pct: consistencyPct ? parseFloat(consistencyPct) : 30
     }).select().single()
     if (error) { alert('Error: ' + error.message); setCreating(false); return }
     setAccounts([...accounts, data])
     setTrades({ ...trades, [data.id]: [] })
-    setName(''); setBalance(''); setProfitTarget(''); setMaxDrawdown(''); setShowModal(false); setCreating(false)
+    setName(''); setBalance(''); setProfitTarget(''); setMaxDrawdown(''); setDrawdownType('static'); setTrailingMode('eod'); setConsistencyEnabled(false); setConsistencyPct('30'); setShowModal(false); setCreating(false)
   }
 
   async function updateAccount(accountId) {
@@ -269,15 +281,23 @@ export default function DashboardPage() {
     await supabase.from('accounts').update({
       name: editName.trim(),
       profit_target: editProfitTarget ? parseFloat(editProfitTarget) : null,
-      max_drawdown: editMaxDrawdown ? parseFloat(editMaxDrawdown) : null
+      max_drawdown: editMaxDrawdown ? parseFloat(editMaxDrawdown) : null,
+      drawdown_type: editDrawdownType,
+      trailing_mode: editTrailingMode,
+      consistency_enabled: editConsistencyEnabled,
+      consistency_pct: editConsistencyPct ? parseFloat(editConsistencyPct) : 30
     }).eq('id', accountId)
     setAccounts(accounts.map(a => a.id === accountId ? {
       ...a,
       name: editName.trim(),
       profit_target: editProfitTarget ? parseFloat(editProfitTarget) : null,
-      max_drawdown: editMaxDrawdown ? parseFloat(editMaxDrawdown) : null
+      max_drawdown: editMaxDrawdown ? parseFloat(editMaxDrawdown) : null,
+      drawdown_type: editDrawdownType,
+      trailing_mode: editTrailingMode,
+      consistency_enabled: editConsistencyEnabled,
+      consistency_pct: editConsistencyPct ? parseFloat(editConsistencyPct) : 30
     } : a))
-    setShowEditModal(null); setEditName(''); setEditProfitTarget(''); setEditMaxDrawdown('')
+    setShowEditModal(null); setEditName(''); setEditProfitTarget(''); setEditMaxDrawdown(''); setEditDrawdownType('static'); setEditTrailingMode('eod'); setEditConsistencyEnabled(false); setEditConsistencyPct('30')
   }
 
   async function deleteAccount(accountId) {
@@ -1472,7 +1492,7 @@ export default function DashboardPage() {
                         <td style={{ padding: '14px 16px' }}>
                           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                             <span style={{ fontSize: '15px', fontWeight: 600, color: '#fff' }}>{account.name}</span>
-                            <button onClick={(e) => { e.stopPropagation(); setEditName(account.name); setEditProfitTarget(account.profit_target || ''); setEditMaxDrawdown(account.max_drawdown || ''); setShowEditModal(account.id) }} style={{ background: 'transparent', border: 'none', cursor: 'pointer', padding: '2px' }}>
+                            <button onClick={(e) => { e.stopPropagation(); setEditName(account.name); setEditProfitTarget(account.profit_target || ''); setEditMaxDrawdown(account.max_drawdown || ''); setEditDrawdownType(account.drawdown_type || 'static'); setEditTrailingMode(account.trailing_mode || 'eod'); setEditConsistencyEnabled(account.consistency_enabled || false); setEditConsistencyPct(account.consistency_pct || '30'); setShowEditModal(account.id) }} style={{ background: 'transparent', border: 'none', cursor: 'pointer', padding: '2px' }}>
                               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#666" strokeWidth="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" /><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" /></svg>
                             </button>
                           </div>
@@ -1519,7 +1539,7 @@ export default function DashboardPage() {
                   <div style={{ padding: isMobile ? '14px 16px' : '20px 24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: isMobile ? '10px' : '14px' }}>
                       <span style={{ fontSize: isMobile ? '20px' : '28px', fontWeight: 700, color: '#fff' }}>{account.name}</span>
-                      <button onClick={(e) => { e.stopPropagation(); setEditName(account.name); setEditProfitTarget(account.profit_target || ''); setEditMaxDrawdown(account.max_drawdown || ''); setShowEditModal(account.id) }} style={{ background: 'transparent', border: 'none', cursor: 'pointer', padding: '4px' }}>
+                      <button onClick={(e) => { e.stopPropagation(); setEditName(account.name); setEditProfitTarget(account.profit_target || ''); setEditMaxDrawdown(account.max_drawdown || ''); setEditDrawdownType(account.drawdown_type || 'static'); setEditTrailingMode(account.trailing_mode || 'eod'); setEditConsistencyEnabled(account.consistency_enabled || false); setEditConsistencyPct(account.consistency_pct || '30'); setShowEditModal(account.id) }} style={{ background: 'transparent', border: 'none', cursor: 'pointer', padding: '4px' }}>
                         <svg width={isMobile ? '14' : '18'} height={isMobile ? '14' : '18'} viewBox="0 0 24 24" fill="none" stroke="#666" strokeWidth="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" /><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" /></svg>
                       </button>
                     </div>
@@ -1714,9 +1734,17 @@ export default function DashboardPage() {
               <div style={{ marginBottom: '14px' }}><label style={{ display: 'block', fontSize: '11px', color: '#999', marginBottom: '6px', textTransform: 'uppercase' }}>Journal Name</label><input type="text" value={name} onChange={e => setName(e.target.value)} placeholder="e.g. FTMO 10k" autoFocus style={{ width: '100%', padding: '12px 14px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '14px', boxSizing: 'border-box' }} /></div>
               <div style={{ marginBottom: '14px' }}><label style={{ display: 'block', fontSize: '11px', color: '#999', marginBottom: '6px', textTransform: 'uppercase' }}>Starting Balance ($)</label><input type="number" value={balance} onChange={e => setBalance(e.target.value)} placeholder="e.g. 10000" style={{ width: '100%', padding: '12px 14px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '14px', boxSizing: 'border-box' }} /></div>
               <div style={{ fontSize: '11px', color: '#666', marginBottom: '10px', paddingTop: '8px', borderTop: '1px solid #1a1a22' }}>PROP FIRM RULES (Optional)</div>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '20px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '12px' }}>
                 <div><label style={{ display: 'block', fontSize: '11px', color: '#999', marginBottom: '6px', textTransform: 'uppercase' }}>Profit Target (%)</label><input type="number" step="0.1" value={profitTarget} onChange={e => setProfitTarget(e.target.value)} placeholder="e.g. 10" style={{ width: '100%', padding: '12px 14px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '14px', boxSizing: 'border-box' }} /></div>
                 <div><label style={{ display: 'block', fontSize: '11px', color: '#999', marginBottom: '6px', textTransform: 'uppercase' }}>Max Drawdown (%)</label><input type="number" step="0.1" value={maxDrawdown} onChange={e => setMaxDrawdown(e.target.value)} placeholder="e.g. 10" style={{ width: '100%', padding: '12px 14px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '14px', boxSizing: 'border-box' }} /></div>
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '12px' }}>
+                <div><label style={{ display: 'block', fontSize: '11px', color: '#999', marginBottom: '6px', textTransform: 'uppercase' }}>Drawdown Type</label><select value={drawdownType} onChange={e => setDrawdownType(e.target.value)} style={{ width: '100%', padding: '12px 14px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '14px', boxSizing: 'border-box' }}><option value="static">Static (Balance)</option><option value="trailing">Trailing (Equity)</option></select></div>
+                {drawdownType === 'trailing' && <div><label style={{ display: 'block', fontSize: '11px', color: '#999', marginBottom: '6px', textTransform: 'uppercase' }}>Trailing Mode</label><select value={trailingMode} onChange={e => setTrailingMode(e.target.value)} style={{ width: '100%', padding: '12px 14px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '14px', boxSizing: 'border-box' }}><option value="eod">End of Day</option><option value="realtime">Real-time</option></select></div>}
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '20px' }}>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}><input type="checkbox" checked={consistencyEnabled} onChange={e => setConsistencyEnabled(e.target.checked)} style={{ width: '16px', height: '16px', accentColor: '#22c55e' }} /><span style={{ fontSize: '12px', color: '#999' }}>Consistency Rule</span></label>
+                {consistencyEnabled && <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><input type="number" value={consistencyPct} onChange={e => setConsistencyPct(e.target.value)} style={{ width: '60px', padding: '8px 10px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '13px', textAlign: 'center' }} /><span style={{ fontSize: '11px', color: '#666' }}>% max/day</span></div>}
               </div>
               <div style={{ display: 'flex', gap: '12px' }}><button onClick={createJournal} disabled={creating || !name.trim() || !balance} style={{ flex: 1, padding: '12px', background: '#22c55e', border: 'none', borderRadius: '6px', color: '#fff', fontWeight: 600, fontSize: '14px', cursor: 'pointer', opacity: (creating || !name.trim() || !balance) ? 0.5 : 1 }}>{creating ? 'Creating...' : 'Create'}</button><button onClick={() => { setShowModal(false); setName(''); setBalance(''); setProfitTarget(''); setMaxDrawdown('') }} style={{ flex: 1, padding: '12px', background: 'transparent', border: '1px solid #1a1a22', borderRadius: '6px', color: '#999', fontWeight: 600, fontSize: '14px', cursor: 'pointer' }}>Cancel</button></div>
             </div>
@@ -1729,9 +1757,17 @@ export default function DashboardPage() {
               <h2 style={{ fontSize: '18px', fontWeight: 600, marginBottom: '20px' }}>Edit Journal</h2>
               <div style={{ marginBottom: '14px' }}><label style={{ display: 'block', fontSize: '11px', color: '#999', marginBottom: '6px', textTransform: 'uppercase' }}>Journal Name</label><input type="text" value={editName} onChange={e => setEditName(e.target.value)} autoFocus style={{ width: '100%', padding: '12px 14px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '14px', boxSizing: 'border-box' }} /></div>
               <div style={{ fontSize: '11px', color: '#666', marginBottom: '10px', paddingTop: '8px', borderTop: '1px solid #1a1a22' }}>PROP FIRM RULES</div>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '20px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '12px' }}>
                 <div><label style={{ display: 'block', fontSize: '11px', color: '#999', marginBottom: '6px', textTransform: 'uppercase' }}>Profit Target (%)</label><input type="number" step="0.1" value={editProfitTarget} onChange={e => setEditProfitTarget(e.target.value)} placeholder="e.g. 10" style={{ width: '100%', padding: '12px 14px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '14px', boxSizing: 'border-box' }} /></div>
                 <div><label style={{ display: 'block', fontSize: '11px', color: '#999', marginBottom: '6px', textTransform: 'uppercase' }}>Max Drawdown (%)</label><input type="number" step="0.1" value={editMaxDrawdown} onChange={e => setEditMaxDrawdown(e.target.value)} placeholder="e.g. 10" style={{ width: '100%', padding: '12px 14px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '14px', boxSizing: 'border-box' }} /></div>
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '12px' }}>
+                <div><label style={{ display: 'block', fontSize: '11px', color: '#999', marginBottom: '6px', textTransform: 'uppercase' }}>Drawdown Type</label><select value={editDrawdownType} onChange={e => setEditDrawdownType(e.target.value)} style={{ width: '100%', padding: '12px 14px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '14px', boxSizing: 'border-box' }}><option value="static">Static (Balance)</option><option value="trailing">Trailing (Equity)</option></select></div>
+                {editDrawdownType === 'trailing' && <div><label style={{ display: 'block', fontSize: '11px', color: '#999', marginBottom: '6px', textTransform: 'uppercase' }}>Trailing Mode</label><select value={editTrailingMode} onChange={e => setEditTrailingMode(e.target.value)} style={{ width: '100%', padding: '12px 14px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '14px', boxSizing: 'border-box' }}><option value="eod">End of Day</option><option value="realtime">Real-time</option></select></div>}
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '20px' }}>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}><input type="checkbox" checked={editConsistencyEnabled} onChange={e => setEditConsistencyEnabled(e.target.checked)} style={{ width: '16px', height: '16px', accentColor: '#22c55e' }} /><span style={{ fontSize: '12px', color: '#999' }}>Consistency Rule</span></label>
+                {editConsistencyEnabled && <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><input type="number" value={editConsistencyPct} onChange={e => setEditConsistencyPct(e.target.value)} style={{ width: '60px', padding: '8px 10px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '13px', textAlign: 'center' }} /><span style={{ fontSize: '11px', color: '#666' }}>% max/day</span></div>}
               </div>
               <div style={{ display: 'flex', gap: '12px', marginBottom: '16px' }}><button onClick={() => updateAccount(showEditModal)} disabled={!editName.trim()} style={{ flex: 1, padding: '12px', background: '#22c55e', border: 'none', borderRadius: '6px', color: '#fff', fontWeight: 600, fontSize: '14px', cursor: 'pointer', opacity: !editName.trim() ? 0.5 : 1 }}>Save</button><button onClick={() => { setShowEditModal(null); setEditName(''); setEditProfitTarget(''); setEditMaxDrawdown('') }} style={{ flex: 1, padding: '12px', background: 'transparent', border: '1px solid #1a1a22', borderRadius: '6px', color: '#999', fontWeight: 600, fontSize: '14px', cursor: 'pointer' }}>Cancel</button></div>
               <button onClick={() => { setShowDeleteModal(showEditModal); setShowEditModal(null) }} style={{ width: '100%', padding: '12px', background: 'transparent', border: '1px solid #ef4444', borderRadius: '6px', color: '#ef4444', fontWeight: 600, fontSize: '14px', cursor: 'pointer' }}>Delete Journal</button>

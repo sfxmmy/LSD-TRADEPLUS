@@ -48,3 +48,6 @@ These values are LOCKED. Do not change them under any circumstances:
 ## Content Centering Notes
 - DO NOT use marginTop on subheader elements - it affects layout
 - To shift content without moving borders: adjust top/bottom padding asymmetrically while keeping total the same
+
+# Schema and SQL stuff
+- All SQL has to be done in the schema file - I want one file that handles it all. 

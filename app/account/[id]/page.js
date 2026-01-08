@@ -958,6 +958,100 @@ export default function AccountPage() {
     return { amount: dd, pct: ddPct, peak }
   })()
 
+  // Prop firm drawdown calculation
+  const propFirmDrawdown = (() => {
+    if (!account?.max_drawdown) return null
+    const maxDDPct = parseFloat(account.max_drawdown) || 0
+    const ddType = account.drawdown_type || 'static'
+    const trailingMode = account.trailing_mode || 'eod'
+
+    if (trades.length === 0) {
+      const floor = startingBalance * (1 - maxDDPct / 100)
+      return { floor, remaining: currentBalance - floor, usedPct: 0, breached: false, breachDate: null, breachBalance: null, floorHistory: [{ date: null, floor, balance: startingBalance }] }
+    }
+
+    const sorted = [...trades].sort((a, b) => new Date(a.date) - new Date(b.date))
+    let floor = startingBalance * (1 - maxDDPct / 100)
+    let breached = false
+    let breachDate = null
+    let breachBalance = null
+    const floorHistory = [{ date: null, floor, balance: startingBalance }]
+
+    if (ddType === 'static') {
+      // Static: floor never changes from initial calculation
+      let runningBal = startingBalance
+      sorted.forEach(t => {
+        runningBal += parseFloat(t.pnl) || 0
+        if (!breached && runningBal < floor) { breached = true; breachDate = t.date; breachBalance = runningBal }
+        floorHistory.push({ date: t.date, floor, balance: runningBal })
+      })
+    } else {
+      // Trailing drawdown
+      if (trailingMode === 'eod') {
+        // EOD: floor only updates at end of day
+        const byDay = {}
+        let runningBal = startingBalance
+        sorted.forEach(t => {
+          runningBal += parseFloat(t.pnl) || 0
+          byDay[t.date] = runningBal
+        })
+        let peakEOD = startingBalance
+        Object.entries(byDay).sort((a, b) => new Date(a[0]) - new Date(b[0])).forEach(([date, balance]) => {
+          if (balance > peakEOD) { peakEOD = balance; floor = peakEOD * (1 - maxDDPct / 100) }
+          if (!breached && balance < floor) { breached = true; breachDate = date; breachBalance = balance }
+          floorHistory.push({ date, floor, balance })
+        })
+      } else {
+        // Real-time: floor updates after each trade
+        let runningBal = startingBalance
+        let peak = startingBalance
+        sorted.forEach(t => {
+          runningBal += parseFloat(t.pnl) || 0
+          if (runningBal > peak) { peak = runningBal; floor = peak * (1 - maxDDPct / 100) }
+          if (!breached && runningBal < floor) { breached = true; breachDate = t.date; breachBalance = runningBal }
+          floorHistory.push({ date: t.date, floor, balance: runningBal })
+        })
+      }
+    }
+
+    const maxAllowedDD = startingBalance * (maxDDPct / 100)
+    const currentDDFromFloor = Math.max(0, floor - currentBalance)
+    const usedPct = breached ? 100 : maxAllowedDD > 0 ? Math.min(100, (currentDDFromFloor / maxAllowedDD) * 100) : 0
+
+    return { floor, remaining: currentBalance - floor, usedPct, breached, breachDate, breachBalance, floorHistory, ddType, trailingMode }
+  })()
+
+  // Consistency rule check
+  const consistencyCheck = (() => {
+    if (!account?.consistency_enabled) return null
+    const pct = parseFloat(account.consistency_pct) || 30
+    const profitTotal = Math.max(0, totalPnl)
+    if (profitTotal === 0) return { passed: true, maxAllowed: 0, violations: [], pct }
+
+    const maxAllowedPerDay = profitTotal * (pct / 100)
+    const dailyPnL = {}
+    trades.forEach(t => { dailyPnL[t.date] = (dailyPnL[t.date] || 0) + (parseFloat(t.pnl) || 0) })
+
+    const violations = Object.entries(dailyPnL)
+      .filter(([_, pnl]) => pnl > maxAllowedPerDay)
+      .map(([date, pnl]) => ({ date, pnl, limit: maxAllowedPerDay }))
+
+    return { passed: violations.length === 0, maxAllowed: maxAllowedPerDay, violations, pct }
+  })()
+
+  // Challenge status
+  const challengeStatus = (() => {
+    if (!account?.profit_target && !account?.max_drawdown) return null
+    const ddBreached = propFirmDrawdown?.breached
+    const consistencyFailed = consistencyCheck && !consistencyCheck.passed
+    const targetReached = distanceFromTarget?.passed
+
+    if (ddBreached) return { status: 'FAILED', reason: 'Drawdown breached', color: '#ef4444' }
+    if (consistencyFailed) return { status: 'FAILED', reason: 'Consistency rule violated', color: '#ef4444' }
+    if (targetReached) return { status: 'PASSED', reason: 'Profit target reached', color: '#22c55e' }
+    return { status: 'IN PROGRESS', reason: 'Challenge ongoing', color: '#f59e0b' }
+  })()
+
   // Additional stats calculations
   const peakBalance = currentDrawdown.peak || startingBalance
   const uniqueSymbols = [...new Set(trades.map(t => t.symbol))].length
@@ -1876,6 +1970,9 @@ export default function AccountPage() {
                             const zeroY = hasNegative ? ((yMax - 0) / yRange) * 100 : null
                             // Starting balance line - always show if within range
                             const startLineY = equityCurveGroupBy === 'total' && !hasNegative && displayStartingBalance >= yMin && displayStartingBalance <= yMax ? ((yMax - displayStartingBalance) / yRange) * 100 : null
+                            // Drawdown floor line - show if prop firm settings configured
+                            const ddFloor = propFirmDrawdown?.floor
+                            const ddFloorY = equityCurveGroupBy === 'total' && ddFloor && ddFloor >= yMin && ddFloor <= yMax ? ((yMax - ddFloor) / yRange) * 100 : null
 
                             const svgW = 100, svgH = 100
 
@@ -1978,6 +2075,13 @@ export default function AccountPage() {
                                         <div style={{ position: 'absolute', right: 0, top: `${startLineY}%`, width: '4px', borderTop: '1px solid #22c55e' }} />
                                       </Fragment>
                                     )}
+                                    {/* Red DD floor value on Y-axis */}
+                                    {ddFloorY !== null && (
+                                      <Fragment>
+                                        <span style={{ position: 'absolute', right: '5px', top: `${ddFloorY}%`, transform: 'translateY(-50%)', fontSize: '8px', color: propFirmDrawdown?.breached ? '#ef4444' : '#f59e0b', lineHeight: 1, textAlign: 'right', fontWeight: 600 }}>{ddFloor >= 1000000 ? `$${(ddFloor/1000000).toFixed(1)}M` : ddFloor >= 1000 ? `$${(ddFloor/1000).toFixed(0)}k` : `$${ddFloor}`}</span>
+                                        <div style={{ position: 'absolute', right: 0, top: `${ddFloorY}%`, width: '4px', borderTop: `1px solid ${propFirmDrawdown?.breached ? '#ef4444' : '#f59e0b'}` }} />
+                                      </Fragment>
+                                    )}
                                   </div>
                                   {/* Chart area */}
                                   <div style={{ flex: 1, position: 'relative', overflow: 'visible', borderBottom: '1px solid #2a2a35' }}>
@@ -2002,6 +2106,16 @@ export default function AccountPage() {
                                     {startLineY !== null && (
                                       <span style={{ position: 'absolute', right: '4px', top: `${startLineY}%`, transform: 'translateY(-50%)', fontSize: '9px', color: '#666', fontWeight: 500 }}>
                                         Start
+                                      </span>
+                                    )}
+                                    {/* Drawdown floor line - dashed orange/red */}
+                                    {ddFloorY !== null && (
+                                      <div style={{ position: 'absolute', left: 0, right: '38px', top: `${ddFloorY}%`, borderTop: `1px dashed ${propFirmDrawdown?.breached ? '#ef4444' : '#f59e0b'}`, zIndex: 1 }} />
+                                    )}
+                                    {/* DD Floor label */}
+                                    {ddFloorY !== null && (
+                                      <span style={{ position: 'absolute', right: '4px', top: `${ddFloorY}%`, transform: 'translateY(-50%)', fontSize: '9px', color: propFirmDrawdown?.breached ? '#ef4444' : '#f59e0b', fontWeight: 500 }}>
+                                        {propFirmDrawdown?.breached ? 'BREACHED' : 'DD Floor'}
                                       </span>
                                     )}
                                     <svg style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', overflow: 'visible', zIndex: 2 }} viewBox={`0 0 ${svgW} ${svgH}`} preserveAspectRatio="none"
@@ -2789,6 +2903,66 @@ export default function AccountPage() {
                 <StatBox label="Custom Notes" value={customNotesCount} color="#fff" />
                 <StatBox label="Total Notes" value={dailyNotesCount + weeklyNotesCount + customNotesCount} color="#fff" />
               </div>
+              {/* Prop Firm Challenge Progress */}
+              {challengeStatus && (
+                <div style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '14px', gridColumn: '1 / -1' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '12px' }}>
+                    <span style={{ background: challengeStatus.color, padding: '3px 10px', borderRadius: '4px', fontSize: '10px', fontWeight: 600, color: '#fff', textTransform: 'uppercase' }}>{challengeStatus.status}</span>
+                    <span style={{ fontSize: '13px', fontWeight: 600, color: '#fff' }}>Prop Firm Challenge</span>
+                    <span style={{ fontSize: '11px', color: '#666', marginLeft: 'auto' }}>{challengeStatus.reason}</span>
+                  </div>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '16px' }}>
+                    {/* Profit Target Progress */}
+                    {account?.profit_target && (
+                      <div>
+                        <div style={{ fontSize: '10px', color: '#888', marginBottom: '6px', textTransform: 'uppercase' }}>Profit Target ({account.profit_target}%)</div>
+                        <div style={{ background: '#1a1a22', borderRadius: '4px', height: '10px', overflow: 'hidden', marginBottom: '6px' }}>
+                          <div style={{ width: `${Math.min(100, distanceFromTarget?.passed ? 100 : ((totalPnl / (startingBalance * account.profit_target / 100)) * 100) || 0)}%`, height: '100%', background: distanceFromTarget?.passed ? '#22c55e' : '#3b82f6', transition: 'width 0.3s' }} />
+                        </div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px' }}>
+                          <span style={{ color: '#aaa' }}>${Math.round(totalPnl).toLocaleString()} / ${Math.round(startingBalance * account.profit_target / 100).toLocaleString()}</span>
+                          <span style={{ color: distanceFromTarget?.passed ? '#22c55e' : '#3b82f6', fontWeight: 600 }}>{distanceFromTarget?.passed ? 'PASSED' : `${distanceFromTarget?.pct || '0'}% to go`}</span>
+                        </div>
+                      </div>
+                    )}
+                    {/* Drawdown Status */}
+                    {propFirmDrawdown && (
+                      <div>
+                        <div style={{ fontSize: '10px', color: '#888', marginBottom: '6px', textTransform: 'uppercase' }}>{propFirmDrawdown.ddType === 'trailing' ? 'Trailing' : 'Max'} Drawdown ({account.max_drawdown}%){propFirmDrawdown.ddType === 'trailing' && <span style={{ marginLeft: '4px', fontSize: '9px', color: '#666' }}>({propFirmDrawdown.trailingMode === 'eod' ? 'EOD' : 'Real-time'})</span>}</div>
+                        <div style={{ background: '#1a1a22', borderRadius: '4px', height: '10px', overflow: 'hidden', marginBottom: '6px' }}>
+                          <div style={{ width: `${propFirmDrawdown.usedPct}%`, height: '100%', background: propFirmDrawdown.breached ? '#ef4444' : propFirmDrawdown.usedPct > 80 ? '#ef4444' : propFirmDrawdown.usedPct > 50 ? '#f59e0b' : '#22c55e', transition: 'width 0.3s' }} />
+                        </div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px' }}>
+                          <span style={{ color: '#aaa' }}>Floor: ${Math.round(propFirmDrawdown.floor).toLocaleString()}</span>
+                          <span style={{ color: propFirmDrawdown.breached ? '#ef4444' : propFirmDrawdown.remaining < 0 ? '#ef4444' : '#22c55e', fontWeight: 600 }}>{propFirmDrawdown.breached ? 'BREACHED' : `$${Math.round(propFirmDrawdown.remaining).toLocaleString()} remaining`}</span>
+                        </div>
+                      </div>
+                    )}
+                    {/* Consistency Rule */}
+                    {consistencyCheck && (
+                      <div>
+                        <div style={{ fontSize: '10px', color: '#888', marginBottom: '6px', textTransform: 'uppercase' }}>Consistency Rule ({consistencyCheck.pct}%)</div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+                          <span style={{ fontSize: '13px', color: consistencyCheck.passed ? '#22c55e' : '#ef4444', fontWeight: 600 }}>{consistencyCheck.passed ? '✓ Passing' : `✗ ${consistencyCheck.violations.length} violation(s)`}</span>
+                        </div>
+                        <div style={{ fontSize: '11px', color: '#666' }}>Max per day: ${Math.round(consistencyCheck.maxAllowed).toLocaleString()}</div>
+                        {!consistencyCheck.passed && consistencyCheck.violations.length > 0 && (
+                          <div style={{ fontSize: '10px', color: '#ef4444', marginTop: '4px' }}>
+                            {consistencyCheck.violations.slice(0, 2).map((v, i) => <div key={i}>{new Date(v.date).toLocaleDateString()} - ${Math.round(v.pnl)} (limit: ${Math.round(v.limit)})</div>)}
+                            {consistencyCheck.violations.length > 2 && <div>+{consistencyCheck.violations.length - 2} more</div>}
+                          </div>
+                        )}
+                      </div>
+                    )}
+                    {/* Current Status */}
+                    <div>
+                      <div style={{ fontSize: '10px', color: '#888', marginBottom: '6px', textTransform: 'uppercase' }}>Current Balance</div>
+                      <div style={{ fontSize: '18px', fontWeight: 700, color: currentBalance >= startingBalance ? '#22c55e' : '#ef4444', marginBottom: '4px' }}>${Math.round(currentBalance).toLocaleString()}</div>
+                      <div style={{ fontSize: '11px', color: '#666' }}>Started: ${Math.round(startingBalance).toLocaleString()}</div>
+                    </div>
+                  </div>
+                </div>
+              )}
               </div>
               {/* RIGHT: Visual widgets stacked */}
               <div style={{ width: '220px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
@@ -3795,6 +3969,9 @@ export default function AccountPage() {
                 const hasNegative = minBal < 0
                 const belowStartEnl = equityCurveGroupBy === 'total' && minBal < startingBalance
                 const zeroY = hasNegative ? ((yMax - 0) / yRange) * 100 : null
+                // Drawdown floor for enlarged chart
+                const ddFloorEnl = propFirmDrawdown?.floor
+                const ddFloorYEnl = equityCurveGroupBy === 'total' && ddFloorEnl && ddFloorEnl >= yMin && ddFloorEnl <= yMax ? ((yMax - ddFloorEnl) / yRange) * 100 : null
 
                 const yLabels = []
                 for (let v = yMax; v >= yMin; v -= yStep) yLabels.push(v)
@@ -3878,6 +4055,13 @@ export default function AccountPage() {
                             <div style={{ position: 'absolute', right: 0, top: `${(startYEnl / svgH) * 100}%`, width: '4px', borderTop: '1px solid #22c55e' }} />
                           </Fragment>
                         )}
+                        {/* DD Floor value on Y-axis */}
+                        {ddFloorYEnl !== null && (
+                          <Fragment>
+                            <span style={{ position: 'absolute', right: '5px', top: `${ddFloorYEnl}%`, transform: 'translateY(-50%)', fontSize: '10px', color: propFirmDrawdown?.breached ? '#ef4444' : '#f59e0b', textAlign: 'right', fontWeight: 600 }}>{ddFloorEnl >= 1000000 ? `$${(ddFloorEnl/1000000).toFixed(1)}M` : ddFloorEnl >= 1000 ? `$${(ddFloorEnl/1000).toFixed(0)}k` : `$${ddFloorEnl}`}</span>
+                            <div style={{ position: 'absolute', right: 0, top: `${ddFloorYEnl}%`, width: '4px', borderTop: `1px solid ${propFirmDrawdown?.breached ? '#ef4444' : '#f59e0b'}` }} />
+                          </Fragment>
+                        )}
                       </div>
                       {/* Chart area */}
                       <div style={{ flex: 1, position: 'relative', overflow: 'visible', borderBottom: '1px solid #2a2a35' }}>
@@ -3896,6 +4080,13 @@ export default function AccountPage() {
                             <>
                               <div style={{ position: 'absolute', left: 0, right: '38px', top: `${(startYEnl / svgH) * 100}%`, borderTop: '1px dashed #666', transform: 'translateY(-50%)', zIndex: 1 }} />
                               <span style={{ position: 'absolute', right: '4px', top: `${(startYEnl / svgH) * 100}%`, transform: 'translateY(-50%)', fontSize: '10px', color: '#666', fontWeight: 500 }}>Start</span>
+                            </>
+                          )}
+                          {/* DD Floor line - dashed orange/red horizontal line */}
+                          {ddFloorYEnl !== null && (
+                            <>
+                              <div style={{ position: 'absolute', left: 0, right: '55px', top: `${ddFloorYEnl}%`, borderTop: `1px dashed ${propFirmDrawdown?.breached ? '#ef4444' : '#f59e0b'}`, zIndex: 1 }} />
+                              <span style={{ position: 'absolute', right: '4px', top: `${ddFloorYEnl}%`, transform: 'translateY(-50%)', fontSize: '10px', color: propFirmDrawdown?.breached ? '#ef4444' : '#f59e0b', fontWeight: 500 }}>{propFirmDrawdown?.breached ? 'BREACHED' : 'DD Floor'}</span>
                             </>
                           )}
                           <svg style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', overflow: 'visible', zIndex: 2 }} viewBox={`0 0 ${svgW} ${svgH}`} preserveAspectRatio="none"

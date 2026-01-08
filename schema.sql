@@ -85,6 +85,10 @@ CREATE TABLE IF NOT EXISTS accounts (
   starting_balance DECIMAL(12,2) DEFAULT 0,
   profit_target DECIMAL(5,2) DEFAULT NULL,
   max_drawdown DECIMAL(5,2) DEFAULT NULL,
+  drawdown_type TEXT DEFAULT 'static',
+  trailing_mode TEXT DEFAULT 'eod',
+  consistency_enabled BOOLEAN DEFAULT FALSE,
+  consistency_pct DECIMAL(5,2) DEFAULT 30,
   custom_inputs JSONB DEFAULT NULL,
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
@@ -98,6 +102,18 @@ BEGIN
   END IF;
   IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'accounts' AND column_name = 'max_drawdown') THEN
     ALTER TABLE accounts ADD COLUMN max_drawdown DECIMAL(5,2) DEFAULT NULL;
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'accounts' AND column_name = 'drawdown_type') THEN
+    ALTER TABLE accounts ADD COLUMN drawdown_type TEXT DEFAULT 'static';
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'accounts' AND column_name = 'trailing_mode') THEN
+    ALTER TABLE accounts ADD COLUMN trailing_mode TEXT DEFAULT 'eod';
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'accounts' AND column_name = 'consistency_enabled') THEN
+    ALTER TABLE accounts ADD COLUMN consistency_enabled BOOLEAN DEFAULT FALSE;
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'accounts' AND column_name = 'consistency_pct') THEN
+    ALTER TABLE accounts ADD COLUMN consistency_pct DECIMAL(5,2) DEFAULT 30;
   END IF;
   IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'accounts' AND column_name = 'custom_inputs') THEN
     ALTER TABLE accounts ADD COLUMN custom_inputs JSONB DEFAULT NULL;
