@@ -518,10 +518,13 @@ export default function DashboardPage() {
             else if (uniqueValues.length <= 10 && uniqueValues.length < sampleValues.length * 0.5) fieldType = 'select'
           }
           // Generate unique fieldId to avoid collisions
+          // Reserved system field IDs that cannot be used for custom inputs
+          const reservedIds = ['symbol', 'pnl', 'outcome', 'direction', 'rr', 'date', 'time', 'notes', 'rating', 'account_id', 'id', 'extra_data', 'created_at']
           let baseId = header.toLowerCase().replace(/[^a-z0-9]/g, '_').replace(/_+/g, '_').replace(/^_|_$/g, '') || 'field'
           let fieldId = baseId
           let counter = 1
-          while (usedFieldIds.has(fieldId)) {
+          // Avoid collisions with existing IDs and reserved system fields
+          while (usedFieldIds.has(fieldId) || reservedIds.includes(fieldId)) {
             fieldId = `${baseId}_${counter}`
             counter++
           }
@@ -2478,6 +2481,30 @@ export default function DashboardPage() {
                       <span style={{ fontSize: '11px', color: '#3b82f6' }}>No date column mapped. All trades will use today's date.</span>
                     </div>
                   )}
+
+                  {/* Warning if PnL mapped but looks like percentages and no starting balance */}
+                  {Object.values(importMapping).includes('pnl') && !importStartingBalance && (() => {
+                    const pnlColIdx = Object.entries(importMapping).find(([_, v]) => v === 'pnl')?.[0]
+                    if (pnlColIdx !== undefined) {
+                      const samplePnls = importData.slice(0, 20).map(row => row[parseInt(pnlColIdx)]).filter(v => v != null)
+                      const hasPercent = samplePnls.some(v => String(v).includes('%'))
+                      const allSmall = samplePnls.length > 0 && samplePnls.every(v => {
+                        const num = parseFloat(String(v).replace(/[^0-9.\-]/g, ''))
+                        return !isNaN(num) && Math.abs(num) < 20
+                      })
+                      if (hasPercent || allSmall) {
+                        return (
+                          <div style={{ marginBottom: '16px', padding: '10px 12px', background: 'rgba(245,158,11,0.1)', border: '1px solid rgba(245,158,11,0.3)', borderRadius: '8px', display: 'flex', alignItems: 'flex-start', gap: '10px' }}>
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" strokeWidth="2" style={{ flexShrink: 0, marginTop: '2px' }}><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                            <span style={{ fontSize: '11px', color: '#f59e0b' }}>
+                              <strong>PnL values look like percentages.</strong> Enter a Starting Balance above to convert % to $ amounts, or values will be used as-is.
+                            </span>
+                          </div>
+                        )
+                      }
+                    }
+                    return null
+                  })()}
                   <div style={{ maxHeight: '300px', overflow: 'auto', marginBottom: '20px' }}>
                     {importHeaders.map((header, idx) => (
                       <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '10px 12px', background: importMapping[idx] ? 'rgba(147,51,234,0.05)' : '#0a0a0f', border: `1px solid ${importMapping[idx] ? 'rgba(147,51,234,0.3)' : '#1a1a22'}`, borderRadius: '8px', marginBottom: '8px' }}>
