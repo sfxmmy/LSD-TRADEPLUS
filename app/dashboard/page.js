@@ -942,15 +942,15 @@ export default function DashboardPage() {
                   <stop offset="100%" stopColor="#ef4444" stopOpacity="0" />
                 </linearGradient>
               </defs>
-              {/* Start line inside SVG - ends before label */}
-              {startLineY !== null && (
-                <line x1="0" y1={startY} x2={svgW * 0.985} y2={startY} stroke="#666" strokeWidth="1" strokeDasharray="4,3" vectorEffect="non-scaling-stroke" />
-              )}
               {greenAreaPath && <path d={greenAreaPath} fill="url(#areaGradGreen)" />}
               {redAreaPath && <path d={redAreaPath} fill="url(#areaGradRed)" />}
               {greenPath && <path d={greenPath} fill="none" stroke="#22c55e" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />}
               {redPath && <path d={redPath} fill="none" stroke="#ef4444" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />}
             </svg>
+            {/* Start line - CSS positioned for consistent fixed gap */}
+            {startLineY !== null && (
+              <div style={{ position: 'absolute', left: 0, right: '38px', top: `${startLineY}%`, borderTop: '1px dashed #666', zIndex: 1 }} />
+            )}
             {/* Start label - grey "Start" text at end of line */}
             {startLineY !== null && (
               <span style={{ position: 'absolute', right: '4px', top: `${startLineY}%`, transform: 'translateY(-50%)', fontSize: '9px', color: '#666', fontWeight: 500 }}>
