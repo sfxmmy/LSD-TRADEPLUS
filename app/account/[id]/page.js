@@ -1808,9 +1808,9 @@ export default function AccountPage() {
                             <select value={equityCurveGroupBy} onChange={e => { setEquityCurveGroupBy(e.target.value); setSelectedCurveLines({}) }} style={{ padding: '4px 8px', background: '#141418', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '4px', color: '#fff', fontSize: '11px', boxShadow: '0 0 4px rgba(255,255,255,0.1)' }}>
                               <option value="total">Total PnL</option>
                               <option value="symbol">By Pair</option>
-                              <option value="direction">By Direction</option>
-                              <option value="confidence">By Confidence</option>
-                              <option value="session">By Session</option>
+                              {inputs.filter(inp => inp.type === 'select' && inp.enabled).map(inp => (
+                                <option key={inp.id} value={inp.id}>By {inp.label}</option>
+                              ))}
                             </select>
                             {/* Filter dropdown in header when grouped */}
                             {equityCurveGroupBy !== 'total' && lines.length > 0 && (
@@ -2344,7 +2344,7 @@ export default function AccountPage() {
                               <div style={{ position: 'absolute', inset: '0', display: 'flex', alignItems: 'flex-end', gap: '6px', padding: '0 4px' }}>
                                 {entries.map((item, i) => {
                                   const hPct = Math.max((Math.abs(item.val) / niceMax) * 100, 5)
-                                  const isGreen = barGraphMetric === 'winrate' ? item.val >= 50 : item.val >= 0
+                                  const isGreen = barGraphMetric === 'winrate' || barGraphMetric === 'count' ? true : item.val >= 0
                                   const isHovered = barHover === i
                                   return (
                                     <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', height: '100%', justifyContent: 'flex-end', position: 'relative' }}
@@ -3659,9 +3659,9 @@ export default function AccountPage() {
                     <select value={equityCurveGroupBy} onChange={e => { setEquityCurveGroupBy(e.target.value); setSelectedCurveLines({}) }} style={{ padding: '4px 8px', background: '#141418', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '4px', color: '#fff', fontSize: '11px', boxShadow: '0 0 4px rgba(255,255,255,0.1)' }}>
                       <option value="total">Total PnL</option>
                       <option value="symbol">By Pair</option>
-                      <option value="direction">By Direction</option>
-                      <option value="confidence">By Confidence</option>
-                      <option value="session">By Session</option>
+                      {inputs.filter(inp => inp.type === 'select' && inp.enabled).map(inp => (
+                        <option key={inp.id} value={inp.id}>By {inp.label}</option>
+                      ))}
                     </select>
                   </>
                 )}
@@ -4177,7 +4177,7 @@ export default function AccountPage() {
                         <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'flex-end', gap: '12px', padding: '0 20px' }}>
                           {entries.map((item, i) => {
                             const hPct = Math.max((Math.abs(item.val) / niceMax) * 100, 5)
-                            const isGreen = barGraphMetric === 'winrate' ? item.val >= 50 : item.val >= 0
+                            const isGreen = barGraphMetric === 'winrate' || barGraphMetric === 'count' ? true : item.val >= 0
                             const isHovered = barHover === i
                             return (
                               <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', height: '100%', justifyContent: 'flex-end', position: 'relative' }}
