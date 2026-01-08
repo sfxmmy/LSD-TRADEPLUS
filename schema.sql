@@ -334,6 +334,10 @@ BEGIN
     username = COALESCE(profiles.username, EXCLUDED.username),
     updated_at = NOW();
   RETURN NEW;
+EXCEPTION WHEN OTHERS THEN
+  -- Log error but don't block user signup
+  RAISE WARNING 'handle_new_user failed: %', SQLERRM;
+  RETURN NEW;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
