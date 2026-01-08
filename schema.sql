@@ -318,11 +318,16 @@ CREATE POLICY "admin_notes" ON notes
 -- =====================================================
 -- AUTO-CREATE PROFILE TRIGGER
 -- Automatically creates a profile when a new user signs up
+-- SECURITY DEFINER + SET search_path bypasses RLS safely
 -- =====================================================
 CREATE OR REPLACE FUNCTION handle_new_user()
-RETURNS TRIGGER AS $$
+RETURNS TRIGGER
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
 BEGIN
-  INSERT INTO profiles (id, email, username, subscription_status)
+  INSERT INTO public.profiles (id, email, username, subscription_status)
   VALUES (
     NEW.id,
     NEW.email,
@@ -331,15 +336,11 @@ BEGIN
   )
   ON CONFLICT (id) DO UPDATE SET
     email = EXCLUDED.email,
-    username = COALESCE(profiles.username, EXCLUDED.username),
+    username = COALESCE(public.profiles.username, EXCLUDED.username),
     updated_at = NOW();
   RETURN NEW;
-EXCEPTION WHEN OTHERS THEN
-  -- Log error but don't block user signup
-  RAISE WARNING 'handle_new_user failed: %', SQLERRM;
-  RETURN NEW;
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
+$$;
 
 DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
 CREATE TRIGGER on_auth_user_created
