@@ -1959,18 +1959,18 @@ export default function AccountPage() {
                                     {yLabels.map((v, i) => {
                                       const topPct = yLabels.length > 1 ? (i / (yLabels.length - 1)) * 100 : 0
                                       return (
-                                        <div key={i} style={{ position: 'absolute', right: 0, top: `${topPct}%`, transform: 'translateY(-50%)', display: 'flex', alignItems: 'center' }}>
-                                          <span style={{ fontSize: '8px', color: '#999', lineHeight: 1, textAlign: 'right' }}>{equityCurveGroupBy === 'total' ? `$${(v/1000).toFixed(v >= 1000 ? 0 : 1)}k` : `$${v}`}</span>
-                                          <div style={{ width: '4px', height: '1px', background: '#333', marginLeft: '2px' }} />
-                                        </div>
+                                        <React.Fragment key={i}>
+                                          <span style={{ position: 'absolute', right: '5px', top: `${topPct}%`, transform: 'translateY(-50%)', fontSize: '8px', color: '#999', lineHeight: 1, textAlign: 'right' }}>{equityCurveGroupBy === 'total' ? `$${(v/1000).toFixed(v >= 1000 ? 0 : 1)}k` : `$${v}`}</span>
+                                          <div style={{ position: 'absolute', right: 0, top: `${topPct}%`, width: '4px', borderTop: '1px solid #2a2a35' }} />
+                                        </React.Fragment>
                                       )
                                     })}
                                     {/* Green start value on Y-axis */}
                                     {startLineY !== null && (
-                                      <div style={{ position: 'absolute', right: 0, top: `${startLineY}%`, transform: 'translateY(-50%)', display: 'flex', alignItems: 'center' }}>
-                                        <span style={{ fontSize: '8px', color: '#22c55e', lineHeight: 1, textAlign: 'right', fontWeight: 600 }}>{displayStartingBalance >= 1000000 ? `$${(displayStartingBalance/1000000).toFixed(1)}M` : displayStartingBalance >= 1000 ? `$${(displayStartingBalance/1000).toFixed(0)}k` : `$${displayStartingBalance}`}</span>
-                                        <div style={{ width: '4px', height: '1px', background: '#22c55e', marginLeft: '2px' }} />
-                                      </div>
+                                      <React.Fragment>
+                                        <span style={{ position: 'absolute', right: '5px', top: `${startLineY}%`, transform: 'translateY(-50%)', fontSize: '8px', color: '#22c55e', lineHeight: 1, textAlign: 'right', fontWeight: 600 }}>{displayStartingBalance >= 1000000 ? `$${(displayStartingBalance/1000000).toFixed(1)}M` : displayStartingBalance >= 1000 ? `$${(displayStartingBalance/1000).toFixed(0)}k` : `$${displayStartingBalance}`}</span>
+                                        <div style={{ position: 'absolute', right: 0, top: `${startLineY}%`, width: '4px', borderTop: '1px solid #22c55e' }} />
+                                      </React.Fragment>
                                     )}
                                   </div>
                                   {/* Chart area */}
@@ -2334,10 +2334,10 @@ export default function AccountPage() {
                               {yLabels.map((v, i) => {
                                 const topPct = yLabels.length > 1 ? (i / (yLabels.length - 1)) * 100 : 0
                                 return (
-                                  <div key={i} style={{ position: 'absolute', right: 0, top: `${topPct}%`, transform: 'translateY(-50%)', display: 'flex', alignItems: 'center' }}>
-                                    <span style={{ fontSize: '8px', color: '#999', lineHeight: 1, textAlign: 'right' }}>{v}</span>
-                                    <div style={{ width: '3px', height: '1px', background: '#333', marginLeft: '2px' }} />
-                                  </div>
+                                  <React.Fragment key={i}>
+                                    <span style={{ position: 'absolute', right: '5px', top: `${topPct}%`, transform: 'translateY(-50%)', fontSize: '8px', color: '#999', lineHeight: 1, textAlign: 'right' }}>{v}</span>
+                                    <div style={{ position: 'absolute', right: 0, top: `${topPct}%`, width: '4px', borderTop: '1px solid #2a2a35' }} />
+                                  </React.Fragment>
                                 )
                               })}
                             </div>
@@ -2488,10 +2488,10 @@ export default function AccountPage() {
                               const topPct = yLabels.length > 1 ? (i / (yLabels.length - 1)) * 100 : 0
                               const isLast = i === yLabels.length - 1
                               return (
-                                <div key={i} style={{ position: 'absolute', right: 0, top: `${topPct}%`, transform: 'translateY(-50%)', display: 'flex', alignItems: 'center' }}>
-                                  <span style={{ fontSize: '8px', color: '#999', lineHeight: 1, textAlign: 'right' }}>{isLast ? '$0' : `$${v}`}</span>
-                                  <div style={{ width: '3px', height: '1px', background: '#333', marginLeft: '2px' }} />
-                                </div>
+                                <React.Fragment key={i}>
+                                  <span style={{ position: 'absolute', right: '5px', top: `${topPct}%`, transform: 'translateY(-50%)', fontSize: '8px', color: '#999', lineHeight: 1, textAlign: 'right' }}>{isLast ? '$0' : `$${v}`}</span>
+                                  <div style={{ position: 'absolute', right: 0, top: `${topPct}%`, width: '4px', borderTop: '1px solid #2a2a35' }} />
+                                </React.Fragment>
                               )
                             })}
                           </div>
@@ -3871,18 +3871,18 @@ export default function AccountPage() {
                         {yLabels.map((v, i) => {
                           const topPct = yLabels.length > 1 ? (i / (yLabels.length - 1)) * 100 : 0
                           return (
-                            <div key={i} style={{ position: 'absolute', right: 0, top: `${topPct}%`, transform: 'translateY(-50%)', display: 'flex', alignItems: 'center' }}>
-                              <span style={{ fontSize: '10px', color: '#999', textAlign: 'right' }}>{equityCurveGroupBy === 'total' ? `$${(v/1000).toFixed(v >= 1000 ? 0 : 1)}k` : `$${v}`}</span>
-                              <div style={{ width: '4px', height: '1px', background: '#333', marginLeft: '3px' }} />
-                            </div>
+                            <React.Fragment key={i}>
+                              <span style={{ position: 'absolute', right: '5px', top: `${topPct}%`, transform: 'translateY(-50%)', fontSize: '10px', color: '#999', textAlign: 'right' }}>{equityCurveGroupBy === 'total' ? `$${(v/1000).toFixed(v >= 1000 ? 0 : 1)}k` : `$${v}`}</span>
+                              <div style={{ position: 'absolute', right: 0, top: `${topPct}%`, width: '4px', borderTop: '1px solid #2a2a35' }} />
+                            </React.Fragment>
                           )
                         })}
                         {/* Green start value on Y-axis */}
                         {equityCurveGroupBy === 'total' && startYEnl >= 0 && startYEnl <= svgH && (
-                          <div style={{ position: 'absolute', right: 0, top: `${(startYEnl / svgH) * 100}%`, transform: 'translateY(-50%)', display: 'flex', alignItems: 'center' }}>
-                            <span style={{ fontSize: '10px', color: '#22c55e', textAlign: 'right', fontWeight: 600 }}>{startingBalance >= 1000000 ? `$${(startingBalance/1000000).toFixed(1)}M` : startingBalance >= 1000 ? `$${(startingBalance/1000).toFixed(0)}k` : `$${startingBalance}`}</span>
-                            <div style={{ width: '4px', height: '1px', background: '#22c55e', marginLeft: '3px' }} />
-                          </div>
+                          <React.Fragment>
+                            <span style={{ position: 'absolute', right: '5px', top: `${(startYEnl / svgH) * 100}%`, transform: 'translateY(-50%)', fontSize: '10px', color: '#22c55e', textAlign: 'right', fontWeight: 600 }}>{startingBalance >= 1000000 ? `$${(startingBalance/1000000).toFixed(1)}M` : startingBalance >= 1000 ? `$${(startingBalance/1000).toFixed(0)}k` : `$${startingBalance}`}</span>
+                            <div style={{ position: 'absolute', right: 0, top: `${(startYEnl / svgH) * 100}%`, width: '4px', borderTop: '1px solid #22c55e' }} />
+                          </React.Fragment>
                         )}
                       </div>
                       {/* Chart area */}
@@ -4178,10 +4178,10 @@ export default function AccountPage() {
                         {yLabelsBar.map((v, i) => {
                           const topPct = yLabelsBar.length > 1 ? (i / (yLabelsBar.length - 1)) * 100 : 0
                           return (
-                            <div key={i} style={{ position: 'absolute', right: 0, top: `${topPct}%`, transform: 'translateY(-50%)', display: 'flex', alignItems: 'center' }}>
-                              <span style={{ fontSize: '10px', color: '#999', textAlign: 'right' }}>{v.disp}</span>
-                              <div style={{ width: '4px', height: '1px', background: '#333', marginLeft: '3px' }} />
-                            </div>
+                            <React.Fragment key={i}>
+                              <span style={{ position: 'absolute', right: '5px', top: `${topPct}%`, transform: 'translateY(-50%)', fontSize: '10px', color: '#999', textAlign: 'right' }}>{v.disp}</span>
+                              <div style={{ position: 'absolute', right: 0, top: `${topPct}%`, width: '4px', borderTop: '1px solid #2a2a35' }} />
+                            </React.Fragment>
                           )
                         })}
                       </div>
