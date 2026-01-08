@@ -2227,7 +2227,7 @@ export default function AccountPage() {
                                   <div style={{ flex: 1, height: '24px', position: 'relative' }}>
                                     {xLabels.map((l, i) => (
                                       <div key={i} style={{ position: 'absolute', left: `${l.pct}%`, transform: 'translateX(-50%)', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                                        <div style={{ width: '1px', height: '5px', background: '#2a2a35' }} />
+                                        <div style={{ width: '1px', height: '4px', background: '#2a2a35' }} />
                                         <span style={{ fontSize: '9px', color: '#999', marginTop: '3px', whiteSpace: 'nowrap' }}>{l.label}</span>
                                       </div>
                                     ))}
@@ -2529,7 +2529,7 @@ export default function AccountPage() {
                           <div style={{ flex: 1, height: '24px', position: 'relative' }}>
                             {xLabels.map((l, i) => (
                               <div key={i} style={{ position: 'absolute', left: `${l.pct}%`, transform: 'translateX(-50%)', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                                <div style={{ width: '1px', height: '5px', background: '#2a2a35' }} />
+                                <div style={{ width: '1px', height: '4px', background: '#2a2a35' }} />
                                 <span style={{ fontSize: '9px', color: '#999', marginTop: '3px', whiteSpace: 'nowrap' }}>{l.label}</span>
                               </div>
                             ))}
@@ -4091,7 +4091,7 @@ export default function AccountPage() {
                       <div style={{ flex: 1, height: '28px', position: 'relative' }}>
                         {xLabels.map((l, i) => (
                           <div key={i} style={{ position: 'absolute', left: `${l.pct}%`, transform: 'translateX(-50%)', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                            <div style={{ width: '1px', height: '8px', background: '#333' }} />
+                            <div style={{ width: '1px', height: '4px', background: '#2a2a35' }} />
                             <span style={{ fontSize: '10px', color: '#999', marginTop: '2px', whiteSpace: 'nowrap' }}>{l.label}</span>
                           </div>
                         ))}

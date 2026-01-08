@@ -972,7 +972,7 @@ export default function DashboardPage() {
               const isLast = i === xLabels.length - 1
               return (
                 <div key={i} style={{ position: 'absolute', left: `${l.pct}%`, transform: 'translateX(-50%)', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                  <div style={{ width: '1px', height: '5px', background: '#2a2a35' }} />
+                  <div style={{ width: '1px', height: '4px', background: '#2a2a35' }} />
                   <span style={{ fontSize: '10px', color: '#999', whiteSpace: 'nowrap', marginTop: '3px' }}>{l.label}</span>
                 </div>
               )
