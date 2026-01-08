@@ -2342,11 +2342,13 @@ export default function AccountPage() {
                               })}
                             </div>
                             {/* Chart area */}
-                            <div style={{ flex: 1, position: 'relative', borderLeft: '1px solid #2a2a35', borderBottom: '1px solid transparent' }}>
-                              {/* Horizontal grid lines - all lines including bottom */}
+                            <div style={{ flex: 1, position: 'relative', borderLeft: '1px solid #2a2a35', borderBottom: '1px solid #2a2a35' }}>
+                              {/* Horizontal grid lines - bottom line is x-axis */}
                               <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}>
                                 {yLabels.map((_, i) => {
                                   const topPct = yLabels.length > 1 ? (i / (yLabels.length - 1)) * 100 : 0
+                                  const isLast = i === yLabels.length - 1
+                                  if (isLast) return null
                                   return <div key={i} style={{ position: 'absolute', left: 0, right: 0, top: `${topPct}%`, borderTop: '1px solid rgba(51,51,51,0.5)' }} />
                                 })}
                               </div>
@@ -2494,11 +2496,13 @@ export default function AccountPage() {
                             })}
                           </div>
                           {/* Chart area */}
-                          <div style={{ flex: 1, position: 'relative', borderLeft: '1px solid #2a2a35', borderBottom: '1px solid transparent' }}>
-                            {/* Horizontal grid lines - all lines including bottom */}
+                          <div style={{ flex: 1, position: 'relative', borderLeft: '1px solid #2a2a35', borderBottom: '1px solid #2a2a35' }}>
+                            {/* Horizontal grid lines - bottom line is x-axis */}
                             <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}>
                               {yLabels.map((_, i) => {
                                 const topPct = yLabels.length > 1 ? (i / (yLabels.length - 1)) * 100 : 0
+                                const isLast = i === yLabels.length - 1
+                                if (isLast) return null
                                 return <div key={i} style={{ position: 'absolute', left: 0, right: 0, top: `${topPct}%`, borderTop: '1px solid rgba(51,51,51,0.5)' }} />
                               })}
                             </div>
@@ -4182,11 +4186,13 @@ export default function AccountPage() {
                         })}
                       </div>
                       {/* Chart area */}
-                      <div style={{ flex: 1, position: 'relative', borderLeft: '1px solid #2a2a35', borderBottom: '1px solid transparent' }}>
-                        {/* Horizontal grid lines - all lines including bottom */}
+                      <div style={{ flex: 1, position: 'relative', borderLeft: '1px solid #2a2a35', borderBottom: '1px solid #2a2a35' }}>
+                        {/* Horizontal grid lines - bottom line is x-axis */}
                         <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}>
                           {yLabelsBar.map((_, i) => {
                             const topPct = yLabelsBar.length > 1 ? (i / (yLabelsBar.length - 1)) * 100 : 0
+                            const isLast = i === yLabelsBar.length - 1
+                            if (isLast) return null
                             return <div key={i} style={{ position: 'absolute', left: 0, right: 0, top: `${topPct}%`, borderTop: '1px solid rgba(51,51,51,0.5)' }} />
                           })}
                         </div>
