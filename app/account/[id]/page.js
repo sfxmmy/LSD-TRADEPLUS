@@ -1973,12 +1973,12 @@ export default function AccountPage() {
                                     <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}>
                                       {yLabels.map((_, i) => {
                                         const topPct = yLabels.length > 1 ? (i / (yLabels.length - 1)) * 100 : 0
-                                        return <div key={i} style={{ position: 'absolute', left: 0, right: 0, top: `${topPct}%`, borderTop: '1px solid #2a2a35' }} />
+                                        return <div key={i} style={{ position: 'absolute', left: 0, right: 0, top: `${topPct}%`, borderTop: '1px solid #333' }} />
                                       })}
                                     </div>
                                     {/* Zero line if negative */}
                                     {zeroY !== null && (
-                                      <div style={{ position: 'absolute', left: 0, right: 0, top: `${zeroY}%`, borderTop: '1px solid #2a2a35', zIndex: 1 }} />
+                                      <div style={{ position: 'absolute', left: 0, right: 0, top: `${zeroY}%`, borderTop: '1px solid #333', zIndex: 1 }} />
                                     )}
                                     {/* Starting balance dotted line - extends full width */}
                                     {startLineY !== null && (
@@ -2228,8 +2228,8 @@ export default function AccountPage() {
                                   <div style={{ flex: 1, height: '24px', position: 'relative' }}>
                                     {xLabels.map((l, i) => (
                                       <div key={i} style={{ position: 'absolute', left: `${l.pct}%`, transform: 'translateX(-50%)', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                                        <div style={{ width: '1px', height: '4px', background: '#2a2a35' }} />
-                                        <span style={{ fontSize: '9px', color: '#999', marginTop: '3px', whiteSpace: 'nowrap' }}>{l.label}</span>
+                                        <div style={{ width: '1px', height: '4px', background: '#2a2a35', marginTop: '-4px' }} />
+                                        <span style={{ fontSize: '9px', color: '#999', marginTop: '4px', whiteSpace: 'nowrap' }}>{l.label}</span>
                                       </div>
                                     ))}
                                     {/* Green start value on x-axis */}
@@ -2347,7 +2347,7 @@ export default function AccountPage() {
                               <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}>
                                 {yLabels.map((_, i) => {
                                   const topPct = yLabels.length > 1 ? (i / (yLabels.length - 1)) * 100 : 0
-                                  return <div key={i} style={{ position: 'absolute', left: 0, right: 0, top: `${topPct}%`, borderTop: '1px solid #2a2a35' }} />
+                                  return <div key={i} style={{ position: 'absolute', left: 0, right: 0, top: `${topPct}%`, borderTop: '1px solid #333' }} />
                                 })}
                               </div>
                               {/* Bars */}
@@ -2386,7 +2386,7 @@ export default function AccountPage() {
                             <div style={{ flex: 1, display: 'flex', gap: '6px', padding: '0 4px' }}>
                               {entries.map((item, i) => (
                                 <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                                  <div style={{ width: '1px', height: '4px', background: '#2a2a35' }} />
+                                  <div style={{ width: '1px', height: '4px', background: '#2a2a35', marginTop: '-4px' }} />
                                   <div style={{ marginTop: '4px', textAlign: 'center', fontSize: '10px', color: '#999', fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', width: '100%' }}>{item.name}</div>
                                 </div>
                               ))}
@@ -2498,7 +2498,7 @@ export default function AccountPage() {
                             <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}>
                               {yLabels.map((_, i) => {
                                 const topPct = yLabels.length > 1 ? (i / (yLabels.length - 1)) * 100 : 0
-                                return <div key={i} style={{ position: 'absolute', left: 0, right: 0, top: `${topPct}%`, borderTop: '1px solid #2a2a35' }} />
+                                return <div key={i} style={{ position: 'absolute', left: 0, right: 0, top: `${topPct}%`, borderTop: '1px solid #333' }} />
                               })}
                             </div>
                             {/* Bars */}
@@ -2536,8 +2536,8 @@ export default function AccountPage() {
                           <div style={{ flex: 1, height: '24px', position: 'relative' }}>
                             {xLabels.map((l, i) => (
                               <div key={i} style={{ position: 'absolute', left: `${l.pct}%`, transform: 'translateX(-50%)', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                                <div style={{ width: '1px', height: '4px', background: '#2a2a35' }} />
-                                <span style={{ fontSize: '9px', color: '#999', marginTop: '3px', whiteSpace: 'nowrap' }}>{l.label}</span>
+                                <div style={{ width: '1px', height: '4px', background: '#2a2a35', marginTop: '-4px' }} />
+                                <span style={{ fontSize: '9px', color: '#999', marginTop: '4px', whiteSpace: 'nowrap' }}>{l.label}</span>
                               </div>
                             ))}
                           </div>
@@ -3880,10 +3880,10 @@ export default function AccountPage() {
                           <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}>
                             {yLabels.map((_, i) => {
                               const topPct = yLabels.length > 1 ? (i / (yLabels.length - 1)) * 100 : 0
-                              return <div key={i} style={{ position: 'absolute', left: 0, right: 0, top: `${topPct}%`, borderTop: '1px solid #2a2a35' }} />
+                              return <div key={i} style={{ position: 'absolute', left: 0, right: 0, top: `${topPct}%`, borderTop: '1px solid #333' }} />
                             })}
                           </div>
-                          {zeroY !== null && <div style={{ position: 'absolute', left: 0, right: 0, top: `${zeroY}%`, borderTop: '1px solid #2a2a35', zIndex: 1 }}><span style={{ position: 'absolute', left: '-60px', top: '-6px', fontSize: '11px', color: '#666' }}>$0</span></div>}
+                          {zeroY !== null && <div style={{ position: 'absolute', left: 0, right: 0, top: `${zeroY}%`, borderTop: '1px solid #333', zIndex: 1 }}><span style={{ position: 'absolute', left: '-60px', top: '-6px', fontSize: '11px', color: '#666' }}>$0</span></div>}
                           {/* Start line - dashed horizontal line at starting balance */}
                           {equityCurveGroupBy === 'total' && startYEnl >= 0 && startYEnl <= svgH && (
                             <>
@@ -4099,8 +4099,8 @@ export default function AccountPage() {
                       <div style={{ flex: 1, height: '28px', position: 'relative' }}>
                         {xLabels.map((l, i) => (
                           <div key={i} style={{ position: 'absolute', left: `${l.pct}%`, transform: 'translateX(-50%)', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                            <div style={{ width: '1px', height: '4px', background: '#2a2a35' }} />
-                            <span style={{ fontSize: '10px', color: '#999', marginTop: '2px', whiteSpace: 'nowrap' }}>{l.label}</span>
+                            <div style={{ width: '1px', height: '4px', background: '#2a2a35', marginTop: '-4px' }} />
+                            <span style={{ fontSize: '10px', color: '#999', marginTop: '4px', whiteSpace: 'nowrap' }}>{l.label}</span>
                           </div>
                         ))}
                         {/* Green start value on x-axis */}
@@ -4187,7 +4187,7 @@ export default function AccountPage() {
                         <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}>
                           {yLabelsBar.map((_, i) => {
                             const topPct = yLabelsBar.length > 1 ? (i / (yLabelsBar.length - 1)) * 100 : 0
-                            return <div key={i} style={{ position: 'absolute', left: 0, right: 0, top: `${topPct}%`, borderTop: '1px solid #2a2a35' }} />
+                            return <div key={i} style={{ position: 'absolute', left: 0, right: 0, top: `${topPct}%`, borderTop: '1px solid #333' }} />
                           })}
                         </div>
                         {/* Bars */}

@@ -922,7 +922,7 @@ export default function DashboardPage() {
               {yLabels.map((_, i) => {
                 if (i === yLabels.length - 1) return null
                 const topPct = yLabels.length > 1 ? (i / (yLabels.length - 1)) * 100 : 0
-                return <div key={i} style={{ position: 'absolute', left: 0, right: 0, top: `${topPct}%`, borderTop: '1px solid #2a2a35' }} />
+                return <div key={i} style={{ position: 'absolute', left: 0, right: 0, top: `${topPct}%`, borderTop: '1px solid #333' }} />
               })}
             </div>
             <svg ref={svgRef} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', overflow: 'visible' }} viewBox={`0 0 ${svgW} ${svgH}`} preserveAspectRatio="none" onMouseMove={handleMouseMove} onMouseLeave={() => setHoverPoint(null)}>
@@ -973,8 +973,8 @@ export default function DashboardPage() {
               const isLast = i === xLabels.length - 1
               return (
                 <div key={i} style={{ position: 'absolute', left: `${l.pct}%`, transform: 'translateX(-50%)', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                  <div style={{ width: '1px', height: '4px', background: '#2a2a35' }} />
-                  <span style={{ fontSize: '10px', color: '#999', whiteSpace: 'nowrap', marginTop: '3px' }}>{l.label}</span>
+                  <div style={{ width: '1px', height: '4px', background: '#2a2a35', marginTop: '-4px' }} />
+                  <span style={{ fontSize: '10px', color: '#999', whiteSpace: 'nowrap', marginTop: '4px' }}>{l.label}</span>
                 </div>
               )
             })}
