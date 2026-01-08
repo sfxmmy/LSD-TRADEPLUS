@@ -905,7 +905,7 @@ export default function DashboardPage() {
               const topPct = yLabels.length > 1 ? (i / (yLabels.length - 1)) * 100 : 0
               const isLast = i === yLabels.length - 1
               return (
-                <div key={i} style={{ position: 'absolute', right: 0, top: isLast ? 'auto' : `${topPct}%`, bottom: isLast ? 0 : 'auto', transform: isLast ? 'translateY(50%)' : 'translateY(-50%)', display: 'flex', alignItems: 'center' }}>
+                <div key={i} style={{ position: 'absolute', right: 0, top: isLast ? 'auto' : `${topPct}%`, bottom: isLast ? 0 : 'auto', transform: isLast ? 'translateY(calc(50% - 1px))' : 'translateY(-50%)', display: 'flex', alignItems: 'center' }}>
                   <span style={{ fontSize: '10px', color: '#999', lineHeight: 1, textAlign: 'right' }}>{v >= 1000000 ? `$${(v/1000000).toFixed(1)}M` : v >= 1000 ? `$${(v/1000).toFixed(0)}k` : `$${v}`}</span>
                   <div style={{ width: '4px', height: '1px', background: '#333', marginLeft: '2px' }} />
                 </div>
