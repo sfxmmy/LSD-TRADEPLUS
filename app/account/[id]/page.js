@@ -1958,8 +1958,9 @@ export default function AccountPage() {
                                   <div style={{ width: '28px', flexShrink: 0, position: 'relative', borderRight: '1px solid #2a2a35', overflow: 'visible' }}>
                                     {yLabels.map((v, i) => {
                                       const topPct = yLabels.length > 1 ? (i / (yLabels.length - 1)) * 100 : 0
+                                      const isLast = i === yLabels.length - 1
                                       return (
-                                        <div key={i} style={{ position: 'absolute', right: 0, top: `${topPct}%`, transform: 'translateY(-50%)', display: 'flex', alignItems: 'center' }}>
+                                        <div key={i} style={{ position: 'absolute', right: 0, top: isLast ? 'auto' : `${topPct}%`, bottom: isLast ? 0 : 'auto', transform: isLast ? 'translateY(50%)' : 'translateY(-50%)', display: 'flex', alignItems: 'center' }}>
                                           <span style={{ fontSize: '8px', color: '#999', lineHeight: 1, textAlign: 'right' }}>{equityCurveGroupBy === 'total' ? `$${(v/1000).toFixed(v >= 1000 ? 0 : 1)}k` : `$${v}`}</span>
                                           <div style={{ width: '4px', height: '1px', background: '#333', marginLeft: '2px' }} />
                                         </div>
@@ -1979,12 +1980,12 @@ export default function AccountPage() {
                                     <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}>
                                       {yLabels.map((_, i) => {
                                         const topPct = yLabels.length > 1 ? (i / (yLabels.length - 1)) * 100 : 0
-                                        return <div key={i} style={{ position: 'absolute', left: 0, right: 0, top: `${topPct}%`, borderTop: '1px solid #333' }} />
+                                        return <div key={i} style={{ position: 'absolute', left: 0, right: 0, top: `${topPct}%`, borderTop: '1px solid rgba(51,51,51,0.5)' }} />
                                       })}
                                     </div>
                                     {/* Zero line if negative */}
                                     {zeroY !== null && (
-                                      <div style={{ position: 'absolute', left: 0, right: 0, top: `${zeroY}%`, borderTop: '1px solid #333', zIndex: 1 }} />
+                                      <div style={{ position: 'absolute', left: 0, right: 0, top: `${zeroY}%`, borderTop: '1px solid rgba(51,51,51,0.5)', zIndex: 1 }} />
                                     )}
                                     {/* Starting balance dotted line - extends full width */}
                                     {startLineY !== null && (
@@ -2333,8 +2334,9 @@ export default function AccountPage() {
                             <div style={{ width: '28px', flexShrink: 0, position: 'relative' }}>
                               {yLabels.map((v, i) => {
                                 const topPct = yLabels.length > 1 ? (i / (yLabels.length - 1)) * 100 : 0
+                                const isLast = i === yLabels.length - 1
                                 return (
-                                  <div key={i} style={{ position: 'absolute', right: 0, top: `${topPct}%`, transform: 'translateY(-50%)', display: 'flex', alignItems: 'center' }}>
+                                  <div key={i} style={{ position: 'absolute', right: 0, top: isLast ? 'auto' : `${topPct}%`, bottom: isLast ? 0 : 'auto', transform: isLast ? 'translateY(50%)' : 'translateY(-50%)', display: 'flex', alignItems: 'center' }}>
                                     <span style={{ fontSize: '8px', color: '#999', lineHeight: 1, textAlign: 'right' }}>{v}</span>
                                     <div style={{ width: '3px', height: '1px', background: '#333', marginLeft: '2px' }} />
                                   </div>
@@ -2347,7 +2349,7 @@ export default function AccountPage() {
                               <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}>
                                 {yLabels.map((_, i) => {
                                   const topPct = yLabels.length > 1 ? (i / (yLabels.length - 1)) * 100 : 0
-                                  return <div key={i} style={{ position: 'absolute', left: 0, right: 0, top: `${topPct}%`, borderTop: '1px solid #333' }} />
+                                  return <div key={i} style={{ position: 'absolute', left: 0, right: 0, top: `${topPct}%`, borderTop: '1px solid rgba(51,51,51,0.5)' }} />
                                 })}
                               </div>
                               {/* Bars */}
@@ -2484,9 +2486,10 @@ export default function AccountPage() {
                           <div style={{ width: '28px', flexShrink: 0, position: 'relative' }}>
                             {yLabels.map((v, i) => {
                               const topPct = yLabels.length > 1 ? (i / (yLabels.length - 1)) * 100 : 0
+                              const isLast = i === yLabels.length - 1
                               return (
-                                <div key={i} style={{ position: 'absolute', right: 0, top: `${topPct}%`, transform: 'translateY(-50%)', display: 'flex', alignItems: 'center' }}>
-                                  <span style={{ fontSize: '8px', color: '#999', lineHeight: 1, textAlign: 'right' }}>{i === yLabels.length - 1 ? '$0' : `$${v}`}</span>
+                                <div key={i} style={{ position: 'absolute', right: 0, top: isLast ? 'auto' : `${topPct}%`, bottom: isLast ? 0 : 'auto', transform: isLast ? 'translateY(50%)' : 'translateY(-50%)', display: 'flex', alignItems: 'center' }}>
+                                  <span style={{ fontSize: '8px', color: '#999', lineHeight: 1, textAlign: 'right' }}>{isLast ? '$0' : `$${v}`}</span>
                                   <div style={{ width: '3px', height: '1px', background: '#333', marginLeft: '2px' }} />
                                 </div>
                               )
@@ -2498,7 +2501,7 @@ export default function AccountPage() {
                             <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}>
                               {yLabels.map((_, i) => {
                                 const topPct = yLabels.length > 1 ? (i / (yLabels.length - 1)) * 100 : 0
-                                return <div key={i} style={{ position: 'absolute', left: 0, right: 0, top: `${topPct}%`, borderTop: '1px solid #333' }} />
+                                return <div key={i} style={{ position: 'absolute', left: 0, right: 0, top: `${topPct}%`, borderTop: '1px solid rgba(51,51,51,0.5)' }} />
                               })}
                             </div>
                             {/* Bars */}
@@ -3865,8 +3868,9 @@ export default function AccountPage() {
                       <div style={{ width: '44px', flexShrink: 0, position: 'relative', borderRight: '1px solid #2a2a35', overflow: 'visible' }}>
                         {yLabels.map((v, i) => {
                           const topPct = yLabels.length > 1 ? (i / (yLabels.length - 1)) * 100 : 0
+                          const isLast = i === yLabels.length - 1
                           return (
-                            <div key={i} style={{ position: 'absolute', right: 0, top: `${topPct}%`, transform: 'translateY(-50%)', display: 'flex', alignItems: 'center' }}>
+                            <div key={i} style={{ position: 'absolute', right: 0, top: isLast ? 'auto' : `${topPct}%`, bottom: isLast ? 0 : 'auto', transform: isLast ? 'translateY(50%)' : 'translateY(-50%)', display: 'flex', alignItems: 'center' }}>
                               <span style={{ fontSize: '10px', color: '#999', textAlign: 'right' }}>{equityCurveGroupBy === 'total' ? `$${(v/1000).toFixed(v >= 1000 ? 0 : 1)}k` : `$${v}`}</span>
                               <div style={{ width: '4px', height: '1px', background: '#333', marginLeft: '3px' }} />
                             </div>
@@ -3886,10 +3890,10 @@ export default function AccountPage() {
                           <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}>
                             {yLabels.map((_, i) => {
                               const topPct = yLabels.length > 1 ? (i / (yLabels.length - 1)) * 100 : 0
-                              return <div key={i} style={{ position: 'absolute', left: 0, right: 0, top: `${topPct}%`, borderTop: '1px solid #333' }} />
+                              return <div key={i} style={{ position: 'absolute', left: 0, right: 0, top: `${topPct}%`, borderTop: '1px solid rgba(51,51,51,0.5)' }} />
                             })}
                           </div>
-                          {zeroY !== null && <div style={{ position: 'absolute', left: 0, right: 0, top: `${zeroY}%`, borderTop: '1px solid #333', zIndex: 1 }}><span style={{ position: 'absolute', left: '-60px', top: '-6px', fontSize: '11px', color: '#666' }}>$0</span></div>}
+                          {zeroY !== null && <div style={{ position: 'absolute', left: 0, right: 0, top: `${zeroY}%`, borderTop: '1px solid rgba(51,51,51,0.5)', zIndex: 1 }}><span style={{ position: 'absolute', left: '-60px', top: '-6px', fontSize: '11px', color: '#666' }}>$0</span></div>}
                           {/* Start line - dashed horizontal line at starting balance */}
                           {equityCurveGroupBy === 'total' && startYEnl >= 0 && startYEnl <= svgH && (
                             <>
@@ -4172,8 +4176,9 @@ export default function AccountPage() {
                       <div style={{ width: '44px', flexShrink: 0, position: 'relative', overflow: 'visible' }}>
                         {yLabelsBar.map((v, i) => {
                           const topPct = yLabelsBar.length > 1 ? (i / (yLabelsBar.length - 1)) * 100 : 0
+                          const isLast = i === yLabelsBar.length - 1
                           return (
-                            <div key={i} style={{ position: 'absolute', right: 0, top: `${topPct}%`, transform: 'translateY(-50%)', display: 'flex', alignItems: 'center' }}>
+                            <div key={i} style={{ position: 'absolute', right: 0, top: isLast ? 'auto' : `${topPct}%`, bottom: isLast ? 0 : 'auto', transform: isLast ? 'translateY(50%)' : 'translateY(-50%)', display: 'flex', alignItems: 'center' }}>
                               <span style={{ fontSize: '10px', color: '#999', textAlign: 'right' }}>{v.disp}</span>
                               <div style={{ width: '4px', height: '1px', background: '#333', marginLeft: '3px' }} />
                             </div>
@@ -4186,7 +4191,7 @@ export default function AccountPage() {
                         <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}>
                           {yLabelsBar.map((_, i) => {
                             const topPct = yLabelsBar.length > 1 ? (i / (yLabelsBar.length - 1)) * 100 : 0
-                            return <div key={i} style={{ position: 'absolute', left: 0, right: 0, top: `${topPct}%`, borderTop: '1px solid #333' }} />
+                            return <div key={i} style={{ position: 'absolute', left: 0, right: 0, top: `${topPct}%`, borderTop: '1px solid rgba(51,51,51,0.5)' }} />
                           })}
                         </div>
                         {/* Bars */}
