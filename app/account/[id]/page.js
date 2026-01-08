@@ -1973,14 +1973,14 @@ export default function AccountPage() {
                                     {zeroY !== null && (
                                       <div style={{ position: 'absolute', left: 0, right: 0, top: `${zeroY}%`, borderTop: '1px solid #2a2a35', zIndex: 1 }} />
                                     )}
-                                    {/* Starting balance dotted line - extends to label */}
+                                    {/* Starting balance dotted line - extends full width */}
                                     {startLineY !== null && (
-                                      <div style={{ position: 'absolute', left: 0, right: '50px', top: `${startLineY}%`, borderTop: '1px dashed #666', zIndex: 1 }} />
+                                      <div style={{ position: 'absolute', left: 0, right: 0, top: `${startLineY}%`, borderTop: '1px dashed #666', zIndex: 1 }} />
                                     )}
-                                    {/* Start label at end of line - shows starting balance value */}
+                                    {/* Start label at end of line - green value */}
                                     {startLineY !== null && (
                                       <span style={{ position: 'absolute', right: '4px', top: `${startLineY}%`, transform: 'translateY(-50%)', fontSize: '9px', color: '#22c55e', background: '#0d0d12', padding: '0 4px', fontWeight: 600 }}>
-                                        Start: ${(displayStartingBalance/1000).toFixed(displayStartingBalance >= 1000 ? 0 : 1)}k
+                                        {displayStartingBalance >= 1000000 ? `$${(displayStartingBalance/1000000).toFixed(1)}M` : displayStartingBalance >= 1000 ? `$${(displayStartingBalance/1000).toFixed(0)}k` : `$${displayStartingBalance}`}
                                       </span>
                                     )}
                                     <svg style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', overflow: 'visible' }} viewBox={`0 0 ${svgW} ${svgH}`} preserveAspectRatio="none"
@@ -3873,8 +3873,8 @@ export default function AccountPage() {
                           {/* Start line - dashed horizontal line at starting balance */}
                           {equityCurveGroupBy === 'total' && startYEnl >= 0 && startYEnl <= svgH && (
                             <>
-                              <div style={{ position: 'absolute', left: 0, right: '55px', top: `${(startYEnl / svgH) * 100}%`, borderTop: '1px dashed #666', transform: 'translateY(-50%)', zIndex: 1 }} />
-                              <span style={{ position: 'absolute', right: '4px', top: `${(startYEnl / svgH) * 100}%`, transform: 'translateY(-50%)', fontSize: '10px', color: '#22c55e', background: '#0d0d12', padding: '0 4px', fontWeight: 600 }}>Start: ${(startingBalance/1000).toFixed(startingBalance >= 1000 ? 0 : 1)}k</span>
+                              <div style={{ position: 'absolute', left: 0, right: 0, top: `${(startYEnl / svgH) * 100}%`, borderTop: '1px dashed #666', transform: 'translateY(-50%)', zIndex: 1 }} />
+                              <span style={{ position: 'absolute', right: '4px', top: `${(startYEnl / svgH) * 100}%`, transform: 'translateY(-50%)', fontSize: '10px', color: '#22c55e', background: '#0d0d12', padding: '0 4px', fontWeight: 600 }}>{startingBalance >= 1000000 ? `$${(startingBalance/1000000).toFixed(1)}M` : startingBalance >= 1000 ? `$${(startingBalance/1000).toFixed(0)}k` : `$${startingBalance}`}</span>
                             </>
                           )}
                           <svg style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', overflow: 'visible' }} viewBox={`0 0 ${svgW} ${svgH}`} preserveAspectRatio="none"

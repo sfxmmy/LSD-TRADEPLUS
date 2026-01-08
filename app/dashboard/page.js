@@ -910,13 +910,6 @@ export default function DashboardPage() {
                 </div>
               )
             })}
-            {/* Start balance on Y-axis - ALWAYS shows green "Start" label */}
-            {startLineY !== null && (
-              <div style={{ position: 'absolute', right: 0, top: `${startLineY}%`, transform: 'translateY(-50%)', display: 'flex', alignItems: 'center', zIndex: 5 }}>
-                <span style={{ fontSize: '10px', color: '#22c55e', fontWeight: 600, background: '#0d0d12', padding: '0 2px' }}>Start</span>
-                <div style={{ width: '4px', height: '1px', background: '#22c55e', marginLeft: '2px' }} />
-              </div>
-            )}
           </div>
           <div style={{ height: '26px' }} />
         </div>
@@ -942,19 +935,19 @@ export default function DashboardPage() {
                   <stop offset="100%" stopColor="#ef4444" stopOpacity="0" />
                 </linearGradient>
               </defs>
-              {/* Start line inside SVG - stops before label */}
+              {/* Start line inside SVG - extends full width */}
               {startLineY !== null && (
-                <line x1="0" y1={startY} x2={svgW * 0.94} y2={startY} stroke="#666" strokeWidth="1" strokeDasharray="4,3" vectorEffect="non-scaling-stroke" />
+                <line x1="0" y1={startY} x2={svgW} y2={startY} stroke="#666" strokeWidth="1" strokeDasharray="4,3" vectorEffect="non-scaling-stroke" />
               )}
               {greenAreaPath && <path d={greenAreaPath} fill="url(#areaGradGreen)" />}
               {redAreaPath && <path d={redAreaPath} fill="url(#areaGradRed)" />}
               {greenPath && <path d={greenPath} fill="none" stroke="#22c55e" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />}
               {redPath && <path d={redPath} fill="none" stroke="#ef4444" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />}
             </svg>
-            {/* Start label - grey "Start" text at end of line */}
+            {/* Start label - green value at end of line */}
             {startLineY !== null && (
-              <span style={{ position: 'absolute', right: '4px', top: `${startLineY}%`, transform: 'translateY(-50%)', fontSize: '9px', color: '#666', background: '#0d0d12', padding: '0 4px', fontWeight: 500 }}>
-                Start
+              <span style={{ position: 'absolute', right: '4px', top: `${startLineY}%`, transform: 'translateY(-50%)', fontSize: '9px', color: '#22c55e', background: '#0d0d12', padding: '0 4px', fontWeight: 600 }}>
+                {start >= 1000000 ? `$${(start/1000000).toFixed(1)}M` : start >= 1000 ? `$${(start/1000).toFixed(0)}k` : `$${start}`}
               </span>
             )}
 

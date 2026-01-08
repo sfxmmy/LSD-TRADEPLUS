@@ -36,7 +36,7 @@ export async function POST(request) {
 
     const { data: profile } = await serviceSupabase
       .from('profiles')
-      .select('customer_id')
+      .select('customer_id, subscription_start, subscription_id')
       .eq('id', user.id)
       .single()
 
@@ -55,7 +55,19 @@ export async function POST(request) {
         .eq('id', user.id)
     }
 
-    // Create checkout session with 7-day free trial
+    // Check if user has ever subscribed before (no trial for returning users)
+    const hasSubscribedBefore = !!(profile?.subscription_start || profile?.subscription_id)
+
+    // Create checkout session - only include trial for first-time subscribers
+    const subscriptionData = {
+      metadata: { supabase_user_id: user.id }
+    }
+
+    // Only add trial for new users who have never subscribed
+    if (!hasSubscribedBefore) {
+      subscriptionData.trial_period_days = 7
+    }
+
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
       line_items: [{
@@ -65,10 +77,7 @@ export async function POST(request) {
       mode: 'subscription',
       success_url: `${siteUrl}/dashboard?success=true`,
       cancel_url: `${siteUrl}/pricing`,
-      subscription_data: {
-        trial_period_days: 7,
-        metadata: { supabase_user_id: user.id }
-      }
+      subscription_data: subscriptionData
     })
 
     return NextResponse.json({ url: session.url })
