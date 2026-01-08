@@ -120,8 +120,17 @@ CREATE TABLE IF NOT EXISTS trades (
   direction TEXT CHECK (direction IN ('long', 'short')),
   notes TEXT,
   image_url TEXT,
+  extra_data JSONB DEFAULT NULL,
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
+
+-- Add missing columns to existing trades table (safe to run multiple times)
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'trades' AND column_name = 'extra_data') THEN
+    ALTER TABLE trades ADD COLUMN extra_data JSONB DEFAULT NULL;
+  END IF;
+END $$;
 
 -- =====================================================
 -- TRADE_EXTRAS TABLE
