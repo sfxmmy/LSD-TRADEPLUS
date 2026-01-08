@@ -77,9 +77,26 @@ CREATE TABLE IF NOT EXISTS accounts (
   user_id UUID REFERENCES profiles(id) ON DELETE CASCADE NOT NULL,
   name TEXT NOT NULL,
   starting_balance DECIMAL(12,2) DEFAULT 0,
+  profit_target DECIMAL(5,2) DEFAULT NULL,
+  max_drawdown DECIMAL(5,2) DEFAULT NULL,
+  custom_inputs JSONB DEFAULT NULL,
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
+
+-- Add missing columns to existing accounts table (safe to run multiple times)
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'accounts' AND column_name = 'profit_target') THEN
+    ALTER TABLE accounts ADD COLUMN profit_target DECIMAL(5,2) DEFAULT NULL;
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'accounts' AND column_name = 'max_drawdown') THEN
+    ALTER TABLE accounts ADD COLUMN max_drawdown DECIMAL(5,2) DEFAULT NULL;
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'accounts' AND column_name = 'custom_inputs') THEN
+    ALTER TABLE accounts ADD COLUMN custom_inputs JSONB DEFAULT NULL;
+  END IF;
+END $$;
 
 -- =====================================================
 -- TRADES TABLE

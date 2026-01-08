@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@supabase/supabase-js'
+import * as XLSX from 'xlsx'
 
 // Color mappings for select options (same as account page) - textColor and bgColor
 const optionStyles = {
@@ -94,6 +95,17 @@ export default function DashboardPage() {
   const [creating, setCreating] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
   const [viewMode, setViewMode] = useState('cards') // 'cards' or 'list'
+  // Import journal state
+  const [showImportModal, setShowImportModal] = useState(false)
+  const [importStep, setImportStep] = useState(1) // 1: upload, 2: mapping, 3: preview
+  const [importFile, setImportFile] = useState(null)
+  const [importData, setImportData] = useState([])
+  const [importHeaders, setImportHeaders] = useState([])
+  const [importMapping, setImportMapping] = useState({})
+  const [importJournalName, setImportJournalName] = useState('')
+  const [importStartingBalance, setImportStartingBalance] = useState('')
+  const [importing, setImporting] = useState(false)
+  const [importError, setImportError] = useState('')
   // Quick trade entry state
   const [quickTradeAccount, setQuickTradeAccount] = useState('')
   const [quickTradeSymbol, setQuickTradeSymbol] = useState('')
@@ -277,6 +289,250 @@ export default function DashboardPage() {
     setShowDeleteModal(null); setDeleteConfirm('')
   }
 
+  // Import journal functions
+  const knownFields = [
+    { id: 'symbol', label: 'Symbol', type: 'text', aliases: ['symbol', 'pair', 'ticker', 'instrument', 'asset', 'currency', 'market', 'coin'] },
+    { id: 'pnl', label: 'PnL ($)', type: 'number', aliases: ['pnl', 'p&l', 'profit', 'profit/loss', 'profit loss', 'net profit', 'net pnl', 'gain', 'return', 'amount', 'realized', 'realised'] },
+    { id: 'outcome', label: 'W/L', type: 'select', aliases: ['outcome', 'win/loss', 'w/l', 'win loss', 'trade result', 'won/lost'] },
+    { id: 'direction', label: 'Direction', type: 'select', aliases: ['direction', 'side', 'position', 'long/short', 'buy/sell', 'trade type', 'order type'] },
+    { id: 'rr', label: 'RR', type: 'number', aliases: ['rr', 'r:r', 'risk reward', 'risk/reward', 'r/r', 'reward ratio', 'risk to reward'] },
+    { id: 'date', label: 'Date', type: 'date', aliases: ['date', 'trade date', 'entry date', 'open date', 'day', 'opened', 'entry'] },
+    { id: 'time', label: 'Time', type: 'time', aliases: ['time', 'entry time', 'open time', 'trade time'] },
+    { id: 'riskPercent', label: '% Risk', type: 'number', aliases: ['risk', 'risk %', '% risk', 'risk percent', 'lot size', 'position size', 'size'] },
+    { id: 'confidence', label: 'Confidence', type: 'select', aliases: ['confidence', 'conviction', 'certainty', 'conf'] },
+    { id: 'session', label: 'Session', type: 'select', aliases: ['session', 'market session', 'trading session', 'market'] },
+    { id: 'timeframe', label: 'Timeframe', type: 'select', aliases: ['timeframe', 'time frame', 'chart', 'tf', 'period'] },
+    { id: 'notes', label: 'Notes', type: 'textarea', aliases: ['notes', 'comments', 'description', 'remarks', 'thoughts', 'analysis', 'review', 'journal'] },
+    { id: 'rating', label: 'Rating', type: 'rating', aliases: ['rating', 'score', 'grade', 'quality', 'stars'] }
+  ]
+
+  function handleImportFile(file) {
+    setImportError('')
+    // Validate file type
+    const validExtensions = ['.xlsx', '.xls', '.csv']
+    const fileExt = file.name.toLowerCase().slice(file.name.lastIndexOf('.'))
+    if (!validExtensions.includes(fileExt)) {
+      setImportError(`Invalid file type "${fileExt}". Please upload an Excel (.xlsx, .xls) or CSV file.`)
+      return
+    }
+    // Warn for large files (> 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      setImportError('Warning: Large file detected. This may take a moment to process.')
+    }
+    setImportFile(file)
+    const reader = new FileReader()
+    reader.onerror = () => {
+      setImportError('Error reading file. Please try again.')
+    }
+    reader.onload = (e) => {
+      try {
+        const data = e.target.result
+        let workbook
+        if (file.name.toLowerCase().endsWith('.csv')) {
+          workbook = XLSX.read(data, { type: 'string' })
+        } else {
+          workbook = XLSX.read(data, { type: 'array' })
+        }
+        if (!workbook.SheetNames || workbook.SheetNames.length === 0) {
+          setImportError('No sheets found in the file')
+          return
+        }
+        const sheetName = workbook.SheetNames[0]
+        const sheet = workbook.Sheets[sheetName]
+        const jsonData = XLSX.utils.sheet_to_json(sheet, { header: 1 })
+        if (jsonData.length < 1) { setImportError('File appears to be empty'); return }
+        if (jsonData.length < 2) { setImportError('File must have at least a header row and one data row'); return }
+        const headers = jsonData[0].map(h => String(h || '').trim())
+        // Check for at least one non-empty header
+        if (!headers.some(h => h.length > 0)) {
+          setImportError('No valid column headers found in the first row')
+          return
+        }
+        const rows = jsonData.slice(1).filter(row => row.some(cell => cell !== null && cell !== undefined && cell !== ''))
+        if (rows.length === 0) {
+          setImportError('No data rows found (all rows are empty)')
+          return
+        }
+        // Warn for large row counts
+        if (rows.length > 5000) {
+          setImportError(`File contains ${rows.length.toLocaleString()} rows. Maximum is 5000 trades per import. Please split your file.`)
+          return
+        }
+        if (rows.length > 1000) {
+          setImportError(`Note: ${rows.length.toLocaleString()} trades found. Large imports may take a moment.`)
+        }
+        setImportHeaders(headers)
+        setImportData(rows)
+        // Auto-detect column mappings with stricter matching
+        const mapping = {}
+        headers.forEach((header, idx) => {
+          if (!header) return // Skip empty headers
+          const headerLower = header.toLowerCase().trim()
+          for (const field of knownFields) {
+            // Stricter matching: header must equal alias OR be a reasonable substring match
+            const matched = field.aliases.some(alias => {
+              // Exact match
+              if (headerLower === alias) return true
+              // Header contains alias (but alias must be at least 3 chars to avoid false positives)
+              if (alias.length >= 3 && headerLower.includes(alias)) return true
+              // Alias contains header (header must be at least 3 chars)
+              if (headerLower.length >= 3 && alias.includes(headerLower)) return true
+              return false
+            })
+            if (matched && !Object.values(mapping).includes(field.id)) {
+              mapping[idx] = field.id
+              break
+            }
+          }
+        })
+        setImportMapping(mapping)
+        setImportJournalName(file.name.replace(/\.(xlsx|xls|csv)$/i, ''))
+        setImportStep(2)
+      } catch (err) {
+        setImportError('Error parsing file: ' + (err.message || 'Unknown error. Make sure the file is a valid Excel or CSV file.'))
+      }
+    }
+    if (file.name.toLowerCase().endsWith('.csv')) {
+      reader.readAsText(file)
+    } else {
+      reader.readAsArrayBuffer(file)
+    }
+  }
+
+  async function processImport() {
+    if (!user) { setImportError('You must be logged in to import'); return }
+    if (!importJournalName.trim()) { setImportError('Please enter a journal name'); return }
+    if (importData.length === 0) { setImportError('No data to import'); return }
+    if (importData.length > 5000) { setImportError('Maximum 5000 trades per import. Please split your file.'); return }
+    setImporting(true)
+    setImportError('')
+    try {
+      const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY)
+      // Build custom_inputs from unmapped columns (as custom fields)
+      // Use a copy of importMapping to avoid mutating state
+      const finalMapping = { ...importMapping }
+      const customInputs = []
+      const usedFieldIds = new Set()
+      importHeaders.forEach((header, idx) => {
+        if (!finalMapping[idx] && header) {
+          // Detect field type from data
+          const sampleValues = importData.slice(0, 10).map(row => row[idx]).filter(v => v !== null && v !== undefined && v !== '')
+          let fieldType = 'text'
+          if (sampleValues.length > 0) {
+            const uniqueValues = [...new Set(sampleValues.map(v => String(v).trim()))]
+            if (uniqueValues.every(v => !isNaN(parseFloat(v)))) fieldType = 'number'
+            else if (uniqueValues.length <= 10 && uniqueValues.length < sampleValues.length * 0.5) fieldType = 'select'
+          }
+          // Generate unique fieldId to avoid collisions
+          let baseId = header.toLowerCase().replace(/[^a-z0-9]/g, '_').replace(/_+/g, '_').replace(/^_|_$/g, '') || 'field'
+          let fieldId = baseId
+          let counter = 1
+          while (usedFieldIds.has(fieldId)) {
+            fieldId = `${baseId}_${counter}`
+            counter++
+          }
+          usedFieldIds.add(fieldId)
+          customInputs.push({
+            id: fieldId,
+            label: header,
+            type: fieldType,
+            enabled: true,
+            options: fieldType === 'select' ? [...new Set(importData.map(row => row[idx]).filter(v => v !== null && v !== undefined && v !== '').map(v => String(v).trim()))] : []
+          })
+          finalMapping[idx] = fieldId
+        }
+      })
+      // Create account with custom inputs
+      const { data: accountData, error: accountError } = await supabase.from('accounts').insert({
+        user_id: user.id,
+        name: importJournalName.trim(),
+        starting_balance: parseFloat(importStartingBalance) || 0,
+        custom_inputs: customInputs.length > 0 ? JSON.stringify(customInputs) : null
+      }).select().single()
+      if (accountError) throw accountError
+      // Process and insert trades
+      const tradesToInsert = []
+      for (const row of importData) {
+        const trade = { account_id: accountData.id }
+        const extraData = {}
+        for (const [colIdx, fieldId] of Object.entries(finalMapping)) {
+          const value = row[parseInt(colIdx)]
+          if (value === null || value === undefined || value === '') continue
+          const strValue = String(value).trim()
+          // Map to trade fields or extra_data
+          if (['symbol', 'pnl', 'outcome', 'direction', 'rr', 'date'].includes(fieldId)) {
+            if (fieldId === 'pnl') {
+              // Remove currency symbols and parse number
+              const cleanedValue = strValue.replace(/[$€£¥,\s]/g, '').replace(/^\((.+)\)$/, '-$1')
+              trade[fieldId] = parseFloat(cleanedValue) || 0
+            } else if (fieldId === 'rr') {
+              // RR can be null if not provided
+              const cleanedValue = strValue.replace(/[$€£¥,\s]/g, '').replace(/^\((.+)\)$/, '-$1')
+              const parsed = parseFloat(cleanedValue)
+              trade[fieldId] = !isNaN(parsed) ? parsed : null
+            }
+            else if (fieldId === 'date') {
+              // Try to parse date
+              let parsedDate = null
+              if (!isNaN(value) && value > 10000) {
+                // Excel serial date
+                const excelEpoch = new Date(1899, 11, 30)
+                parsedDate = new Date(excelEpoch.getTime() + value * 86400000)
+              } else {
+                parsedDate = new Date(strValue)
+              }
+              if (parsedDate && !isNaN(parsedDate.getTime())) {
+                trade.date = parsedDate.toISOString().split('T')[0]
+              }
+            } else if (fieldId === 'outcome') {
+              const lower = strValue.toLowerCase().trim()
+              if (lower.includes('win') || lower === 'w' || lower === '1' || lower === 'won') trade.outcome = 'win'
+              else if (lower.includes('loss') || lower.includes('lose') || lower.includes('lost') || lower === '-1' || lower === '0') trade.outcome = 'loss'
+              else if (lower.includes('be') || lower.includes('break') || lower.includes('even')) trade.outcome = 'breakeven'
+              else trade.outcome = strValue
+            } else if (fieldId === 'direction') {
+              const lower = strValue.toLowerCase().trim()
+              if (lower.includes('long') || lower.includes('buy') || lower === 'b') trade.direction = 'long'
+              else if (lower.includes('short') || lower.includes('sell') || lower === 's') trade.direction = 'short'
+              // 'l' alone is ambiguous - check if it looks like long based on context
+              else if (lower === 'l') trade.direction = 'long'
+              else trade.direction = strValue
+            } else {
+              trade[fieldId] = strValue
+            }
+          } else {
+            extraData[fieldId] = strValue
+          }
+        }
+        if (!trade.date) trade.date = new Date().toISOString().split('T')[0]
+        // Stringify extra_data to match the expected format
+        trade.extra_data = Object.keys(extraData).length > 0 ? JSON.stringify(extraData) : null
+        tradesToInsert.push(trade)
+      }
+      let insertedTrades = []
+      if (tradesToInsert.length > 0) {
+        // Insert in batches of 500 to avoid API limits
+        const batchSize = 500
+        for (let i = 0; i < tradesToInsert.length; i += batchSize) {
+          const batch = tradesToInsert.slice(i, i + batchSize)
+          const { data: batchData, error: tradesError } = await supabase.from('trades').insert(batch).select()
+          if (tradesError) throw tradesError
+          insertedTrades = insertedTrades.concat(batchData || [])
+        }
+      }
+      // Update local state with actual inserted trades (with DB IDs)
+      setAccounts([...accounts, accountData])
+      setTrades({ ...trades, [accountData.id]: insertedTrades.sort((a, b) => new Date(a.date) - new Date(b.date)) })
+      setTradeCounts({ ...tradeCounts, [accountData.id]: insertedTrades.length })
+      setShowImportModal(false)
+      setImporting(false)
+      // Brief success indication (modal closes, user sees new journal)
+    } catch (err) {
+      setImportError('Import failed: ' + (err.message || 'Unknown error'))
+      setImporting(false)
+    }
+  }
+
   async function submitQuickTrade() {
     if (!quickTradeAccount) { alert('Please select a journal'); return }
     if (!quickTradeSymbol?.trim()) { alert('Please enter a symbol'); return }
@@ -443,9 +699,17 @@ export default function DashboardPage() {
     const actualMin = Math.min(minBal, start)
     const actualRange = maxBal - actualMin || 1000
     const yStep = Math.ceil(actualRange / 6 / 1000) * 1000 || 1000
-    const yMax = Math.ceil(maxBal / yStep) * yStep
-    // yMin just one step below actual minimum - no huge gaps
-    const yMin = Math.max(0, Math.floor(actualMin / yStep) * yStep)
+    // Always ensure there's at least one step above max for breathing room
+    const yMax = Math.ceil(maxBal / yStep) * yStep + (maxBal === Math.ceil(maxBal / yStep) * yStep ? yStep : 0)
+    // yMin: show some positive space even if starting negative - at least one step below actual min
+    // but also ensure we show at least a bit above 0 if start is negative
+    let yMin = Math.floor(actualMin / yStep) * yStep
+    // If start is negative but we have positive values, ensure 0 is visible with headroom
+    if (start < 0 && maxBal > 0) {
+      yMin = Math.min(yMin, Math.floor(start / yStep) * yStep - yStep)
+    }
+    // Never let yMin go lower than one step below actualMin
+    yMin = Math.max(yMin, Math.floor(actualMin / yStep) * yStep - yStep)
     const yRange = yMax - yMin || yStep
     
     // Calculate zero line position (percentage from top) - for when actual balance goes negative
@@ -552,11 +816,11 @@ export default function DashboardPage() {
                 </div>
               )
             })}
-            {/* Start balance on Y-axis */}
-            {startLineY !== null && !yLabels.some(v => Math.abs(v - start) < (yLabels[0] - yLabels[1]) * 0.3) && (
-              <div style={{ position: 'absolute', right: 0, top: `${startLineY}%`, transform: 'translateY(-50%)', display: 'flex', alignItems: 'center' }}>
-                <span style={{ fontSize: '10px', color: '#22c55e', fontWeight: 600 }}>{start >= 1000 ? `$${(start/1000).toFixed(0)}k` : `$${start}`}</span>
-                <div style={{ width: '4px', height: '1px', background: '#22c55e', marginLeft: '3px' }} />
+            {/* Start balance on Y-axis - ALWAYS shows green "Start" label */}
+            {startLineY !== null && (
+              <div style={{ position: 'absolute', right: 0, top: `${startLineY}%`, transform: 'translateY(-50%)', display: 'flex', alignItems: 'center', zIndex: 5 }}>
+                <span style={{ fontSize: '10px', color: '#22c55e', fontWeight: 600, background: '#0d0d12', padding: '0 2px' }}>Start</span>
+                <div style={{ width: '4px', height: '1px', background: '#22c55e', marginLeft: '2px' }} />
               </div>
             )}
           </div>
@@ -593,10 +857,10 @@ export default function DashboardPage() {
               {greenPath && <path d={greenPath} fill="none" stroke="#22c55e" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />}
               {redPath && <path d={redPath} fill="none" stroke="#ef4444" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />}
             </svg>
-            {/* Start label */}
+            {/* Start label - grey "Start" text at end of line */}
             {startLineY !== null && (
-              <span style={{ position: 'absolute', right: '4px', top: `${startLineY}%`, transform: 'translateY(-50%)', fontSize: '9px', color: '#22c55e', background: '#0d0d12', padding: '0 4px', fontWeight: 600 }}>
-                Start: ${start >= 1000 ? `${(start/1000).toFixed(0)}k` : start}
+              <span style={{ position: 'absolute', right: '4px', top: `${startLineY}%`, transform: 'translateY(-50%)', fontSize: '9px', color: '#666', background: '#0d0d12', padding: '0 4px', fontWeight: 500 }}>
+                Start
               </span>
             )}
 
@@ -676,6 +940,7 @@ export default function DashboardPage() {
             </button>
           </div>
           <button onClick={() => setShowModal(true)} style={{ padding: '8px 16px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '6px', color: '#fff', fontSize: '13px', fontWeight: 600, cursor: 'pointer' }}>{isMobile ? '+ Add' : '+ Add Journal'}</button>
+          <button onClick={() => { setShowImportModal(true); setImportStep(1); setImportFile(null); setImportData([]); setImportHeaders([]); setImportMapping({}); setImportJournalName(''); setImportStartingBalance(''); setImportError('') }} style={{ padding: '8px 16px', background: 'linear-gradient(135deg, #9333ea 0%, #7c3aed 100%)', border: 'none', borderRadius: '6px', color: '#fff', fontSize: '13px', fontWeight: 600, cursor: 'pointer', boxShadow: '0 0 15px rgba(147,51,234,0.3)' }}>{isMobile ? 'Import' : 'Import Journal'}</button>
           <a href="/settings" style={{ padding: '8px 16px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '6px', color: '#fff', fontWeight: 600, fontSize: '13px', textDecoration: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }} title="Settings">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
           </a>
@@ -2004,6 +2269,141 @@ export default function DashboardPage() {
                   Edit
                 </button>
               </div>
+            </div>
+          </div>
+        )}
+
+        {/* Import Journal Modal */}
+        {showImportModal && (
+          <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.9)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100 }} onClick={() => setShowImportModal(false)}>
+            <div style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '12px', padding: '28px', width: '90%', maxWidth: importStep === 3 ? '800px' : '480px', maxHeight: '85vh', overflow: 'auto' }} onClick={e => e.stopPropagation()}>
+              {/* Header */}
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
+                <div>
+                  <h2 style={{ fontSize: '18px', fontWeight: 600, color: '#9333ea', margin: 0 }}>Import Journal</h2>
+                  <p style={{ fontSize: '12px', color: '#666', marginTop: '4px' }}>Step {importStep} of 3: {importStep === 1 ? 'Upload File' : importStep === 2 ? 'Map Columns' : 'Preview & Import'}</p>
+                </div>
+                <button onClick={() => setShowImportModal(false)} style={{ background: 'transparent', border: 'none', color: '#666', cursor: 'pointer', padding: '4px' }}>
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                </button>
+              </div>
+
+              {/* Step 1: File Upload */}
+              {importStep === 1 && (
+                <div>
+                  <div
+                    onDragOver={(e) => { e.preventDefault(); e.currentTarget.style.borderColor = '#9333ea' }}
+                    onDragLeave={(e) => { e.preventDefault(); e.currentTarget.style.borderColor = '#2a2a35' }}
+                    onDrop={(e) => { e.preventDefault(); e.currentTarget.style.borderColor = '#2a2a35'; const file = e.dataTransfer.files[0]; if (file) handleImportFile(file) }}
+                    style={{ border: '2px dashed #2a2a35', borderRadius: '12px', padding: '40px 20px', textAlign: 'center', cursor: 'pointer', transition: 'border-color 0.2s' }}
+                    onClick={() => document.getElementById('importFileInput').click()}
+                  >
+                    <input id="importFileInput" type="file" accept=".xlsx,.xls,.csv" onChange={(e) => { if (e.target.files[0]) handleImportFile(e.target.files[0]) }} style={{ display: 'none' }} />
+                    <div style={{ width: '60px', height: '60px', borderRadius: '50%', background: 'rgba(147,51,234,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
+                      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#9333ea" strokeWidth="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                    </div>
+                    <p style={{ color: '#fff', fontSize: '15px', fontWeight: 500, marginBottom: '6px' }}>Drop your file here</p>
+                    <p style={{ color: '#666', fontSize: '13px' }}>or click to browse</p>
+                    <p style={{ color: '#555', fontSize: '11px', marginTop: '12px' }}>Supports .xlsx, .xls, and .csv files</p>
+                  </div>
+                  {importError && <div style={{ marginTop: '16px', padding: '12px', background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.3)', borderRadius: '8px', color: '#ef4444', fontSize: '13px' }}>{importError}</div>}
+                </div>
+              )}
+
+              {/* Step 2: Column Mapping */}
+              {importStep === 2 && (
+                <div>
+                  <div style={{ marginBottom: '20px' }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '16px' }}>
+                      <div>
+                        <label style={{ display: 'block', fontSize: '11px', color: '#777', marginBottom: '6px', textTransform: 'uppercase' }}>Journal Name</label>
+                        <input type="text" value={importJournalName} onChange={e => setImportJournalName(e.target.value)} placeholder="My Journal" style={{ width: '100%', padding: '10px 12px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '13px', boxSizing: 'border-box' }} />
+                      </div>
+                      <div>
+                        <label style={{ display: 'block', fontSize: '11px', color: '#777', marginBottom: '6px', textTransform: 'uppercase' }}>Starting Balance ($)</label>
+                        <input type="number" value={importStartingBalance} onChange={e => setImportStartingBalance(e.target.value)} placeholder="10000" style={{ width: '100%', padding: '10px 12px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '13px', boxSizing: 'border-box' }} />
+                      </div>
+                    </div>
+                  </div>
+                  <div style={{ fontSize: '11px', color: '#666', textTransform: 'uppercase', marginBottom: '12px' }}>Map Your Columns</div>
+                  <p style={{ color: '#888', fontSize: '12px', marginBottom: '16px' }}>Auto-detected fields are highlighted. Unmapped columns will be created as custom inputs.</p>
+                  <div style={{ maxHeight: '300px', overflow: 'auto', marginBottom: '20px' }}>
+                    {importHeaders.map((header, idx) => (
+                      <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '10px 12px', background: importMapping[idx] ? 'rgba(147,51,234,0.05)' : '#0a0a0f', border: `1px solid ${importMapping[idx] ? 'rgba(147,51,234,0.3)' : '#1a1a22'}`, borderRadius: '8px', marginBottom: '8px' }}>
+                        <div style={{ flex: 1, fontSize: '13px', color: header ? '#fff' : '#666', fontWeight: 500, fontStyle: header ? 'normal' : 'italic' }}>{header || `(Column ${idx + 1})`}</div>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#555" strokeWidth="2"><path d="M5 12h14"/><path d="M12 5l7 7-7 7"/></svg>
+                        <select
+                          value={importMapping[idx] || ''}
+                          onChange={(e) => {
+                            const newMapping = { ...importMapping }
+                            if (e.target.value) newMapping[idx] = e.target.value
+                            else delete newMapping[idx]
+                            setImportMapping(newMapping)
+                          }}
+                          style={{ width: '140px', padding: '8px 10px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px', color: importMapping[idx] ? '#9333ea' : '#666', fontSize: '12px' }}
+                        >
+                          <option value="">Custom Input</option>
+                          {knownFields.map(field => (
+                            <option key={field.id} value={field.id} disabled={Object.values(importMapping).includes(field.id) && importMapping[idx] !== field.id}>{field.label}</option>
+                          ))}
+                        </select>
+                      </div>
+                    ))}
+                  </div>
+                  <div style={{ display: 'flex', gap: '12px' }}>
+                    <button onClick={() => { setImportStep(1); setImportFile(null) }} style={{ flex: 1, padding: '12px', background: 'transparent', border: '1px solid #1a1a22', borderRadius: '8px', color: '#888', fontWeight: 600, fontSize: '14px', cursor: 'pointer' }}>Back</button>
+                    <button onClick={() => setImportStep(3)} style={{ flex: 1, padding: '12px', background: 'linear-gradient(135deg, #9333ea 0%, #7c3aed 100%)', border: 'none', borderRadius: '8px', color: '#fff', fontWeight: 600, fontSize: '14px', cursor: 'pointer' }}>Preview</button>
+                  </div>
+                  {importError && <div style={{ marginTop: '16px', padding: '12px', background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.3)', borderRadius: '8px', color: '#ef4444', fontSize: '13px' }}>{importError}</div>}
+                </div>
+              )}
+
+              {/* Step 3: Preview & Import */}
+              {importStep === 3 && (
+                <div>
+                  <div style={{ marginBottom: '16px', padding: '12px 16px', background: 'rgba(147,51,234,0.1)', border: '1px solid rgba(147,51,234,0.3)', borderRadius: '8px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '16px', fontSize: '13px' }}>
+                      <span style={{ color: '#9333ea', fontWeight: 600 }}>{importJournalName}</span>
+                      <span style={{ color: '#666' }}>•</span>
+                      <span style={{ color: '#888' }}>{importData.length} trades</span>
+                      {importStartingBalance && <>
+                        <span style={{ color: '#666' }}>•</span>
+                        <span style={{ color: '#888' }}>Starting: ${parseFloat(importStartingBalance).toLocaleString()}</span>
+                      </>}
+                    </div>
+                  </div>
+                  <div style={{ fontSize: '11px', color: '#666', textTransform: 'uppercase', marginBottom: '8px' }}>Preview (first 5 rows)</div>
+                  <div style={{ overflow: 'auto', marginBottom: '20px', border: '1px solid #1a1a22', borderRadius: '8px' }}>
+                    <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '12px' }}>
+                      <thead>
+                        <tr style={{ background: '#0a0a0f' }}>
+                          {importHeaders.map((header, idx) => (
+                            <th key={idx} style={{ padding: '10px 12px', textAlign: 'left', color: importMapping[idx] ? '#9333ea' : '#666', fontWeight: 500, borderBottom: '1px solid #1a1a22', whiteSpace: 'nowrap' }}>
+                              {importMapping[idx] ? knownFields.find(f => f.id === importMapping[idx])?.label || header || `Column ${idx + 1}` : header || `Column ${idx + 1}`}
+                            </th>
+                          ))}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {importData.slice(0, 5).map((row, rowIdx) => (
+                          <tr key={rowIdx} style={{ background: rowIdx % 2 === 0 ? '#0d0d12' : '#0a0a0f' }}>
+                            {importHeaders.map((_, colIdx) => (
+                              <td key={colIdx} style={{ padding: '8px 12px', color: '#ccc', borderBottom: '1px solid #1a1a22', whiteSpace: 'nowrap' }}>{row[colIdx] ?? '-'}</td>
+                            ))}
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                  <div style={{ display: 'flex', gap: '12px' }}>
+                    <button onClick={() => setImportStep(2)} style={{ flex: 1, padding: '12px', background: 'transparent', border: '1px solid #1a1a22', borderRadius: '8px', color: '#888', fontWeight: 600, fontSize: '14px', cursor: 'pointer' }}>Back</button>
+                    <button onClick={processImport} disabled={importing || !importJournalName.trim()} style={{ flex: 1, padding: '12px', background: (importing || !importJournalName.trim()) ? '#1a1a22' : 'linear-gradient(135deg, #9333ea 0%, #7c3aed 100%)', border: 'none', borderRadius: '8px', color: (importing || !importJournalName.trim()) ? '#666' : '#fff', fontWeight: 600, fontSize: '14px', cursor: (importing || !importJournalName.trim()) ? 'not-allowed' : 'pointer', boxShadow: (importing || !importJournalName.trim()) ? 'none' : '0 0 15px rgba(147,51,234,0.3)' }}>
+                      {importing ? 'Importing...' : `Import ${importData.length} Trades`}
+                    </button>
+                  </div>
+                  {importError && <div style={{ marginTop: '16px', padding: '12px', background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.3)', borderRadius: '8px', color: '#ef4444', fontSize: '13px' }}>{importError}</div>}
+                </div>
+              )}
             </div>
           </div>
         )}
