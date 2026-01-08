@@ -944,10 +944,10 @@ export default function DashboardPage() {
               {greenPath && <path d={greenPath} fill="none" stroke="#22c55e" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />}
               {redPath && <path d={redPath} fill="none" stroke="#ef4444" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />}
             </svg>
-            {/* Start label - green value at end of line */}
+            {/* Start label - grey "Start" text at end of line */}
             {startLineY !== null && (
-              <span style={{ position: 'absolute', right: '4px', top: `${startLineY}%`, transform: 'translateY(-50%)', fontSize: '9px', color: '#22c55e', background: '#0d0d12', padding: '0 4px', fontWeight: 600 }}>
-                {start >= 1000000 ? `$${(start/1000000).toFixed(1)}M` : start >= 1000 ? `$${(start/1000).toFixed(0)}k` : `$${start}`}
+              <span style={{ position: 'absolute', right: '4px', top: `${startLineY}%`, transform: 'translateY(-50%)', fontSize: '9px', color: '#666', background: '#0d0d12', padding: '0 4px', fontWeight: 500 }}>
+                Start
               </span>
             )}
 
@@ -977,6 +977,12 @@ export default function DashboardPage() {
                 </div>
               )
             })}
+            {/* Green start value on x-axis */}
+            {startLineY !== null && (
+              <span style={{ position: 'absolute', right: '0', top: '4px', fontSize: '10px', color: '#22c55e', fontWeight: 600 }}>
+                {start >= 1000000 ? `$${(start/1000000).toFixed(1)}M` : start >= 1000 ? `$${(start/1000).toFixed(0)}k` : `$${start}`}
+              </span>
+            )}
           </div>
         </div>
       </div>

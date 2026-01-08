@@ -1983,10 +1983,10 @@ export default function AccountPage() {
                                     {startLineY !== null && (
                                       <div style={{ position: 'absolute', left: 0, right: 0, top: `${startLineY}%`, borderTop: '1px dashed #666', zIndex: 1 }} />
                                     )}
-                                    {/* Start label at end of line - green value */}
+                                    {/* Start label at end of line - grey "Start" text */}
                                     {startLineY !== null && (
-                                      <span style={{ position: 'absolute', right: '4px', top: `${startLineY}%`, transform: 'translateY(-50%)', fontSize: '9px', color: '#22c55e', background: '#0d0d12', padding: '0 4px', fontWeight: 600 }}>
-                                        {displayStartingBalance >= 1000000 ? `$${(displayStartingBalance/1000000).toFixed(1)}M` : displayStartingBalance >= 1000 ? `$${(displayStartingBalance/1000).toFixed(0)}k` : `$${displayStartingBalance}`}
+                                      <span style={{ position: 'absolute', right: '4px', top: `${startLineY}%`, transform: 'translateY(-50%)', fontSize: '9px', color: '#666', background: '#0d0d12', padding: '0 4px', fontWeight: 500 }}>
+                                        Start
                                       </span>
                                     )}
                                     <svg style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', overflow: 'visible' }} viewBox={`0 0 ${svgW} ${svgH}`} preserveAspectRatio="none"
@@ -2231,6 +2231,12 @@ export default function AccountPage() {
                                         <span style={{ fontSize: '9px', color: '#999', marginTop: '3px', whiteSpace: 'nowrap' }}>{l.label}</span>
                                       </div>
                                     ))}
+                                    {/* Green start value on x-axis */}
+                                    {startLineY !== null && (
+                                      <span style={{ position: 'absolute', right: '0', top: '4px', fontSize: '9px', color: '#22c55e', fontWeight: 600 }}>
+                                        {displayStartingBalance >= 1000000 ? `$${(displayStartingBalance/1000000).toFixed(1)}M` : displayStartingBalance >= 1000 ? `$${(displayStartingBalance/1000).toFixed(0)}k` : `$${displayStartingBalance}`}
+                                      </span>
+                                    )}
                                   </div>
                                 </div>
                               </>
@@ -3880,7 +3886,7 @@ export default function AccountPage() {
                           {equityCurveGroupBy === 'total' && startYEnl >= 0 && startYEnl <= svgH && (
                             <>
                               <div style={{ position: 'absolute', left: 0, right: 0, top: `${(startYEnl / svgH) * 100}%`, borderTop: '1px dashed #666', transform: 'translateY(-50%)', zIndex: 1 }} />
-                              <span style={{ position: 'absolute', right: '4px', top: `${(startYEnl / svgH) * 100}%`, transform: 'translateY(-50%)', fontSize: '10px', color: '#22c55e', background: '#0d0d12', padding: '0 4px', fontWeight: 600 }}>{startingBalance >= 1000000 ? `$${(startingBalance/1000000).toFixed(1)}M` : startingBalance >= 1000 ? `$${(startingBalance/1000).toFixed(0)}k` : `$${startingBalance}`}</span>
+                              <span style={{ position: 'absolute', right: '4px', top: `${(startYEnl / svgH) * 100}%`, transform: 'translateY(-50%)', fontSize: '10px', color: '#666', background: '#0d0d12', padding: '0 4px', fontWeight: 500 }}>Start</span>
                             </>
                           )}
                           <svg style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', overflow: 'visible' }} viewBox={`0 0 ${svgW} ${svgH}`} preserveAspectRatio="none"
@@ -4095,6 +4101,12 @@ export default function AccountPage() {
                             <span style={{ fontSize: '10px', color: '#999', marginTop: '2px', whiteSpace: 'nowrap' }}>{l.label}</span>
                           </div>
                         ))}
+                        {/* Green start value on x-axis */}
+                        {equityCurveGroupBy === 'total' && startYEnl >= 0 && startYEnl <= svgH && (
+                          <span style={{ position: 'absolute', right: '0', top: '4px', fontSize: '10px', color: '#22c55e', fontWeight: 600 }}>
+                            {startingBalance >= 1000000 ? `$${(startingBalance/1000000).toFixed(1)}M` : startingBalance >= 1000 ? `$${(startingBalance/1000).toFixed(0)}k` : `$${startingBalance}`}
+                          </span>
+                        )}
                       </div>
                     </div>
                     {/* Legend - only for total mode (multi-line has legend in top-left of chart) */}
