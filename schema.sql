@@ -29,6 +29,7 @@ CREATE TABLE IF NOT EXISTS profiles (
   subscription_start TIMESTAMPTZ,
   subscription_end TIMESTAMPTZ,
   cancelled_at TIMESTAMPTZ,
+  notes_data JSONB DEFAULT NULL,
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
