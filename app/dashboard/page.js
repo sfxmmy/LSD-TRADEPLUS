@@ -1951,13 +1951,25 @@ export default function DashboardPage() {
               <h2 style={{ fontSize: '18px', fontWeight: 600, marginBottom: '20px' }}>Create New Journal</h2>
               <div style={{ marginBottom: '14px' }}><label style={{ display: 'block', fontSize: '11px', color: '#999', marginBottom: '6px', textTransform: 'uppercase' }}>Journal Name</label><input type="text" value={name} onChange={e => setName(e.target.value)} placeholder="e.g. FTMO 10k" autoFocus style={{ width: '100%', padding: '12px 14px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '14px', boxSizing: 'border-box' }} /></div>
               <div style={{ marginBottom: '14px' }}><label style={{ display: 'block', fontSize: '11px', color: '#999', marginBottom: '6px', textTransform: 'uppercase' }}>Starting Balance ($)</label><input type="number" value={balance} onChange={e => setBalance(e.target.value)} placeholder="e.g. 10000" style={{ width: '100%', padding: '12px 14px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '14px', boxSizing: 'border-box' }} /></div>
-              <div style={{ fontSize: '11px', color: '#666', marginBottom: '10px', paddingTop: '8px', borderTop: '1px solid #1a1a22' }}>PROP FIRM RULES (Optional)</div>
-              <div style={{ marginBottom: '12px' }}>
-                <div><label style={{ display: 'block', fontSize: '11px', color: '#999', marginBottom: '6px', textTransform: 'uppercase' }}>Profit Target (%)</label><input type="number" step="0.1" value={profitTarget} onChange={e => setProfitTarget(e.target.value)} placeholder="e.g. 10" style={{ width: '100%', padding: '12px 14px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '14px', boxSizing: 'border-box' }} /></div>
-              </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '20px' }}>
-                <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}><input type="checkbox" checked={consistencyEnabled} onChange={e => setConsistencyEnabled(e.target.checked)} style={{ width: '16px', height: '16px', accentColor: '#22c55e' }} /><span style={{ fontSize: '12px', color: '#999' }}>Consistency Rule</span></label>
-                {consistencyEnabled && <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><input type="number" value={consistencyPct} onChange={e => setConsistencyPct(e.target.value)} style={{ width: '60px', padding: '8px 10px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '13px', textAlign: 'center' }} /><span style={{ fontSize: '11px', color: '#666' }}>% max/day</span></div>}
+              <div style={{ background: '#0a0a0f', border: '1px solid #22c55e', borderRadius: '10px', padding: '14px', marginBottom: '20px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
+                  <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#22c55e' }} />
+                  <span style={{ fontSize: '11px', color: '#22c55e', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px' }}>Prop Firm Rules</span>
+                </div>
+                <div style={{ marginBottom: '12px' }}>
+                  <label style={{ display: 'block', fontSize: '10px', color: '#666', marginBottom: '6px', textTransform: 'uppercase' }}>Profit Target (%)</label>
+                  <input type="number" step="0.1" value={profitTarget} onChange={e => setProfitTarget(e.target.value)} placeholder="e.g. 10" style={{ width: '100%', padding: '10px 12px', background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '14px', boxSizing: 'border-box' }} />
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 10px', background: '#0d0d12', borderRadius: '6px', border: '1px solid #1a1a22' }}>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+                    <input type="checkbox" checked={consistencyEnabled} onChange={e => setConsistencyEnabled(e.target.checked)} style={{ width: '16px', height: '16px', accentColor: '#22c55e', cursor: 'pointer' }} />
+                    <span style={{ fontSize: '12px', color: '#999' }}>Consistency Rule</span>
+                  </label>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <input type="number" value={consistencyPct} onChange={e => setConsistencyPct(e.target.value)} disabled={!consistencyEnabled} style={{ width: '50px', padding: '6px 8px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '4px', color: consistencyEnabled ? '#fff' : '#555', fontSize: '12px', textAlign: 'center', opacity: consistencyEnabled ? 1 : 0.5 }} />
+                    <span style={{ fontSize: '10px', color: '#666' }}>% max/day</span>
+                  </div>
+                </div>
               </div>
               <div style={{ display: 'flex', gap: '12px' }}><button onClick={createJournal} disabled={creating || !name.trim() || !balance} style={{ flex: 1, padding: '12px', background: '#22c55e', border: 'none', borderRadius: '6px', color: '#fff', fontWeight: 600, fontSize: '14px', cursor: 'pointer', opacity: (creating || !name.trim() || !balance) ? 0.5 : 1 }}>{creating ? 'Creating...' : 'Create'}</button><button onClick={() => { setShowModal(false); setName(''); setBalance(''); setProfitTarget(''); setMaxDrawdown('') }} style={{ flex: 1, padding: '12px', background: 'transparent', border: '1px solid #1a1a22', borderRadius: '6px', color: '#999', fontWeight: 600, fontSize: '14px', cursor: 'pointer' }}>Cancel</button></div>
             </div>
@@ -1976,8 +1988,11 @@ export default function DashboardPage() {
               </div>
 
               {/* Prop Firm Section */}
-              <div style={{ background: '#141418', border: '1px solid #1a1a22', borderRadius: '10px', padding: '16px', marginBottom: '20px' }}>
-                <div style={{ fontSize: '12px', color: '#22c55e', marginBottom: '16px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px' }}>Prop Firm Rules</div>
+              <div style={{ background: '#141418', border: '1px solid #22c55e', borderRadius: '10px', padding: '16px', marginBottom: '20px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '14px' }}>
+                  <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#22c55e' }} />
+                  <span style={{ fontSize: '12px', color: '#22c55e', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px' }}>Prop Firm Rules</span>
+                </div>
 
                 <div style={{ marginBottom: '14px' }}>
                   <label style={{ display: 'block', fontSize: '10px', color: '#666', marginBottom: '6px', textTransform: 'uppercase' }}>Profit Target (%)</label>
@@ -1986,15 +2001,13 @@ export default function DashboardPage() {
 
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 12px', background: '#0d0d12', borderRadius: '6px', border: '1px solid #2a2a35' }}>
                   <label style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer' }}>
-                    <input type="checkbox" checked={editConsistencyEnabled} onChange={e => setEditConsistencyEnabled(e.target.checked)} style={{ width: '18px', height: '18px', accentColor: '#22c55e' }} />
+                    <input type="checkbox" checked={editConsistencyEnabled} onChange={e => setEditConsistencyEnabled(e.target.checked)} style={{ width: '18px', height: '18px', accentColor: '#22c55e', cursor: 'pointer' }} />
                     <span style={{ fontSize: '13px', color: '#ccc' }}>Consistency Rule</span>
                   </label>
-                  {editConsistencyEnabled && (
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <input type="number" value={editConsistencyPct} onChange={e => setEditConsistencyPct(e.target.value)} style={{ width: '55px', padding: '6px 8px', background: '#141418', border: '1px solid #2a2a35', borderRadius: '4px', color: '#fff', fontSize: '13px', textAlign: 'center' }} />
-                      <span style={{ fontSize: '11px', color: '#666' }}>% max/day</span>
-                    </div>
-                  )}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <input type="number" value={editConsistencyPct} onChange={e => setEditConsistencyPct(e.target.value)} disabled={!editConsistencyEnabled} style={{ width: '55px', padding: '6px 8px', background: '#141418', border: '1px solid #2a2a35', borderRadius: '4px', color: editConsistencyEnabled ? '#fff' : '#555', fontSize: '13px', textAlign: 'center', opacity: editConsistencyEnabled ? 1 : 0.5 }} />
+                    <span style={{ fontSize: '11px', color: '#666' }}>% max/day</span>
+                  </div>
                 </div>
               </div>
 
