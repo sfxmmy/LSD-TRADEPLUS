@@ -4436,11 +4436,18 @@ export default function AccountPage() {
                 // Include profit target and drawdown floor in range - calculate directly from account settings
                 const ddParsedEnl = parseFloat(account?.max_drawdown)
                 const ptParsedEnl = parseFloat(account?.profit_target)
-                const ddFloorValEnl = !isNaN(ddParsedEnl) && ddParsedEnl > 0 ? startingBalance * (1 - ddParsedEnl / 100) : null
+                const ddFloorValEnl = !isNaN(ddParsedEnl) && ddParsedEnl > 0 && !account?.max_dd_enabled ? startingBalance * (1 - ddParsedEnl / 100) : null
                 const profitTargetValEnl = !isNaN(ptParsedEnl) && ptParsedEnl > 0 ? startingBalance * (1 + ptParsedEnl / 100) : null
+                // New DD floor values for range
+                const dailyDdPctEnl = parseFloat(account?.daily_dd_pct)
+                const dailyDdFloorValEnl = account?.daily_dd_enabled && !isNaN(dailyDdPctEnl) && dailyDdPctEnl > 0 ? startingBalance * (1 - dailyDdPctEnl / 100) : null
+                const maxDdPctEnl = parseFloat(account?.max_dd_pct)
+                const maxDdFloorValEnl = account?.max_dd_enabled && !isNaN(maxDdPctEnl) && maxDdPctEnl > 0 ? startingBalance * (1 - maxDdPctEnl / 100) : null
                 if (equityCurveGroupBy === 'total') {
                   if (ddFloorValEnl) minBal = Math.min(minBal, ddFloorValEnl)
                   if (profitTargetValEnl) maxBal = Math.max(maxBal, profitTargetValEnl)
+                  if (dailyDdFloorValEnl) minBal = Math.min(minBal, dailyDdFloorValEnl)
+                  if (maxDdFloorValEnl) minBal = Math.min(minBal, maxDdFloorValEnl)
                 }
 
                 const range = maxBal - minBal || 1000
