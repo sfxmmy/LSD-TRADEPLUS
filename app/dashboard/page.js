@@ -856,18 +856,21 @@ export default function DashboardPage() {
     let maxBal = Math.max(...points.map(p => p.balance))
     let minBal = Math.min(...points.map(p => p.balance))
 
-    // Include prop firm target/floor in range (legacy)
+    // Include prop firm target/floor in range (legacy) - clamp values to valid ranges
     const maxDDParsed = parseFloat(account?.max_drawdown)
     const ptParsed = parseFloat(account?.profit_target)
-    const ddFloor = !isNaN(maxDDParsed) && maxDDParsed > 0 ? start * (1 - maxDDParsed / 100) : null
-    const profitTarget = !isNaN(ptParsed) && ptParsed > 0 ? start * (1 + ptParsed / 100) : null
+    const maxDDClamped = !isNaN(maxDDParsed) ? Math.min(99, Math.max(0, maxDDParsed)) : 0
+    const ptClamped = !isNaN(ptParsed) ? Math.min(500, Math.max(0, ptParsed)) : 0
+    const ddFloor = maxDDClamped > 0 ? start * (1 - maxDDClamped / 100) : null
+    const profitTarget = ptClamped > 0 ? start * (1 + ptClamped / 100) : null
 
-    // New Daily Drawdown calculation (orange line - resets each day)
+    // New Daily Drawdown calculation (orange line - resets each day) - clamp to valid range
     const dailyDdEnabled = account?.daily_dd_enabled
-    const dailyDdPct = parseFloat(account?.daily_dd_pct)
+    const dailyDdPctRaw = parseFloat(account?.daily_dd_pct)
+    const dailyDdPct = !isNaN(dailyDdPctRaw) ? Math.min(99, Math.max(0, dailyDdPctRaw)) : 0
     const dailyDdCalc = account?.daily_dd_calc || 'balance'
     let dailyDdFloorPoints = []
-    if (dailyDdEnabled && !isNaN(dailyDdPct) && dailyDdPct > 0) {
+    if (dailyDdEnabled && dailyDdPct > 0) {
       // Group trades by day and calculate daily floor
       let currentDayStart = start
       let currentDay = null
@@ -890,15 +893,16 @@ export default function DashboardPage() {
       })
     }
 
-    // New Max Drawdown calculation (red line - static or trailing)
+    // New Max Drawdown calculation (red line - static or trailing) - clamp to valid range
     const maxDdEnabled = account?.max_dd_enabled
-    const maxDdPct = parseFloat(account?.max_dd_pct)
+    const maxDdPctRaw = parseFloat(account?.max_dd_pct)
+    const maxDdPct = !isNaN(maxDdPctRaw) ? Math.min(99, Math.max(0, maxDdPctRaw)) : 0
     const maxDdType = account?.max_dd_type || 'static'
     const maxDdCalc = account?.max_dd_calc || 'balance'
     const maxDdStopsAt = account?.max_dd_trailing_stops_at || 'never'
     let maxDdFloorPoints = []
     let maxDdStaticFloor = null
-    if (maxDdEnabled && !isNaN(maxDdPct) && maxDdPct > 0) {
+    if (maxDdEnabled && maxDdPct > 0) {
       if (maxDdType === 'static') {
         // Static - simple horizontal line
         maxDdStaticFloor = start * (1 - maxDdPct / 100)
@@ -1990,7 +1994,7 @@ export default function DashboardPage() {
                 </div>
                 <div style={{ marginBottom: '12px' }}>
                   <label style={{ display: 'block', fontSize: '10px', color: '#666', marginBottom: '6px', textTransform: 'uppercase' }}>Profit Target (%)</label>
-                  <input type="number" step="0.1" value={profitTarget} onChange={e => setProfitTarget(e.target.value)} placeholder="e.g. 10" style={{ width: '100%', padding: '10px 12px', background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '14px', boxSizing: 'border-box' }} />
+                  <input type="number" step="0.1" min="0" max="500" value={profitTarget} onChange={e => setProfitTarget(e.target.value)} placeholder="e.g. 10" style={{ width: '100%', padding: '10px 12px', background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '14px', boxSizing: 'border-box' }} />
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 10px', background: '#0d0d12', borderRadius: '6px', border: '1px solid #1a1a22' }}>
                   <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
@@ -1998,7 +2002,7 @@ export default function DashboardPage() {
                     <span style={{ fontSize: '12px', color: '#999' }}>Consistency Rule</span>
                   </label>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    <input type="number" value={consistencyPct} onChange={e => setConsistencyPct(e.target.value)} disabled={!consistencyEnabled} style={{ width: '50px', padding: '6px 8px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '4px', color: consistencyEnabled ? '#fff' : '#555', fontSize: '12px', textAlign: 'center', opacity: consistencyEnabled ? 1 : 0.5 }} />
+                    <input type="number" min="1" max="100" value={consistencyPct} onChange={e => setConsistencyPct(e.target.value)} disabled={!consistencyEnabled} style={{ width: '50px', padding: '6px 8px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '4px', color: consistencyEnabled ? '#fff' : '#555', fontSize: '12px', textAlign: 'center', opacity: consistencyEnabled ? 1 : 0.5 }} />
                     <span style={{ fontSize: '10px', color: '#666' }}>% max/day</span>
                   </div>
                 </div>
@@ -2028,7 +2032,7 @@ export default function DashboardPage() {
 
                 <div style={{ marginBottom: '14px' }}>
                   <label style={{ display: 'block', fontSize: '10px', color: '#666', marginBottom: '6px', textTransform: 'uppercase' }}>Profit Target (%)</label>
-                  <input type="number" step="0.1" value={editProfitTarget} onChange={e => setEditProfitTarget(e.target.value)} placeholder="e.g. 10" style={{ width: '100%', padding: '12px 14px', background: '#0d0d12', border: '1px solid #2a2a35', borderRadius: '6px', color: '#fff', fontSize: '14px', boxSizing: 'border-box' }} />
+                  <input type="number" step="0.1" min="0" max="500" value={editProfitTarget} onChange={e => setEditProfitTarget(e.target.value)} placeholder="e.g. 10" style={{ width: '100%', padding: '12px 14px', background: '#0d0d12', border: '1px solid #2a2a35', borderRadius: '6px', color: '#fff', fontSize: '14px', boxSizing: 'border-box' }} />
                 </div>
 
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 12px', background: '#0d0d12', borderRadius: '6px', border: '1px solid #2a2a35' }}>
@@ -2037,7 +2041,7 @@ export default function DashboardPage() {
                     <span style={{ fontSize: '13px', color: '#ccc' }}>Consistency Rule</span>
                   </label>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <input type="number" value={editConsistencyPct} onChange={e => setEditConsistencyPct(e.target.value)} disabled={!editConsistencyEnabled} style={{ width: '55px', padding: '6px 8px', background: '#141418', border: '1px solid #2a2a35', borderRadius: '4px', color: editConsistencyEnabled ? '#fff' : '#555', fontSize: '13px', textAlign: 'center', opacity: editConsistencyEnabled ? 1 : 0.5 }} />
+                    <input type="number" min="1" max="100" value={editConsistencyPct} onChange={e => setEditConsistencyPct(e.target.value)} disabled={!editConsistencyEnabled} style={{ width: '55px', padding: '6px 8px', background: '#141418', border: '1px solid #2a2a35', borderRadius: '4px', color: editConsistencyEnabled ? '#fff' : '#555', fontSize: '13px', textAlign: 'center', opacity: editConsistencyEnabled ? 1 : 0.5 }} />
                     <span style={{ fontSize: '11px', color: '#666' }}>% max/day</span>
                   </div>
                 </div>
@@ -2058,7 +2062,7 @@ export default function DashboardPage() {
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px' }}>
                     <div>
                       <label style={{ display: 'block', fontSize: '10px', color: '#666', marginBottom: '6px', textTransform: 'uppercase' }}>Percentage (%)</label>
-                      <input type="number" step="0.1" value={editDailyDdPct} onChange={e => setEditDailyDdPct(e.target.value)} placeholder="e.g. 5" style={{ width: '100%', padding: '12px 14px', background: '#0d0d12', border: '1px solid #2a2a35', borderRadius: '6px', color: '#fff', fontSize: '14px', boxSizing: 'border-box' }} />
+                      <input type="number" step="0.1" min="0" max="99" value={editDailyDdPct} onChange={e => setEditDailyDdPct(e.target.value)} placeholder="e.g. 5" style={{ width: '100%', padding: '12px 14px', background: '#0d0d12', border: '1px solid #2a2a35', borderRadius: '6px', color: '#fff', fontSize: '14px', boxSizing: 'border-box' }} />
                     </div>
                     <div>
                       <label style={{ display: 'block', fontSize: '10px', color: '#666', marginBottom: '6px', textTransform: 'uppercase' }}>Calculation</label>
@@ -2087,7 +2091,7 @@ export default function DashboardPage() {
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px', marginBottom: '14px' }}>
                       <div>
                         <label style={{ display: 'block', fontSize: '10px', color: '#666', marginBottom: '6px', textTransform: 'uppercase' }}>Percentage (%)</label>
-                        <input type="number" step="0.1" value={editMaxDdPct} onChange={e => setEditMaxDdPct(e.target.value)} placeholder="e.g. 10" style={{ width: '100%', padding: '12px 14px', background: '#0d0d12', border: '1px solid #2a2a35', borderRadius: '6px', color: '#fff', fontSize: '14px', boxSizing: 'border-box' }} />
+                        <input type="number" step="0.1" min="0" max="99" value={editMaxDdPct} onChange={e => setEditMaxDdPct(e.target.value)} placeholder="e.g. 10" style={{ width: '100%', padding: '12px 14px', background: '#0d0d12', border: '1px solid #2a2a35', borderRadius: '6px', color: '#fff', fontSize: '14px', boxSizing: 'border-box' }} />
                       </div>
                       <div>
                         <label style={{ display: 'block', fontSize: '10px', color: '#666', marginBottom: '6px', textTransform: 'uppercase' }}>Type</label>

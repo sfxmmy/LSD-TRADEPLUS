@@ -2070,20 +2070,23 @@ export default function AccountPage() {
                             const zeroY = hasNegative ? ((yMax - 0) / yRange) * 100 : null
                             // Starting balance line - always show in total mode
                             const startLineY = equityCurveGroupBy === 'total' && !hasNegative ? ((yMax - displayStartingBalance) / yRange) * 100 : null
-                            // Drawdown floor line - calculate directly from account settings (legacy)
+                            // Drawdown floor line - calculate directly from account settings (legacy) - clamp to valid range
                             const maxDDParsed = parseFloat(account?.max_drawdown)
-                            const ddFloor = !isNaN(maxDDParsed) && maxDDParsed > 0 && !account?.max_dd_enabled ? displayStartingBalance * (1 - maxDDParsed / 100) : null
+                            const maxDDClamped = !isNaN(maxDDParsed) ? Math.min(99, Math.max(0, maxDDParsed)) : 0
+                            const ddFloor = maxDDClamped > 0 && !account?.max_dd_enabled ? displayStartingBalance * (1 - maxDDClamped / 100) : null
                             const ddFloorY = equityCurveGroupBy === 'total' && ddFloor ? ((yMax - ddFloor) / yRange) * 100 : null
-                            // Profit target line - calculate directly from account settings
+                            // Profit target line - calculate directly from account settings - clamp to valid range
                             const profitTargetParsed = parseFloat(account?.profit_target)
-                            const profitTarget = !isNaN(profitTargetParsed) && profitTargetParsed > 0 ? displayStartingBalance * (1 + profitTargetParsed / 100) : null
+                            const ptClamped = !isNaN(profitTargetParsed) ? Math.min(500, Math.max(0, profitTargetParsed)) : 0
+                            const profitTarget = ptClamped > 0 ? displayStartingBalance * (1 + ptClamped / 100) : null
                             const profitTargetY = equityCurveGroupBy === 'total' && profitTarget ? ((yMax - profitTarget) / yRange) * 100 : null
 
-                            // New Daily Drawdown calculation (orange line - resets each day)
+                            // New Daily Drawdown calculation (orange line - resets each day) - clamp to valid range
                             const dailyDdEnabled = account?.daily_dd_enabled
-                            const dailyDdPct = parseFloat(account?.daily_dd_pct)
+                            const dailyDdPctRaw = parseFloat(account?.daily_dd_pct)
+                            const dailyDdPct = !isNaN(dailyDdPctRaw) ? Math.min(99, Math.max(0, dailyDdPctRaw)) : 0
                             let dailyDdFloorPoints = []
-                            if (equityCurveGroupBy === 'total' && dailyDdEnabled && !isNaN(dailyDdPct) && dailyDdPct > 0) {
+                            if (equityCurveGroupBy === 'total' && dailyDdEnabled && dailyDdPct > 0) {
                               let currentDayStart = displayStartingBalance
                               let currentDay = null
                               const totalPoints = [{ balance: displayStartingBalance, date: null }]
@@ -2103,14 +2106,15 @@ export default function AccountPage() {
                               })
                             }
 
-                            // New Max Drawdown calculation (red line - static or trailing)
+                            // New Max Drawdown calculation (red line - static or trailing) - clamp to valid range
                             const maxDdEnabled = account?.max_dd_enabled
-                            const maxDdPct = parseFloat(account?.max_dd_pct)
+                            const maxDdPctRaw = parseFloat(account?.max_dd_pct)
+                            const maxDdPct = !isNaN(maxDdPctRaw) ? Math.min(99, Math.max(0, maxDdPctRaw)) : 0
                             const maxDdType = account?.max_dd_type || 'static'
                             const maxDdStopsAt = account?.max_dd_trailing_stops_at || 'never'
                             let maxDdFloorPoints = []
                             let maxDdStaticFloor = null
-                            if (equityCurveGroupBy === 'total' && maxDdEnabled && !isNaN(maxDdPct) && maxDdPct > 0) {
+                            if (equityCurveGroupBy === 'total' && maxDdEnabled && maxDdPct > 0) {
                               if (maxDdType === 'static') {
                                 maxDdStaticFloor = displayStartingBalance * (1 - maxDdPct / 100)
                               } else {
@@ -4433,16 +4437,20 @@ export default function AccountPage() {
                 let maxBal = allBalances.length > 0 ? Math.max(...allBalances) : startingBalance
                 let minBal = allBalances.length > 0 ? Math.min(...allBalances) : startingBalance
 
-                // Include profit target and drawdown floor in range - calculate directly from account settings
+                // Include profit target and drawdown floor in range - clamp to valid ranges
                 const ddParsedEnl = parseFloat(account?.max_drawdown)
+                const ddClampedEnl = !isNaN(ddParsedEnl) ? Math.min(99, Math.max(0, ddParsedEnl)) : 0
                 const ptParsedEnl = parseFloat(account?.profit_target)
-                const ddFloorValEnl = !isNaN(ddParsedEnl) && ddParsedEnl > 0 && !account?.max_dd_enabled ? startingBalance * (1 - ddParsedEnl / 100) : null
-                const profitTargetValEnl = !isNaN(ptParsedEnl) && ptParsedEnl > 0 ? startingBalance * (1 + ptParsedEnl / 100) : null
-                // New DD floor values for range
-                const dailyDdPctEnl = parseFloat(account?.daily_dd_pct)
-                const dailyDdFloorValEnl = account?.daily_dd_enabled && !isNaN(dailyDdPctEnl) && dailyDdPctEnl > 0 ? startingBalance * (1 - dailyDdPctEnl / 100) : null
-                const maxDdPctEnl = parseFloat(account?.max_dd_pct)
-                const maxDdFloorValEnl = account?.max_dd_enabled && !isNaN(maxDdPctEnl) && maxDdPctEnl > 0 ? startingBalance * (1 - maxDdPctEnl / 100) : null
+                const ptClampedEnl = !isNaN(ptParsedEnl) ? Math.min(500, Math.max(0, ptParsedEnl)) : 0
+                const ddFloorValEnl = ddClampedEnl > 0 && !account?.max_dd_enabled ? startingBalance * (1 - ddClampedEnl / 100) : null
+                const profitTargetValEnl = ptClampedEnl > 0 ? startingBalance * (1 + ptClampedEnl / 100) : null
+                // New DD floor values for range - clamp to valid ranges
+                const dailyDdPctEnlRaw = parseFloat(account?.daily_dd_pct)
+                const dailyDdPctEnl = !isNaN(dailyDdPctEnlRaw) ? Math.min(99, Math.max(0, dailyDdPctEnlRaw)) : 0
+                const dailyDdFloorValEnl = account?.daily_dd_enabled && dailyDdPctEnl > 0 ? startingBalance * (1 - dailyDdPctEnl / 100) : null
+                const maxDdPctEnlRaw = parseFloat(account?.max_dd_pct)
+                const maxDdPctEnl = !isNaN(maxDdPctEnlRaw) ? Math.min(99, Math.max(0, maxDdPctEnlRaw)) : 0
+                const maxDdFloorValEnl = account?.max_dd_enabled && maxDdPctEnl > 0 ? startingBalance * (1 - maxDdPctEnl / 100) : null
                 if (equityCurveGroupBy === 'total') {
                   if (ddFloorValEnl) minBal = Math.min(minBal, ddFloorValEnl)
                   if (profitTargetValEnl) maxBal = Math.max(maxBal, profitTargetValEnl)
@@ -4461,11 +4469,11 @@ export default function AccountPage() {
                 const hasNegative = minBal < 0
                 const belowStartEnl = equityCurveGroupBy === 'total' && minBal < startingBalance
                 const zeroY = hasNegative ? ((yMax - 0) / yRange) * 100 : null
-                // Drawdown floor for enlarged chart - calculate directly from account settings
-                const ddFloorEnl = !isNaN(ddParsedEnl) && ddParsedEnl > 0 ? startingBalance * (1 - ddParsedEnl / 100) : null
+                // Drawdown floor for enlarged chart - use clamped values
+                const ddFloorEnl = ddClampedEnl > 0 ? startingBalance * (1 - ddClampedEnl / 100) : null
                 const ddFloorYEnl = equityCurveGroupBy === 'total' && ddFloorEnl ? ((yMax - ddFloorEnl) / yRange) * 100 : null
-                // Profit target for enlarged chart - calculate directly from account settings
-                const profitTargetEnl = !isNaN(ptParsedEnl) && ptParsedEnl > 0 ? startingBalance * (1 + ptParsedEnl / 100) : null
+                // Profit target for enlarged chart - use clamped values
+                const profitTargetEnl = ptClampedEnl > 0 ? startingBalance * (1 + ptClampedEnl / 100) : null
                 const profitTargetYEnl = equityCurveGroupBy === 'total' && profitTargetEnl ? ((yMax - profitTargetEnl) / yRange) * 100 : null
 
                 const yLabels = []
