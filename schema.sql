@@ -92,6 +92,8 @@ CREATE TABLE IF NOT EXISTS accounts (
   daily_dd_enabled BOOLEAN DEFAULT FALSE,
   daily_dd_pct DECIMAL(5,2) DEFAULT NULL,
   daily_dd_calc TEXT DEFAULT 'balance',
+  daily_dd_reset_time TEXT DEFAULT '00:00',
+  daily_dd_reset_timezone TEXT DEFAULT 'Europe/London',
   -- Max Drawdown settings (red line)
   max_dd_enabled BOOLEAN DEFAULT FALSE,
   max_dd_pct DECIMAL(5,2) DEFAULT NULL,
@@ -133,6 +135,12 @@ BEGIN
   END IF;
   IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'accounts' AND column_name = 'daily_dd_calc') THEN
     ALTER TABLE accounts ADD COLUMN daily_dd_calc TEXT DEFAULT 'balance';
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'accounts' AND column_name = 'daily_dd_reset_time') THEN
+    ALTER TABLE accounts ADD COLUMN daily_dd_reset_time TEXT DEFAULT '00:00';
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'accounts' AND column_name = 'daily_dd_reset_timezone') THEN
+    ALTER TABLE accounts ADD COLUMN daily_dd_reset_timezone TEXT DEFAULT 'Europe/London';
   END IF;
   -- Max Drawdown fields
   IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'accounts' AND column_name = 'max_dd_enabled') THEN

@@ -114,6 +114,8 @@ export default function DashboardPage() {
   const [editDailyDdEnabled, setEditDailyDdEnabled] = useState(false)
   const [editDailyDdPct, setEditDailyDdPct] = useState('')
   const [editDailyDdCalc, setEditDailyDdCalc] = useState('balance')
+  const [editDailyDdResetTime, setEditDailyDdResetTime] = useState('00:00')
+  const [editDailyDdResetTimezone, setEditDailyDdResetTimezone] = useState('Europe/London')
   // Max Drawdown state (edit modal)
   const [editMaxDdEnabled, setEditMaxDdEnabled] = useState(false)
   const [editMaxDdPct, setEditMaxDdPct] = useState('')
@@ -317,6 +319,8 @@ export default function DashboardPage() {
       daily_dd_enabled: editDailyDdEnabled,
       daily_dd_pct: editDailyDdPct ? parseFloat(editDailyDdPct) : null,
       daily_dd_calc: editDailyDdCalc,
+      daily_dd_reset_time: editDailyDdResetTime || '00:00',
+      daily_dd_reset_timezone: editDailyDdResetTimezone || 'Europe/London',
       max_dd_enabled: editMaxDdEnabled,
       max_dd_pct: editMaxDdPct ? parseFloat(editMaxDdPct) : null,
       max_dd_type: editMaxDdType,
@@ -335,13 +339,15 @@ export default function DashboardPage() {
       daily_dd_enabled: editDailyDdEnabled,
       daily_dd_pct: editDailyDdPct ? parseFloat(editDailyDdPct) : null,
       daily_dd_calc: editDailyDdCalc,
+      daily_dd_reset_time: editDailyDdResetTime || '00:00',
+      daily_dd_reset_timezone: editDailyDdResetTimezone || 'Europe/London',
       max_dd_enabled: editMaxDdEnabled,
       max_dd_pct: editMaxDdPct ? parseFloat(editMaxDdPct) : null,
       max_dd_type: editMaxDdType,
       max_dd_calc: editMaxDdCalc,
       max_dd_trailing_stops_at: editMaxDdTrailingStopsAt
     } : a))
-    setShowEditModal(null); setEditName(''); setEditProfitTarget(''); setEditMaxDrawdown(''); setEditDrawdownType('static'); setEditTrailingMode('eod'); setEditConsistencyEnabled(false); setEditConsistencyPct('30'); setEditDailyDdEnabled(false); setEditDailyDdPct(''); setEditDailyDdCalc('balance'); setEditMaxDdEnabled(false); setEditMaxDdPct(''); setEditMaxDdType('static'); setEditMaxDdCalc('balance'); setEditMaxDdTrailingStopsAt('never')
+    setShowEditModal(null); setEditName(''); setEditProfitTarget(''); setEditMaxDrawdown(''); setEditDrawdownType('static'); setEditTrailingMode('eod'); setEditConsistencyEnabled(false); setEditConsistencyPct('30'); setEditDailyDdEnabled(false); setEditDailyDdPct(''); setEditDailyDdCalc('balance'); setEditDailyDdResetTime('00:00'); setEditDailyDdResetTimezone('Europe/London'); setEditMaxDdEnabled(false); setEditMaxDdPct(''); setEditMaxDdType('static'); setEditMaxDdCalc('balance'); setEditMaxDdTrailingStopsAt('never')
   }
 
   async function deleteAccount(accountId) {
@@ -836,6 +842,7 @@ export default function DashboardPage() {
   function EquityCurve({ accountTrades, startingBalance, account }) {
     const [hoverPoint, setHoverPoint] = useState(null)
     const [showObjectiveLines, setShowObjectiveLines] = useState(false)
+    const [hoverLine, setHoverLine] = useState(null) // { type: 'maxDd' | 'dailyDd' | 'target' | 'start', value: number, y: number }
     const svgRef = useRef(null)
 
     // Check if prop firm rules are configured
@@ -845,12 +852,32 @@ export default function DashboardPage() {
       return <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#444', fontSize: '14px' }}>No trades yet</div>
     }
 
+    // Helper to get trade time from extra_data
+    const getTradeTime = (trade) => {
+      if (trade.extra_data) {
+        const extra = typeof trade.extra_data === 'object' ? trade.extra_data : (() => { try { return JSON.parse(trade.extra_data) } catch { return {} } })()
+        return extra.time || null
+      }
+      return null
+    }
+
+    // Helper to create sortable datetime from date and time
+    const getDateTime = (trade) => {
+      if (!trade.date) return new Date(0) // Fallback for trades without dates (shouldn't happen)
+      const time = getTradeTime(trade) || '00:00'
+      const dateTime = new Date(`${trade.date}T${time}`)
+      return isNaN(dateTime.getTime()) ? new Date(trade.date) : dateTime // Fallback if time format is invalid
+    }
+
+    // Sort trades by date and time for accurate sequencing
+    const sortedTrades = [...accountTrades].sort((a, b) => getDateTime(a) - getDateTime(b))
+
     const start = parseFloat(startingBalance) || 10000
     let cumulative = start
-    const points = [{ balance: cumulative, date: null, pnl: 0, idx: 0 }]
-    accountTrades.forEach((t, i) => {
+    const points = [{ balance: cumulative, date: null, time: null, pnl: 0, idx: 0 }]
+    sortedTrades.forEach((t, i) => {
       cumulative += parseFloat(t.pnl) || 0
-      points.push({ balance: cumulative, date: t.date, pnl: parseFloat(t.pnl) || 0, symbol: t.symbol, idx: i + 1 })
+      points.push({ balance: cumulative, date: t.date, time: getTradeTime(t), pnl: parseFloat(t.pnl) || 0, symbol: t.symbol, idx: i + 1 })
     })
 
     let maxBal = Math.max(...points.map(p => p.balance))
@@ -864,28 +891,59 @@ export default function DashboardPage() {
     const ddFloor = maxDDClamped > 0 ? start * (1 - maxDDClamped / 100) : null
     const profitTarget = ptClamped > 0 ? start * (1 + ptClamped / 100) : null
 
-    // New Daily Drawdown calculation (orange line - resets each day) - clamp to valid range
+    // New Daily Drawdown calculation (orange line - resets each day at configured time)
+    // Floor recalculates from previous day's closing balance at the configured reset time
     const dailyDdEnabled = account?.daily_dd_enabled
     const dailyDdPctRaw = parseFloat(account?.daily_dd_pct)
     const dailyDdPct = !isNaN(dailyDdPctRaw) ? Math.min(99, Math.max(0, dailyDdPctRaw)) : 0
-    const dailyDdCalc = account?.daily_dd_calc || 'balance'
+    const dailyDdResetTime = account?.daily_dd_reset_time || '00:00'
+    const dailyDdResetTimezone = account?.daily_dd_reset_timezone || 'Europe/London'
+
+    // Helper to get trading day for a trade based on reset time
+    // If trade is before reset time, it belongs to previous day's session
+    const getTradingDay = (tradeDate, tradeTime) => {
+      if (!tradeDate) return null
+      // Parse reset time safely (default to midnight if invalid)
+      const resetParts = (dailyDdResetTime || '00:00').split(':')
+      const resetHour = parseInt(resetParts[0]) || 0
+      const resetMin = parseInt(resetParts[1]) || 0
+
+      // Parse trade datetime
+      const tradeDateTime = new Date(`${tradeDate}T${tradeTime || '12:00'}`)
+      if (isNaN(tradeDateTime.getTime())) {
+        // Fallback if datetime is invalid - just use the date
+        return new Date(tradeDate).toDateString()
+      }
+
+      const tradeHour = tradeDateTime.getHours()
+      const tradeMinute = tradeDateTime.getMinutes()
+
+      // If trade is before reset time, it belongs to previous day's session
+      if (tradeHour < resetHour || (tradeHour === resetHour && tradeMinute < resetMin)) {
+        const prevDay = new Date(tradeDateTime)
+        prevDay.setDate(prevDay.getDate() - 1)
+        return prevDay.toDateString()
+      }
+      return tradeDateTime.toDateString()
+    }
+
     let dailyDdFloorPoints = []
     if (dailyDdEnabled && dailyDdPct > 0) {
-      // Group trades by day and calculate daily floor
+      // Group trades by trading day (accounting for reset time) and calculate daily floor
       let currentDayStart = start
-      let currentDay = null
+      let currentTradingDay = null
       points.forEach((p, i) => {
         if (i === 0) {
           // Starting point - floor based on starting balance
           const floor = start * (1 - dailyDdPct / 100)
           dailyDdFloorPoints.push({ idx: i, floor })
         } else {
-          const tradeDate = p.date ? new Date(p.date).toDateString() : null
-          if (tradeDate && tradeDate !== currentDay) {
-            // New day - recalculate floor from previous day's closing balance
+          const tradingDay = getTradingDay(p.date, p.time)
+          if (tradingDay && tradingDay !== currentTradingDay) {
+            // New trading day - recalculate floor from previous day's closing balance
             const prevBalance = points[i - 1].balance
-            currentDayStart = dailyDdCalc === 'equity' ? prevBalance : (currentDay ? prevBalance : start)
-            currentDay = tradeDate
+            currentDayStart = currentTradingDay ? prevBalance : start
+            currentTradingDay = tradingDay
           }
           const floor = currentDayStart * (1 - dailyDdPct / 100)
           dailyDdFloorPoints.push({ idx: i, floor })
@@ -1118,27 +1176,6 @@ export default function DashboardPage() {
                 <div style={{ width: '4px', height: '1px', background: '#888', marginLeft: '2px' }} />
               </div>
             )}
-            {/* Red DD floor value on Y-axis (legacy - only if new max DD not enabled and showing objectives) */}
-            {showObjectiveLines && ddFloorY !== null && !maxDdEnabled && (
-              <div style={{ position: 'absolute', right: 0, top: `${ddFloorY}%`, transform: 'translateY(-50%)', display: 'flex', alignItems: 'center' }}>
-                <span style={{ fontSize: '10px', color: '#ef4444', lineHeight: 1, textAlign: 'right', fontWeight: 600 }}>{ddFloor >= 1000000 ? `$${(ddFloor/1000000).toFixed(1)}M` : ddFloor >= 1000 ? `$${(ddFloor/1000).toFixed(0)}k` : `$${ddFloor}`}</span>
-                <div style={{ width: '4px', height: '1px', background: '#ef4444', marginLeft: '2px' }} />
-              </div>
-            )}
-            {/* Red static Max DD floor value on Y-axis - only when showing objectives */}
-            {showObjectiveLines && maxDdStaticFloorY !== null && (
-              <div style={{ position: 'absolute', right: 0, top: `${maxDdStaticFloorY}%`, transform: 'translateY(-50%)', display: 'flex', alignItems: 'center' }}>
-                <span style={{ fontSize: '10px', color: '#ef4444', lineHeight: 1, textAlign: 'right', fontWeight: 600 }}>{maxDdStaticFloor >= 1000000 ? `$${(maxDdStaticFloor/1000000).toFixed(1)}M` : maxDdStaticFloor >= 1000 ? `$${(maxDdStaticFloor/1000).toFixed(0)}k` : `$${maxDdStaticFloor}`}</span>
-                <div style={{ width: '4px', height: '1px', background: '#ef4444', marginLeft: '2px' }} />
-              </div>
-            )}
-            {/* Green profit target value on Y-axis - only when showing objectives */}
-            {showObjectiveLines && profitTargetY !== null && (
-              <div style={{ position: 'absolute', right: 0, top: `${profitTargetY}%`, transform: 'translateY(-50%)', display: 'flex', alignItems: 'center' }}>
-                <span style={{ fontSize: '10px', color: '#22c55e', lineHeight: 1, textAlign: 'right', fontWeight: 600 }}>{profitTarget >= 1000000 ? `$${(profitTarget/1000000).toFixed(1)}M` : profitTarget >= 1000 ? `$${(profitTarget/1000).toFixed(0)}k` : `$${profitTarget}`}</span>
-                <div style={{ width: '4px', height: '1px', background: '#22c55e', marginLeft: '2px' }} />
-              </div>
-            )}
           </div>
           <div style={{ height: '26px' }} />
         </div>
@@ -1208,45 +1245,85 @@ export default function DashboardPage() {
             )}
             {/* DD Floor line - red dashed (legacy) - only when showing objectives */}
             {showObjectiveLines && ddFloorY !== null && !maxDdEnabled && (
-              <div style={{ position: 'absolute', left: 0, right: '80px', top: `${ddFloorY}%`, borderTop: '1px dashed #ef4444', zIndex: 1 }} />
+              <div
+                style={{ position: 'absolute', left: 0, right: '38px', top: `${ddFloorY}%`, height: '12px', transform: 'translateY(-50%)', cursor: 'pointer', zIndex: 2 }}
+                onMouseEnter={() => setHoverLine({ type: 'maxDd', value: ddFloor, y: ddFloorY, label: 'Max DD' })}
+                onMouseLeave={() => setHoverLine(null)}
+              >
+                <div style={{ position: 'absolute', left: 0, right: 0, top: '50%', borderTop: '1px dashed #ef4444' }} />
+              </div>
             )}
             {/* DD Floor label (legacy) */}
             {showObjectiveLines && ddFloorY !== null && !maxDdEnabled && (
               <span style={{ position: 'absolute', right: '4px', top: `${ddFloorY}%`, transform: 'translateY(-50%)', fontSize: '9px', color: '#ef4444', fontWeight: 500 }}>
-                Max Drawdown
+                Max DD
               </span>
             )}
             {/* Static Max DD floor line - red dashed horizontal - only when showing objectives */}
             {showObjectiveLines && maxDdStaticFloorY !== null && (
-              <div style={{ position: 'absolute', left: 0, right: '80px', top: `${maxDdStaticFloorY}%`, borderTop: '1px dashed #ef4444', zIndex: 1 }} />
+              <div
+                style={{ position: 'absolute', left: 0, right: '38px', top: `${maxDdStaticFloorY}%`, height: '12px', transform: 'translateY(-50%)', cursor: 'pointer', zIndex: 2 }}
+                onMouseEnter={() => setHoverLine({ type: 'maxDd', value: maxDdStaticFloor, y: maxDdStaticFloorY, label: 'Max DD' })}
+                onMouseLeave={() => setHoverLine(null)}
+              >
+                <div style={{ position: 'absolute', left: 0, right: 0, top: '50%', borderTop: '1px dashed #ef4444' }} />
+              </div>
             )}
             {/* Static Max DD floor label */}
             {showObjectiveLines && maxDdStaticFloorY !== null && (
               <span style={{ position: 'absolute', right: '4px', top: `${maxDdStaticFloorY}%`, transform: 'translateY(-50%)', fontSize: '9px', color: '#ef4444', fontWeight: 500 }}>
-                Max Drawdown
+                Max DD
               </span>
             )}
             {/* Daily DD floor label - orange - only when showing objectives */}
             {showObjectiveLines && dailyDdLastY !== null && (
               <span style={{ position: 'absolute', right: '4px', top: `${dailyDdLastY}%`, transform: 'translateY(-50%)', fontSize: '9px', color: '#f97316', fontWeight: 500 }}>
-                Daily Drawdown
+                Daily DD
               </span>
             )}
             {/* Trailing Max DD floor label - red - only when showing objectives */}
             {showObjectiveLines && trailingMaxDdLastY !== null && (
               <span style={{ position: 'absolute', right: '4px', top: `${trailingMaxDdLastY}%`, transform: 'translateY(-50%)', fontSize: '9px', color: '#ef4444', fontWeight: 500 }}>
-                Max Drawdown
+                Max DD
               </span>
             )}
             {/* Profit target line - green dashed - only when showing objectives */}
             {showObjectiveLines && profitTargetY !== null && (
-              <div style={{ position: 'absolute', left: 0, right: '38px', top: `${profitTargetY}%`, borderTop: '1px dashed #22c55e', zIndex: 1 }} />
+              <div
+                style={{ position: 'absolute', left: 0, right: '38px', top: `${profitTargetY}%`, height: '12px', transform: 'translateY(-50%)', cursor: 'pointer', zIndex: 2 }}
+                onMouseEnter={() => setHoverLine({ type: 'target', value: profitTarget, y: profitTargetY, label: 'Target' })}
+                onMouseLeave={() => setHoverLine(null)}
+              >
+                <div style={{ position: 'absolute', left: 0, right: 0, top: '50%', borderTop: '1px dashed #22c55e' }} />
+              </div>
             )}
             {/* Profit target label */}
             {showObjectiveLines && profitTargetY !== null && (
               <span style={{ position: 'absolute', right: '4px', top: `${profitTargetY}%`, transform: 'translateY(-50%)', fontSize: '9px', color: '#22c55e', fontWeight: 500 }}>
                 Target
               </span>
+            )}
+            {/* Objective line hover tooltip */}
+            {hoverLine && (
+              <div style={{
+                position: 'absolute',
+                left: '50%',
+                top: `${hoverLine.y}%`,
+                transform: 'translate(-50%, -100%)',
+                background: '#1a1a22',
+                border: `1px solid ${hoverLine.type === 'target' ? '#22c55e' : hoverLine.type === 'dailyDd' ? '#f97316' : '#ef4444'}`,
+                borderRadius: '6px',
+                padding: '6px 10px',
+                fontSize: '11px',
+                whiteSpace: 'nowrap',
+                zIndex: 15,
+                pointerEvents: 'none',
+                marginTop: '-8px'
+              }}>
+                <div style={{ color: hoverLine.type === 'target' ? '#22c55e' : hoverLine.type === 'dailyDd' ? '#f97316' : '#ef4444', fontWeight: 600 }}>
+                  {hoverLine.label}: ${hoverLine.value?.toLocaleString()}
+                </div>
+              </div>
             )}
 
             {/* Hover dot on the line */}
@@ -1576,7 +1653,7 @@ export default function DashboardPage() {
 
               {/* Action Buttons */}
               <div style={{ display: 'flex', gap: '12px' }}>
-                <button onClick={submitQuickTrade} disabled={submittingTrade || !quickTradeSymbol.trim() || !quickTradePnl} style={{ flex: 1, padding: '12px', background: (submittingTrade || !quickTradeSymbol.trim() || !quickTradePnl) ? '#1a1a22' : 'linear-gradient(135deg, #9333ea 0%, #7c3aed 100%)', border: 'none', borderRadius: '8px', color: (submittingTrade || !quickTradeSymbol.trim() || !quickTradePnl) ? '#666' : '#fff', fontWeight: 600, fontSize: '13px', cursor: (submittingTrade || !quickTradeSymbol.trim() || !quickTradePnl) ? 'not-allowed' : 'pointer', transition: 'all 0.2s', boxShadow: (submittingTrade || !quickTradeSymbol.trim() || !quickTradePnl) ? 'none' : '0 0 20px rgba(147,51,234,0.5), 0 0 40px rgba(147,51,234,0.3)' }}>
+                <button onClick={submitQuickTrade} disabled={submittingTrade || !quickTradeSymbol.trim() || !quickTradePnl || !quickTradeDate} style={{ flex: 1, padding: '12px', background: (submittingTrade || !quickTradeSymbol.trim() || !quickTradePnl || !quickTradeDate) ? '#1a1a22' : 'linear-gradient(135deg, #9333ea 0%, #7c3aed 100%)', border: 'none', borderRadius: '8px', color: (submittingTrade || !quickTradeSymbol.trim() || !quickTradePnl || !quickTradeDate) ? '#666' : '#fff', fontWeight: 600, fontSize: '13px', cursor: (submittingTrade || !quickTradeSymbol.trim() || !quickTradePnl || !quickTradeDate) ? 'not-allowed' : 'pointer', transition: 'all 0.2s', boxShadow: (submittingTrade || !quickTradeSymbol.trim() || !quickTradePnl || !quickTradeDate) ? 'none' : '0 0 20px rgba(147,51,234,0.5), 0 0 40px rgba(147,51,234,0.3)' }}>
                   {submittingTrade ? 'Adding...' : 'Log Trade'}
                 </button>
                 <button onClick={() => setShowEditInputsModal(true)} style={{ padding: '12px 14px', background: '#0a0a0f', border: '1px solid #2a2a35', borderRadius: '8px', color: '#888', fontWeight: 500, fontSize: '12px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}>
@@ -1763,7 +1840,7 @@ export default function DashboardPage() {
                         <td style={{ padding: '14px 16px' }}>
                           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                             <span style={{ fontSize: '15px', fontWeight: 600, color: '#fff' }}>{account.name}</span>
-                            <button onClick={(e) => { e.stopPropagation(); setEditName(account.name); setEditProfitTarget(account.profit_target || ''); setEditMaxDrawdown(account.max_drawdown || ''); setEditDrawdownType(account.drawdown_type || 'static'); setEditTrailingMode(account.trailing_mode || 'eod'); setEditConsistencyEnabled(account.consistency_enabled || false); setEditConsistencyPct(account.consistency_pct || '30'); setEditDailyDdEnabled(account.daily_dd_enabled || false); setEditDailyDdPct(account.daily_dd_pct || ''); setEditDailyDdCalc(account.daily_dd_calc || 'balance'); setEditMaxDdEnabled(account.max_dd_enabled || false); setEditMaxDdPct(account.max_dd_pct || ''); setEditMaxDdType(account.max_dd_type || 'static'); setEditMaxDdCalc(account.max_dd_calc || 'balance'); setEditMaxDdTrailingStopsAt(account.max_dd_trailing_stops_at || 'never'); setShowEditModal(account.id) }} style={{ background: 'transparent', border: 'none', cursor: 'pointer', padding: '2px' }}>
+                            <button onClick={(e) => { e.stopPropagation(); setEditName(account.name); setEditProfitTarget(account.profit_target || ''); setEditMaxDrawdown(account.max_drawdown || ''); setEditDrawdownType(account.drawdown_type || 'static'); setEditTrailingMode(account.trailing_mode || 'eod'); setEditConsistencyEnabled(account.consistency_enabled || false); setEditConsistencyPct(account.consistency_pct || '30'); setEditDailyDdEnabled(account.daily_dd_enabled || false); setEditDailyDdPct(account.daily_dd_pct || ''); setEditDailyDdCalc(account.daily_dd_calc || 'balance'); setEditDailyDdResetTime(account.daily_dd_reset_time || '00:00'); setEditDailyDdResetTimezone(account.daily_dd_reset_timezone || 'Europe/London'); setEditMaxDdEnabled(account.max_dd_enabled || false); setEditMaxDdPct(account.max_dd_pct || ''); setEditMaxDdType(account.max_dd_type || 'static'); setEditMaxDdCalc(account.max_dd_calc || 'balance'); setEditMaxDdTrailingStopsAt(account.max_dd_trailing_stops_at || 'never'); setShowEditModal(account.id) }} style={{ background: 'transparent', border: 'none', cursor: 'pointer', padding: '2px' }}>
                               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#666" strokeWidth="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" /><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" /></svg>
                             </button>
                           </div>
@@ -1810,7 +1887,7 @@ export default function DashboardPage() {
                   <div style={{ padding: isMobile ? '14px 16px' : '20px 24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: isMobile ? '10px' : '14px' }}>
                       <span style={{ fontSize: isMobile ? '20px' : '28px', fontWeight: 700, color: '#fff' }}>{account.name}</span>
-                      <button onClick={(e) => { e.stopPropagation(); setEditName(account.name); setEditProfitTarget(account.profit_target || ''); setEditMaxDrawdown(account.max_drawdown || ''); setEditDrawdownType(account.drawdown_type || 'static'); setEditTrailingMode(account.trailing_mode || 'eod'); setEditConsistencyEnabled(account.consistency_enabled || false); setEditConsistencyPct(account.consistency_pct || '30'); setEditDailyDdEnabled(account.daily_dd_enabled || false); setEditDailyDdPct(account.daily_dd_pct || ''); setEditDailyDdCalc(account.daily_dd_calc || 'balance'); setEditMaxDdEnabled(account.max_dd_enabled || false); setEditMaxDdPct(account.max_dd_pct || ''); setEditMaxDdType(account.max_dd_type || 'static'); setEditMaxDdCalc(account.max_dd_calc || 'balance'); setEditMaxDdTrailingStopsAt(account.max_dd_trailing_stops_at || 'never'); setShowEditModal(account.id) }} style={{ background: 'transparent', border: 'none', cursor: 'pointer', padding: '4px' }}>
+                      <button onClick={(e) => { e.stopPropagation(); setEditName(account.name); setEditProfitTarget(account.profit_target || ''); setEditMaxDrawdown(account.max_drawdown || ''); setEditDrawdownType(account.drawdown_type || 'static'); setEditTrailingMode(account.trailing_mode || 'eod'); setEditConsistencyEnabled(account.consistency_enabled || false); setEditConsistencyPct(account.consistency_pct || '30'); setEditDailyDdEnabled(account.daily_dd_enabled || false); setEditDailyDdPct(account.daily_dd_pct || ''); setEditDailyDdCalc(account.daily_dd_calc || 'balance'); setEditDailyDdResetTime(account.daily_dd_reset_time || '00:00'); setEditDailyDdResetTimezone(account.daily_dd_reset_timezone || 'Europe/London'); setEditMaxDdEnabled(account.max_dd_enabled || false); setEditMaxDdPct(account.max_dd_pct || ''); setEditMaxDdType(account.max_dd_type || 'static'); setEditMaxDdCalc(account.max_dd_calc || 'balance'); setEditMaxDdTrailingStopsAt(account.max_dd_trailing_stops_at || 'never'); setShowEditModal(account.id) }} style={{ background: 'transparent', border: 'none', cursor: 'pointer', padding: '4px' }}>
                         <svg width={isMobile ? '14' : '18'} height={isMobile ? '14' : '18'} viewBox="0 0 24 24" fill="none" stroke="#666" strokeWidth="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" /><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" /></svg>
                       </button>
                     </div>
@@ -2076,19 +2153,41 @@ export default function DashboardPage() {
                   </label>
                 </div>
                 {editDailyDdEnabled && (
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px' }}>
-                    <div>
-                      <label style={{ display: 'block', fontSize: '10px', color: '#666', marginBottom: '6px', textTransform: 'uppercase' }}>Percentage (%)</label>
-                      <input type="number" step="0.1" min="0" max="99" value={editDailyDdPct} onChange={e => setEditDailyDdPct(e.target.value)} placeholder="e.g. 5" style={{ width: '100%', padding: '12px 14px', background: '#0d0d12', border: '1px solid #2a2a35', borderRadius: '6px', color: '#fff', fontSize: '14px', boxSizing: 'border-box' }} />
+                  <>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px', marginBottom: '14px' }}>
+                      <div>
+                        <label style={{ display: 'block', fontSize: '10px', color: '#666', marginBottom: '6px', textTransform: 'uppercase' }}>Percentage (%)</label>
+                        <input type="number" step="0.1" min="0" max="99" value={editDailyDdPct} onChange={e => setEditDailyDdPct(e.target.value)} placeholder="e.g. 5" style={{ width: '100%', padding: '12px 14px', background: '#0d0d12', border: '1px solid #2a2a35', borderRadius: '6px', color: '#fff', fontSize: '14px', boxSizing: 'border-box' }} />
+                      </div>
+                      <div>
+                        <label style={{ display: 'block', fontSize: '10px', color: '#666', marginBottom: '6px', textTransform: 'uppercase' }}>Calculation</label>
+                        <select value={editDailyDdCalc} onChange={e => setEditDailyDdCalc(e.target.value)} style={{ width: '100%', padding: '12px 14px', background: '#0d0d12', border: '1px solid #2a2a35', borderRadius: '6px', color: '#fff', fontSize: '14px', boxSizing: 'border-box', cursor: 'pointer' }}>
+                          <option value="balance">Balance-Based</option>
+                        </select>
+                      </div>
                     </div>
-                    <div>
-                      <label style={{ display: 'block', fontSize: '10px', color: '#666', marginBottom: '6px', textTransform: 'uppercase' }}>Calculation</label>
-                      <select value={editDailyDdCalc} onChange={e => setEditDailyDdCalc(e.target.value)} style={{ width: '100%', padding: '12px 14px', background: '#0d0d12', border: '1px solid #2a2a35', borderRadius: '6px', color: '#fff', fontSize: '14px', boxSizing: 'border-box', cursor: 'pointer' }}>
-                        <option value="balance">Balance-Based</option>
-                        <option value="equity">Equity-Based</option>
-                      </select>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px' }}>
+                      <div>
+                        <label style={{ display: 'block', fontSize: '10px', color: '#666', marginBottom: '6px', textTransform: 'uppercase' }}>Resets At (Time)</label>
+                        <input type="time" value={editDailyDdResetTime} onChange={e => setEditDailyDdResetTime(e.target.value)} style={{ width: '100%', padding: '12px 14px', background: '#0d0d12', border: '1px solid #2a2a35', borderRadius: '6px', color: '#fff', fontSize: '14px', boxSizing: 'border-box' }} />
+                      </div>
+                      <div>
+                        <label style={{ display: 'block', fontSize: '10px', color: '#666', marginBottom: '6px', textTransform: 'uppercase' }}>Timezone</label>
+                        <select value={editDailyDdResetTimezone} onChange={e => setEditDailyDdResetTimezone(e.target.value)} style={{ width: '100%', padding: '12px 14px', background: '#0d0d12', border: '1px solid #2a2a35', borderRadius: '6px', color: '#fff', fontSize: '14px', boxSizing: 'border-box', cursor: 'pointer' }}>
+                          <option value="Europe/London">UK (London)</option>
+                          <option value="America/New_York">US Eastern (New York)</option>
+                          <option value="America/Chicago">US Central (Chicago)</option>
+                          <option value="America/Los_Angeles">US Pacific (Los Angeles)</option>
+                          <option value="Asia/Tokyo">Japan (Tokyo)</option>
+                          <option value="Asia/Hong_Kong">Hong Kong</option>
+                          <option value="Asia/Singapore">Singapore</option>
+                          <option value="Europe/Paris">Central Europe (Paris)</option>
+                          <option value="Australia/Sydney">Australia (Sydney)</option>
+                          <option value="UTC">UTC</option>
+                        </select>
+                      </div>
                     </div>
-                  </div>
+                  </>
                 )}
               </div>
 
@@ -2118,25 +2217,16 @@ export default function DashboardPage() {
                         </select>
                       </div>
                     </div>
-                    <div style={{ display: 'grid', gridTemplateColumns: editMaxDdType === 'trailing' ? '1fr 1fr' : '1fr', gap: '14px' }}>
+                    {editMaxDdType === 'trailing' && (
                       <div>
-                        <label style={{ display: 'block', fontSize: '10px', color: '#666', marginBottom: '6px', textTransform: 'uppercase' }}>Calculation</label>
-                        <select value={editMaxDdCalc} onChange={e => setEditMaxDdCalc(e.target.value)} style={{ width: '100%', padding: '12px 14px', background: '#0d0d12', border: '1px solid #2a2a35', borderRadius: '6px', color: '#fff', fontSize: '14px', boxSizing: 'border-box', cursor: 'pointer' }}>
-                          <option value="balance">Balance-Based</option>
-                          <option value="equity">Equity-Based</option>
+                        <label style={{ display: 'block', fontSize: '10px', color: '#666', marginBottom: '6px', textTransform: 'uppercase' }}>Stops Trailing At</label>
+                        <select value={editMaxDdTrailingStopsAt} onChange={e => setEditMaxDdTrailingStopsAt(e.target.value)} style={{ width: '100%', padding: '12px 14px', background: '#0d0d12', border: '1px solid #2a2a35', borderRadius: '6px', color: '#fff', fontSize: '14px', boxSizing: 'border-box', cursor: 'pointer' }}>
+                          <option value="initial">Initial Balance</option>
+                          <option value="buffer">Initial + Buffer</option>
+                          <option value="never">Never (Always Trails)</option>
                         </select>
                       </div>
-                      {editMaxDdType === 'trailing' && (
-                        <div>
-                          <label style={{ display: 'block', fontSize: '10px', color: '#666', marginBottom: '6px', textTransform: 'uppercase' }}>Stops Trailing At</label>
-                          <select value={editMaxDdTrailingStopsAt} onChange={e => setEditMaxDdTrailingStopsAt(e.target.value)} style={{ width: '100%', padding: '12px 14px', background: '#0d0d12', border: '1px solid #2a2a35', borderRadius: '6px', color: '#fff', fontSize: '14px', boxSizing: 'border-box', cursor: 'pointer' }}>
-                            <option value="initial">Initial Balance</option>
-                            <option value="buffer">Initial + Buffer</option>
-                            <option value="never">Never (Always Trails)</option>
-                          </select>
-                        </div>
-                      )}
-                    </div>
+                    )}
                   </>
                 )}
               </div>
@@ -2505,18 +2595,18 @@ export default function DashboardPage() {
             <div style={{ padding: '16px 20px', borderTop: '1px solid #1a1a22', background: '#0a0a0f' }}>
               <button
                 onClick={() => { submitQuickTrade(); setShowMobileTradeModal(false); }}
-                disabled={submittingTrade || !quickTradeSymbol.trim() || !quickTradePnl}
+                disabled={submittingTrade || !quickTradeSymbol.trim() || !quickTradePnl || !quickTradeDate}
                 style={{
                   width: '100%',
                   padding: '16px',
-                  background: (submittingTrade || !quickTradeSymbol.trim() || !quickTradePnl) ? '#1a1a22' : 'linear-gradient(135deg, #9333ea 0%, #7c3aed 100%)',
+                  background: (submittingTrade || !quickTradeSymbol.trim() || !quickTradePnl || !quickTradeDate) ? '#1a1a22' : 'linear-gradient(135deg, #9333ea 0%, #7c3aed 100%)',
                   border: 'none',
                   borderRadius: '12px',
-                  color: (submittingTrade || !quickTradeSymbol.trim() || !quickTradePnl) ? '#666' : '#fff',
+                  color: (submittingTrade || !quickTradeSymbol.trim() || !quickTradePnl || !quickTradeDate) ? '#666' : '#fff',
                   fontWeight: 700,
                   fontSize: '16px',
-                  cursor: (submittingTrade || !quickTradeSymbol.trim() || !quickTradePnl) ? 'not-allowed' : 'pointer',
-                  boxShadow: (submittingTrade || !quickTradeSymbol.trim() || !quickTradePnl) ? 'none' : '0 0 20px rgba(147,51,234,0.5), 0 0 40px rgba(147,51,234,0.3)'
+                  cursor: (submittingTrade || !quickTradeSymbol.trim() || !quickTradePnl || !quickTradeDate) ? 'not-allowed' : 'pointer',
+                  boxShadow: (submittingTrade || !quickTradeSymbol.trim() || !quickTradePnl || !quickTradeDate) ? 'none' : '0 0 20px rgba(147,51,234,0.5), 0 0 40px rgba(147,51,234,0.3)'
                 }}
               >
                 {submittingTrade ? 'Adding Trade...' : 'Log Trade'}
@@ -2754,18 +2844,18 @@ export default function DashboardPage() {
               <div style={{ display: 'flex', gap: '12px' }}>
                 <button
                   onClick={() => { submitQuickTrade(); setSidebarExpanded(false); }}
-                  disabled={submittingTrade || !quickTradeSymbol.trim() || !quickTradePnl}
+                  disabled={submittingTrade || !quickTradeSymbol.trim() || !quickTradePnl || !quickTradeDate}
                   style={{
                     flex: 1,
                     padding: '14px',
-                    background: (submittingTrade || !quickTradeSymbol.trim() || !quickTradePnl) ? '#1a1a22' : 'linear-gradient(135deg, #9333ea 0%, #7c3aed 100%)',
+                    background: (submittingTrade || !quickTradeSymbol.trim() || !quickTradePnl || !quickTradeDate) ? '#1a1a22' : 'linear-gradient(135deg, #9333ea 0%, #7c3aed 100%)',
                     border: 'none',
                     borderRadius: '10px',
-                    color: (submittingTrade || !quickTradeSymbol.trim() || !quickTradePnl) ? '#666' : '#fff',
+                    color: (submittingTrade || !quickTradeSymbol.trim() || !quickTradePnl || !quickTradeDate) ? '#666' : '#fff',
                     fontWeight: 600,
                     fontSize: '15px',
-                    cursor: (submittingTrade || !quickTradeSymbol.trim() || !quickTradePnl) ? 'not-allowed' : 'pointer',
-                    boxShadow: (submittingTrade || !quickTradeSymbol.trim() || !quickTradePnl) ? 'none' : '0 0 20px rgba(147,51,234,0.5), 0 0 40px rgba(147,51,234,0.3)'
+                    cursor: (submittingTrade || !quickTradeSymbol.trim() || !quickTradePnl || !quickTradeDate) ? 'not-allowed' : 'pointer',
+                    boxShadow: (submittingTrade || !quickTradeSymbol.trim() || !quickTradePnl || !quickTradeDate) ? 'none' : '0 0 20px rgba(147,51,234,0.5), 0 0 40px rgba(147,51,234,0.3)'
                   }}
                 >
                   {submittingTrade ? 'Adding...' : 'Log Trade'}
