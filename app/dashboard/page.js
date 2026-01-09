@@ -835,7 +835,11 @@ export default function DashboardPage() {
 
   function EquityCurve({ accountTrades, startingBalance, account }) {
     const [hoverPoint, setHoverPoint] = useState(null)
+    const [isZoomedOut, setIsZoomedOut] = useState(false)
     const svgRef = useRef(null)
+
+    // Check if prop firm rules are configured
+    const hasPropFirmRules = account?.profit_target || account?.max_drawdown || account?.max_dd_enabled || account?.daily_dd_enabled
 
     if (!accountTrades || accountTrades.length === 0) {
       return <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#444', fontSize: '14px' }}>No trades yet</div>
@@ -927,22 +931,24 @@ export default function DashboardPage() {
       }
     }
 
-    // Include new DD floors in range calculation
-    if (dailyDdFloorPoints.length > 0) {
-      const minDailyFloor = Math.min(...dailyDdFloorPoints.map(p => p.floor))
-      minBal = Math.min(minBal, minDailyFloor)
+    // Only include DD floors/profit target in range when zoomed out
+    if (isZoomedOut) {
+      // Include new DD floors in range calculation
+      if (dailyDdFloorPoints.length > 0) {
+        const minDailyFloor = Math.min(...dailyDdFloorPoints.map(p => p.floor))
+        minBal = Math.min(minBal, minDailyFloor)
+      }
+      if (maxDdStaticFloor) {
+        minBal = Math.min(minBal, maxDdStaticFloor)
+      }
+      if (maxDdFloorPoints.length > 0) {
+        const minTrailingFloor = Math.min(...maxDdFloorPoints.map(p => p.floor))
+        minBal = Math.min(minBal, minTrailingFloor)
+      }
+      // Include legacy floor/target in range with padding
+      if (ddFloor) minBal = Math.min(minBal, ddFloor)
+      if (profitTarget) maxBal = Math.max(maxBal, profitTarget)
     }
-    if (maxDdStaticFloor) {
-      minBal = Math.min(minBal, maxDdStaticFloor)
-    }
-    if (maxDdFloorPoints.length > 0) {
-      const minTrailingFloor = Math.min(...maxDdFloorPoints.map(p => p.floor))
-      minBal = Math.min(minBal, minTrailingFloor)
-    }
-
-    // Always include floor/target in range with padding so they're always visible
-    if (ddFloor) minBal = Math.min(minBal, ddFloor)
-    if (profitTarget) maxBal = Math.max(maxBal, profitTarget)
 
     const hasNegative = minBal < 0
     const belowStart = minBal < start // Red if balance ever went below starting
@@ -952,12 +958,12 @@ export default function DashboardPage() {
     const actualRange = actualMax - actualMin || 1000
     const yStep = Math.ceil(actualRange / 6 / 1000) * 1000 || 1000
 
-    // Ensure padding above profit target and below dd floor - always visible with gap
+    // Ensure padding above profit target and below dd floor when zoomed out
     let yMax = Math.ceil(actualMax / yStep) * yStep
-    if (profitTarget && yMax - profitTarget < yStep) yMax += yStep // Ensure gap above target
+    if (isZoomedOut && profitTarget && yMax - profitTarget < yStep) yMax += yStep // Ensure gap above target
     let yMin = Math.floor(actualMin / yStep) * yStep
-    if (ddFloor && ddFloor - yMin < yStep) yMin -= yStep // Ensure gap below floor
-    if (yMin < 0 && !ddFloor && actualMin >= 0) yMin = 0 // Don't go negative if not needed and no floor
+    if (isZoomedOut && ddFloor && ddFloor - yMin < yStep) yMin -= yStep // Ensure gap below floor
+    if (yMin < 0 && !isZoomedOut && actualMin >= 0) yMin = 0 // Don't go negative if not needed and not zoomed out
 
     const yRange = yMax - yMin || yStep
 
@@ -1127,6 +1133,32 @@ export default function DashboardPage() {
 
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, overflow: 'visible' }}>
           <div style={{ flex: 1, position: 'relative', borderBottom: '1px solid #2a2a35', overflow: 'visible' }}>
+            {/* Zoom button - only show if prop firm rules exist */}
+            {hasPropFirmRules && (
+              <button
+                onClick={() => setIsZoomedOut(!isZoomedOut)}
+                title={isZoomedOut ? 'Zoom to fit PnL' : 'Zoom out to show DD/Target lines'}
+                style={{
+                  position: 'absolute',
+                  top: '4px',
+                  right: '4px',
+                  zIndex: 20,
+                  background: isZoomedOut ? '#22c55e' : '#1a1a22',
+                  border: `1px solid ${isZoomedOut ? '#22c55e' : '#2a2a35'}`,
+                  borderRadius: '4px',
+                  padding: '3px 6px',
+                  color: isZoomedOut ? '#000' : '#999',
+                  fontSize: '10px',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '3px'
+                }}
+              >
+                <span style={{ fontSize: '11px' }}>{isZoomedOut ? '−' : '+'}</span>
+                <span>DD</span>
+              </button>
+            )}
             {/* Horizontal grid lines - skip last one since borderBottom is X-axis */}
             <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}>
               {yLabels.map((_, i) => {
