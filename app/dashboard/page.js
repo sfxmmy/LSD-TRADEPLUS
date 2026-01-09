@@ -826,12 +826,12 @@ export default function DashboardPage() {
     const actualRange = actualMax - actualMin || 1000
     const yStep = Math.ceil(actualRange / 6 / 1000) * 1000 || 1000
 
-    // Ensure padding above profit target and below dd floor
+    // Ensure padding above profit target and below dd floor - always visible with gap
     let yMax = Math.ceil(actualMax / yStep) * yStep
-    if (profitTarget && yMax <= profitTarget) yMax += yStep
+    if (profitTarget && yMax - profitTarget < yStep) yMax += yStep // Ensure gap above target
     let yMin = Math.floor(actualMin / yStep) * yStep
-    if (ddFloor && yMin >= ddFloor) yMin -= yStep
-    if (yMin < 0 && actualMin >= 0) yMin = 0 // Don't go negative if not needed
+    if (ddFloor && ddFloor - yMin < yStep) yMin -= yStep // Ensure gap below floor
+    if (yMin < 0 && !ddFloor && actualMin >= 0) yMin = 0 // Don't go negative if not needed and no floor
 
     const yRange = yMax - yMin || yStep
 
