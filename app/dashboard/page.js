@@ -789,7 +789,7 @@ export default function DashboardPage() {
     return { totalTrades, wins, losses, totalPnl, winrate, avgRR, profitFactor, totalStartingBalance, currentBalance, avgWin, avgLoss, grossProfit, grossLoss }
   }
 
-  function EquityCurve({ accountTrades, startingBalance }) {
+  function EquityCurve({ accountTrades, startingBalance, account }) {
     const [hoverPoint, setHoverPoint] = useState(null)
     const svgRef = useRef(null)
 
@@ -805,8 +805,17 @@ export default function DashboardPage() {
       points.push({ balance: cumulative, date: t.date, pnl: parseFloat(t.pnl) || 0, symbol: t.symbol, idx: i + 1 })
     })
 
-    const maxBal = Math.max(...points.map(p => p.balance))
-    const minBal = Math.min(...points.map(p => p.balance))
+    let maxBal = Math.max(...points.map(p => p.balance))
+    let minBal = Math.min(...points.map(p => p.balance))
+
+    // Include prop firm target/floor in range
+    const maxDDParsed = parseFloat(account?.max_drawdown)
+    const ptParsed = parseFloat(account?.profit_target)
+    const ddFloor = !isNaN(maxDDParsed) && maxDDParsed > 0 ? start * (1 - maxDDParsed / 100) : null
+    const profitTarget = !isNaN(ptParsed) && ptParsed > 0 ? start * (1 + ptParsed / 100) : null
+    if (ddFloor) minBal = Math.min(minBal, ddFloor)
+    if (profitTarget) maxBal = Math.max(maxBal, profitTarget)
+
     const hasNegative = minBal < 0
     const belowStart = minBal < start // Red if balance ever went below starting
     // Calculate tight Y-axis range based on actual data
@@ -830,6 +839,9 @@ export default function DashboardPage() {
     const zeroY = hasNegative ? ((yMax - 0) / yRange) * 100 : null
     // Calculate starting balance line - always show if start is within range
     const startLineY = start >= yMin && start <= yMax ? ((yMax - start) / yRange) * 100 : null
+    // Calculate prop firm lines
+    const ddFloorY = ddFloor ? ((yMax - ddFloor) / yRange) * 100 : null
+    const profitTargetY = profitTarget ? ((yMax - profitTarget) / yRange) * 100 : null
 
     const yLabels = []
     for (let v = yMax; v >= yMin; v -= yStep) {
@@ -975,6 +987,26 @@ export default function DashboardPage() {
             {startLineY !== null && (
               <span style={{ position: 'absolute', right: '4px', top: `${startLineY}%`, transform: 'translateY(-50%)', fontSize: '9px', color: '#666', fontWeight: 500 }}>
                 Start
+              </span>
+            )}
+            {/* DD Floor line - orange dashed */}
+            {ddFloorY !== null && (
+              <div style={{ position: 'absolute', left: 0, right: '50px', top: `${ddFloorY}%`, borderTop: '1px dashed #f59e0b', zIndex: 1 }} />
+            )}
+            {/* DD Floor label */}
+            {ddFloorY !== null && (
+              <span style={{ position: 'absolute', right: '4px', top: `${ddFloorY}%`, transform: 'translateY(-50%)', fontSize: '9px', color: '#f59e0b', fontWeight: 500 }}>
+                DD Floor
+              </span>
+            )}
+            {/* Profit target line - blue dashed */}
+            {profitTargetY !== null && (
+              <div style={{ position: 'absolute', left: 0, right: '38px', top: `${profitTargetY}%`, borderTop: '1px dashed #3b82f6', zIndex: 1 }} />
+            )}
+            {/* Profit target label */}
+            {profitTargetY !== null && (
+              <span style={{ position: 'absolute', right: '4px', top: `${profitTargetY}%`, transform: 'translateY(-50%)', fontSize: '9px', color: '#3b82f6', fontWeight: 500 }}>
+                Target
               </span>
             )}
 
@@ -1550,7 +1582,7 @@ export default function DashboardPage() {
                     {/* Chart - stretches to match stats height */}
                     <div style={{ flex: 1, minHeight: isMobile ? '250px' : '300px', overflow: 'visible', display: 'flex', flexDirection: 'column' }}>
                       <div style={{ flex: 1, position: 'relative' }}>
-                        <EquityCurve accountTrades={accTrades} startingBalance={account.starting_balance} />
+                        <EquityCurve accountTrades={accTrades} startingBalance={account.starting_balance} account={account} />
                       </div>
                     </div>
 
