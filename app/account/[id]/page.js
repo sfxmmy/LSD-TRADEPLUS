@@ -1021,6 +1021,87 @@ export default function AccountPage() {
     return { floor, remaining: currentBalance - floor, usedPct, breached, breachDate, breachBalance, floorHistory, ddType, trailingMode }
   })()
 
+  // New Daily Drawdown calculation (orange)
+  const dailyDdStats = (() => {
+    if (!account?.daily_dd_enabled) return null
+    const pct = parseFloat(account.daily_dd_pct)
+    if (isNaN(pct) || pct <= 0) return null
+
+    // Get today's starting balance (previous day close or starting balance)
+    const sorted = [...trades].sort((a, b) => new Date(a.date) - new Date(b.date))
+    const today = new Date().toDateString()
+    let todayStart = startingBalance
+    let runningBal = startingBalance
+    let prevDayClose = startingBalance
+
+    sorted.forEach(t => {
+      const tradeDate = new Date(t.date).toDateString()
+      if (tradeDate !== today) {
+        runningBal += parseFloat(t.pnl) || 0
+        prevDayClose = runningBal
+      }
+    })
+    todayStart = prevDayClose
+
+    const floor = todayStart * (1 - pct / 100)
+    const remaining = currentBalance - floor
+    const breached = currentBalance < floor
+    const maxAllowed = todayStart * (pct / 100)
+    const usedPct = breached ? 100 : maxAllowed > 0 ? Math.min(100, ((todayStart - currentBalance) / maxAllowed) * 100) : 0
+
+    return { floor, remaining, breached, todayStart, pct, usedPct: Math.max(0, usedPct) }
+  })()
+
+  // New Max Drawdown calculation (red)
+  const maxDdStats = (() => {
+    if (!account?.max_dd_enabled) return null
+    const pct = parseFloat(account.max_dd_pct)
+    if (isNaN(pct) || pct <= 0) return null
+
+    const ddType = account.max_dd_type || 'static'
+    const stopsAt = account.max_dd_trailing_stops_at || 'never'
+    const sorted = [...trades].sort((a, b) => new Date(a.date) - new Date(b.date))
+
+    let floor = startingBalance * (1 - pct / 100)
+    let breached = false
+    let breachDate = null
+
+    if (ddType === 'static') {
+      // Static: floor never changes
+      let runningBal = startingBalance
+      sorted.forEach(t => {
+        runningBal += parseFloat(t.pnl) || 0
+        if (!breached && runningBal < floor) { breached = true; breachDate = t.date }
+      })
+    } else {
+      // Trailing: floor moves up with peak
+      let peak = startingBalance
+      let runningBal = startingBalance
+      sorted.forEach(t => {
+        runningBal += parseFloat(t.pnl) || 0
+        if (runningBal > peak) {
+          peak = runningBal
+          const newFloor = peak * (1 - pct / 100)
+          if (stopsAt === 'initial' && newFloor >= startingBalance) {
+            floor = startingBalance
+          } else if (stopsAt === 'buffer') {
+            const buffer = startingBalance * 1.05
+            floor = newFloor >= buffer ? buffer : newFloor
+          } else {
+            floor = newFloor
+          }
+        }
+        if (!breached && runningBal < floor) { breached = true; breachDate = t.date }
+      })
+    }
+
+    const remaining = currentBalance - floor
+    const maxAllowed = startingBalance * (pct / 100)
+    const usedPct = breached ? 100 : maxAllowed > 0 ? Math.min(100, ((floor + maxAllowed - currentBalance) / maxAllowed) * 100) : 0
+
+    return { floor, remaining, breached, breachDate, pct, ddType, stopsAt, usedPct: Math.max(0, usedPct) }
+  })()
+
   // Consistency rule check
   const consistencyCheck = (() => {
     if (!account?.consistency_enabled) return null
@@ -1954,11 +2035,18 @@ export default function AccountPage() {
                             // Include profit target and drawdown floor in range - calculate directly from account settings
                             const ddParsedRange = parseFloat(account?.max_drawdown)
                             const ptParsedRange = parseFloat(account?.profit_target)
-                            const ddFloorVal = !isNaN(ddParsedRange) && ddParsedRange > 0 ? displayStartingBalance * (1 - ddParsedRange / 100) : null
+                            const ddFloorVal = !isNaN(ddParsedRange) && ddParsedRange > 0 && !account?.max_dd_enabled ? displayStartingBalance * (1 - ddParsedRange / 100) : null
                             const profitTargetVal = !isNaN(ptParsedRange) && ptParsedRange > 0 ? displayStartingBalance * (1 + ptParsedRange / 100) : null
+                            // Calculate new DD floor values for range
+                            const dailyDdPctRange = parseFloat(account?.daily_dd_pct)
+                            const dailyDdFloorVal = account?.daily_dd_enabled && !isNaN(dailyDdPctRange) && dailyDdPctRange > 0 ? displayStartingBalance * (1 - dailyDdPctRange / 100) : null
+                            const maxDdPctRange = parseFloat(account?.max_dd_pct)
+                            const maxDdFloorVal = account?.max_dd_enabled && !isNaN(maxDdPctRange) && maxDdPctRange > 0 ? displayStartingBalance * (1 - maxDdPctRange / 100) : null
                             if (equityCurveGroupBy === 'total') {
                               if (ddFloorVal) minBal = Math.min(minBal, ddFloorVal)
                               if (profitTargetVal) maxBal = Math.max(maxBal, profitTargetVal)
+                              if (dailyDdFloorVal) minBal = Math.min(minBal, dailyDdFloorVal)
+                              if (maxDdFloorVal) minBal = Math.min(minBal, maxDdFloorVal)
                             }
 
                             const range = maxBal - minBal || 1000
@@ -1982,14 +2070,74 @@ export default function AccountPage() {
                             const zeroY = hasNegative ? ((yMax - 0) / yRange) * 100 : null
                             // Starting balance line - always show in total mode
                             const startLineY = equityCurveGroupBy === 'total' && !hasNegative ? ((yMax - displayStartingBalance) / yRange) * 100 : null
-                            // Drawdown floor line - calculate directly from account settings
+                            // Drawdown floor line - calculate directly from account settings (legacy)
                             const maxDDParsed = parseFloat(account?.max_drawdown)
-                            const ddFloor = !isNaN(maxDDParsed) && maxDDParsed > 0 ? displayStartingBalance * (1 - maxDDParsed / 100) : null
+                            const ddFloor = !isNaN(maxDDParsed) && maxDDParsed > 0 && !account?.max_dd_enabled ? displayStartingBalance * (1 - maxDDParsed / 100) : null
                             const ddFloorY = equityCurveGroupBy === 'total' && ddFloor ? ((yMax - ddFloor) / yRange) * 100 : null
                             // Profit target line - calculate directly from account settings
                             const profitTargetParsed = parseFloat(account?.profit_target)
                             const profitTarget = !isNaN(profitTargetParsed) && profitTargetParsed > 0 ? displayStartingBalance * (1 + profitTargetParsed / 100) : null
                             const profitTargetY = equityCurveGroupBy === 'total' && profitTarget ? ((yMax - profitTarget) / yRange) * 100 : null
+
+                            // New Daily Drawdown calculation (orange line - resets each day)
+                            const dailyDdEnabled = account?.daily_dd_enabled
+                            const dailyDdPct = parseFloat(account?.daily_dd_pct)
+                            let dailyDdFloorPoints = []
+                            if (equityCurveGroupBy === 'total' && dailyDdEnabled && !isNaN(dailyDdPct) && dailyDdPct > 0) {
+                              let currentDayStart = displayStartingBalance
+                              let currentDay = null
+                              const totalPoints = [{ balance: displayStartingBalance, date: null }]
+                              sorted.forEach(t => totalPoints.push({ balance: totalPoints[totalPoints.length - 1].balance + (parseFloat(t.pnl) || 0), date: t.date }))
+                              totalPoints.forEach((p, i) => {
+                                if (i === 0) {
+                                  dailyDdFloorPoints.push({ idx: i, floor: displayStartingBalance * (1 - dailyDdPct / 100) })
+                                } else {
+                                  const tradeDate = p.date ? new Date(p.date).toDateString() : null
+                                  if (tradeDate && tradeDate !== currentDay) {
+                                    const prevBalance = totalPoints[i - 1].balance
+                                    currentDayStart = currentDay ? prevBalance : displayStartingBalance
+                                    currentDay = tradeDate
+                                  }
+                                  dailyDdFloorPoints.push({ idx: i, floor: currentDayStart * (1 - dailyDdPct / 100) })
+                                }
+                              })
+                            }
+
+                            // New Max Drawdown calculation (red line - static or trailing)
+                            const maxDdEnabled = account?.max_dd_enabled
+                            const maxDdPct = parseFloat(account?.max_dd_pct)
+                            const maxDdType = account?.max_dd_type || 'static'
+                            const maxDdStopsAt = account?.max_dd_trailing_stops_at || 'never'
+                            let maxDdFloorPoints = []
+                            let maxDdStaticFloor = null
+                            if (equityCurveGroupBy === 'total' && maxDdEnabled && !isNaN(maxDdPct) && maxDdPct > 0) {
+                              if (maxDdType === 'static') {
+                                maxDdStaticFloor = displayStartingBalance * (1 - maxDdPct / 100)
+                              } else {
+                                let peak = displayStartingBalance
+                                let trailingFloor = displayStartingBalance * (1 - maxDdPct / 100)
+                                const totalPoints = [{ balance: displayStartingBalance }]
+                                sorted.forEach(t => totalPoints.push({ balance: totalPoints[totalPoints.length - 1].balance + (parseFloat(t.pnl) || 0) }))
+                                totalPoints.forEach((p, i) => {
+                                  if (p.balance > peak) {
+                                    peak = p.balance
+                                    const newFloor = peak * (1 - maxDdPct / 100)
+                                    if (maxDdStopsAt === 'initial' && newFloor >= displayStartingBalance) {
+                                      trailingFloor = displayStartingBalance
+                                    } else if (maxDdStopsAt === 'buffer') {
+                                      const buffer = displayStartingBalance * 1.05
+                                      trailingFloor = newFloor >= buffer ? buffer : newFloor
+                                    } else {
+                                      trailingFloor = newFloor
+                                    }
+                                  }
+                                  maxDdFloorPoints.push({ idx: i, floor: trailingFloor })
+                                })
+                              }
+                            }
+
+                            // Static max DD floor Y position
+                            const maxDdStaticFloorY = equityCurveGroupBy === 'total' && maxDdStaticFloor ? ((yMax - maxDdStaticFloor) / yRange) * 100 : null
 
                             const svgW = 100, svgH = 100
 
@@ -2070,6 +2218,30 @@ export default function AccountPage() {
                               }
                             }
 
+                            // Build SVG path for daily DD floor line (orange, stepped)
+                            let dailyDdPath = ''
+                            if (dailyDdFloorPoints.length > 0) {
+                              const ddChartPoints = dailyDdFloorPoints.map(p => {
+                                const totalLen = dailyDdFloorPoints.length
+                                const x = totalLen > 1 ? (p.idx / (totalLen - 1)) * svgW : svgW / 2
+                                const y = svgH - ((p.floor - yMin) / yRange) * svgH
+                                return { x, y }
+                              })
+                              dailyDdPath = ddChartPoints.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`).join(' ')
+                            }
+
+                            // Build SVG path for trailing max DD floor line (red, follows curve)
+                            let trailingMaxDdPath = ''
+                            if (maxDdFloorPoints.length > 0) {
+                              const maxDdChartPoints = maxDdFloorPoints.map(p => {
+                                const totalLen = maxDdFloorPoints.length
+                                const x = totalLen > 1 ? (p.idx / (totalLen - 1)) * svgW : svgW / 2
+                                const y = svgH - ((p.floor - yMin) / yRange) * svgH
+                                return { x, y }
+                              })
+                              trailingMaxDdPath = maxDdChartPoints.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`).join(' ')
+                            }
+
                             return (
                               <>
                                 {/* Chart row - Y-axis and chart area aligned */}
@@ -2104,6 +2276,13 @@ export default function AccountPage() {
                                       <Fragment>
                                         <span style={{ position: 'absolute', right: '5px', top: `${profitTargetY}%`, transform: 'translateY(-50%)', fontSize: '8px', color: distanceFromTarget?.passed ? '#22c55e' : '#3b82f6', lineHeight: 1, textAlign: 'right', fontWeight: 600 }}>{profitTarget >= 1000000 ? `$${(profitTarget/1000000).toFixed(1)}M` : profitTarget >= 1000 ? `$${(profitTarget/1000).toFixed(0)}k` : `$${profitTarget}`}</span>
                                         <div style={{ position: 'absolute', right: 0, top: `${profitTargetY}%`, width: '4px', borderTop: `1px solid ${distanceFromTarget?.passed ? '#22c55e' : '#3b82f6'}` }} />
+                                      </Fragment>
+                                    )}
+                                    {/* Static Max DD floor value on Y-axis */}
+                                    {maxDdStaticFloorY !== null && (
+                                      <Fragment>
+                                        <span style={{ position: 'absolute', right: '5px', top: `${maxDdStaticFloorY}%`, transform: 'translateY(-50%)', fontSize: '8px', color: '#ef4444', lineHeight: 1, textAlign: 'right', fontWeight: 600 }}>{maxDdStaticFloor >= 1000000 ? `$${(maxDdStaticFloor/1000000).toFixed(1)}M` : maxDdStaticFloor >= 1000 ? `$${(maxDdStaticFloor/1000).toFixed(0)}k` : `$${maxDdStaticFloor}`}</span>
+                                        <div style={{ position: 'absolute', right: 0, top: `${maxDdStaticFloorY}%`, width: '4px', borderTop: '1px solid #ef4444' }} />
                                       </Fragment>
                                     )}
                                   </div>
@@ -2152,6 +2331,16 @@ export default function AccountPage() {
                                         {distanceFromTarget?.passed ? 'PASSED' : 'Target'}
                                       </span>
                                     )}
+                                    {/* Static Max DD floor line - red dashed horizontal */}
+                                    {maxDdStaticFloorY !== null && (
+                                      <div style={{ position: 'absolute', left: 0, right: '50px', top: `${maxDdStaticFloorY}%`, borderTop: '1px dashed #ef4444', zIndex: 1 }} />
+                                    )}
+                                    {/* Static Max DD floor label */}
+                                    {maxDdStaticFloorY !== null && (
+                                      <span style={{ position: 'absolute', right: '4px', top: `${maxDdStaticFloorY}%`, transform: 'translateY(-50%)', fontSize: '9px', color: '#ef4444', fontWeight: 500 }}>
+                                        Max DD
+                                      </span>
+                                    )}
                                     <svg style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', overflow: 'visible', zIndex: 2 }} viewBox={`0 0 ${svgW} ${svgH}`} preserveAspectRatio="none"
                                       onMouseMove={e => {
                                         const rect = e.currentTarget.getBoundingClientRect()
@@ -2193,6 +2382,10 @@ export default function AccountPage() {
                                           {lineData[0].redAreaPath && <path d={lineData[0].redAreaPath} fill="url(#eqRed)" />}
                                           {lineData[0].greenPath && <path d={lineData[0].greenPath} fill="none" stroke="#22c55e" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />}
                                           {lineData[0].redPath && <path d={lineData[0].redPath} fill="none" stroke="#ef4444" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />}
+                                          {/* Daily DD floor line - orange, follows balance curve */}
+                                          {dailyDdPath && <path d={dailyDdPath} fill="none" stroke="#f97316" strokeWidth="1.5" strokeDasharray="4,3" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />}
+                                          {/* Trailing Max DD floor line - red, follows peak curve */}
+                                          {trailingMaxDdPath && <path d={trailingMaxDdPath} fill="none" stroke="#ef4444" strokeWidth="1.5" strokeDasharray="4,3" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />}
                                         </>
                                       ) : (() => {
                                         // Sort lines by final Y position (end of line) - top lines first
@@ -2959,8 +3152,8 @@ export default function AccountPage() {
                         </div>
                       </div>
                     )}
-                    {/* Drawdown Status */}
-                    {propFirmDrawdown && (
+                    {/* Legacy Drawdown Status (only show if new max DD not enabled) */}
+                    {propFirmDrawdown && !account?.max_dd_enabled && (
                       <div>
                         <div style={{ fontSize: '10px', color: '#888', marginBottom: '6px', textTransform: 'uppercase' }}>{propFirmDrawdown.ddType === 'trailing' ? 'Trailing' : 'Max'} Drawdown ({account.max_drawdown}%){propFirmDrawdown.ddType === 'trailing' && <span style={{ marginLeft: '4px', fontSize: '9px', color: '#666' }}>({propFirmDrawdown.trailingMode === 'eod' ? 'EOD' : 'Real-time'})</span>}</div>
                         <div style={{ background: '#1a1a22', borderRadius: '4px', height: '10px', overflow: 'hidden', marginBottom: '6px' }}>
@@ -2969,6 +3162,33 @@ export default function AccountPage() {
                         <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px' }}>
                           <span style={{ color: '#aaa' }}>Floor: ${Math.round(propFirmDrawdown.floor).toLocaleString()}</span>
                           <span style={{ color: propFirmDrawdown.breached ? '#ef4444' : propFirmDrawdown.remaining < 0 ? '#ef4444' : '#22c55e', fontWeight: 600 }}>{propFirmDrawdown.breached ? 'BREACHED' : `$${Math.round(propFirmDrawdown.remaining).toLocaleString()} remaining`}</span>
+                        </div>
+                      </div>
+                    )}
+                    {/* Daily Drawdown Status (orange) */}
+                    {dailyDdStats && (
+                      <div>
+                        <div style={{ fontSize: '10px', color: '#f97316', marginBottom: '6px', textTransform: 'uppercase', fontWeight: 600 }}>Daily Drawdown ({dailyDdStats.pct}%)</div>
+                        <div style={{ background: '#1a1a22', borderRadius: '4px', height: '10px', overflow: 'hidden', marginBottom: '6px' }}>
+                          <div style={{ width: `${dailyDdStats.usedPct}%`, height: '100%', background: dailyDdStats.breached ? '#ef4444' : dailyDdStats.usedPct > 80 ? '#f97316' : dailyDdStats.usedPct > 50 ? '#f59e0b' : '#22c55e', transition: 'width 0.3s' }} />
+                        </div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px' }}>
+                          <span style={{ color: '#aaa' }}>Floor: ${Math.round(dailyDdStats.floor).toLocaleString()}</span>
+                          <span style={{ color: dailyDdStats.breached ? '#ef4444' : dailyDdStats.remaining < 0 ? '#ef4444' : '#22c55e', fontWeight: 600 }}>{dailyDdStats.breached ? 'BREACHED' : `$${Math.round(dailyDdStats.remaining).toLocaleString()} remaining`}</span>
+                        </div>
+                        <div style={{ fontSize: '10px', color: '#666', marginTop: '4px' }}>Today's start: ${Math.round(dailyDdStats.todayStart).toLocaleString()}</div>
+                      </div>
+                    )}
+                    {/* Max Drawdown Status (red) */}
+                    {maxDdStats && (
+                      <div>
+                        <div style={{ fontSize: '10px', color: '#ef4444', marginBottom: '6px', textTransform: 'uppercase', fontWeight: 600 }}>{maxDdStats.ddType === 'trailing' ? 'Trailing' : 'Max'} Drawdown ({maxDdStats.pct}%){maxDdStats.ddType === 'trailing' && <span style={{ marginLeft: '4px', fontSize: '9px', color: '#666' }}>({maxDdStats.stopsAt === 'initial' ? 'Stops at initial' : maxDdStats.stopsAt === 'buffer' ? 'Stops at buffer' : 'Always trails'})</span>}</div>
+                        <div style={{ background: '#1a1a22', borderRadius: '4px', height: '10px', overflow: 'hidden', marginBottom: '6px' }}>
+                          <div style={{ width: `${maxDdStats.usedPct}%`, height: '100%', background: maxDdStats.breached ? '#ef4444' : maxDdStats.usedPct > 80 ? '#ef4444' : maxDdStats.usedPct > 50 ? '#f59e0b' : '#22c55e', transition: 'width 0.3s' }} />
+                        </div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px' }}>
+                          <span style={{ color: '#aaa' }}>Floor: ${Math.round(maxDdStats.floor).toLocaleString()}</span>
+                          <span style={{ color: maxDdStats.breached ? '#ef4444' : maxDdStats.remaining < 0 ? '#ef4444' : '#22c55e', fontWeight: 600 }}>{maxDdStats.breached ? 'BREACHED' : `$${Math.round(maxDdStats.remaining).toLocaleString()} remaining`}</span>
                         </div>
                       </div>
                     )}
