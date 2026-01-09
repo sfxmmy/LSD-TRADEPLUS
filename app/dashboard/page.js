@@ -835,7 +835,7 @@ export default function DashboardPage() {
 
   function EquityCurve({ accountTrades, startingBalance, account }) {
     const [hoverPoint, setHoverPoint] = useState(null)
-    const [isZoomedOut, setIsZoomedOut] = useState(false)
+    const [showObjectiveLines, setShowObjectiveLines] = useState(false)
     const svgRef = useRef(null)
 
     // Check if prop firm rules are configured
@@ -936,7 +936,7 @@ export default function DashboardPage() {
     }
 
     // Only include DD floors/profit target in range when zoomed out
-    if (isZoomedOut) {
+    if (showObjectiveLines) {
       // Include new DD floors in range calculation
       if (dailyDdFloorPoints.length > 0) {
         const minDailyFloor = Math.min(...dailyDdFloorPoints.map(p => p.floor))
@@ -964,10 +964,10 @@ export default function DashboardPage() {
 
     // Ensure padding above profit target and below dd floor when zoomed out
     let yMax = Math.ceil(actualMax / yStep) * yStep
-    if (isZoomedOut && profitTarget && yMax - profitTarget < yStep) yMax += yStep // Ensure gap above target
+    if (showObjectiveLines && profitTarget && yMax - profitTarget < yStep) yMax += yStep // Ensure gap above target
     let yMin = Math.floor(actualMin / yStep) * yStep
-    if (isZoomedOut && ddFloor && ddFloor - yMin < yStep) yMin -= yStep // Ensure gap below floor
-    if (yMin < 0 && !isZoomedOut && actualMin >= 0) yMin = 0 // Don't go negative if not needed and not zoomed out
+    if (showObjectiveLines && ddFloor && ddFloor - yMin < yStep) yMin -= yStep // Ensure gap below floor
+    if (yMin < 0 && !showObjectiveLines && actualMin >= 0) yMin = 0 // Don't go negative if not needed and not zoomed out
 
     const yRange = yMax - yMin || yStep
 
@@ -1118,22 +1118,22 @@ export default function DashboardPage() {
                 <div style={{ width: '4px', height: '1px', background: '#888', marginLeft: '2px' }} />
               </div>
             )}
-            {/* Red DD floor value on Y-axis (legacy - only if new max DD not enabled) */}
-            {ddFloorY !== null && !maxDdEnabled && (
+            {/* Red DD floor value on Y-axis (legacy - only if new max DD not enabled and showing objectives) */}
+            {showObjectiveLines && ddFloorY !== null && !maxDdEnabled && (
               <div style={{ position: 'absolute', right: 0, top: `${ddFloorY}%`, transform: 'translateY(-50%)', display: 'flex', alignItems: 'center' }}>
                 <span style={{ fontSize: '10px', color: '#ef4444', lineHeight: 1, textAlign: 'right', fontWeight: 600 }}>{ddFloor >= 1000000 ? `$${(ddFloor/1000000).toFixed(1)}M` : ddFloor >= 1000 ? `$${(ddFloor/1000).toFixed(0)}k` : `$${ddFloor}`}</span>
                 <div style={{ width: '4px', height: '1px', background: '#ef4444', marginLeft: '2px' }} />
               </div>
             )}
-            {/* Red static Max DD floor value on Y-axis */}
-            {maxDdStaticFloorY !== null && (
+            {/* Red static Max DD floor value on Y-axis - only when showing objectives */}
+            {showObjectiveLines && maxDdStaticFloorY !== null && (
               <div style={{ position: 'absolute', right: 0, top: `${maxDdStaticFloorY}%`, transform: 'translateY(-50%)', display: 'flex', alignItems: 'center' }}>
                 <span style={{ fontSize: '10px', color: '#ef4444', lineHeight: 1, textAlign: 'right', fontWeight: 600 }}>{maxDdStaticFloor >= 1000000 ? `$${(maxDdStaticFloor/1000000).toFixed(1)}M` : maxDdStaticFloor >= 1000 ? `$${(maxDdStaticFloor/1000).toFixed(0)}k` : `$${maxDdStaticFloor}`}</span>
                 <div style={{ width: '4px', height: '1px', background: '#ef4444', marginLeft: '2px' }} />
               </div>
             )}
-            {/* Green profit target value on Y-axis */}
-            {profitTargetY !== null && (
+            {/* Green profit target value on Y-axis - only when showing objectives */}
+            {showObjectiveLines && profitTargetY !== null && (
               <div style={{ position: 'absolute', right: 0, top: `${profitTargetY}%`, transform: 'translateY(-50%)', display: 'flex', alignItems: 'center' }}>
                 <span style={{ fontSize: '10px', color: '#22c55e', lineHeight: 1, textAlign: 'right', fontWeight: 600 }}>{profitTarget >= 1000000 ? `$${(profitTarget/1000000).toFixed(1)}M` : profitTarget >= 1000 ? `$${(profitTarget/1000).toFixed(0)}k` : `$${profitTarget}`}</span>
                 <div style={{ width: '4px', height: '1px', background: '#22c55e', marginLeft: '2px' }} />
@@ -1145,26 +1145,27 @@ export default function DashboardPage() {
 
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, overflow: 'visible' }}>
           <div style={{ flex: 1, position: 'relative', borderBottom: '1px solid #2a2a35', overflow: 'visible' }}>
-            {/* Zoom button - top row, only show if prop firm rules exist */}
+            {/* Show/Hide Objective Lines button - prominent, above stats */}
             {hasPropFirmRules && (
               <button
-                onClick={() => setIsZoomedOut(!isZoomedOut)}
-                title={isZoomedOut ? 'Zoom in' : 'Zoom out'}
+                onClick={() => setShowObjectiveLines(!showObjectiveLines)}
                 style={{
                   position: 'absolute',
-                  top: '-18px',
+                  top: '-24px',
                   right: '0px',
                   zIndex: 20,
-                  background: 'transparent',
-                  border: 'none',
-                  padding: '2px 4px',
-                  color: '#666',
-                  fontSize: '11px',
+                  background: showObjectiveLines ? '#1a1a22' : '#1a1a22',
+                  border: '1px solid #2a2a35',
+                  borderRadius: '4px',
+                  padding: '4px 10px',
+                  color: showObjectiveLines ? '#22c55e' : '#888',
+                  fontSize: '10px',
                   cursor: 'pointer',
-                  fontWeight: 500
+                  fontWeight: 500,
+                  whiteSpace: 'nowrap'
                 }}
               >
-                {isZoomedOut ? '−' : '+'}
+                {showObjectiveLines ? 'Hide Objective Lines' : 'Show Objective Lines'}
               </button>
             )}
             {/* Horizontal grid lines - skip last one since borderBottom is X-axis */}
@@ -1190,10 +1191,10 @@ export default function DashboardPage() {
               {redAreaPath && <path d={redAreaPath} fill="url(#areaGradRed)" />}
               {greenPath && <path d={greenPath} fill="none" stroke="#22c55e" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />}
               {redPath && <path d={redPath} fill="none" stroke="#ef4444" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />}
-              {/* Daily DD floor line - orange, follows balance curve */}
-              {dailyDdPath && <path d={dailyDdPath} fill="none" stroke="#f97316" strokeWidth="1.5" strokeDasharray="4,3" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />}
-              {/* Trailing Max DD floor line - red, follows peak curve */}
-              {trailingMaxDdPath && <path d={trailingMaxDdPath} fill="none" stroke="#ef4444" strokeWidth="1.5" strokeDasharray="4,3" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />}
+              {/* Daily DD floor line - orange, follows balance curve (only when showing objectives) */}
+              {showObjectiveLines && dailyDdPath && <path d={dailyDdPath} fill="none" stroke="#f97316" strokeWidth="1.5" strokeDasharray="4,3" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />}
+              {/* Trailing Max DD floor line - red, follows peak curve (only when showing objectives) */}
+              {showObjectiveLines && trailingMaxDdPath && <path d={trailingMaxDdPath} fill="none" stroke="#ef4444" strokeWidth="1.5" strokeDasharray="4,3" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />}
             </svg>
             {/* Start line - CSS positioned for consistent fixed gap */}
             {startLineY !== null && (
@@ -1205,44 +1206,44 @@ export default function DashboardPage() {
                 Start
               </span>
             )}
-            {/* DD Floor line - red dashed (legacy) */}
-            {ddFloorY !== null && !maxDdEnabled && (
+            {/* DD Floor line - red dashed (legacy) - only when showing objectives */}
+            {showObjectiveLines && ddFloorY !== null && !maxDdEnabled && (
               <div style={{ position: 'absolute', left: 0, right: '80px', top: `${ddFloorY}%`, borderTop: '1px dashed #ef4444', zIndex: 1 }} />
             )}
             {/* DD Floor label (legacy) */}
-            {ddFloorY !== null && !maxDdEnabled && (
+            {showObjectiveLines && ddFloorY !== null && !maxDdEnabled && (
               <span style={{ position: 'absolute', right: '4px', top: `${ddFloorY}%`, transform: 'translateY(-50%)', fontSize: '9px', color: '#ef4444', fontWeight: 500 }}>
                 Max Drawdown
               </span>
             )}
-            {/* Static Max DD floor line - red dashed horizontal */}
-            {maxDdStaticFloorY !== null && (
+            {/* Static Max DD floor line - red dashed horizontal - only when showing objectives */}
+            {showObjectiveLines && maxDdStaticFloorY !== null && (
               <div style={{ position: 'absolute', left: 0, right: '80px', top: `${maxDdStaticFloorY}%`, borderTop: '1px dashed #ef4444', zIndex: 1 }} />
             )}
             {/* Static Max DD floor label */}
-            {maxDdStaticFloorY !== null && (
+            {showObjectiveLines && maxDdStaticFloorY !== null && (
               <span style={{ position: 'absolute', right: '4px', top: `${maxDdStaticFloorY}%`, transform: 'translateY(-50%)', fontSize: '9px', color: '#ef4444', fontWeight: 500 }}>
                 Max Drawdown
               </span>
             )}
-            {/* Daily DD floor label - orange */}
-            {dailyDdLastY !== null && (
+            {/* Daily DD floor label - orange - only when showing objectives */}
+            {showObjectiveLines && dailyDdLastY !== null && (
               <span style={{ position: 'absolute', right: '4px', top: `${dailyDdLastY}%`, transform: 'translateY(-50%)', fontSize: '9px', color: '#f97316', fontWeight: 500 }}>
                 Daily Drawdown
               </span>
             )}
-            {/* Trailing Max DD floor label - red */}
-            {trailingMaxDdLastY !== null && (
+            {/* Trailing Max DD floor label - red - only when showing objectives */}
+            {showObjectiveLines && trailingMaxDdLastY !== null && (
               <span style={{ position: 'absolute', right: '4px', top: `${trailingMaxDdLastY}%`, transform: 'translateY(-50%)', fontSize: '9px', color: '#ef4444', fontWeight: 500 }}>
                 Max Drawdown
               </span>
             )}
-            {/* Profit target line - green dashed */}
-            {profitTargetY !== null && (
+            {/* Profit target line - green dashed - only when showing objectives */}
+            {showObjectiveLines && profitTargetY !== null && (
               <div style={{ position: 'absolute', left: 0, right: '38px', top: `${profitTargetY}%`, borderTop: '1px dashed #22c55e', zIndex: 1 }} />
             )}
             {/* Profit target label */}
-            {profitTargetY !== null && (
+            {showObjectiveLines && profitTargetY !== null && (
               <span style={{ position: 'absolute', right: '4px', top: `${profitTargetY}%`, transform: 'translateY(-50%)', fontSize: '9px', color: '#22c55e', fontWeight: 500 }}>
                 Target
               </span>
