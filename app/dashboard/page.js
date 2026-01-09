@@ -949,18 +949,18 @@ export default function DashboardPage() {
                 <div style={{ width: '4px', height: '1px', background: '#888', marginLeft: '2px' }} />
               </div>
             )}
-            {/* Orange DD floor value on Y-axis */}
+            {/* Red DD floor value on Y-axis */}
             {ddFloorY !== null && (
               <div style={{ position: 'absolute', right: 0, top: `${ddFloorY}%`, transform: 'translateY(-50%)', display: 'flex', alignItems: 'center' }}>
-                <span style={{ fontSize: '10px', color: '#f59e0b', lineHeight: 1, textAlign: 'right', fontWeight: 600 }}>{ddFloor >= 1000000 ? `$${(ddFloor/1000000).toFixed(1)}M` : ddFloor >= 1000 ? `$${(ddFloor/1000).toFixed(0)}k` : `$${ddFloor}`}</span>
-                <div style={{ width: '4px', height: '1px', background: '#f59e0b', marginLeft: '2px' }} />
+                <span style={{ fontSize: '10px', color: '#ef4444', lineHeight: 1, textAlign: 'right', fontWeight: 600 }}>{ddFloor >= 1000000 ? `$${(ddFloor/1000000).toFixed(1)}M` : ddFloor >= 1000 ? `$${(ddFloor/1000).toFixed(0)}k` : `$${ddFloor}`}</span>
+                <div style={{ width: '4px', height: '1px', background: '#ef4444', marginLeft: '2px' }} />
               </div>
             )}
-            {/* Blue profit target value on Y-axis */}
+            {/* Green profit target value on Y-axis */}
             {profitTargetY !== null && (
               <div style={{ position: 'absolute', right: 0, top: `${profitTargetY}%`, transform: 'translateY(-50%)', display: 'flex', alignItems: 'center' }}>
-                <span style={{ fontSize: '10px', color: '#3b82f6', lineHeight: 1, textAlign: 'right', fontWeight: 600 }}>{profitTarget >= 1000000 ? `$${(profitTarget/1000000).toFixed(1)}M` : profitTarget >= 1000 ? `$${(profitTarget/1000).toFixed(0)}k` : `$${profitTarget}`}</span>
-                <div style={{ width: '4px', height: '1px', background: '#3b82f6', marginLeft: '2px' }} />
+                <span style={{ fontSize: '10px', color: '#22c55e', lineHeight: 1, textAlign: 'right', fontWeight: 600 }}>{profitTarget >= 1000000 ? `$${(profitTarget/1000000).toFixed(1)}M` : profitTarget >= 1000 ? `$${(profitTarget/1000).toFixed(0)}k` : `$${profitTarget}`}</span>
+                <div style={{ width: '4px', height: '1px', background: '#22c55e', marginLeft: '2px' }} />
               </div>
             )}
           </div>
@@ -1003,23 +1003,23 @@ export default function DashboardPage() {
                 Start
               </span>
             )}
-            {/* DD Floor line - orange dashed */}
+            {/* DD Floor line - red dashed */}
             {ddFloorY !== null && (
-              <div style={{ position: 'absolute', left: 0, right: '50px', top: `${ddFloorY}%`, borderTop: '1px dashed #f59e0b', zIndex: 1 }} />
+              <div style={{ position: 'absolute', left: 0, right: '50px', top: `${ddFloorY}%`, borderTop: '1px dashed #ef4444', zIndex: 1 }} />
             )}
             {/* DD Floor label */}
             {ddFloorY !== null && (
-              <span style={{ position: 'absolute', right: '4px', top: `${ddFloorY}%`, transform: 'translateY(-50%)', fontSize: '9px', color: '#f59e0b', fontWeight: 500 }}>
+              <span style={{ position: 'absolute', right: '4px', top: `${ddFloorY}%`, transform: 'translateY(-50%)', fontSize: '9px', color: '#ef4444', fontWeight: 500 }}>
                 DD Floor
               </span>
             )}
-            {/* Profit target line - blue dashed */}
+            {/* Profit target line - green dashed */}
             {profitTargetY !== null && (
-              <div style={{ position: 'absolute', left: 0, right: '38px', top: `${profitTargetY}%`, borderTop: '1px dashed #3b82f6', zIndex: 1 }} />
+              <div style={{ position: 'absolute', left: 0, right: '38px', top: `${profitTargetY}%`, borderTop: '1px dashed #22c55e', zIndex: 1 }} />
             )}
             {/* Profit target label */}
             {profitTargetY !== null && (
-              <span style={{ position: 'absolute', right: '4px', top: `${profitTargetY}%`, transform: 'translateY(-50%)', fontSize: '9px', color: '#3b82f6', fontWeight: 500 }}>
+              <span style={{ position: 'absolute', right: '4px', top: `${profitTargetY}%`, transform: 'translateY(-50%)', fontSize: '9px', color: '#22c55e', fontWeight: 500 }}>
                 Target
               </span>
             )}
