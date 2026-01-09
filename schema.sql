@@ -84,9 +84,21 @@ CREATE TABLE IF NOT EXISTS accounts (
   name TEXT NOT NULL,
   starting_balance DECIMAL(12,2) DEFAULT 0,
   profit_target DECIMAL(5,2) DEFAULT NULL,
+  -- Legacy max_drawdown field (kept for compatibility)
   max_drawdown DECIMAL(5,2) DEFAULT NULL,
   drawdown_type TEXT DEFAULT 'static',
   trailing_mode TEXT DEFAULT 'eod',
+  -- Daily Drawdown settings (orange line)
+  daily_dd_enabled BOOLEAN DEFAULT FALSE,
+  daily_dd_pct DECIMAL(5,2) DEFAULT NULL,
+  daily_dd_calc TEXT DEFAULT 'balance',
+  -- Max Drawdown settings (red line)
+  max_dd_enabled BOOLEAN DEFAULT FALSE,
+  max_dd_pct DECIMAL(5,2) DEFAULT NULL,
+  max_dd_type TEXT DEFAULT 'static',
+  max_dd_calc TEXT DEFAULT 'balance',
+  max_dd_trailing_stops_at TEXT DEFAULT 'never',
+  -- Consistency rule settings
   consistency_enabled BOOLEAN DEFAULT FALSE,
   consistency_pct DECIMAL(5,2) DEFAULT 30,
   custom_inputs JSONB DEFAULT NULL,
@@ -112,6 +124,33 @@ BEGIN
   IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'accounts' AND column_name = 'trailing_mode') THEN
     ALTER TABLE accounts ADD COLUMN trailing_mode TEXT DEFAULT 'eod';
   END IF;
+  -- Daily Drawdown fields
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'accounts' AND column_name = 'daily_dd_enabled') THEN
+    ALTER TABLE accounts ADD COLUMN daily_dd_enabled BOOLEAN DEFAULT FALSE;
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'accounts' AND column_name = 'daily_dd_pct') THEN
+    ALTER TABLE accounts ADD COLUMN daily_dd_pct DECIMAL(5,2) DEFAULT NULL;
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'accounts' AND column_name = 'daily_dd_calc') THEN
+    ALTER TABLE accounts ADD COLUMN daily_dd_calc TEXT DEFAULT 'balance';
+  END IF;
+  -- Max Drawdown fields
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'accounts' AND column_name = 'max_dd_enabled') THEN
+    ALTER TABLE accounts ADD COLUMN max_dd_enabled BOOLEAN DEFAULT FALSE;
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'accounts' AND column_name = 'max_dd_pct') THEN
+    ALTER TABLE accounts ADD COLUMN max_dd_pct DECIMAL(5,2) DEFAULT NULL;
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'accounts' AND column_name = 'max_dd_type') THEN
+    ALTER TABLE accounts ADD COLUMN max_dd_type TEXT DEFAULT 'static';
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'accounts' AND column_name = 'max_dd_calc') THEN
+    ALTER TABLE accounts ADD COLUMN max_dd_calc TEXT DEFAULT 'balance';
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'accounts' AND column_name = 'max_dd_trailing_stops_at') THEN
+    ALTER TABLE accounts ADD COLUMN max_dd_trailing_stops_at TEXT DEFAULT 'never';
+  END IF;
+  -- Consistency rule fields
   IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'accounts' AND column_name = 'consistency_enabled') THEN
     ALTER TABLE accounts ADD COLUMN consistency_enabled BOOLEAN DEFAULT FALSE;
   END IF;
