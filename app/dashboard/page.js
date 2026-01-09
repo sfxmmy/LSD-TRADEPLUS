@@ -1049,6 +1049,7 @@ export default function DashboardPage() {
 
     // Build SVG path for daily DD floor line (orange, stepped)
     let dailyDdPath = ''
+    let dailyDdLastY = null
     if (dailyDdFloorPoints.length > 0) {
       const ddChartPoints = dailyDdFloorPoints.map(p => {
         const x = points.length > 1 ? (p.idx / (points.length - 1)) * svgW : svgW / 2
@@ -1056,10 +1057,14 @@ export default function DashboardPage() {
         return { x, y, floor: p.floor }
       })
       dailyDdPath = ddChartPoints.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`).join(' ')
+      // Get last point Y position for label (as percentage)
+      const lastFloor = dailyDdFloorPoints[dailyDdFloorPoints.length - 1].floor
+      dailyDdLastY = ((yMax - lastFloor) / yRange) * 100
     }
 
     // Build SVG path for trailing max DD floor line (red, follows curve)
     let trailingMaxDdPath = ''
+    let trailingMaxDdLastY = null
     if (maxDdFloorPoints.length > 0) {
       const maxDdChartPoints = maxDdFloorPoints.map(p => {
         const x = points.length > 1 ? (p.idx / (points.length - 1)) * svgW : svgW / 2
@@ -1067,6 +1072,9 @@ export default function DashboardPage() {
         return { x, y, floor: p.floor }
       })
       trailingMaxDdPath = maxDdChartPoints.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`).join(' ')
+      // Get last point Y position for label (as percentage)
+      const lastFloor = maxDdFloorPoints[maxDdFloorPoints.length - 1].floor
+      trailingMaxDdLastY = ((yMax - lastFloor) / yRange) * 100
     }
 
     // Static max DD floor Y position (for horizontal line)
@@ -1141,7 +1149,7 @@ export default function DashboardPage() {
             {hasPropFirmRules && (
               <button
                 onClick={() => setIsZoomedOut(!isZoomedOut)}
-                title={isZoomedOut ? 'Click to zoom in to PnL range' : 'Click to zoom out and show DD/Target lines'}
+                title={isZoomedOut ? 'Zoom in' : 'Zoom out'}
                 style={{
                   position: 'absolute',
                   top: '-18px',
@@ -1150,13 +1158,13 @@ export default function DashboardPage() {
                   background: 'transparent',
                   border: 'none',
                   padding: '2px 4px',
-                  color: isZoomedOut ? '#22c55e' : '#666',
-                  fontSize: '9px',
+                  color: '#666',
+                  fontSize: '11px',
                   cursor: 'pointer',
                   fontWeight: 500
                 }}
               >
-                {isZoomedOut ? 'Zoomed Out' : 'Zoomed In'}
+                {isZoomedOut ? '−' : '+'}
               </button>
             )}
             {/* Horizontal grid lines - skip last one since borderBottom is X-axis */}
@@ -1199,22 +1207,34 @@ export default function DashboardPage() {
             )}
             {/* DD Floor line - red dashed (legacy) */}
             {ddFloorY !== null && !maxDdEnabled && (
-              <div style={{ position: 'absolute', left: 0, right: '50px', top: `${ddFloorY}%`, borderTop: '1px dashed #ef4444', zIndex: 1 }} />
+              <div style={{ position: 'absolute', left: 0, right: '80px', top: `${ddFloorY}%`, borderTop: '1px dashed #ef4444', zIndex: 1 }} />
             )}
             {/* DD Floor label (legacy) */}
             {ddFloorY !== null && !maxDdEnabled && (
               <span style={{ position: 'absolute', right: '4px', top: `${ddFloorY}%`, transform: 'translateY(-50%)', fontSize: '9px', color: '#ef4444', fontWeight: 500 }}>
-                DD Floor
+                Max Drawdown
               </span>
             )}
             {/* Static Max DD floor line - red dashed horizontal */}
             {maxDdStaticFloorY !== null && (
-              <div style={{ position: 'absolute', left: 0, right: '60px', top: `${maxDdStaticFloorY}%`, borderTop: '1px dashed #ef4444', zIndex: 1 }} />
+              <div style={{ position: 'absolute', left: 0, right: '80px', top: `${maxDdStaticFloorY}%`, borderTop: '1px dashed #ef4444', zIndex: 1 }} />
             )}
             {/* Static Max DD floor label */}
             {maxDdStaticFloorY !== null && (
               <span style={{ position: 'absolute', right: '4px', top: `${maxDdStaticFloorY}%`, transform: 'translateY(-50%)', fontSize: '9px', color: '#ef4444', fontWeight: 500 }}>
-                Max DD
+                Max Drawdown
+              </span>
+            )}
+            {/* Daily DD floor label - orange */}
+            {dailyDdLastY !== null && (
+              <span style={{ position: 'absolute', right: '4px', top: `${dailyDdLastY}%`, transform: 'translateY(-50%)', fontSize: '9px', color: '#f97316', fontWeight: 500 }}>
+                Daily Drawdown
+              </span>
+            )}
+            {/* Trailing Max DD floor label - red */}
+            {trailingMaxDdLastY !== null && (
+              <span style={{ position: 'absolute', right: '4px', top: `${trailingMaxDdLastY}%`, transform: 'translateY(-50%)', fontSize: '9px', color: '#ef4444', fontWeight: 500 }}>
+                Max Drawdown
               </span>
             )}
             {/* Profit target line - green dashed */}
