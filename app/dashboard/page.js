@@ -813,6 +813,8 @@ export default function DashboardPage() {
     const ptParsed = parseFloat(account?.profit_target)
     const ddFloor = !isNaN(maxDDParsed) && maxDDParsed > 0 ? start * (1 - maxDDParsed / 100) : null
     const profitTarget = !isNaN(ptParsed) && ptParsed > 0 ? start * (1 + ptParsed / 100) : null
+
+    // Always include floor/target in range with padding so they're always visible
     if (ddFloor) minBal = Math.min(minBal, ddFloor)
     if (profitTarget) maxBal = Math.max(maxBal, profitTarget)
 
@@ -820,26 +822,24 @@ export default function DashboardPage() {
     const belowStart = minBal < start // Red if balance ever went below starting
     // Calculate tight Y-axis range based on actual data
     const actualMin = Math.min(minBal, start)
-    const actualRange = maxBal - actualMin || 1000
+    const actualMax = Math.max(maxBal, start)
+    const actualRange = actualMax - actualMin || 1000
     const yStep = Math.ceil(actualRange / 6 / 1000) * 1000 || 1000
-    // Always ensure there's at least one step above max for breathing room
-    const yMax = Math.ceil(maxBal / yStep) * yStep + (maxBal === Math.ceil(maxBal / yStep) * yStep ? yStep : 0)
-    // yMin: show some positive space even if starting negative - at least one step below actual min
-    // but also ensure we show at least a bit above 0 if start is negative
+
+    // Ensure padding above profit target and below dd floor
+    let yMax = Math.ceil(actualMax / yStep) * yStep
+    if (profitTarget && yMax <= profitTarget) yMax += yStep
     let yMin = Math.floor(actualMin / yStep) * yStep
-    // If start is negative but we have positive values, ensure 0 is visible with headroom
-    if (start < 0 && maxBal > 0) {
-      yMin = Math.min(yMin, Math.floor(start / yStep) * yStep - yStep)
-    }
-    // Never let yMin go lower than one step below actualMin
-    yMin = Math.max(yMin, Math.floor(actualMin / yStep) * yStep - yStep)
+    if (ddFloor && yMin >= ddFloor) yMin -= yStep
+    if (yMin < 0 && actualMin >= 0) yMin = 0 // Don't go negative if not needed
+
     const yRange = yMax - yMin || yStep
-    
+
     // Calculate zero line position (percentage from top) - for when actual balance goes negative
     const zeroY = hasNegative ? ((yMax - 0) / yRange) * 100 : null
-    // Calculate starting balance line - always show if start is within range
-    const startLineY = start >= yMin && start <= yMax ? ((yMax - start) / yRange) * 100 : null
-    // Calculate prop firm lines
+    // Calculate starting balance line
+    const startLineY = ((yMax - start) / yRange) * 100
+    // Calculate prop firm lines - always show if they exist
     const ddFloorY = ddFloor ? ((yMax - ddFloor) / yRange) * 100 : null
     const profitTargetY = profitTarget ? ((yMax - profitTarget) / yRange) * 100 : null
 
@@ -942,11 +942,25 @@ export default function DashboardPage() {
                 </div>
               )
             })}
-            {/* Green start value on Y-axis */}
+            {/* Grey start value on Y-axis */}
             {startLineY !== null && (
               <div style={{ position: 'absolute', right: 0, top: `${startLineY}%`, transform: 'translateY(-50%)', display: 'flex', alignItems: 'center' }}>
-                <span style={{ fontSize: '10px', color: '#22c55e', lineHeight: 1, textAlign: 'right', fontWeight: 600 }}>{start >= 1000000 ? `$${(start/1000000).toFixed(1)}M` : start >= 1000 ? `$${(start/1000).toFixed(0)}k` : `$${start}`}</span>
-                <div style={{ width: '4px', height: '1px', background: '#22c55e', marginLeft: '2px' }} />
+                <span style={{ fontSize: '10px', color: '#888', lineHeight: 1, textAlign: 'right', fontWeight: 600 }}>{start >= 1000000 ? `$${(start/1000000).toFixed(1)}M` : start >= 1000 ? `$${(start/1000).toFixed(0)}k` : `$${start}`}</span>
+                <div style={{ width: '4px', height: '1px', background: '#888', marginLeft: '2px' }} />
+              </div>
+            )}
+            {/* Orange DD floor value on Y-axis */}
+            {ddFloorY !== null && (
+              <div style={{ position: 'absolute', right: 0, top: `${ddFloorY}%`, transform: 'translateY(-50%)', display: 'flex', alignItems: 'center' }}>
+                <span style={{ fontSize: '10px', color: '#f59e0b', lineHeight: 1, textAlign: 'right', fontWeight: 600 }}>{ddFloor >= 1000000 ? `$${(ddFloor/1000000).toFixed(1)}M` : ddFloor >= 1000 ? `$${(ddFloor/1000).toFixed(0)}k` : `$${ddFloor}`}</span>
+                <div style={{ width: '4px', height: '1px', background: '#f59e0b', marginLeft: '2px' }} />
+              </div>
+            )}
+            {/* Blue profit target value on Y-axis */}
+            {profitTargetY !== null && (
+              <div style={{ position: 'absolute', right: 0, top: `${profitTargetY}%`, transform: 'translateY(-50%)', display: 'flex', alignItems: 'center' }}>
+                <span style={{ fontSize: '10px', color: '#3b82f6', lineHeight: 1, textAlign: 'right', fontWeight: 600 }}>{profitTarget >= 1000000 ? `$${(profitTarget/1000000).toFixed(1)}M` : profitTarget >= 1000 ? `$${(profitTarget/1000).toFixed(0)}k` : `$${profitTarget}`}</span>
+                <div style={{ width: '4px', height: '1px', background: '#3b82f6', marginLeft: '2px' }} />
               </div>
             )}
           </div>
