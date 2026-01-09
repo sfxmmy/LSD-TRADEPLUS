@@ -2154,21 +2154,14 @@ export default function DashboardPage() {
                 </div>
                 {editDailyDdEnabled && (
                   <>
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px', marginBottom: '14px' }}>
-                      <div>
-                        <label style={{ display: 'block', fontSize: '10px', color: '#666', marginBottom: '6px', textTransform: 'uppercase' }}>Percentage (%)</label>
-                        <input type="number" step="0.1" min="0" max="99" value={editDailyDdPct} onChange={e => setEditDailyDdPct(e.target.value)} placeholder="e.g. 5" style={{ width: '100%', padding: '12px 14px', background: '#0d0d12', border: '1px solid #2a2a35', borderRadius: '6px', color: '#fff', fontSize: '14px', boxSizing: 'border-box' }} />
-                      </div>
-                      <div>
-                        <label style={{ display: 'block', fontSize: '10px', color: '#666', marginBottom: '6px', textTransform: 'uppercase' }}>Calculation</label>
-                        <select value={editDailyDdCalc} onChange={e => setEditDailyDdCalc(e.target.value)} style={{ width: '100%', padding: '12px 14px', background: '#0d0d12', border: '1px solid #2a2a35', borderRadius: '6px', color: '#fff', fontSize: '14px', boxSizing: 'border-box', cursor: 'pointer' }}>
-                          <option value="balance">Balance-Based</option>
-                        </select>
-                      </div>
+                    <div style={{ marginBottom: '14px' }}>
+                      <label style={{ display: 'block', fontSize: '10px', color: '#666', marginBottom: '6px', textTransform: 'uppercase' }}>Percentage (%)</label>
+                      <input type="number" step="0.1" min="0" max="99" value={editDailyDdPct} onChange={e => setEditDailyDdPct(e.target.value)} placeholder="e.g. 5" style={{ width: '100%', padding: '12px 14px', background: '#0d0d12', border: '1px solid #2a2a35', borderRadius: '6px', color: '#fff', fontSize: '14px', boxSizing: 'border-box' }} />
+                      <div style={{ fontSize: '10px', color: '#555', marginTop: '4px' }}>Calculated from previous day's closing balance</div>
                     </div>
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px' }}>
                       <div>
-                        <label style={{ display: 'block', fontSize: '10px', color: '#666', marginBottom: '6px', textTransform: 'uppercase' }}>Resets At (Time)</label>
+                        <label style={{ display: 'block', fontSize: '10px', color: '#666', marginBottom: '6px', textTransform: 'uppercase' }}>Resets At</label>
                         <input type="time" value={editDailyDdResetTime} onChange={e => setEditDailyDdResetTime(e.target.value)} style={{ width: '100%', padding: '12px 14px', background: '#0d0d12', border: '1px solid #2a2a35', borderRadius: '6px', color: '#fff', fontSize: '14px', boxSizing: 'border-box' }} />
                       </div>
                       <div>
@@ -2212,17 +2205,20 @@ export default function DashboardPage() {
                       <div>
                         <label style={{ display: 'block', fontSize: '10px', color: '#666', marginBottom: '6px', textTransform: 'uppercase' }}>Type</label>
                         <select value={editMaxDdType} onChange={e => setEditMaxDdType(e.target.value)} style={{ width: '100%', padding: '12px 14px', background: '#0d0d12', border: '1px solid #2a2a35', borderRadius: '6px', color: '#fff', fontSize: '14px', boxSizing: 'border-box', cursor: 'pointer' }}>
-                          <option value="static">Static</option>
+                          <option value="static">Static (FTMO style)</option>
                           <option value="trailing">Trailing</option>
                         </select>
                       </div>
+                    </div>
+                    <div style={{ fontSize: '10px', color: '#555', marginBottom: editMaxDdType === 'trailing' ? '14px' : '0' }}>
+                      {editMaxDdType === 'static' ? 'Floor stays fixed at starting balance minus DD%' : 'Floor moves up as balance increases, never down'}
                     </div>
                     {editMaxDdType === 'trailing' && (
                       <div>
                         <label style={{ display: 'block', fontSize: '10px', color: '#666', marginBottom: '6px', textTransform: 'uppercase' }}>Stops Trailing At</label>
                         <select value={editMaxDdTrailingStopsAt} onChange={e => setEditMaxDdTrailingStopsAt(e.target.value)} style={{ width: '100%', padding: '12px 14px', background: '#0d0d12', border: '1px solid #2a2a35', borderRadius: '6px', color: '#fff', fontSize: '14px', boxSizing: 'border-box', cursor: 'pointer' }}>
-                          <option value="initial">Initial Balance</option>
-                          <option value="buffer">Initial + Buffer</option>
+                          <option value="initial">Initial Balance (Funded Trading Plus style)</option>
+                          <option value="buffer">Initial + 5% Buffer</option>
                           <option value="never">Never (Always Trails)</option>
                         </select>
                       </div>
