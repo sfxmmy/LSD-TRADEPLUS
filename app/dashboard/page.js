@@ -1137,30 +1137,26 @@ export default function DashboardPage() {
 
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, overflow: 'visible' }}>
           <div style={{ flex: 1, position: 'relative', borderBottom: '1px solid #2a2a35', overflow: 'visible' }}>
-            {/* Zoom button - only show if prop firm rules exist */}
+            {/* Zoom button - top row, only show if prop firm rules exist */}
             {hasPropFirmRules && (
               <button
                 onClick={() => setIsZoomedOut(!isZoomedOut)}
-                title={isZoomedOut ? 'Zoom to fit PnL' : 'Zoom out to show DD/Target lines'}
+                title={isZoomedOut ? 'Click to zoom in to PnL range' : 'Click to zoom out and show DD/Target lines'}
                 style={{
                   position: 'absolute',
-                  top: '4px',
-                  right: '4px',
+                  top: '-18px',
+                  right: '0px',
                   zIndex: 20,
-                  background: isZoomedOut ? '#22c55e' : '#1a1a22',
-                  border: `1px solid ${isZoomedOut ? '#22c55e' : '#2a2a35'}`,
-                  borderRadius: '4px',
-                  padding: '3px 6px',
-                  color: isZoomedOut ? '#000' : '#999',
-                  fontSize: '10px',
+                  background: 'transparent',
+                  border: 'none',
+                  padding: '2px 4px',
+                  color: isZoomedOut ? '#22c55e' : '#666',
+                  fontSize: '9px',
                   cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '3px'
+                  fontWeight: 500
                 }}
               >
-                <span style={{ fontSize: '11px' }}>{isZoomedOut ? '−' : '+'}</span>
-                <span>DD</span>
+                {isZoomedOut ? 'Zoomed Out' : 'Zoomed In'}
               </button>
             )}
             {/* Horizontal grid lines - skip last one since borderBottom is X-axis */}
