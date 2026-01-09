@@ -1951,9 +1951,9 @@ export default function AccountPage() {
                             let maxBal = allBalances.length > 0 ? Math.max(...allBalances) : startingBalance
                             let minBal = allBalances.length > 0 ? Math.min(...allBalances) : startingBalance
 
-                            // Include profit target and drawdown floor in range for single journal view
-                            const ddFloorVal = viewMode === 'this' && propFirmDrawdown?.floor ? propFirmDrawdown.floor : null
-                            const profitTargetVal = viewMode === 'this' && account?.profit_target ? displayStartingBalance * (1 + parseFloat(account.profit_target) / 100) : null
+                            // Include profit target and drawdown floor in range - calculate directly from account settings
+                            const ddFloorVal = account?.max_drawdown ? displayStartingBalance * (1 - parseFloat(account.max_drawdown) / 100) : null
+                            const profitTargetVal = account?.profit_target ? displayStartingBalance * (1 + parseFloat(account.profit_target) / 100) : null
                             if (equityCurveGroupBy === 'total') {
                               if (ddFloorVal) minBal = Math.min(minBal, ddFloorVal)
                               if (profitTargetVal) maxBal = Math.max(maxBal, profitTargetVal)
@@ -1980,12 +1980,12 @@ export default function AccountPage() {
                             const zeroY = hasNegative ? ((yMax - 0) / yRange) * 100 : null
                             // Starting balance line - always show if within range
                             const startLineY = equityCurveGroupBy === 'total' && !hasNegative && displayStartingBalance >= yMin && displayStartingBalance <= yMax ? ((yMax - displayStartingBalance) / yRange) * 100 : null
-                            // Drawdown floor line - only show when viewing single journal (viewMode === 'this')
-                            const ddFloor = propFirmDrawdown?.floor
-                            const ddFloorY = viewMode === 'this' && equityCurveGroupBy === 'total' && ddFloor && ddFloor >= yMin && ddFloor <= yMax ? ((yMax - ddFloor) / yRange) * 100 : null
-                            // Profit target line - only show when viewing single journal
-                            const profitTarget = viewMode === 'this' && account?.profit_target ? displayStartingBalance * (1 + parseFloat(account.profit_target) / 100) : null
-                            const profitTargetY = profitTarget && equityCurveGroupBy === 'total' && profitTarget >= yMin && profitTarget <= yMax ? ((yMax - profitTarget) / yRange) * 100 : null
+                            // Drawdown floor line - calculate directly from account settings
+                            const ddFloor = account?.max_drawdown ? displayStartingBalance * (1 - parseFloat(account.max_drawdown) / 100) : null
+                            const ddFloorY = equityCurveGroupBy === 'total' && ddFloor && ddFloor >= yMin && ddFloor <= yMax ? ((yMax - ddFloor) / yRange) * 100 : null
+                            // Profit target line - calculate directly from account settings
+                            const profitTarget = account?.profit_target ? displayStartingBalance * (1 + parseFloat(account.profit_target) / 100) : null
+                            const profitTargetY = equityCurveGroupBy === 'total' && profitTarget && profitTarget >= yMin && profitTarget <= yMax ? ((yMax - profitTarget) / yRange) * 100 : null
 
                             const svgW = 100, svgH = 100
 
@@ -4120,9 +4120,9 @@ export default function AccountPage() {
                 let maxBal = allBalances.length > 0 ? Math.max(...allBalances) : startingBalance
                 let minBal = allBalances.length > 0 ? Math.min(...allBalances) : startingBalance
 
-                // Include profit target and drawdown floor in range for single journal view
-                const ddFloorValEnl = viewMode === 'this' && propFirmDrawdown?.floor ? propFirmDrawdown.floor : null
-                const profitTargetValEnl = viewMode === 'this' && account?.profit_target ? startingBalance * (1 + parseFloat(account.profit_target) / 100) : null
+                // Include profit target and drawdown floor in range - calculate directly from account settings
+                const ddFloorValEnl = account?.max_drawdown ? startingBalance * (1 - parseFloat(account.max_drawdown) / 100) : null
+                const profitTargetValEnl = account?.profit_target ? startingBalance * (1 + parseFloat(account.profit_target) / 100) : null
                 if (equityCurveGroupBy === 'total') {
                   if (ddFloorValEnl) minBal = Math.min(minBal, ddFloorValEnl)
                   if (profitTargetValEnl) maxBal = Math.max(maxBal, profitTargetValEnl)
@@ -4139,12 +4139,12 @@ export default function AccountPage() {
                 const hasNegative = minBal < 0
                 const belowStartEnl = equityCurveGroupBy === 'total' && minBal < startingBalance
                 const zeroY = hasNegative ? ((yMax - 0) / yRange) * 100 : null
-                // Drawdown floor for enlarged chart - only show when viewing single journal
-                const ddFloorEnl = propFirmDrawdown?.floor
-                const ddFloorYEnl = viewMode === 'this' && equityCurveGroupBy === 'total' && ddFloorEnl && ddFloorEnl >= yMin && ddFloorEnl <= yMax ? ((yMax - ddFloorEnl) / yRange) * 100 : null
-                // Profit target for enlarged chart
-                const profitTargetEnl = viewMode === 'this' && account?.profit_target ? startingBalance * (1 + parseFloat(account.profit_target) / 100) : null
-                const profitTargetYEnl = profitTargetEnl && equityCurveGroupBy === 'total' && profitTargetEnl >= yMin && profitTargetEnl <= yMax ? ((yMax - profitTargetEnl) / yRange) * 100 : null
+                // Drawdown floor for enlarged chart - calculate directly from account settings
+                const ddFloorEnl = account?.max_drawdown ? startingBalance * (1 - parseFloat(account.max_drawdown) / 100) : null
+                const ddFloorYEnl = equityCurveGroupBy === 'total' && ddFloorEnl && ddFloorEnl >= yMin && ddFloorEnl <= yMax ? ((yMax - ddFloorEnl) / yRange) * 100 : null
+                // Profit target for enlarged chart - calculate directly from account settings
+                const profitTargetEnl = account?.profit_target ? startingBalance * (1 + parseFloat(account.profit_target) / 100) : null
+                const profitTargetYEnl = equityCurveGroupBy === 'total' && profitTargetEnl && profitTargetEnl >= yMin && profitTargetEnl <= yMax ? ((yMax - profitTargetEnl) / yRange) * 100 : null
 
                 const yLabels = []
                 for (let v = yMax; v >= yMin; v -= yStep) yLabels.push(v)
