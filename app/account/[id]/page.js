@@ -3222,7 +3222,7 @@ export default function AccountPage() {
                 const accountsToShow = viewMode === 'selected' && selectedJournalIds.size > 0
                   ? allAccounts.filter(acc => selectedJournalIds.has(acc.id))
                   : allAccounts
-                const propFirmAccounts = accountsToShow.filter(acc => acc.profit_target || acc.max_drawdown || acc.consistency_enabled)
+                const propFirmAccounts = accountsToShow.filter(acc => acc.profit_target || acc.max_drawdown || acc.consistency_enabled || acc.daily_dd_enabled || acc.max_dd_enabled)
                 if (propFirmAccounts.length === 0) return null
 
                 // Calculate stats for each account
@@ -3241,9 +3241,9 @@ export default function AccountPage() {
                     profitTargetPassed = accTotalPnl >= targetAmount
                   }
 
-                  // Drawdown calc
+                  // Legacy Drawdown calc (only if new max DD not enabled)
                   let ddStatus = null
-                  if (acc.max_drawdown) {
+                  if (acc.max_drawdown && !acc.max_dd_enabled) {
                     const maxDDPct = parseFloat(acc.max_drawdown) || 0
                     const ddType = acc.drawdown_type || 'static'
                     const trailingMode = acc.trailing_mode || 'eod'
@@ -3281,8 +3281,73 @@ export default function AccountPage() {
 
                     const remaining = accCurrentBal - floor
                     const maxAllowedDD = accStartBal * (maxDDPct / 100)
-                    const usedPct = breached ? 100 : maxAllowedDD > 0 ? Math.min(100, (Math.max(0, floor - accCurrentBal + maxAllowedDD) / maxAllowedDD) * 100) : 0
-                    ddStatus = { floor, remaining, usedPct: Math.max(0, 100 - (remaining / maxAllowedDD) * 100), breached, ddType, trailingMode, maxDDPct }
+                    ddStatus = { floor, remaining, breached, ddType, trailingMode, maxDDPct }
+                  }
+
+                  // Daily Drawdown calc (orange)
+                  let dailyDdStatus = null
+                  if (acc.daily_dd_enabled) {
+                    const pct = parseFloat(acc.daily_dd_pct)
+                    if (!isNaN(pct) && pct > 0) {
+                      const sorted = [...accTrades].sort((a, b) => new Date(a.date) - new Date(b.date))
+                      const today = new Date().toDateString()
+                      let todayStart = accStartBal
+                      let runningBal = accStartBal
+                      sorted.forEach(t => {
+                        const tradeDate = new Date(t.date).toDateString()
+                        if (tradeDate !== today) {
+                          runningBal += parseFloat(t.pnl) || 0
+                        }
+                      })
+                      todayStart = runningBal
+                      const floor = todayStart * (1 - pct / 100)
+                      const remaining = accCurrentBal - floor
+                      const breached = accCurrentBal < floor
+                      dailyDdStatus = { floor, remaining, breached, todayStart, pct }
+                    }
+                  }
+
+                  // Max Drawdown calc (red - new system)
+                  let maxDdStatus = null
+                  if (acc.max_dd_enabled) {
+                    const pct = parseFloat(acc.max_dd_pct)
+                    if (!isNaN(pct) && pct > 0) {
+                      const ddType = acc.max_dd_type || 'static'
+                      const stopsAt = acc.max_dd_trailing_stops_at || 'never'
+                      const sorted = [...accTrades].sort((a, b) => new Date(a.date) - new Date(b.date))
+                      let floor = accStartBal * (1 - pct / 100)
+                      let breached = false
+
+                      if (ddType === 'static') {
+                        let runningBal = accStartBal
+                        sorted.forEach(t => {
+                          runningBal += parseFloat(t.pnl) || 0
+                          if (!breached && runningBal < floor) breached = true
+                        })
+                      } else {
+                        let peak = accStartBal
+                        let runningBal = accStartBal
+                        sorted.forEach(t => {
+                          runningBal += parseFloat(t.pnl) || 0
+                          if (runningBal > peak) {
+                            peak = runningBal
+                            const newFloor = peak * (1 - pct / 100)
+                            if (stopsAt === 'initial' && newFloor >= accStartBal) {
+                              floor = accStartBal
+                            } else if (stopsAt === 'buffer') {
+                              const buffer = accStartBal * 1.05
+                              floor = newFloor >= buffer ? buffer : newFloor
+                            } else {
+                              floor = newFloor
+                            }
+                          }
+                          if (!breached && runningBal < floor) breached = true
+                        })
+                      }
+
+                      const remaining = accCurrentBal - floor
+                      maxDdStatus = { floor, remaining, breached, pct, ddType, stopsAt }
+                    }
                   }
 
                   // Consistency calc
@@ -3299,43 +3364,67 @@ export default function AccountPage() {
 
                   // Overall status
                   let status = 'IN PROGRESS', statusColor = '#f59e0b'
-                  if (ddStatus?.breached || (conStatus && !conStatus.passed)) { status = 'FAILED'; statusColor = '#ef4444' }
-                  else if (profitTargetPassed) { status = 'PASSED'; statusColor = '#22c55e' }
+                  if (ddStatus?.breached || dailyDdStatus?.breached || maxDdStatus?.breached || (conStatus && !conStatus.passed)) {
+                    status = 'FAILED'; statusColor = '#ef4444'
+                  } else if (profitTargetPassed) {
+                    status = 'PASSED'; statusColor = '#22c55e'
+                  }
 
-                  return { acc, accCurrentBal, accStartBal, accTotalPnl, profitTargetPct, profitTargetPassed, ddStatus, conStatus, status, statusColor }
+                  return { acc, accCurrentBal, accStartBal, accTotalPnl, profitTargetPct, profitTargetPassed, ddStatus, dailyDdStatus, maxDdStatus, conStatus, status, statusColor }
                 })
+
+                // Summary counts
+                const passedCount = accountStats.filter(s => s.status === 'PASSED').length
+                const failedCount = accountStats.filter(s => s.status === 'FAILED').length
+                const inProgressCount = accountStats.filter(s => s.status === 'IN PROGRESS').length
 
                 return (
                   <div style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '14px', gridColumn: '1 / -1' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '12px' }}>
-                      <span style={{ fontSize: '13px', fontWeight: 600, color: '#fff' }}>Prop Firm Challenges ({accountStats.length} account{accountStats.length > 1 ? 's' : ''})</span>
-                      <span style={{ fontSize: '11px', color: '#666', marginLeft: 'auto' }}>{viewMode === 'all' ? 'All Journals' : 'Selected Journals'}</span>
+                      <span style={{ fontSize: '13px', fontWeight: 600, color: '#fff' }}>Prop Firm Challenges ({accountStats.length})</span>
+                      <div style={{ display: 'flex', gap: '8px', marginLeft: 'auto' }}>
+                        {passedCount > 0 && <span style={{ background: '#22c55e', padding: '2px 8px', borderRadius: '4px', fontSize: '10px', fontWeight: 600, color: '#fff' }}>{passedCount} PASSED</span>}
+                        {inProgressCount > 0 && <span style={{ background: '#f59e0b', padding: '2px 8px', borderRadius: '4px', fontSize: '10px', fontWeight: 600, color: '#fff' }}>{inProgressCount} IN PROGRESS</span>}
+                        {failedCount > 0 && <span style={{ background: '#ef4444', padding: '2px 8px', borderRadius: '4px', fontSize: '10px', fontWeight: 600, color: '#fff' }}>{failedCount} FAILED</span>}
+                      </div>
                     </div>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                      {accountStats.map(({ acc, accCurrentBal, accStartBal, accTotalPnl, profitTargetPct, profitTargetPassed, ddStatus, conStatus, status, statusColor }) => (
-                        <div key={acc.id} style={{ background: '#141418', border: '1px solid #1a1a22', borderRadius: '6px', padding: '12px' }}>
+                      {accountStats.map(({ acc, accCurrentBal, accStartBal, accTotalPnl, profitTargetPct, profitTargetPassed, ddStatus, dailyDdStatus, maxDdStatus, conStatus, status, statusColor }) => (
+                        <div key={acc.id} style={{ background: '#141418', border: `1px solid ${statusColor}33`, borderRadius: '6px', padding: '12px' }}>
                           <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px' }}>
                             <span style={{ background: statusColor, padding: '2px 8px', borderRadius: '4px', fontSize: '9px', fontWeight: 600, color: '#fff' }}>{status}</span>
                             <span style={{ fontSize: '12px', fontWeight: 600, color: '#fff' }}>{acc.name}</span>
                             <span style={{ fontSize: '11px', color: accCurrentBal >= accStartBal ? '#22c55e' : '#ef4444', marginLeft: 'auto' }}>${Math.round(accCurrentBal).toLocaleString()}</span>
                           </div>
-                          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '10px', fontSize: '11px' }}>
+                          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '8px', fontSize: '11px' }}>
                             {acc.profit_target && (
-                              <div>
-                                <span style={{ color: '#666' }}>Target ({acc.profit_target}%): </span>
-                                <span style={{ color: profitTargetPassed ? '#22c55e' : '#3b82f6', fontWeight: 600 }}>{profitTargetPassed ? 'PASSED' : `${Math.round(profitTargetPct || 0)}%`}</span>
+                              <div style={{ background: '#0d0d12', padding: '8px 10px', borderRadius: '4px' }}>
+                                <div style={{ color: '#666', fontSize: '10px', marginBottom: '2px' }}>Profit Target ({acc.profit_target}%)</div>
+                                <span style={{ color: profitTargetPassed ? '#22c55e' : '#3b82f6', fontWeight: 600 }}>{profitTargetPassed ? '✓ PASSED' : `${Math.round(profitTargetPct || 0)}% complete`}</span>
                               </div>
                             )}
                             {ddStatus && (
-                              <div>
-                                <span style={{ color: '#666' }}>{ddStatus.ddType === 'trailing' ? 'Trail' : 'Max'} DD ({ddStatus.maxDDPct}%): </span>
-                                <span style={{ color: ddStatus.breached ? '#ef4444' : ddStatus.remaining < 0 ? '#ef4444' : '#22c55e', fontWeight: 600 }}>{ddStatus.breached ? 'BREACHED' : `$${Math.round(ddStatus.remaining).toLocaleString()}`}</span>
+                              <div style={{ background: '#0d0d12', padding: '8px 10px', borderRadius: '4px' }}>
+                                <div style={{ color: '#666', fontSize: '10px', marginBottom: '2px' }}>{ddStatus.ddType === 'trailing' ? 'Trailing' : 'Max'} DD ({ddStatus.maxDDPct}%)</div>
+                                <span style={{ color: ddStatus.breached ? '#ef4444' : '#22c55e', fontWeight: 600 }}>{ddStatus.breached ? '✗ BREACHED' : `$${Math.round(ddStatus.remaining).toLocaleString()} left`}</span>
+                              </div>
+                            )}
+                            {dailyDdStatus && (
+                              <div style={{ background: '#0d0d12', padding: '8px 10px', borderRadius: '4px', borderLeft: '2px solid #f97316' }}>
+                                <div style={{ color: '#f97316', fontSize: '10px', marginBottom: '2px' }}>Daily DD ({dailyDdStatus.pct}%)</div>
+                                <span style={{ color: dailyDdStatus.breached ? '#ef4444' : '#22c55e', fontWeight: 600 }}>{dailyDdStatus.breached ? '✗ BREACHED' : `$${Math.round(dailyDdStatus.remaining).toLocaleString()} left`}</span>
+                              </div>
+                            )}
+                            {maxDdStatus && (
+                              <div style={{ background: '#0d0d12', padding: '8px 10px', borderRadius: '4px', borderLeft: '2px solid #ef4444' }}>
+                                <div style={{ color: '#ef4444', fontSize: '10px', marginBottom: '2px' }}>{maxDdStatus.ddType === 'trailing' ? 'Trailing' : 'Max'} DD ({maxDdStatus.pct}%)</div>
+                                <span style={{ color: maxDdStatus.breached ? '#ef4444' : '#22c55e', fontWeight: 600 }}>{maxDdStatus.breached ? '✗ BREACHED' : `$${Math.round(maxDdStatus.remaining).toLocaleString()} left`}</span>
                               </div>
                             )}
                             {conStatus && (
-                              <div>
-                                <span style={{ color: '#666' }}>Consistency ({conStatus.pct}%): </span>
-                                <span style={{ color: conStatus.passed ? '#22c55e' : '#ef4444', fontWeight: 600 }}>{conStatus.passed ? 'PASSING' : `${conStatus.violations} violation${conStatus.violations > 1 ? 's' : ''}`}</span>
+                              <div style={{ background: '#0d0d12', padding: '8px 10px', borderRadius: '4px' }}>
+                                <div style={{ color: '#666', fontSize: '10px', marginBottom: '2px' }}>Consistency ({conStatus.pct}%)</div>
+                                <span style={{ color: conStatus.passed ? '#22c55e' : '#ef4444', fontWeight: 600 }}>{conStatus.passed ? '✓ PASSING' : `✗ ${conStatus.violations} violation${conStatus.violations > 1 ? 's' : ''}`}</span>
                               </div>
                             )}
                           </div>
