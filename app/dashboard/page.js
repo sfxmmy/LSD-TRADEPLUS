@@ -1222,6 +1222,43 @@ export default function DashboardPage() {
                 {showObjectiveLines ? 'Hide Objective Lines' : 'Show Objective Lines'}
               </button>
             )}
+            {/* Legend - shows above top grid line when objective lines are visible */}
+            {showObjectiveLines && (
+              <div style={{
+                position: 'absolute',
+                top: '4px',
+                left: '8px',
+                display: 'flex',
+                gap: '12px',
+                zIndex: 15,
+                background: 'rgba(10, 10, 15, 0.85)',
+                padding: '4px 8px',
+                borderRadius: '4px'
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                  <div style={{ width: '16px', height: '0', borderTop: '1px dashed #666' }} />
+                  <span style={{ fontSize: '9px', color: '#666', fontWeight: 500 }}>Start</span>
+                </div>
+                {profitTargetY !== null && (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    <div style={{ width: '16px', height: '0', borderTop: '1px dashed #22c55e' }} />
+                    <span style={{ fontSize: '9px', color: '#22c55e', fontWeight: 500 }}>Target</span>
+                  </div>
+                )}
+                {(maxDdStaticFloorY !== null || trailingMaxDdPath) && (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    <div style={{ width: '16px', height: '0', borderTop: '1px dashed #ef4444' }} />
+                    <span style={{ fontSize: '9px', color: '#ef4444', fontWeight: 500 }}>Max DD</span>
+                  </div>
+                )}
+                {dailyDdPath && (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    <div style={{ width: '16px', height: '0', borderTop: '1px dashed #f97316' }} />
+                    <span style={{ fontSize: '9px', color: '#f97316', fontWeight: 500 }}>Daily DD</span>
+                  </div>
+                )}
+              </div>
+            )}
             {/* Horizontal grid lines - skip last one since borderBottom is X-axis */}
             <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}>
               {yLabels.map((_, i) => {
@@ -1246,79 +1283,43 @@ export default function DashboardPage() {
               {greenPath && <path d={greenPath} fill="none" stroke="#22c55e" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />}
               {redPath && <path d={redPath} fill="none" stroke="#ef4444" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />}
               {/* Daily DD floor line - orange, follows balance curve (only when showing objectives) */}
-              {showObjectiveLines && dailyDdPath && <path d={dailyDdPath} fill="none" stroke="#f97316" strokeWidth="1.5" strokeDasharray="4,3" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />}
+              {showObjectiveLines && dailyDdPath && <path d={dailyDdPath} fill="none" stroke="#f97316" strokeWidth="1" strokeDasharray="4,3" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />}
               {/* Trailing Max DD floor line - red, follows peak curve (only when showing objectives) */}
-              {showObjectiveLines && trailingMaxDdPath && <path d={trailingMaxDdPath} fill="none" stroke="#ef4444" strokeWidth="1.5" strokeDasharray="4,3" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />}
+              {showObjectiveLines && trailingMaxDdPath && <path d={trailingMaxDdPath} fill="none" stroke="#ef4444" strokeWidth="1" strokeDasharray="4,3" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />}
             </svg>
             {/* Start line - CSS positioned for consistent fixed gap */}
             {startLineY !== null && (
-              <div style={{ position: 'absolute', left: 0, right: '38px', top: `${startLineY}%`, borderTop: '1px dashed #666', zIndex: 1 }} />
-            )}
-            {/* Start label - grey "Start" text at end of line */}
-            {startLineY !== null && (
-              <span style={{ position: 'absolute', right: '4px', top: `${startLineY}%`, transform: 'translateY(-50%)', fontSize: '9px', color: '#666', fontWeight: 500 }}>
-                Start
-              </span>
+              <div style={{ position: 'absolute', left: 0, right: 0, top: `${startLineY}%`, borderTop: '1px dashed #666', zIndex: 1 }} />
             )}
             {/* DD Floor line - red dashed (legacy) - only when showing objectives */}
             {showObjectiveLines && ddFloorY !== null && !maxDdEnabled && (
               <div
-                style={{ position: 'absolute', left: 0, right: '38px', top: `${ddFloorY}%`, height: '12px', transform: 'translateY(-50%)', cursor: 'pointer', zIndex: 2 }}
+                style={{ position: 'absolute', left: 0, right: 0, top: `${ddFloorY}%`, height: '12px', transform: 'translateY(-50%)', cursor: 'pointer', zIndex: 2 }}
                 onMouseEnter={() => setHoverLine({ type: 'maxDd', value: ddFloor, y: ddFloorY, label: 'Max DD' })}
                 onMouseLeave={() => setHoverLine(null)}
               >
                 <div style={{ position: 'absolute', left: 0, right: 0, top: '50%', borderTop: '1px dashed #ef4444' }} />
               </div>
             )}
-            {/* DD Floor label (legacy) */}
-            {showObjectiveLines && ddFloorY !== null && !maxDdEnabled && (
-              <span style={{ position: 'absolute', right: '4px', top: `${ddFloorY}%`, transform: 'translateY(-50%)', fontSize: '9px', color: '#ef4444', fontWeight: 500 }}>
-                Max DD
-              </span>
-            )}
             {/* Static Max DD floor line - red dashed horizontal - only when showing objectives */}
             {showObjectiveLines && maxDdStaticFloorY !== null && (
               <div
-                style={{ position: 'absolute', left: 0, right: '38px', top: `${maxDdStaticFloorY}%`, height: '12px', transform: 'translateY(-50%)', cursor: 'pointer', zIndex: 2 }}
+                style={{ position: 'absolute', left: 0, right: 0, top: `${maxDdStaticFloorY}%`, height: '12px', transform: 'translateY(-50%)', cursor: 'pointer', zIndex: 2 }}
                 onMouseEnter={() => setHoverLine({ type: 'maxDd', value: maxDdStaticFloor, y: maxDdStaticFloorY, label: 'Max DD' })}
                 onMouseLeave={() => setHoverLine(null)}
               >
                 <div style={{ position: 'absolute', left: 0, right: 0, top: '50%', borderTop: '1px dashed #ef4444' }} />
               </div>
             )}
-            {/* Static Max DD floor label */}
-            {showObjectiveLines && maxDdStaticFloorY !== null && (
-              <span style={{ position: 'absolute', right: '4px', top: `${maxDdStaticFloorY}%`, transform: 'translateY(-50%)', fontSize: '9px', color: '#ef4444', fontWeight: 500 }}>
-                Max DD
-              </span>
-            )}
-            {/* Daily DD floor label - orange - only when showing objectives */}
-            {showObjectiveLines && dailyDdLastY !== null && (
-              <span style={{ position: 'absolute', right: '4px', top: `${dailyDdLastY}%`, transform: 'translateY(-50%)', fontSize: '9px', color: '#f97316', fontWeight: 500 }}>
-                Daily DD
-              </span>
-            )}
-            {/* Trailing Max DD floor label - red - only when showing objectives */}
-            {showObjectiveLines && trailingMaxDdLastY !== null && (
-              <span style={{ position: 'absolute', right: '4px', top: `${trailingMaxDdLastY}%`, transform: 'translateY(-50%)', fontSize: '9px', color: '#ef4444', fontWeight: 500 }}>
-                Max DD
-              </span>
-            )}
             {/* Profit target line - green dashed - only when showing objectives */}
             {showObjectiveLines && profitTargetY !== null && (
               <div
-                style={{ position: 'absolute', left: 0, right: '38px', top: `${profitTargetY}%`, height: '12px', transform: 'translateY(-50%)', cursor: 'pointer', zIndex: 2 }}
+                style={{ position: 'absolute', left: 0, right: 0, top: `${profitTargetY}%`, height: '12px', transform: 'translateY(-50%)', cursor: 'pointer', zIndex: 2 }}
                 onMouseEnter={() => setHoverLine({ type: 'target', value: profitTarget, y: profitTargetY, label: 'Target' })}
                 onMouseLeave={() => setHoverLine(null)}
               >
                 <div style={{ position: 'absolute', left: 0, right: 0, top: '50%', borderTop: '1px dashed #22c55e' }} />
               </div>
-            )}
-            {/* Profit target label */}
-            {showObjectiveLines && profitTargetY !== null && (
-              <span style={{ position: 'absolute', right: '4px', top: `${profitTargetY}%`, transform: 'translateY(-50%)', fontSize: '9px', color: '#22c55e', fontWeight: 500 }}>
-                Target
-              </span>
             )}
             {/* Objective line hover tooltip */}
             {hoverLine && (
