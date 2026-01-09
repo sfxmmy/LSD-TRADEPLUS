@@ -993,22 +993,31 @@ export default function DashboardPage() {
       }
     }
 
+    // Track the lowest DD floor for padding calculation
+    let lowestDdFloor = null
+
     // Only include DD floors/profit target in range when zoomed out
     if (showObjectiveLines) {
       // Include new DD floors in range calculation
       if (dailyDdFloorPoints.length > 0) {
         const minDailyFloor = Math.min(...dailyDdFloorPoints.map(p => p.floor))
         minBal = Math.min(minBal, minDailyFloor)
+        lowestDdFloor = lowestDdFloor ? Math.min(lowestDdFloor, minDailyFloor) : minDailyFloor
       }
       if (maxDdStaticFloor) {
         minBal = Math.min(minBal, maxDdStaticFloor)
+        lowestDdFloor = lowestDdFloor ? Math.min(lowestDdFloor, maxDdStaticFloor) : maxDdStaticFloor
       }
       if (maxDdFloorPoints.length > 0) {
         const minTrailingFloor = Math.min(...maxDdFloorPoints.map(p => p.floor))
         minBal = Math.min(minBal, minTrailingFloor)
+        lowestDdFloor = lowestDdFloor ? Math.min(lowestDdFloor, minTrailingFloor) : minTrailingFloor
       }
-      // Include legacy floor/target in range with padding
-      if (ddFloor) minBal = Math.min(minBal, ddFloor)
+      // Include legacy floor/target in range
+      if (ddFloor) {
+        minBal = Math.min(minBal, ddFloor)
+        lowestDdFloor = lowestDdFloor ? Math.min(lowestDdFloor, ddFloor) : ddFloor
+      }
       if (profitTarget) maxBal = Math.max(maxBal, profitTarget)
     }
 
@@ -1022,9 +1031,17 @@ export default function DashboardPage() {
 
     // Ensure padding above profit target and below dd floor when zoomed out
     let yMax = Math.ceil(actualMax / yStep) * yStep
-    if (showObjectiveLines && profitTarget && yMax - profitTarget < yStep) yMax += yStep // Ensure gap above target
+    // Always add padding above when showing objectives, ensure profit target has gap
+    if (showObjectiveLines) {
+      if (profitTarget && yMax - profitTarget < yStep) yMax += yStep
+      // If balance hasn't reached profit target yet, still ensure top padding
+      if (!profitTarget || maxBal < start) yMax = Math.max(yMax, start + yStep)
+    }
     let yMin = Math.floor(actualMin / yStep) * yStep
-    if (showObjectiveLines && ddFloor && ddFloor - yMin < yStep) yMin -= yStep // Ensure gap below floor
+    // Ensure gap below the lowest DD floor
+    if (showObjectiveLines && lowestDdFloor !== null) {
+      if (lowestDdFloor - yMin < yStep * 0.5) yMin -= yStep
+    }
     if (yMin < 0 && !showObjectiveLines && actualMin >= 0) yMin = 0 // Don't go negative if not needed and not zoomed out
 
     const yRange = yMax - yMin || yStep
