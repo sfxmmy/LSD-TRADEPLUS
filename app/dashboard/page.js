@@ -1248,13 +1248,13 @@ export default function DashboardPage() {
                 {(maxDdStaticFloorY !== null || trailingMaxDdPath) && (
                   <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                     <div style={{ width: '16px', height: '0', borderTop: '1px dashed #ef4444' }} />
-                    <span style={{ fontSize: '9px', color: '#ef4444', fontWeight: 500 }}>Max DD</span>
+                    <span style={{ fontSize: '9px', color: '#ef4444', fontWeight: 500 }}>Max Drawdown</span>
                   </div>
                 )}
                 {dailyDdPath && (
                   <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                     <div style={{ width: '16px', height: '0', borderTop: '1px dashed #f97316' }} />
-                    <span style={{ fontSize: '9px', color: '#f97316', fontWeight: 500 }}>Daily DD</span>
+                    <span style={{ fontSize: '9px', color: '#f97316', fontWeight: 500 }}>Daily Drawdown</span>
                   </div>
                 )}
               </div>
@@ -1295,7 +1295,7 @@ export default function DashboardPage() {
             {showObjectiveLines && ddFloorY !== null && !maxDdEnabled && (
               <div
                 style={{ position: 'absolute', left: 0, right: 0, top: `${ddFloorY}%`, height: '12px', transform: 'translateY(-50%)', cursor: 'pointer', zIndex: 2 }}
-                onMouseEnter={() => setHoverLine({ type: 'maxDd', value: ddFloor, y: ddFloorY, label: 'Max DD' })}
+                onMouseEnter={() => setHoverLine({ type: 'maxDd', value: ddFloor, y: ddFloorY, label: 'Max Drawdown' })}
                 onMouseLeave={() => setHoverLine(null)}
               >
                 <div style={{ position: 'absolute', left: 0, right: 0, top: '50%', borderTop: '1px dashed #ef4444' }} />
@@ -1305,7 +1305,7 @@ export default function DashboardPage() {
             {showObjectiveLines && maxDdStaticFloorY !== null && (
               <div
                 style={{ position: 'absolute', left: 0, right: 0, top: `${maxDdStaticFloorY}%`, height: '12px', transform: 'translateY(-50%)', cursor: 'pointer', zIndex: 2 }}
-                onMouseEnter={() => setHoverLine({ type: 'maxDd', value: maxDdStaticFloor, y: maxDdStaticFloorY, label: 'Max DD' })}
+                onMouseEnter={() => setHoverLine({ type: 'maxDd', value: maxDdStaticFloor, y: maxDdStaticFloorY, label: 'Max Drawdown' })}
                 onMouseLeave={() => setHoverLine(null)}
               >
                 <div style={{ position: 'absolute', left: 0, right: 0, top: '50%', borderTop: '1px dashed #ef4444' }} />

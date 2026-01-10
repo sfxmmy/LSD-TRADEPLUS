@@ -75,6 +75,7 @@ export default function AccountPage() {
   const [selectedCurveLines, setSelectedCurveLines] = useState({})
   const [showLinesDropdown, setShowLinesDropdown] = useState(false)
   const [enlargedChart, setEnlargedChart] = useState(null)
+  const [showObjectiveLines, setShowObjectiveLines] = useState(false)
   const [includeDaysNotTraded, setIncludeDaysNotTraded] = useState(false)
   const [analysisGroupBy, setAnalysisGroupBy] = useState('direction')
   const [analysisMetric, setAnalysisMetric] = useState('avgpnl')
@@ -1515,6 +1516,31 @@ export default function AccountPage() {
                   )}
                 </div>
               )}
+
+              {/* Show Objective Lines button - only for single journal view */}
+              {viewMode === 'this' && (account?.profit_target || account?.max_drawdown || account?.max_dd_enabled || account?.daily_dd_enabled) && (
+                <button
+                  onClick={() => setShowObjectiveLines(!showObjectiveLines)}
+                  style={{
+                    width: '100%',
+                    marginTop: '8px',
+                    padding: '8px 10px',
+                    background: showObjectiveLines ? 'rgba(34,197,94,0.15)' : 'transparent',
+                    border: showObjectiveLines ? '1px solid rgba(34,197,94,0.5)' : '1px solid #1a1a22',
+                    borderRadius: '6px',
+                    color: showObjectiveLines ? '#22c55e' : '#666',
+                    fontSize: '11px',
+                    fontWeight: 500,
+                    cursor: 'pointer',
+                    textAlign: 'left'
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <div style={{ width: '5px', height: '5px', borderRadius: '50%', background: showObjectiveLines ? '#22c55e' : '#444' }} />
+                    {showObjectiveLines ? 'Hide Objective Lines' : 'Show Objective Lines'}
+                  </div>
+                </button>
+              )}
             </div>
           )}
 
@@ -2269,21 +2295,21 @@ export default function AccountPage() {
                                       </Fragment>
                                     )}
                                     {/* Red DD floor value on Y-axis */}
-                                    {ddFloorY !== null && (
+                                    {showObjectiveLines && ddFloorY !== null && (
                                       <Fragment>
                                         <span style={{ position: 'absolute', right: '5px', top: `${ddFloorY}%`, transform: 'translateY(-50%)', fontSize: '8px', color: propFirmDrawdown?.breached ? '#ef4444' : '#f59e0b', lineHeight: 1, textAlign: 'right', fontWeight: 600 }}>{ddFloor >= 1000000 ? `$${(ddFloor/1000000).toFixed(1)}M` : ddFloor >= 1000 ? `$${(ddFloor/1000).toFixed(0)}k` : `$${ddFloor}`}</span>
                                         <div style={{ position: 'absolute', right: 0, top: `${ddFloorY}%`, width: '4px', borderTop: `1px solid ${propFirmDrawdown?.breached ? '#ef4444' : '#f59e0b'}` }} />
                                       </Fragment>
                                     )}
                                     {/* Profit target value on Y-axis */}
-                                    {profitTargetY !== null && (
+                                    {showObjectiveLines && profitTargetY !== null && (
                                       <Fragment>
                                         <span style={{ position: 'absolute', right: '5px', top: `${profitTargetY}%`, transform: 'translateY(-50%)', fontSize: '8px', color: distanceFromTarget?.passed ? '#22c55e' : '#3b82f6', lineHeight: 1, textAlign: 'right', fontWeight: 600 }}>{profitTarget >= 1000000 ? `$${(profitTarget/1000000).toFixed(1)}M` : profitTarget >= 1000 ? `$${(profitTarget/1000).toFixed(0)}k` : `$${profitTarget}`}</span>
                                         <div style={{ position: 'absolute', right: 0, top: `${profitTargetY}%`, width: '4px', borderTop: `1px solid ${distanceFromTarget?.passed ? '#22c55e' : '#3b82f6'}` }} />
                                       </Fragment>
                                     )}
                                     {/* Static Max DD floor value on Y-axis */}
-                                    {maxDdStaticFloorY !== null && (
+                                    {showObjectiveLines && maxDdStaticFloorY !== null && (
                                       <Fragment>
                                         <span style={{ position: 'absolute', right: '5px', top: `${maxDdStaticFloorY}%`, transform: 'translateY(-50%)', fontSize: '8px', color: '#ef4444', lineHeight: 1, textAlign: 'right', fontWeight: 600 }}>{maxDdStaticFloor >= 1000000 ? `$${(maxDdStaticFloor/1000000).toFixed(1)}M` : maxDdStaticFloor >= 1000 ? `$${(maxDdStaticFloor/1000).toFixed(0)}k` : `$${maxDdStaticFloor}`}</span>
                                         <div style={{ position: 'absolute', right: 0, top: `${maxDdStaticFloorY}%`, width: '4px', borderTop: '1px solid #ef4444' }} />
@@ -2305,45 +2331,58 @@ export default function AccountPage() {
                                     {zeroY !== null && (
                                       <div style={{ position: 'absolute', left: 0, right: 0, top: `${zeroY}%`, borderTop: '1px solid rgba(51,51,51,0.5)', zIndex: 1 }} />
                                     )}
-                                    {/* Starting balance dotted line - ends before label */}
+                                    {/* Starting balance dotted line */}
                                     {startLineY !== null && (
-                                      <div style={{ position: 'absolute', left: 0, right: '38px', top: `${startLineY}%`, borderTop: '1px dashed #666', zIndex: 1 }} />
+                                      <div style={{ position: 'absolute', left: 0, right: 0, top: `${startLineY}%`, borderTop: '1px dashed #666', zIndex: 1 }} />
                                     )}
-                                    {/* Start label at end of line - grey "Start" text */}
-                                    {startLineY !== null && (
-                                      <span style={{ position: 'absolute', right: '4px', top: `${startLineY}%`, transform: 'translateY(-50%)', fontSize: '9px', color: '#666', fontWeight: 500 }}>
-                                        Start
-                                      </span>
+                                    {/* Legend - shows when objective lines are visible */}
+                                    {showObjectiveLines && (
+                                      <div style={{
+                                        position: 'absolute',
+                                        top: '4px',
+                                        left: '8px',
+                                        display: 'flex',
+                                        gap: '12px',
+                                        zIndex: 15,
+                                        background: 'rgba(10, 10, 15, 0.85)',
+                                        padding: '4px 8px',
+                                        borderRadius: '4px'
+                                      }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                          <div style={{ width: '16px', height: '0', borderTop: '1px dashed #666' }} />
+                                          <span style={{ fontSize: '9px', color: '#666', fontWeight: 500 }}>Start</span>
+                                        </div>
+                                        {profitTargetY !== null && (
+                                          <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                            <div style={{ width: '16px', height: '0', borderTop: '1px dashed #22c55e' }} />
+                                            <span style={{ fontSize: '9px', color: '#22c55e', fontWeight: 500 }}>Target</span>
+                                          </div>
+                                        )}
+                                        {(maxDdStaticFloorY !== null || trailingMaxDdPath) && (
+                                          <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                            <div style={{ width: '16px', height: '0', borderTop: '1px dashed #ef4444' }} />
+                                            <span style={{ fontSize: '9px', color: '#ef4444', fontWeight: 500 }}>Max Drawdown</span>
+                                          </div>
+                                        )}
+                                        {dailyDdPath && (
+                                          <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                            <div style={{ width: '16px', height: '0', borderTop: '1px dashed #f97316' }} />
+                                            <span style={{ fontSize: '9px', color: '#f97316', fontWeight: 500 }}>Daily Drawdown</span>
+                                          </div>
+                                        )}
+                                      </div>
                                     )}
                                     {/* Drawdown floor line - dashed orange/red */}
-                                    {ddFloorY !== null && (
-                                      <div style={{ position: 'absolute', left: 0, right: '38px', top: `${ddFloorY}%`, borderTop: `1px dashed ${propFirmDrawdown?.breached ? '#ef4444' : '#f59e0b'}`, zIndex: 1 }} />
-                                    )}
-                                    {/* DD Floor label */}
-                                    {ddFloorY !== null && (
-                                      <span style={{ position: 'absolute', right: '4px', top: `${ddFloorY}%`, transform: 'translateY(-50%)', fontSize: '9px', color: propFirmDrawdown?.breached ? '#ef4444' : '#f59e0b', fontWeight: 500 }}>
-                                        {propFirmDrawdown?.breached ? 'BREACHED' : 'DD Floor'}
-                                      </span>
+                                    {showObjectiveLines && ddFloorY !== null && (
+                                      <div style={{ position: 'absolute', left: 0, right: 0, top: `${ddFloorY}%`, borderTop: `1px dashed ${propFirmDrawdown?.breached ? '#ef4444' : '#f59e0b'}`, zIndex: 1 }} />
                                     )}
                                     {/* Profit target line - dashed blue/green */}
-                                    {profitTargetY !== null && (
-                                      <div style={{ position: 'absolute', left: 0, right: '38px', top: `${profitTargetY}%`, borderTop: `1px dashed ${distanceFromTarget?.passed ? '#22c55e' : '#3b82f6'}`, zIndex: 1 }} />
-                                    )}
-                                    {/* Profit target label */}
-                                    {profitTargetY !== null && (
-                                      <span style={{ position: 'absolute', right: '4px', top: `${profitTargetY}%`, transform: 'translateY(-50%)', fontSize: '9px', color: distanceFromTarget?.passed ? '#22c55e' : '#3b82f6', fontWeight: 500 }}>
-                                        {distanceFromTarget?.passed ? 'PASSED' : 'Target'}
-                                      </span>
+                                    {showObjectiveLines && profitTargetY !== null && (
+                                      <div style={{ position: 'absolute', left: 0, right: 0, top: `${profitTargetY}%`, borderTop: `1px dashed ${distanceFromTarget?.passed ? '#22c55e' : '#3b82f6'}`, zIndex: 1 }} />
                                     )}
                                     {/* Static Max DD floor line - red dashed horizontal */}
-                                    {maxDdStaticFloorY !== null && (
-                                      <div style={{ position: 'absolute', left: 0, right: '50px', top: `${maxDdStaticFloorY}%`, borderTop: '1px dashed #ef4444', zIndex: 1 }} />
-                                    )}
-                                    {/* Static Max DD floor label */}
-                                    {maxDdStaticFloorY !== null && (
-                                      <span style={{ position: 'absolute', right: '4px', top: `${maxDdStaticFloorY}%`, transform: 'translateY(-50%)', fontSize: '9px', color: '#ef4444', fontWeight: 500 }}>
-                                        Max DD
-                                      </span>
+                                    {showObjectiveLines && maxDdStaticFloorY !== null && (
+                                      <div style={{ position: 'absolute', left: 0, right: 0, top: `${maxDdStaticFloorY}%`, borderTop: '1px dashed #ef4444', zIndex: 1 }} />
                                     )}
                                     <svg style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', overflow: 'visible', zIndex: 2 }} viewBox={`0 0 ${svgW} ${svgH}`} preserveAspectRatio="none"
                                       onMouseMove={e => {
@@ -2387,9 +2426,9 @@ export default function AccountPage() {
                                           {lineData[0].greenPath && <path d={lineData[0].greenPath} fill="none" stroke="#22c55e" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />}
                                           {lineData[0].redPath && <path d={lineData[0].redPath} fill="none" stroke="#ef4444" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />}
                                           {/* Daily DD floor line - orange, follows balance curve */}
-                                          {dailyDdPath && <path d={dailyDdPath} fill="none" stroke="#f97316" strokeWidth="1.5" strokeDasharray="4,3" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />}
+                                          {showObjectiveLines && dailyDdPath && <path d={dailyDdPath} fill="none" stroke="#f97316" strokeWidth="1" strokeDasharray="4,3" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />}
                                           {/* Trailing Max DD floor line - red, follows peak curve */}
-                                          {trailingMaxDdPath && <path d={trailingMaxDdPath} fill="none" stroke="#ef4444" strokeWidth="1.5" strokeDasharray="4,3" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />}
+                                          {showObjectiveLines && trailingMaxDdPath && <path d={trailingMaxDdPath} fill="none" stroke="#ef4444" strokeWidth="1" strokeDasharray="4,3" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />}
                                         </>
                                       ) : (() => {
                                         // Sort lines by final Y position (end of line) - top lines first
