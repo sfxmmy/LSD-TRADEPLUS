@@ -1441,6 +1441,33 @@ export default function AccountPage() {
                       This Journal
                     </div>
                   </button>
+                  {/* Show Objective Lines toggle - only when viewing this journal */}
+                  {viewMode === 'this' && (
+                    <button
+                      onClick={() => setShowObjectiveLines(!showObjectiveLines)}
+                      style={{
+                        width: '100%',
+                        padding: '8px 10px',
+                        background: showObjectiveLines ? 'rgba(147,51,234,0.15)' : 'transparent',
+                        border: showObjectiveLines ? '1px solid rgba(147,51,234,0.5)' : '1px solid #1a1a22',
+                        borderRadius: '6px',
+                        color: showObjectiveLines ? '#9333ea' : '#666',
+                        fontSize: '11px',
+                        fontWeight: 500,
+                        cursor: 'pointer',
+                        textAlign: 'left'
+                      }}
+                    >
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <path d="M3 3v18h18" />
+                          <path d="M3 12h18" strokeDasharray="4,3" />
+                          <path d="M3 6h18" strokeDasharray="4,3" />
+                        </svg>
+                        {showObjectiveLines ? 'Hide Targets' : 'Show Targets'}
+                      </div>
+                    </button>
+                  )}
                   {allAccounts.length > 1 && (
                     <>
                       <button
@@ -1517,31 +1544,7 @@ export default function AccountPage() {
                 </div>
               )}
 
-              {/* Show Objective Lines button - only for single journal view */}
-              {viewMode === 'this' && (account?.profit_target || account?.max_drawdown || account?.max_dd_enabled || account?.daily_dd_enabled) && (
-                <button
-                  onClick={() => setShowObjectiveLines(!showObjectiveLines)}
-                  style={{
-                    width: '100%',
-                    marginTop: '8px',
-                    padding: '8px 10px',
-                    background: showObjectiveLines ? 'rgba(34,197,94,0.15)' : 'transparent',
-                    border: showObjectiveLines ? '1px solid rgba(34,197,94,0.5)' : '1px solid #1a1a22',
-                    borderRadius: '6px',
-                    color: showObjectiveLines ? '#22c55e' : '#666',
-                    fontSize: '11px',
-                    fontWeight: 500,
-                    cursor: 'pointer',
-                    textAlign: 'left'
-                  }}
-                >
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    <div style={{ width: '5px', height: '5px', borderRadius: '50%', background: showObjectiveLines ? '#22c55e' : '#444' }} />
-                    {showObjectiveLines ? 'Hide Objective Lines' : 'Show Objective Lines'}
-                  </div>
-                </button>
-              )}
-            </div>
+              </div>
           )}
 
           {/* Slideshow Button */}
@@ -2083,7 +2086,9 @@ export default function AccountPage() {
                             const actualRange = actualMax - actualMin || 1000
                             const targetLabels = enlargedChart === 'equity' ? 10 : 6
                             const yStep = Math.ceil(actualRange / targetLabels / 1000) * 1000 || 1000
-                            const yMax = Math.ceil(actualMax / yStep) * yStep
+                            // Always add proportional top padding (ensures chart doesn't start at very top)
+                            let yMax = Math.ceil(actualMax / yStep) * yStep
+                            if (yMax <= actualMax + yStep * 0.3) yMax += yStep
                             // yMin is just one step below actual minimum - no huge gaps
                             const yMin = Math.max(0, Math.floor(actualMin / yStep) * yStep)
                             const yRange = yMax - yMin || yStep
@@ -4502,7 +4507,9 @@ export default function AccountPage() {
                 const actualMaxEnl = equityCurveGroupBy === 'total' ? Math.max(maxBal, startingBalance) : maxBal
                 const actualRangeEnl = actualMaxEnl - actualMinEnl || 1000
                 const yStep = Math.ceil(actualRangeEnl / 10 / 100) * 100 || 100
-                const yMax = Math.ceil(actualMaxEnl / yStep) * yStep
+                // Always add proportional top padding
+                let yMax = Math.ceil(actualMaxEnl / yStep) * yStep
+                if (yMax <= actualMaxEnl + yStep * 0.3) yMax += yStep
                 const yMin = Math.floor(actualMinEnl / yStep) * yStep
                 const yRange = yMax - yMin || yStep
                 const hasNegative = minBal < 0

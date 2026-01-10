@@ -1029,9 +1029,11 @@ export default function DashboardPage() {
     const actualRange = actualMax - actualMin || 1000
     const yStep = Math.ceil(actualRange / 6 / 1000) * 1000 || 1000
 
-    // Ensure padding above profit target and below dd floor when zoomed out
+    // Always add proportional top padding (ensures chart doesn't start at very top)
     let yMax = Math.ceil(actualMax / yStep) * yStep
-    // Always add padding above when showing objectives, ensure profit target has gap
+    // Add at least half a step of padding at top for visual breathing room
+    if (yMax <= actualMax + yStep * 0.3) yMax += yStep
+    // Additional padding when showing objectives
     if (showObjectiveLines) {
       if (profitTarget && yMax - profitTarget < yStep) yMax += yStep
       // If balance hasn't reached profit target yet, still ensure top padding
