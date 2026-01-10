@@ -1986,6 +1986,31 @@ export default function AccountPage() {
                             <span style={{ fontSize: '12px', color: '#999', textTransform: 'uppercase' }}>Equity Curve</span>
                             <span style={{ fontSize: '11px', color: '#999' }}>Start: <span style={{ color: '#fff' }}>${chartStart.toLocaleString()}</span></span>
                             <span style={{ fontSize: '11px', color: '#999' }}>Current: <span style={{ color: chartCurrent >= chartStart ? '#22c55e' : '#ef4444' }}>${Math.round(chartCurrent).toLocaleString()}</span></span>
+                            {/* Show Objective Lines button - purple */}
+                            <button
+                              onClick={() => setShowObjectiveLines(!showObjectiveLines)}
+                              style={{
+                                padding: '4px 8px',
+                                background: showObjectiveLines ? 'rgba(147,51,234,0.15)' : 'transparent',
+                                border: showObjectiveLines ? '1px solid rgba(147,51,234,0.5)' : '1px solid #2a2a35',
+                                borderRadius: '4px',
+                                color: showObjectiveLines ? '#9333ea' : '#666',
+                                fontSize: '10px',
+                                cursor: 'pointer',
+                                fontWeight: 500,
+                                whiteSpace: 'nowrap',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '4px'
+                              }}
+                            >
+                              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                <path d="M3 3v18h18" />
+                                <path d="M3 12h18" strokeDasharray="4,3" />
+                                <path d="M3 6h18" strokeDasharray="4,3" />
+                              </svg>
+                              {showObjectiveLines ? 'Hide Objective Lines' : 'Show Objective Lines'}
+                            </button>
                           </div>
                           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                             <select value={equityCurveGroupBy} onChange={e => { setEquityCurveGroupBy(e.target.value); setSelectedCurveLines({}) }} style={{ padding: '4px 8px', background: '#141418', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '4px', color: '#fff', fontSize: '11px', boxShadow: '0 0 4px rgba(255,255,255,0.1)' }}>
@@ -1995,23 +2020,6 @@ export default function AccountPage() {
                                 <option key={inp.id} value={inp.id}>By {inp.label}</option>
                               ))}
                             </select>
-                            {/* Show Objective Lines button */}
-                            <button
-                              onClick={() => setShowObjectiveLines(!showObjectiveLines)}
-                              style={{
-                                padding: '4px 8px',
-                                background: showObjectiveLines ? '#1a1a22' : '#1a1a22',
-                                border: '1px solid #2a2a35',
-                                borderRadius: '4px',
-                                color: showObjectiveLines ? '#22c55e' : '#888',
-                                fontSize: '10px',
-                                cursor: 'pointer',
-                                fontWeight: 500,
-                                whiteSpace: 'nowrap'
-                              }}
-                            >
-                              {showObjectiveLines ? 'Hide Objective Lines' : 'Show Objective Lines'}
-                            </button>
                             {/* Filter dropdown in header when grouped */}
                             {equityCurveGroupBy !== 'total' && lines.length > 0 && (
                               <div style={{ position: 'relative' }}>

@@ -84,6 +84,7 @@ export default function DashboardPage() {
   const [showModal, setShowModal] = useState(false)
   const [showEditModal, setShowEditModal] = useState(null)
   const [showDeleteModal, setShowDeleteModal] = useState(null)
+  const [showObjectiveLinesMap, setShowObjectiveLinesMap] = useState({}) // Track objective lines visibility per account
   const [deleteConfirm, setDeleteConfirm] = useState('')
   const [name, setName] = useState('')
   const [balance, setBalance] = useState('')
@@ -839,9 +840,8 @@ export default function DashboardPage() {
     return { totalTrades, wins, losses, totalPnl, winrate, avgRR, profitFactor, totalStartingBalance, currentBalance, avgWin, avgLoss, grossProfit, grossLoss }
   }
 
-  function EquityCurve({ accountTrades, startingBalance, account }) {
+  function EquityCurve({ accountTrades, startingBalance, account, showObjectiveLines = false }) {
     const [hoverPoint, setHoverPoint] = useState(null)
-    const [showObjectiveLines, setShowObjectiveLines] = useState(false)
     const [hoverLine, setHoverLine] = useState(null) // { type: 'maxDd' | 'dailyDd' | 'target' | 'start', value: number, y: number }
     const svgRef = useRef(null)
 
@@ -1201,29 +1201,7 @@ export default function DashboardPage() {
 
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, overflow: 'visible' }}>
           <div style={{ flex: 1, position: 'relative', borderBottom: '1px solid #2a2a35', overflow: 'visible' }}>
-            {/* Show/Hide Objective Lines button - aligned with stats column */}
-            <button
-              onClick={() => setShowObjectiveLines(!showObjectiveLines)}
-              style={{
-                position: 'absolute',
-                top: '-28px',
-                right: '-12px',
-                transform: 'translateX(100%)',
-                zIndex: 20,
-                background: showObjectiveLines ? '#1a1a22' : '#1a1a22',
-                border: '1px solid #2a2a35',
-                borderRadius: '4px',
-                padding: '4px 8px',
-                color: showObjectiveLines ? '#22c55e' : '#888',
-                fontSize: '10px',
-                cursor: 'pointer',
-                fontWeight: 500,
-                whiteSpace: 'nowrap'
-              }}
-            >
-              {showObjectiveLines ? 'Hide Objective Lines' : 'Show Objective Lines'}
-            </button>
-            {/* Legend - shows above top grid line when objective lines are visible */}
+                        {/* Legend - shows above top grid line when objective lines are visible */}
             {showObjectiveLines && (
               <div style={{
                 position: 'absolute',
@@ -1909,6 +1887,31 @@ export default function DashboardPage() {
                       <button onClick={(e) => { e.stopPropagation(); setEditName(account.name); setEditProfitTarget(account.profit_target || ''); setEditMaxDrawdown(account.max_drawdown || ''); setEditDrawdownType(account.drawdown_type || 'static'); setEditTrailingMode(account.trailing_mode || 'eod'); setEditConsistencyEnabled(account.consistency_enabled || false); setEditConsistencyPct(account.consistency_pct || '30'); setEditDailyDdEnabled(account.daily_dd_enabled || false); setEditDailyDdPct(account.daily_dd_pct || ''); setEditDailyDdCalc(account.daily_dd_calc || 'balance'); setEditDailyDdResetTime(account.daily_dd_reset_time || '00:00'); setEditDailyDdResetTimezone(account.daily_dd_reset_timezone || 'Europe/London'); setEditMaxDdEnabled(account.max_dd_enabled || false); setEditMaxDdPct(account.max_dd_pct || ''); setEditMaxDdType(account.max_dd_type || 'static'); setEditMaxDdCalc(account.max_dd_calc || 'balance'); setEditMaxDdTrailingStopsAt(account.max_dd_trailing_stops_at || 'never'); setShowEditModal(account.id) }} style={{ background: 'transparent', border: 'none', cursor: 'pointer', padding: '4px' }}>
                         <svg width={isMobile ? '14' : '18'} height={isMobile ? '14' : '18'} viewBox="0 0 24 24" fill="none" stroke="#666" strokeWidth="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" /><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" /></svg>
                       </button>
+                      {/* Show Objective Lines button - purple */}
+                      <button
+                        onClick={(e) => { e.stopPropagation(); setShowObjectiveLinesMap(prev => ({ ...prev, [account.id]: !prev[account.id] })) }}
+                        style={{
+                          padding: '4px 8px',
+                          background: showObjectiveLinesMap[account.id] ? 'rgba(147,51,234,0.15)' : 'transparent',
+                          border: showObjectiveLinesMap[account.id] ? '1px solid rgba(147,51,234,0.5)' : '1px solid #2a2a35',
+                          borderRadius: '4px',
+                          color: showObjectiveLinesMap[account.id] ? '#9333ea' : '#666',
+                          fontSize: '10px',
+                          cursor: 'pointer',
+                          fontWeight: 500,
+                          whiteSpace: 'nowrap',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '4px'
+                        }}
+                      >
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <path d="M3 3v18h18" />
+                          <path d="M3 12h18" strokeDasharray="4,3" />
+                          <path d="M3 6h18" strokeDasharray="4,3" />
+                        </svg>
+                        {showObjectiveLinesMap[account.id] ? 'Hide Objective Lines' : 'Show Objective Lines'}
+                      </button>
                     </div>
                   </div>
 
@@ -1917,7 +1920,7 @@ export default function DashboardPage() {
                     {/* Chart - stretches to match stats height */}
                     <div style={{ flex: 1, minHeight: isMobile ? '250px' : '300px', overflow: 'visible', display: 'flex', flexDirection: 'column' }}>
                       <div style={{ flex: 1, position: 'relative' }}>
-                        <EquityCurve accountTrades={accTrades} startingBalance={account.starting_balance} account={account} />
+                        <EquityCurve accountTrades={accTrades} startingBalance={account.starting_balance} account={account} showObjectiveLines={showObjectiveLinesMap[account.id] || false} />
                       </div>
                     </div>
 
