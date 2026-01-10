@@ -1125,18 +1125,22 @@ export default function DashboardPage() {
     const redAreaPath = belowStart ? redSegments.map(s => `M ${s.x1} ${s.y1} L ${s.x2} ${s.y2} L ${s.x2} ${startY} L ${s.x1} ${startY} Z`).join(' ') : ''
 
     // Build SVG path for daily DD floor line (orange, stepped)
+    // Clip at profit target - daily DD floor shouldn't go above profit target
     let dailyDdPath = ''
     let dailyDdLastY = null
     if (dailyDdFloorPoints.length > 0) {
       const ddChartPoints = dailyDdFloorPoints.map(p => {
         const x = points.length > 1 ? (p.idx / (points.length - 1)) * svgW : svgW / 2
-        const y = svgH - ((p.floor - yMin) / yRange) * svgH
-        return { x, y, floor: p.floor }
+        // Cap floor at profit target if it exceeds it
+        const cappedFloor = profitTarget && p.floor > profitTarget ? profitTarget : p.floor
+        const y = svgH - ((cappedFloor - yMin) / yRange) * svgH
+        return { x, y, floor: cappedFloor }
       })
       dailyDdPath = ddChartPoints.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`).join(' ')
       // Get last point Y position for label (as percentage)
       const lastFloor = dailyDdFloorPoints[dailyDdFloorPoints.length - 1].floor
-      dailyDdLastY = ((yMax - lastFloor) / yRange) * 100
+      const cappedLastFloor = profitTarget && lastFloor > profitTarget ? profitTarget : lastFloor
+      dailyDdLastY = ((yMax - cappedLastFloor) / yRange) * 100
     }
 
     // Build SVG path for trailing max DD floor line (red, follows curve)
@@ -1221,19 +1225,21 @@ export default function DashboardPage() {
                 {profitTargetY !== null && (
                   <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                     <div style={{ width: '16px', height: '0', borderTop: '1px dashed #22c55e' }} />
-                    <span style={{ fontSize: '9px', color: '#22c55e', fontWeight: 500 }}>Target</span>
+                    <span style={{ fontSize: '9px', color: '#22c55e', fontWeight: 500 }}>Profit Target {account?.profit_target}%</span>
                   </div>
                 )}
                 {(maxDdStaticFloorY !== null || trailingMaxDdPath) && (
                   <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                     <div style={{ width: '16px', height: '0', borderTop: '1px dashed #ef4444' }} />
-                    <span style={{ fontSize: '9px', color: '#ef4444', fontWeight: 500 }}>Max Drawdown</span>
+                    <span style={{ fontSize: '9px', color: '#ef4444', fontWeight: 500 }}>
+                      Max Drawdown {account?.max_dd_enabled ? `(${account?.max_dd_type === 'trailing' ? 'trailing' : 'static'}) ${account?.max_dd_pct}%` : `${account?.max_drawdown}%`}
+                    </span>
                   </div>
                 )}
                 {dailyDdPath && (
                   <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                     <div style={{ width: '16px', height: '0', borderTop: '1px dashed #f97316' }} />
-                    <span style={{ fontSize: '9px', color: '#f97316', fontWeight: 500 }}>Daily Drawdown</span>
+                    <span style={{ fontSize: '9px', color: '#f97316', fontWeight: 500 }}>Daily Drawdown {account?.daily_dd_pct}%</span>
                   </div>
                 )}
               </div>
@@ -2101,7 +2107,7 @@ export default function DashboardPage() {
           <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.9)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100 }} onClick={() => setShowModal(false)}>
             <div style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '10px', padding: '28px', width: '380px' }} onClick={e => e.stopPropagation()}>
               <h2 style={{ fontSize: '18px', fontWeight: 600, marginBottom: '20px' }}>Create New Journal</h2>
-              <div style={{ marginBottom: '14px' }}><label style={{ display: 'block', fontSize: '11px', color: '#999', marginBottom: '6px', textTransform: 'uppercase' }}>Journal Name</label><input type="text" value={name} onChange={e => setName(e.target.value)} placeholder="e.g. FTMO 10k" autoFocus style={{ width: '100%', padding: '12px 14px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '14px', boxSizing: 'border-box' }} /></div>
+              <div style={{ marginBottom: '14px' }}><label style={{ display: 'block', fontSize: '11px', color: '#999', marginBottom: '6px', textTransform: 'uppercase' }}>Journal Name</label><input type="text" value={name} onChange={e => setName(e.target.value)} placeholder="e.g. Funded 10k" autoFocus style={{ width: '100%', padding: '12px 14px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '14px', boxSizing: 'border-box' }} /></div>
               <div style={{ marginBottom: '14px' }}><label style={{ display: 'block', fontSize: '11px', color: '#999', marginBottom: '6px', textTransform: 'uppercase' }}>Starting Balance ($)</label><input type="number" value={balance} onChange={e => setBalance(e.target.value)} placeholder="e.g. 10000" style={{ width: '100%', padding: '12px 14px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '14px', boxSizing: 'border-box' }} /></div>
               <div style={{ background: '#0a0a0f', border: '1px solid #22c55e', borderRadius: '10px', padding: '14px', marginBottom: '20px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
@@ -2227,7 +2233,7 @@ export default function DashboardPage() {
                       <div>
                         <label style={{ display: 'block', fontSize: '10px', color: '#666', marginBottom: '6px', textTransform: 'uppercase' }}>Type</label>
                         <select value={editMaxDdType} onChange={e => setEditMaxDdType(e.target.value)} style={{ width: '100%', padding: '12px 14px', background: '#0d0d12', border: '1px solid #2a2a35', borderRadius: '6px', color: '#fff', fontSize: '14px', boxSizing: 'border-box', cursor: 'pointer' }}>
-                          <option value="static">Static (FTMO style)</option>
+                          <option value="static">Static</option>
                           <option value="trailing">Trailing</option>
                         </select>
                       </div>
@@ -2239,7 +2245,7 @@ export default function DashboardPage() {
                       <div>
                         <label style={{ display: 'block', fontSize: '10px', color: '#666', marginBottom: '6px', textTransform: 'uppercase' }}>Stops Trailing At</label>
                         <select value={editMaxDdTrailingStopsAt} onChange={e => setEditMaxDdTrailingStopsAt(e.target.value)} style={{ width: '100%', padding: '12px 14px', background: '#0d0d12', border: '1px solid #2a2a35', borderRadius: '6px', color: '#fff', fontSize: '14px', boxSizing: 'border-box', cursor: 'pointer' }}>
-                          <option value="initial">Initial Balance (Funded Trading Plus style)</option>
+                          <option value="initial">Initial Balance</option>
                           <option value="buffer">Initial + 5% Buffer</option>
                           <option value="never">Never (Always Trails)</option>
                         </select>

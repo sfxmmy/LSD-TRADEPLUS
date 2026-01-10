@@ -2252,12 +2252,15 @@ export default function AccountPage() {
                             }
 
                             // Build SVG path for daily DD floor line (orange, stepped)
+                            // Clip at profit target - daily DD floor shouldn't go above profit target
                             let dailyDdPath = ''
                             if (dailyDdFloorPoints.length > 0) {
                               const ddChartPoints = dailyDdFloorPoints.map(p => {
                                 const totalLen = dailyDdFloorPoints.length
                                 const x = totalLen > 1 ? (p.idx / (totalLen - 1)) * svgW : svgW / 2
-                                const y = svgH - ((p.floor - yMin) / yRange) * svgH
+                                // Cap floor at profit target if it exceeds it
+                                const cappedFloor = profitTarget && p.floor > profitTarget ? profitTarget : p.floor
+                                const y = svgH - ((cappedFloor - yMin) / yRange) * svgH
                                 return { x, y }
                               })
                               dailyDdPath = ddChartPoints.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`).join(' ')
@@ -2358,19 +2361,21 @@ export default function AccountPage() {
                                         {profitTargetY !== null && (
                                           <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                                             <div style={{ width: '16px', height: '0', borderTop: '1px dashed #22c55e' }} />
-                                            <span style={{ fontSize: '9px', color: '#22c55e', fontWeight: 500 }}>Target</span>
+                                            <span style={{ fontSize: '9px', color: '#22c55e', fontWeight: 500 }}>Profit Target {account?.profit_target}%</span>
                                           </div>
                                         )}
                                         {(maxDdStaticFloorY !== null || trailingMaxDdPath) && (
                                           <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                                             <div style={{ width: '16px', height: '0', borderTop: '1px dashed #ef4444' }} />
-                                            <span style={{ fontSize: '9px', color: '#ef4444', fontWeight: 500 }}>Max Drawdown</span>
+                                            <span style={{ fontSize: '9px', color: '#ef4444', fontWeight: 500 }}>
+                                              Max Drawdown {account?.max_dd_enabled ? `(${account?.max_dd_type === 'trailing' ? 'trailing' : 'static'}) ${account?.max_dd_pct}%` : `${account?.max_drawdown}%`}
+                                            </span>
                                           </div>
                                         )}
                                         {dailyDdPath && (
                                           <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                                             <div style={{ width: '16px', height: '0', borderTop: '1px dashed #f97316' }} />
-                                            <span style={{ fontSize: '9px', color: '#f97316', fontWeight: 500 }}>Daily Drawdown</span>
+                                            <span style={{ fontSize: '9px', color: '#f97316', fontWeight: 500 }}>Daily Drawdown {account?.daily_dd_pct}%</span>
                                           </div>
                                         )}
                                       </div>
