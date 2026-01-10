@@ -2114,23 +2114,50 @@ export default function AccountPage() {
                             const dailyDdEnabled = account?.daily_dd_enabled
                             const dailyDdPctRaw = parseFloat(account?.daily_dd_pct)
                             const dailyDdPct = !isNaN(dailyDdPctRaw) ? Math.min(99, Math.max(0, dailyDdPctRaw)) : 0
+                            const dailyDdType = account?.daily_dd_type || 'static'
+                            const dailyDdLocksAt = account?.daily_dd_locks_at || 'start_balance'
                             let dailyDdFloorPoints = []
                             if (equityCurveGroupBy === 'total' && dailyDdEnabled && dailyDdPct > 0) {
                               let currentDayStart = displayStartingBalance
                               let currentDay = null
+                              let isLocked = false
+                              let lockedFloor = null
+                              // Calculate lock threshold based on dailyDdLocksAt setting
+                              const getLockThreshold = () => {
+                                if (dailyDdLocksAt === 'start_balance') return displayStartingBalance
+                                if (dailyDdLocksAt === 'buffer_5') return displayStartingBalance * 1.05
+                                if (dailyDdLocksAt === 'buffer_10') return displayStartingBalance * 1.10
+                                return displayStartingBalance
+                              }
+                              const lockThreshold = getLockThreshold()
+
                               const totalPoints = [{ balance: displayStartingBalance, date: null }]
                               sorted.forEach(t => totalPoints.push({ balance: totalPoints[totalPoints.length - 1].balance + (parseFloat(t.pnl) || 0), date: t.date }))
                               totalPoints.forEach((p, i) => {
                                 if (i === 0) {
-                                  dailyDdFloorPoints.push({ idx: i, floor: displayStartingBalance * (1 - dailyDdPct / 100) })
+                                  dailyDdFloorPoints.push({ idx: i, floor: displayStartingBalance * (1 - dailyDdPct / 100), isNewDay: true })
                                 } else {
                                   const tradeDate = p.date ? new Date(p.date).toDateString() : null
-                                  if (tradeDate && tradeDate !== currentDay) {
+                                  const isNewDay = tradeDate && tradeDate !== currentDay
+                                  if (isNewDay) {
                                     const prevBalance = totalPoints[i - 1].balance
                                     currentDayStart = currentDay ? prevBalance : displayStartingBalance
                                     currentDay = tradeDate
                                   }
-                                  dailyDdFloorPoints.push({ idx: i, floor: currentDayStart * (1 - dailyDdPct / 100) })
+                                  let floor = currentDayStart * (1 - dailyDdPct / 100)
+
+                                  // For trailing type, check if should lock
+                                  if (dailyDdType === 'trailing' && !isLocked) {
+                                    if (floor >= lockThreshold) {
+                                      isLocked = true
+                                      lockedFloor = lockThreshold
+                                      floor = lockedFloor
+                                    }
+                                  } else if (dailyDdType === 'trailing' && isLocked) {
+                                    floor = lockedFloor
+                                  }
+
+                                  dailyDdFloorPoints.push({ idx: i, floor, isNewDay })
                                 }
                               })
                             }
@@ -2149,20 +2176,33 @@ export default function AccountPage() {
                               } else {
                                 let peak = displayStartingBalance
                                 let trailingFloor = displayStartingBalance * (1 - maxDdPct / 100)
+                                let isLocked = false
+                                let lockedFloor = null
+                                // Calculate lock threshold based on maxDdStopsAt setting
+                                const getLockThreshold = () => {
+                                  if (maxDdStopsAt === 'initial') return displayStartingBalance
+                                  if (maxDdStopsAt === 'buffer') return displayStartingBalance * 1.05
+                                  if (maxDdStopsAt === 'buffer_10') return displayStartingBalance * 1.10
+                                  return null // 'never' - no threshold
+                                }
+                                const lockThreshold = getLockThreshold()
+
                                 const totalPoints = [{ balance: displayStartingBalance }]
                                 sorted.forEach(t => totalPoints.push({ balance: totalPoints[totalPoints.length - 1].balance + (parseFloat(t.pnl) || 0) }))
                                 totalPoints.forEach((p, i) => {
-                                  if (p.balance > peak) {
+                                  if (!isLocked && p.balance > peak) {
                                     peak = p.balance
                                     const newFloor = peak * (1 - maxDdPct / 100)
-                                    if (maxDdStopsAt === 'initial' && newFloor >= displayStartingBalance) {
-                                      trailingFloor = displayStartingBalance
-                                    } else if (maxDdStopsAt === 'buffer') {
-                                      const buffer = displayStartingBalance * 1.05
-                                      trailingFloor = newFloor >= buffer ? buffer : newFloor
+                                    // Check if trailing should stop (lock)
+                                    if (lockThreshold && newFloor >= lockThreshold) {
+                                      isLocked = true
+                                      lockedFloor = lockThreshold
+                                      trailingFloor = lockedFloor
                                     } else {
                                       trailingFloor = newFloor
                                     }
+                                  } else if (isLocked) {
+                                    trailingFloor = lockedFloor
                                   }
                                   maxDdFloorPoints.push({ idx: i, floor: trailingFloor })
                                 })
@@ -2253,17 +2293,34 @@ export default function AccountPage() {
 
                             // Build SVG path for daily DD floor line (orange, stepped)
                             // Clip at profit target - daily DD floor shouldn't go above profit target
+                            // Uses stepped pattern: horizontal line then vertical jump for each day change (_|_|_)
                             let dailyDdPath = ''
                             if (dailyDdFloorPoints.length > 0) {
-                              const ddChartPoints = dailyDdFloorPoints.map(p => {
+                              const ddChartPoints = dailyDdFloorPoints.map((p, i) => {
                                 const totalLen = dailyDdFloorPoints.length
                                 const x = totalLen > 1 ? (p.idx / (totalLen - 1)) * svgW : svgW / 2
                                 // Cap floor at profit target if it exceeds it
                                 const cappedFloor = profitTarget && p.floor > profitTarget ? profitTarget : p.floor
                                 const y = svgH - ((cappedFloor - yMin) / yRange) * svgH
-                                return { x, y }
+                                return { x, y, isNewDay: p.isNewDay }
                               })
-                              dailyDdPath = ddChartPoints.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`).join(' ')
+                              // Build stepped path: horizontal line at current floor, then vertical jump to new floor on day change
+                              let pathParts = []
+                              for (let i = 0; i < ddChartPoints.length; i++) {
+                                const p = ddChartPoints[i]
+                                if (i === 0) {
+                                  pathParts.push(`M ${p.x} ${p.y}`)
+                                } else {
+                                  const prevP = ddChartPoints[i - 1]
+                                  // Always draw horizontal first (stay at prev Y), then vertical to new Y
+                                  // This creates the stepped _|_ pattern
+                                  pathParts.push(`H ${p.x}`) // Horizontal to new X position (at old Y level)
+                                  if (p.y !== prevP.y) {
+                                    pathParts.push(`V ${p.y}`) // Vertical jump to new Y level
+                                  }
+                                }
+                              }
+                              dailyDdPath = pathParts.join(' ')
                             }
 
                             // Build SVG path for trailing max DD floor line (red, follows curve)
@@ -2375,7 +2432,7 @@ export default function AccountPage() {
                                         {dailyDdPath && (
                                           <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                                             <div style={{ width: '16px', height: '0', borderTop: '1px dashed #f97316' }} />
-                                            <span style={{ fontSize: '9px', color: '#f97316', fontWeight: 500 }}>Daily Drawdown {account?.daily_dd_pct}%</span>
+                                            <span style={{ fontSize: '9px', color: '#f97316', fontWeight: 500 }}>Daily Drawdown ({account?.daily_dd_type === 'trailing' ? 'trailing' : 'static'}) {account?.daily_dd_pct}%</span>
                                           </div>
                                         )}
                                       </div>
