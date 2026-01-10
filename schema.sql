@@ -84,14 +84,15 @@ CREATE TABLE IF NOT EXISTS accounts (
   name TEXT NOT NULL,
   starting_balance DECIMAL(12,2) DEFAULT 0,
   profit_target DECIMAL(5,2) DEFAULT NULL,
-  -- Legacy max_drawdown field (kept for compatibility)
+  -- Legacy max_drawdown field (kept for backwards compatibility with old accounts)
   max_drawdown DECIMAL(5,2) DEFAULT NULL,
+  -- DEPRECATED: drawdown_type, trailing_mode, daily_dd_calc, max_dd_calc are no longer used
+  -- They exist in old accounts but new code uses the new max_dd_* and daily_dd_* fields
   drawdown_type TEXT DEFAULT 'static',
   trailing_mode TEXT DEFAULT 'eod',
   -- Daily Drawdown settings (orange line)
   daily_dd_enabled BOOLEAN DEFAULT FALSE,
   daily_dd_pct DECIMAL(5,2) DEFAULT NULL,
-  daily_dd_calc TEXT DEFAULT 'balance',
   daily_dd_type TEXT DEFAULT 'static',
   daily_dd_locks_at TEXT DEFAULT 'start_balance',
   daily_dd_reset_time TEXT DEFAULT '00:00',
@@ -100,7 +101,6 @@ CREATE TABLE IF NOT EXISTS accounts (
   max_dd_enabled BOOLEAN DEFAULT FALSE,
   max_dd_pct DECIMAL(5,2) DEFAULT NULL,
   max_dd_type TEXT DEFAULT 'static',
-  max_dd_calc TEXT DEFAULT 'balance',
   max_dd_trailing_stops_at TEXT DEFAULT 'never',
   -- Consistency rule settings
   consistency_enabled BOOLEAN DEFAULT FALSE,
@@ -135,9 +135,6 @@ BEGIN
   IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'accounts' AND column_name = 'daily_dd_pct') THEN
     ALTER TABLE accounts ADD COLUMN daily_dd_pct DECIMAL(5,2) DEFAULT NULL;
   END IF;
-  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'accounts' AND column_name = 'daily_dd_calc') THEN
-    ALTER TABLE accounts ADD COLUMN daily_dd_calc TEXT DEFAULT 'balance';
-  END IF;
   IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'accounts' AND column_name = 'daily_dd_type') THEN
     ALTER TABLE accounts ADD COLUMN daily_dd_type TEXT DEFAULT 'static';
   END IF;
@@ -159,9 +156,6 @@ BEGIN
   END IF;
   IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'accounts' AND column_name = 'max_dd_type') THEN
     ALTER TABLE accounts ADD COLUMN max_dd_type TEXT DEFAULT 'static';
-  END IF;
-  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'accounts' AND column_name = 'max_dd_calc') THEN
-    ALTER TABLE accounts ADD COLUMN max_dd_calc TEXT DEFAULT 'balance';
   END IF;
   IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'accounts' AND column_name = 'max_dd_trailing_stops_at') THEN
     ALTER TABLE accounts ADD COLUMN max_dd_trailing_stops_at TEXT DEFAULT 'never';

@@ -90,33 +90,26 @@ export default function DashboardPage() {
   const [balance, setBalance] = useState('')
   const [profitTarget, setProfitTarget] = useState('')
   const [maxDrawdown, setMaxDrawdown] = useState('')
-  const [drawdownType, setDrawdownType] = useState('static')
-  const [trailingMode, setTrailingMode] = useState('eod')
   const [consistencyEnabled, setConsistencyEnabled] = useState(false)
   const [consistencyPct, setConsistencyPct] = useState('30')
   const [editName, setEditName] = useState('')
   const [editProfitTarget, setEditProfitTarget] = useState('')
   const [editMaxDrawdown, setEditMaxDrawdown] = useState('')
-  const [editDrawdownType, setEditDrawdownType] = useState('static')
-  const [editTrailingMode, setEditTrailingMode] = useState('eod')
   const [editConsistencyEnabled, setEditConsistencyEnabled] = useState(false)
   const [editConsistencyPct, setEditConsistencyPct] = useState('30')
   // Daily Drawdown state (create modal)
   const [dailyDdEnabled, setDailyDdEnabled] = useState(false)
   const [dailyDdPct, setDailyDdPct] = useState('')
-  const [dailyDdCalc, setDailyDdCalc] = useState('balance')
   const [dailyDdType, setDailyDdType] = useState('static') // 'static' or 'trailing'
   const [dailyDdLocksAt, setDailyDdLocksAt] = useState('start_balance') // 'start_balance' or custom buffer %
   // Max Drawdown state (create modal)
   const [maxDdEnabled, setMaxDdEnabled] = useState(false)
   const [maxDdPct, setMaxDdPct] = useState('')
   const [maxDdType, setMaxDdType] = useState('static')
-  const [maxDdCalc, setMaxDdCalc] = useState('balance')
   const [maxDdTrailingStopsAt, setMaxDdTrailingStopsAt] = useState('never')
   // Daily Drawdown state (edit modal)
   const [editDailyDdEnabled, setEditDailyDdEnabled] = useState(false)
   const [editDailyDdPct, setEditDailyDdPct] = useState('')
-  const [editDailyDdCalc, setEditDailyDdCalc] = useState('balance')
   const [editDailyDdType, setEditDailyDdType] = useState('static') // 'static' or 'trailing'
   const [editDailyDdLocksAt, setEditDailyDdLocksAt] = useState('start_balance') // 'start_balance' or custom buffer %
   const [editDailyDdResetTime, setEditDailyDdResetTime] = useState('00:00')
@@ -125,7 +118,6 @@ export default function DashboardPage() {
   const [editMaxDdEnabled, setEditMaxDdEnabled] = useState(false)
   const [editMaxDdPct, setEditMaxDdPct] = useState('')
   const [editMaxDdType, setEditMaxDdType] = useState('static')
-  const [editMaxDdCalc, setEditMaxDdCalc] = useState('balance')
   const [editMaxDdTrailingStopsAt, setEditMaxDdTrailingStopsAt] = useState('never')
   const [creating, setCreating] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
@@ -291,25 +283,21 @@ export default function DashboardPage() {
       starting_balance: parseFloat(balance) || 0,
       profit_target: profitTarget ? parseFloat(profitTarget) : null,
       max_drawdown: maxDrawdown ? parseFloat(maxDrawdown) : null,
-      drawdown_type: drawdownType,
-      trailing_mode: trailingMode,
       consistency_enabled: consistencyEnabled,
       consistency_pct: consistencyPct ? parseFloat(consistencyPct) : 30,
       daily_dd_enabled: dailyDdEnabled,
       daily_dd_pct: dailyDdPct ? parseFloat(dailyDdPct) : null,
-      daily_dd_calc: dailyDdCalc,
       daily_dd_type: dailyDdType,
       daily_dd_locks_at: dailyDdLocksAt,
       max_dd_enabled: maxDdEnabled,
       max_dd_pct: maxDdPct ? parseFloat(maxDdPct) : null,
       max_dd_type: maxDdType,
-      max_dd_calc: maxDdCalc,
       max_dd_trailing_stops_at: maxDdTrailingStopsAt
     }).select().single()
     if (error) { alert('Error: ' + error.message); setCreating(false); return }
     setAccounts([...accounts, data])
     setTrades({ ...trades, [data.id]: [] })
-    setName(''); setBalance(''); setProfitTarget(''); setMaxDrawdown(''); setDrawdownType('static'); setTrailingMode('eod'); setConsistencyEnabled(false); setConsistencyPct('30'); setDailyDdEnabled(false); setDailyDdPct(''); setDailyDdCalc('balance'); setDailyDdType('static'); setDailyDdLocksAt('start_balance'); setMaxDdEnabled(false); setMaxDdPct(''); setMaxDdType('static'); setMaxDdCalc('balance'); setMaxDdTrailingStopsAt('never'); setShowModal(false); setCreating(false)
+    setName(''); setBalance(''); setProfitTarget(''); setMaxDrawdown(''); setConsistencyEnabled(false); setConsistencyPct('30'); setDailyDdEnabled(false); setDailyDdPct(''); setDailyDdType('static'); setDailyDdLocksAt('start_balance'); setMaxDdEnabled(false); setMaxDdPct(''); setMaxDdType('static'); setMaxDdTrailingStopsAt('never'); setShowModal(false); setCreating(false)
   }
 
   async function updateAccount(accountId) {
@@ -319,13 +307,10 @@ export default function DashboardPage() {
       name: editName.trim(),
       profit_target: editProfitTarget ? parseFloat(editProfitTarget) : null,
       max_drawdown: editMaxDrawdown ? parseFloat(editMaxDrawdown) : null,
-      drawdown_type: editDrawdownType,
-      trailing_mode: editTrailingMode,
       consistency_enabled: editConsistencyEnabled,
       consistency_pct: editConsistencyPct ? parseFloat(editConsistencyPct) : 30,
       daily_dd_enabled: editDailyDdEnabled,
       daily_dd_pct: editDailyDdPct ? parseFloat(editDailyDdPct) : null,
-      daily_dd_calc: editDailyDdCalc,
       daily_dd_type: editDailyDdType,
       daily_dd_locks_at: editDailyDdLocksAt,
       daily_dd_reset_time: editDailyDdResetTime || '00:00',
@@ -333,7 +318,6 @@ export default function DashboardPage() {
       max_dd_enabled: editMaxDdEnabled,
       max_dd_pct: editMaxDdPct ? parseFloat(editMaxDdPct) : null,
       max_dd_type: editMaxDdType,
-      max_dd_calc: editMaxDdCalc,
       max_dd_trailing_stops_at: editMaxDdTrailingStopsAt
     }).eq('id', accountId)
     setAccounts(accounts.map(a => a.id === accountId ? {
@@ -341,13 +325,10 @@ export default function DashboardPage() {
       name: editName.trim(),
       profit_target: editProfitTarget ? parseFloat(editProfitTarget) : null,
       max_drawdown: editMaxDrawdown ? parseFloat(editMaxDrawdown) : null,
-      drawdown_type: editDrawdownType,
-      trailing_mode: editTrailingMode,
       consistency_enabled: editConsistencyEnabled,
       consistency_pct: editConsistencyPct ? parseFloat(editConsistencyPct) : 30,
       daily_dd_enabled: editDailyDdEnabled,
       daily_dd_pct: editDailyDdPct ? parseFloat(editDailyDdPct) : null,
-      daily_dd_calc: editDailyDdCalc,
       daily_dd_type: editDailyDdType,
       daily_dd_locks_at: editDailyDdLocksAt,
       daily_dd_reset_time: editDailyDdResetTime || '00:00',
@@ -355,10 +336,9 @@ export default function DashboardPage() {
       max_dd_enabled: editMaxDdEnabled,
       max_dd_pct: editMaxDdPct ? parseFloat(editMaxDdPct) : null,
       max_dd_type: editMaxDdType,
-      max_dd_calc: editMaxDdCalc,
       max_dd_trailing_stops_at: editMaxDdTrailingStopsAt
     } : a))
-    setShowEditModal(null); setEditName(''); setEditProfitTarget(''); setEditMaxDrawdown(''); setEditDrawdownType('static'); setEditTrailingMode('eod'); setEditConsistencyEnabled(false); setEditConsistencyPct('30'); setEditDailyDdEnabled(false); setEditDailyDdPct(''); setEditDailyDdCalc('balance'); setEditDailyDdType('static'); setEditDailyDdLocksAt('start_balance'); setEditDailyDdResetTime('00:00'); setEditDailyDdResetTimezone('Europe/London'); setEditMaxDdEnabled(false); setEditMaxDdPct(''); setEditMaxDdType('static'); setEditMaxDdCalc('balance'); setEditMaxDdTrailingStopsAt('never')
+    setShowEditModal(null); setEditName(''); setEditProfitTarget(''); setEditMaxDrawdown(''); setEditConsistencyEnabled(false); setEditConsistencyPct('30'); setEditDailyDdEnabled(false); setEditDailyDdPct(''); setEditDailyDdType('static'); setEditDailyDdLocksAt('start_balance'); setEditDailyDdResetTime('00:00'); setEditDailyDdResetTimezone('Europe/London'); setEditMaxDdEnabled(false); setEditMaxDdPct(''); setEditMaxDdType('static'); setEditMaxDdTrailingStopsAt('never')
   }
 
   async function deleteAccount(accountId) {
@@ -997,7 +977,6 @@ export default function DashboardPage() {
     const maxDdPctRaw = parseFloat(account?.max_dd_pct)
     const maxDdPct = !isNaN(maxDdPctRaw) ? Math.min(99, Math.max(0, maxDdPctRaw)) : 0
     const maxDdType = account?.max_dd_type || 'static'
-    const maxDdCalc = account?.max_dd_calc || 'balance'
     const maxDdStopsAt = account?.max_dd_trailing_stops_at || 'never'
     let maxDdFloorPoints = []
     let maxDdStaticFloor = null
@@ -1908,7 +1887,7 @@ export default function DashboardPage() {
                         <td style={{ padding: '14px 16px' }}>
                           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                             <span style={{ fontSize: '15px', fontWeight: 600, color: '#fff' }}>{account.name}</span>
-                            <button onClick={(e) => { e.stopPropagation(); setEditName(account.name); setEditProfitTarget(account.profit_target || ''); setEditMaxDrawdown(account.max_drawdown || ''); setEditDrawdownType(account.drawdown_type || 'static'); setEditTrailingMode(account.trailing_mode || 'eod'); setEditConsistencyEnabled(account.consistency_enabled || false); setEditConsistencyPct(account.consistency_pct || '30'); setEditDailyDdEnabled(account.daily_dd_enabled || false); setEditDailyDdPct(account.daily_dd_pct || ''); setEditDailyDdCalc(account.daily_dd_calc || 'balance'); setEditDailyDdType(account.daily_dd_type || 'static'); setEditDailyDdLocksAt(account.daily_dd_locks_at || 'start_balance'); setEditDailyDdResetTime(account.daily_dd_reset_time || '00:00'); setEditDailyDdResetTimezone(account.daily_dd_reset_timezone || 'Europe/London'); setEditMaxDdEnabled(account.max_dd_enabled || false); setEditMaxDdPct(account.max_dd_pct || ''); setEditMaxDdType(account.max_dd_type || 'static'); setEditMaxDdCalc(account.max_dd_calc || 'balance'); setEditMaxDdTrailingStopsAt(account.max_dd_trailing_stops_at || 'never'); setShowEditModal(account.id) }} style={{ background: 'transparent', border: 'none', cursor: 'pointer', padding: '2px' }}>
+                            <button onClick={(e) => { e.stopPropagation(); setEditName(account.name); setEditProfitTarget(account.profit_target || ''); setEditMaxDrawdown(account.max_drawdown || ''); setEditConsistencyEnabled(account.consistency_enabled || false); setEditConsistencyPct(account.consistency_pct || '30'); setEditDailyDdEnabled(account.daily_dd_enabled || false); setEditDailyDdPct(account.daily_dd_pct || ''); setEditDailyDdType(account.daily_dd_type || 'static'); setEditDailyDdLocksAt(account.daily_dd_locks_at || 'start_balance'); setEditDailyDdResetTime(account.daily_dd_reset_time || '00:00'); setEditDailyDdResetTimezone(account.daily_dd_reset_timezone || 'Europe/London'); setEditMaxDdEnabled(account.max_dd_enabled || false); setEditMaxDdPct(account.max_dd_pct || ''); setEditMaxDdType(account.max_dd_type || 'static'); setEditMaxDdTrailingStopsAt(account.max_dd_trailing_stops_at || 'never'); setShowEditModal(account.id) }} style={{ background: 'transparent', border: 'none', cursor: 'pointer', padding: '2px' }}>
                               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#666" strokeWidth="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" /><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" /></svg>
                             </button>
                           </div>
@@ -1955,7 +1934,7 @@ export default function DashboardPage() {
                   <div style={{ padding: isMobile ? '14px 16px' : '20px 24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: isMobile ? '10px' : '14px' }}>
                       <span style={{ fontSize: isMobile ? '20px' : '28px', fontWeight: 700, color: '#fff' }}>{account.name}</span>
-                      <button onClick={(e) => { e.stopPropagation(); setEditName(account.name); setEditProfitTarget(account.profit_target || ''); setEditMaxDrawdown(account.max_drawdown || ''); setEditDrawdownType(account.drawdown_type || 'static'); setEditTrailingMode(account.trailing_mode || 'eod'); setEditConsistencyEnabled(account.consistency_enabled || false); setEditConsistencyPct(account.consistency_pct || '30'); setEditDailyDdEnabled(account.daily_dd_enabled || false); setEditDailyDdPct(account.daily_dd_pct || ''); setEditDailyDdCalc(account.daily_dd_calc || 'balance'); setEditDailyDdType(account.daily_dd_type || 'static'); setEditDailyDdLocksAt(account.daily_dd_locks_at || 'start_balance'); setEditDailyDdResetTime(account.daily_dd_reset_time || '00:00'); setEditDailyDdResetTimezone(account.daily_dd_reset_timezone || 'Europe/London'); setEditMaxDdEnabled(account.max_dd_enabled || false); setEditMaxDdPct(account.max_dd_pct || ''); setEditMaxDdType(account.max_dd_type || 'static'); setEditMaxDdCalc(account.max_dd_calc || 'balance'); setEditMaxDdTrailingStopsAt(account.max_dd_trailing_stops_at || 'never'); setShowEditModal(account.id) }} style={{ background: 'transparent', border: 'none', cursor: 'pointer', padding: '4px' }}>
+                      <button onClick={(e) => { e.stopPropagation(); setEditName(account.name); setEditProfitTarget(account.profit_target || ''); setEditMaxDrawdown(account.max_drawdown || ''); setEditConsistencyEnabled(account.consistency_enabled || false); setEditConsistencyPct(account.consistency_pct || '30'); setEditDailyDdEnabled(account.daily_dd_enabled || false); setEditDailyDdPct(account.daily_dd_pct || ''); setEditDailyDdType(account.daily_dd_type || 'static'); setEditDailyDdLocksAt(account.daily_dd_locks_at || 'start_balance'); setEditDailyDdResetTime(account.daily_dd_reset_time || '00:00'); setEditDailyDdResetTimezone(account.daily_dd_reset_timezone || 'Europe/London'); setEditMaxDdEnabled(account.max_dd_enabled || false); setEditMaxDdPct(account.max_dd_pct || ''); setEditMaxDdType(account.max_dd_type || 'static'); setEditMaxDdTrailingStopsAt(account.max_dd_trailing_stops_at || 'never'); setShowEditModal(account.id) }} style={{ background: 'transparent', border: 'none', cursor: 'pointer', padding: '4px' }}>
                         <svg width={isMobile ? '14' : '18'} height={isMobile ? '14' : '18'} viewBox="0 0 24 24" fill="none" stroke="#666" strokeWidth="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" /><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" /></svg>
                       </button>
                       {/* Show Objective Lines button - purple */}
