@@ -1201,29 +1201,28 @@ export default function DashboardPage() {
 
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, overflow: 'visible' }}>
           <div style={{ flex: 1, position: 'relative', borderBottom: '1px solid #2a2a35', overflow: 'visible' }}>
-            {/* Show/Hide Objective Lines button - prominent, above stats */}
-            {hasPropFirmRules && (
-              <button
-                onClick={() => setShowObjectiveLines(!showObjectiveLines)}
-                style={{
-                  position: 'absolute',
-                  top: '-24px',
-                  right: '0px',
-                  zIndex: 20,
-                  background: showObjectiveLines ? '#1a1a22' : '#1a1a22',
-                  border: '1px solid #2a2a35',
-                  borderRadius: '4px',
-                  padding: '4px 10px',
-                  color: showObjectiveLines ? '#22c55e' : '#888',
-                  fontSize: '10px',
-                  cursor: 'pointer',
-                  fontWeight: 500,
-                  whiteSpace: 'nowrap'
-                }}
-              >
-                {showObjectiveLines ? 'Hide Objective Lines' : 'Show Objective Lines'}
-              </button>
-            )}
+            {/* Show/Hide Objective Lines button - aligned with stats column */}
+            <button
+              onClick={() => setShowObjectiveLines(!showObjectiveLines)}
+              style={{
+                position: 'absolute',
+                top: '-28px',
+                right: '-12px',
+                transform: 'translateX(100%)',
+                zIndex: 20,
+                background: showObjectiveLines ? '#1a1a22' : '#1a1a22',
+                border: '1px solid #2a2a35',
+                borderRadius: '4px',
+                padding: '4px 8px',
+                color: showObjectiveLines ? '#22c55e' : '#888',
+                fontSize: '10px',
+                cursor: 'pointer',
+                fontWeight: 500,
+                whiteSpace: 'nowrap'
+              }}
+            >
+              {showObjectiveLines ? 'Hide Objective Lines' : 'Show Objective Lines'}
+            </button>
             {/* Legend - shows above top grid line when objective lines are visible */}
             {showObjectiveLines && (
               <div style={{

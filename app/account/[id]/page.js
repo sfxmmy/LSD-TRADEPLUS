@@ -1441,33 +1441,6 @@ export default function AccountPage() {
                       This Journal
                     </div>
                   </button>
-                  {/* Show Objective Lines toggle - only when viewing this journal */}
-                  {viewMode === 'this' && (
-                    <button
-                      onClick={() => setShowObjectiveLines(!showObjectiveLines)}
-                      style={{
-                        width: '100%',
-                        padding: '8px 10px',
-                        background: showObjectiveLines ? 'rgba(147,51,234,0.15)' : 'transparent',
-                        border: showObjectiveLines ? '1px solid rgba(147,51,234,0.5)' : '1px solid #1a1a22',
-                        borderRadius: '6px',
-                        color: showObjectiveLines ? '#9333ea' : '#666',
-                        fontSize: '11px',
-                        fontWeight: 500,
-                        cursor: 'pointer',
-                        textAlign: 'left'
-                      }}
-                    >
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                          <path d="M3 3v18h18" />
-                          <path d="M3 12h18" strokeDasharray="4,3" />
-                          <path d="M3 6h18" strokeDasharray="4,3" />
-                        </svg>
-                        {showObjectiveLines ? 'Hide Targets' : 'Show Targets'}
-                      </div>
-                    </button>
-                  )}
                   {allAccounts.length > 1 && (
                     <>
                       <button
@@ -2022,6 +1995,23 @@ export default function AccountPage() {
                                 <option key={inp.id} value={inp.id}>By {inp.label}</option>
                               ))}
                             </select>
+                            {/* Show Objective Lines button */}
+                            <button
+                              onClick={() => setShowObjectiveLines(!showObjectiveLines)}
+                              style={{
+                                padding: '4px 8px',
+                                background: showObjectiveLines ? '#1a1a22' : '#1a1a22',
+                                border: '1px solid #2a2a35',
+                                borderRadius: '4px',
+                                color: showObjectiveLines ? '#22c55e' : '#888',
+                                fontSize: '10px',
+                                cursor: 'pointer',
+                                fontWeight: 500,
+                                whiteSpace: 'nowrap'
+                              }}
+                            >
+                              {showObjectiveLines ? 'Hide Objective Lines' : 'Show Objective Lines'}
+                            </button>
                             {/* Filter dropdown in header when grouped */}
                             {equityCurveGroupBy !== 'total' && lines.length > 0 && (
                               <div style={{ position: 'relative' }}>
