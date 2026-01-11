@@ -1028,16 +1028,40 @@ export default function AccountPage() {
     const pct = parseFloat(account.daily_dd_pct)
     if (isNaN(pct) || pct <= 0) return null
 
-    // Get today's starting balance (previous day close or starting balance)
+    // Get reset time settings
+    const dailyDdResetTime = account?.daily_dd_reset_time || '00:00'
+    const resetParts = dailyDdResetTime.split(':')
+    const resetHour = parseInt(resetParts[0]) || 0
+    const resetMin = parseInt(resetParts[1]) || 0
+
+    // Helper to get trading day for a given datetime based on reset time
+    const getTradingDay = (date, time) => {
+      if (!date) return null
+      const tradeDateTime = new Date(`${date}T${time || '12:00'}`)
+      if (isNaN(tradeDateTime.getTime())) return new Date(date).toDateString()
+      const tradeHour = tradeDateTime.getHours()
+      const tradeMinute = tradeDateTime.getMinutes()
+      if (tradeHour < resetHour || (tradeHour === resetHour && tradeMinute < resetMin)) {
+        const prevDay = new Date(tradeDateTime)
+        prevDay.setDate(prevDay.getDate() - 1)
+        return prevDay.toDateString()
+      }
+      return tradeDateTime.toDateString()
+    }
+
+    // Determine current trading day based on reset time
+    const now = new Date()
+    const currentTradingDay = getTradingDay(now.toISOString().split('T')[0], `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`)
+
+    // Get today's starting balance (previous trading day close or starting balance)
     const sorted = [...trades].sort((a, b) => new Date(a.date) - new Date(b.date))
-    const today = new Date().toDateString()
     let todayStart = startingBalance
     let runningBal = startingBalance
     let prevDayClose = startingBalance
 
     sorted.forEach(t => {
-      const tradeDate = new Date(t.date).toDateString()
-      if (tradeDate !== today) {
+      const tradingDay = getTradingDay(t.date, t.time)
+      if (tradingDay !== currentTradingDay) {
         runningBal += parseFloat(t.pnl) || 0
         prevDayClose = runningBal
       }
@@ -2078,57 +2102,37 @@ export default function AccountPage() {
 
                             const range = maxBal - minBal || 1000
 
-                            // Calculate tight Y-axis range - no huge gaps
+                            // Calculate tight Y-axis range
                             const actualMin = equityCurveGroupBy === 'total' ? Math.min(minBal, displayStartingBalance) : minBal
                             const actualMax = equityCurveGroupBy === 'total' ? Math.max(maxBal, displayStartingBalance) : maxBal
                             const dataRange = actualMax - actualMin || 1000
-                            const pureNegative = equityCurveGroupBy === 'total' && maxBal <= displayStartingBalance // All losses
-                            const purePositive = equityCurveGroupBy === 'total' && minBal >= displayStartingBalance // All wins
 
-                            // For pure negative/positive graphs, need extra padding (25% of visible range)
-                            let desiredRange = dataRange
-                            if (pureNegative || purePositive) {
-                              desiredRange = dataRange / 0.75 // Makes dataRange = 75% of total, 25% padding
-                            }
+                            // When NOT showing objectives: add 1/8 (12.5%) padding above and below
+                            // When showing objectives: expand to fit all lines with padding
+                            const paddingRatio = 0.125 // 1/8 of chart height as padding on each side
+                            const paddingAmount = dataRange * paddingRatio
+                            const lowestFloor = Math.min(ddFloorVal || Infinity, dailyDdFloorVal || Infinity, maxDdFloorVal || Infinity)
 
-                            const targetLabels = enlargedChart === 'equity' ? 10 : 6
-                            const yStep = Math.ceil(desiredRange / targetLabels / 1000) * 1000 || 1000
-
-                            // Calculate yMax - ensure enough space above
-                            let yMax = Math.ceil(actualMax / yStep) * yStep
-                            if (yMax <= actualMax + yStep * 0.3) yMax += yStep
-                            // For pure negative graphs, ensure start line is ~25% from top
-                            if (pureNegative) {
-                              const targetYMax = displayStartingBalance + (displayStartingBalance - actualMin) * 0.33
-                              yMax = Math.max(yMax, Math.ceil(targetYMax / yStep) * yStep)
-                            }
-                            // Ensure profit target has breathing room at top
-                            if (showObjectiveLines && profitTargetVal) {
-                              yMax = Math.max(yMax, Math.ceil((profitTargetVal + yStep * 0.5) / yStep) * yStep)
-                            }
-
-                            // Calculate yMin - ensure enough space below
-                            let yMin = Math.floor(actualMin / yStep) * yStep
-                            // For pure positive graphs, ensure start line is ~25% from bottom
-                            if (purePositive && !showObjectiveLines) {
-                              const targetYMin = displayStartingBalance - (actualMax - displayStartingBalance) * 0.33
-                              yMin = Math.min(yMin, Math.floor(targetYMin / yStep) * yStep)
-                            }
-                            // Ensure gap below the lowest DD floor
-                            if (showObjectiveLines) {
-                              const lowestFloor = Math.min(ddFloorVal || Infinity, dailyDdFloorVal || Infinity, maxDdFloorVal || Infinity)
-                              if (lowestFloor !== Infinity && lowestFloor - yMin < yStep * 0.5) yMin -= yStep
-                            }
-                            if (yMin < 0 && actualMin >= 0) yMin = 0
-
-                            // Ensure at least 5 y-axis labels
-                            let currentLabels = Math.round((yMax - yMin) / yStep)
-                            if (currentLabels < 5) {
-                              const extraSteps = 5 - currentLabels
-                              yMax += Math.ceil(extraSteps / 2) * yStep
-                              yMin -= Math.floor(extraSteps / 2) * yStep
+                            let yMax, yMin
+                            if (!showObjectiveLines) {
+                              // Tight fit: data + 1/8 padding on each side
+                              yMax = actualMax + paddingAmount
+                              yMin = actualMin - paddingAmount
                               if (yMin < 0 && actualMin >= 0) yMin = 0
+                            } else {
+                              // Expanded fit for objective lines
+                              yMax = actualMax + paddingAmount
+                              yMin = actualMin - paddingAmount
+                              if (profitTargetVal) yMax = Math.max(yMax, profitTargetVal + paddingAmount)
+                              if (lowestFloor !== Infinity) yMin = Math.min(yMin, lowestFloor - paddingAmount)
                             }
+
+                            // Round to nice numbers for y-axis labels
+                            const yRangeRaw = yMax - yMin || 1000
+                            const yStep = Math.ceil(yRangeRaw / 5 / 1000) * 1000 || 1000
+                            yMax = Math.ceil(yMax / yStep) * yStep
+                            yMin = Math.floor(yMin / yStep) * yStep
+                            if (yMin < 0 && actualMin >= 0 && !showObjectiveLines) yMin = 0
 
                             const yRange = yMax - yMin || yStep
 
@@ -2151,17 +2155,39 @@ export default function AccountPage() {
                             const profitTarget = ptClamped > 0 ? displayStartingBalance * (1 + ptClamped / 100) : null
                             const profitTargetY = equityCurveGroupBy === 'total' && profitTarget ? ((yMax - profitTarget) / yRange) * 100 : null
 
-                            // New Daily Drawdown calculation (orange line - resets each day) - clamp to valid range
+                            // New Daily Drawdown calculation (orange line - resets each day at configured time) - clamp to valid range
                             const dailyDdEnabled = account?.daily_dd_enabled
                             const dailyDdPctRaw = parseFloat(account?.daily_dd_pct)
                             const dailyDdPct = !isNaN(dailyDdPctRaw) ? Math.min(99, Math.max(0, dailyDdPctRaw)) : 0
                             const dailyDdType = account?.daily_dd_type || 'static'
                             const dailyDdLocksAt = account?.daily_dd_locks_at || 'start_balance'
                             const dailyDdLocksAtPctValue = parseFloat(account?.daily_dd_locks_at_pct) || 0
+                            const dailyDdResetTime = account?.daily_dd_reset_time || '00:00'
+
+                            // Helper to get trading day for a trade based on reset time
+                            const getTradingDay = (tradeDate, tradeTime) => {
+                              if (!tradeDate) return null
+                              const resetParts = (dailyDdResetTime || '00:00').split(':')
+                              const resetHour = parseInt(resetParts[0]) || 0
+                              const resetMin = parseInt(resetParts[1]) || 0
+                              const tradeDateTime = new Date(`${tradeDate}T${tradeTime || '12:00'}`)
+                              if (isNaN(tradeDateTime.getTime())) {
+                                return new Date(tradeDate).toDateString()
+                              }
+                              const tradeHour = tradeDateTime.getHours()
+                              const tradeMinute = tradeDateTime.getMinutes()
+                              if (tradeHour < resetHour || (tradeHour === resetHour && tradeMinute < resetMin)) {
+                                const prevDay = new Date(tradeDateTime)
+                                prevDay.setDate(prevDay.getDate() - 1)
+                                return prevDay.toDateString()
+                              }
+                              return tradeDateTime.toDateString()
+                            }
+
                             let dailyDdFloorPoints = []
                             if (equityCurveGroupBy === 'total' && dailyDdEnabled && dailyDdPct > 0) {
                               let currentDayStart = displayStartingBalance
-                              let currentDay = null
+                              let currentTradingDay = null
                               let isLocked = false
                               let lockedFloor = null
                               // Calculate lock threshold based on dailyDdLocksAt setting
@@ -2172,18 +2198,18 @@ export default function AccountPage() {
                               }
                               const lockThreshold = getLockThreshold()
 
-                              const totalPoints = [{ balance: displayStartingBalance, date: null }]
-                              sorted.forEach(t => totalPoints.push({ balance: totalPoints[totalPoints.length - 1].balance + (parseFloat(t.pnl) || 0), date: t.date }))
+                              const totalPoints = [{ balance: displayStartingBalance, date: null, time: null }]
+                              sorted.forEach(t => totalPoints.push({ balance: totalPoints[totalPoints.length - 1].balance + (parseFloat(t.pnl) || 0), date: t.date, time: t.time }))
                               totalPoints.forEach((p, i) => {
                                 if (i === 0) {
                                   dailyDdFloorPoints.push({ idx: i, floor: displayStartingBalance * (1 - dailyDdPct / 100), isNewDay: true })
                                 } else {
-                                  const tradeDate = p.date ? new Date(p.date).toDateString() : null
-                                  const isNewDay = tradeDate && tradeDate !== currentDay
+                                  const tradingDay = getTradingDay(p.date, p.time)
+                                  const isNewDay = tradingDay && tradingDay !== currentTradingDay
                                   if (isNewDay) {
                                     const prevBalance = totalPoints[i - 1].balance
-                                    currentDayStart = currentDay ? prevBalance : displayStartingBalance
-                                    currentDay = tradeDate
+                                    currentDayStart = currentTradingDay ? prevBalance : displayStartingBalance
+                                    currentTradingDay = tradingDay
                                   }
                                   let floor = currentDayStart * (1 - dailyDdPct / 100)
 
@@ -3433,18 +3459,39 @@ export default function AccountPage() {
                     ddStatus = { floor, remaining, breached, ddType, trailingMode, maxDDPct }
                   }
 
-                  // Daily Drawdown calc (orange)
+                  // Daily Drawdown calc (orange) - with reset time support
                   let dailyDdStatus = null
                   if (acc.daily_dd_enabled) {
                     const pct = parseFloat(acc.daily_dd_pct)
                     if (!isNaN(pct) && pct > 0) {
+                      const dailyDdResetTime = acc.daily_dd_reset_time || '00:00'
+                      const resetParts = dailyDdResetTime.split(':')
+                      const resetHour = parseInt(resetParts[0]) || 0
+                      const resetMin = parseInt(resetParts[1]) || 0
+
+                      const getTradingDay = (date, time) => {
+                        if (!date) return null
+                        const tradeDateTime = new Date(`${date}T${time || '12:00'}`)
+                        if (isNaN(tradeDateTime.getTime())) return new Date(date).toDateString()
+                        const tradeHour = tradeDateTime.getHours()
+                        const tradeMinute = tradeDateTime.getMinutes()
+                        if (tradeHour < resetHour || (tradeHour === resetHour && tradeMinute < resetMin)) {
+                          const prevDay = new Date(tradeDateTime)
+                          prevDay.setDate(prevDay.getDate() - 1)
+                          return prevDay.toDateString()
+                        }
+                        return tradeDateTime.toDateString()
+                      }
+
+                      const now = new Date()
+                      const currentTradingDay = getTradingDay(now.toISOString().split('T')[0], `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`)
+
                       const sorted = [...accTrades].sort((a, b) => new Date(a.date) - new Date(b.date))
-                      const today = new Date().toDateString()
                       let todayStart = accStartBal
                       let runningBal = accStartBal
                       sorted.forEach(t => {
-                        const tradeDate = new Date(t.date).toDateString()
-                        if (tradeDate !== today) {
+                        const tradingDay = getTradingDay(t.date, t.time)
+                        if (tradingDay !== currentTradingDay) {
                           runningBal += parseFloat(t.pnl) || 0
                         }
                       })
@@ -4607,43 +4654,32 @@ export default function AccountPage() {
                 const actualMinEnl = equityCurveGroupBy === 'total' ? Math.min(minBal, startingBalance) : minBal
                 const actualMaxEnl = equityCurveGroupBy === 'total' ? Math.max(maxBal, startingBalance) : maxBal
                 const dataRangeEnl = actualMaxEnl - actualMinEnl || 1000
-                const pureNegativeEnl = equityCurveGroupBy === 'total' && maxBal <= startingBalance
-                const purePositiveEnl = equityCurveGroupBy === 'total' && minBal >= startingBalance
 
-                // For pure negative/positive graphs, need extra padding (25% of visible range)
-                let desiredRangeEnl = dataRangeEnl
-                if (pureNegativeEnl || purePositiveEnl) {
-                  desiredRangeEnl = dataRangeEnl / 0.75
-                }
+                // When NOT showing objectives: add 1/8 (12.5%) padding above and below
+                const paddingRatioEnl = 0.125 // 1/8 of chart height as padding on each side
+                const paddingAmountEnl = dataRangeEnl * paddingRatioEnl
+                const lowestFloorEnl = Math.min(ddFloorValEnl || Infinity, dailyDdFloorValEnl || Infinity, maxDdFloorValEnl || Infinity)
 
-                const yStep = Math.ceil(desiredRangeEnl / 10 / 100) * 100 || 100
-
-                // Calculate yMax - ensure enough space above
-                let yMax = Math.ceil(actualMaxEnl / yStep) * yStep
-                if (yMax <= actualMaxEnl + yStep * 0.3) yMax += yStep
-                // For pure negative graphs, ensure start line is ~25% from top
-                if (pureNegativeEnl) {
-                  const targetYMaxEnl = startingBalance + (startingBalance - actualMinEnl) * 0.33
-                  yMax = Math.max(yMax, Math.ceil(targetYMaxEnl / yStep) * yStep)
-                }
-                // Ensure profit target has breathing room
-                if (showObjectiveLines && profitTargetValEnl) {
-                  yMax = Math.max(yMax, Math.ceil((profitTargetValEnl + yStep * 0.5) / yStep) * yStep)
+                let yMax, yMin
+                if (!showObjectiveLines) {
+                  // Tight fit: data + 1/8 padding on each side
+                  yMax = actualMaxEnl + paddingAmountEnl
+                  yMin = actualMinEnl - paddingAmountEnl
+                  if (yMin < 0 && actualMinEnl >= 0) yMin = 0
+                } else {
+                  // Expanded fit for objective lines
+                  yMax = actualMaxEnl + paddingAmountEnl
+                  yMin = actualMinEnl - paddingAmountEnl
+                  if (profitTargetValEnl) yMax = Math.max(yMax, profitTargetValEnl + paddingAmountEnl)
+                  if (lowestFloorEnl !== Infinity) yMin = Math.min(yMin, lowestFloorEnl - paddingAmountEnl)
                 }
 
-                // Calculate yMin
-                let yMin = Math.floor(actualMinEnl / yStep) * yStep
-                // For pure positive, add padding below
-                if (purePositiveEnl && !showObjectiveLines) {
-                  const targetYMinEnl = startingBalance - (actualMaxEnl - startingBalance) * 0.33
-                  yMin = Math.min(yMin, Math.floor(targetYMinEnl / yStep) * yStep)
-                }
-                // Ensure gap below DD floors
-                if (showObjectiveLines) {
-                  const lowestFloorEnl = Math.min(ddFloorValEnl || Infinity, dailyDdFloorValEnl || Infinity, maxDdFloorValEnl || Infinity)
-                  if (lowestFloorEnl !== Infinity && lowestFloorEnl - yMin < yStep * 0.5) yMin -= yStep
-                }
-                if (yMin < 0 && actualMinEnl >= 0) yMin = 0
+                // Round to nice numbers for y-axis labels
+                const yRangeRawEnl = yMax - yMin || 1000
+                const yStep = Math.ceil(yRangeRawEnl / 10 / 100) * 100 || 100
+                yMax = Math.ceil(yMax / yStep) * yStep
+                yMin = Math.floor(yMin / yStep) * yStep
+                if (yMin < 0 && actualMinEnl >= 0 && !showObjectiveLines) yMin = 0
 
                 // Ensure at least 8 labels for enlarged chart
                 let currentLabelsEnl = Math.round((yMax - yMin) / yStep)

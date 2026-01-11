@@ -1060,67 +1060,41 @@ export default function DashboardPage() {
 
     const hasNegative = minBal < 0
     const belowStart = minBal < start // Red if balance ever went below starting
-    const pureNegative = maxBal <= start // All losses, no profit
-    const purePositive = minBal >= start // All wins, no loss
 
     // Calculate tight Y-axis range based on actual data
     const actualMin = Math.min(minBal, start)
     const actualMax = Math.max(maxBal, start)
     const dataRange = actualMax - actualMin || 1000
 
-    // For pure negative/positive graphs, we need extra padding (25% of visible range)
-    // Calculate desired total range that gives us ~25% padding on the empty side
-    let desiredRange = dataRange
-    if (pureNegative) {
-      // All below start - need 25% padding above start
-      desiredRange = dataRange / 0.75 // This makes dataRange = 75% of total, leaving 25% for padding
-    } else if (purePositive) {
-      // All above start - need 25% padding below start
-      desiredRange = dataRange / 0.75
+    // When NOT showing objectives: add 1/8 (12.5%) padding above and below
+    // When showing objectives: expand to fit all lines with padding
+    const paddingRatio = 0.125 // 1/8 of chart height as padding on each side
+    const paddingAmount = dataRange * paddingRatio
+
+    let yMax, yMin
+    if (!showObjectiveLines) {
+      // Tight fit: data + 1/8 padding on each side
+      yMax = actualMax + paddingAmount
+      yMin = actualMin - paddingAmount
+      // Don't go negative if not needed
+      if (yMin < 0 && actualMin >= 0) yMin = 0
+    } else {
+      // Expanded fit for objective lines
+      yMax = actualMax + paddingAmount
+      yMin = actualMin - paddingAmount
+      // Ensure profit target fits with padding
+      if (profitTarget) yMax = Math.max(yMax, profitTarget + paddingAmount)
+      // Ensure DD floors fit with padding
+      if (lowestDdFloor !== null) yMin = Math.min(yMin, lowestDdFloor - paddingAmount)
     }
 
-    // Calculate yStep based on desired range to get 5-6 labels
-    const targetLabels = 6
-    const yStep = Math.ceil(desiredRange / targetLabels / 1000) * 1000 || 1000
-
-    // Calculate yMax - ensure enough space above
-    let yMax = Math.ceil(actualMax / yStep) * yStep
-    // Add padding at top for visual breathing room
-    if (yMax <= actualMax + yStep * 0.3) yMax += yStep
-    // For pure negative graphs, ensure start line is ~25% from top
-    if (pureNegative) {
-      const targetYMax = start + (start - actualMin) * 0.33 // 25% padding above start
-      yMax = Math.max(yMax, Math.ceil(targetYMax / yStep) * yStep)
-    }
-    // Additional padding when showing objectives
-    if (showObjectiveLines) {
-      if (profitTarget && yMax - profitTarget < yStep) yMax += yStep
-      // Ensure profit target has breathing room at top
-      if (profitTarget) yMax = Math.max(yMax, Math.ceil((profitTarget + yStep * 0.5) / yStep) * yStep)
-    }
-
-    // Calculate yMin - ensure enough space below
-    let yMin = Math.floor(actualMin / yStep) * yStep
-    // For pure positive graphs, ensure start line is ~25% from bottom
-    if (purePositive && !showObjectiveLines) {
-      const targetYMin = start - (actualMax - start) * 0.33 // 25% padding below start
-      yMin = Math.min(yMin, Math.floor(targetYMin / yStep) * yStep)
-    }
-    // Ensure gap below the lowest DD floor
-    if (showObjectiveLines && lowestDdFloor !== null) {
-      if (lowestDdFloor - yMin < yStep * 0.5) yMin -= yStep
-    }
-    if (yMin < 0 && !showObjectiveLines && actualMin >= 0) yMin = 0 // Don't go negative if not needed and not zoomed out
-
-    // Ensure we have at least 5 y-axis labels
-    const currentLabels = Math.round((yMax - yMin) / yStep)
-    if (currentLabels < 5) {
-      // Expand range to get at least 5 labels
-      const extraSteps = 5 - currentLabels
-      yMax += Math.ceil(extraSteps / 2) * yStep
-      yMin -= Math.floor(extraSteps / 2) * yStep
-      if (yMin < 0 && actualMin >= 0 && !showObjectiveLines) yMin = 0
-    }
+    // Round to nice numbers for y-axis labels
+    const yRangeRaw = yMax - yMin || 1000
+    const yStep = Math.ceil(yRangeRaw / 5 / 1000) * 1000 || 1000
+    yMax = Math.ceil(yMax / yStep) * yStep
+    yMin = Math.floor(yMin / yStep) * yStep
+    // Don't go negative if data is all positive
+    if (yMin < 0 && actualMin >= 0 && !showObjectiveLines) yMin = 0
 
     const yRange = yMax - yMin || yStep
 
