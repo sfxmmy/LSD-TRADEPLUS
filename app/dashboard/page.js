@@ -103,6 +103,8 @@ export default function DashboardPage() {
   const [dailyDdType, setDailyDdType] = useState('static') // 'static' or 'trailing'
   const [dailyDdLocksAt, setDailyDdLocksAt] = useState('start_balance') // 'start_balance' or 'custom'
   const [dailyDdLocksAtPct, setDailyDdLocksAtPct] = useState('') // custom % above start
+  const [dailyDdResetTime, setDailyDdResetTime] = useState('00:00')
+  const [dailyDdResetTimezone, setDailyDdResetTimezone] = useState('Europe/London')
   // Max Drawdown state (create modal)
   const [maxDdEnabled, setMaxDdEnabled] = useState(false)
   const [maxDdPct, setMaxDdPct] = useState('')
@@ -294,6 +296,8 @@ export default function DashboardPage() {
       daily_dd_type: dailyDdType,
       daily_dd_locks_at: dailyDdLocksAt,
       daily_dd_locks_at_pct: dailyDdLocksAtPct ? parseFloat(dailyDdLocksAtPct) : null,
+      daily_dd_reset_time: dailyDdResetTime || '00:00',
+      daily_dd_reset_timezone: dailyDdResetTimezone || 'Europe/London',
       max_dd_enabled: maxDdEnabled,
       max_dd_pct: maxDdPct ? parseFloat(maxDdPct) : null,
       max_dd_type: maxDdType,
@@ -303,7 +307,7 @@ export default function DashboardPage() {
     if (error) { alert('Error: ' + error.message); setCreating(false); return }
     setAccounts([...accounts, data])
     setTrades({ ...trades, [data.id]: [] })
-    setName(''); setBalance(''); setProfitTarget(''); setMaxDrawdown(''); setConsistencyEnabled(false); setConsistencyPct('30'); setDailyDdEnabled(false); setDailyDdPct(''); setDailyDdType('static'); setDailyDdLocksAt('start_balance'); setDailyDdLocksAtPct(''); setMaxDdEnabled(false); setMaxDdPct(''); setMaxDdType('static'); setMaxDdTrailingStopsAt('never'); setMaxDdLocksAtPct(''); setShowModal(false); setCreating(false)
+    setName(''); setBalance(''); setProfitTarget(''); setMaxDrawdown(''); setConsistencyEnabled(false); setConsistencyPct('30'); setDailyDdEnabled(false); setDailyDdPct(''); setDailyDdType('static'); setDailyDdLocksAt('start_balance'); setDailyDdLocksAtPct(''); setDailyDdResetTime('00:00'); setDailyDdResetTimezone('Europe/London'); setMaxDdEnabled(false); setMaxDdPct(''); setMaxDdType('static'); setMaxDdTrailingStopsAt('never'); setMaxDdLocksAtPct(''); setShowModal(false); setCreating(false)
   }
 
   async function updateAccount(accountId) {

@@ -276,6 +276,7 @@ export default function AccountPage() {
       pnl: parseFloat(tradeForm.pnl) || 0,
       rr: parseFloat(tradeForm.rr) || 0,
       date: tradeForm.date || new Date().toISOString().split('T')[0],
+      time: tradeForm.time || null,
       notes: tradeForm.notes || '',
       extra_data: JSON.stringify(extraData)
     }).select().single()
@@ -318,6 +319,7 @@ export default function AccountPage() {
       outcome: trade.outcome || 'win',
       rr: trade.rr?.toString() || '',
       date: trade.date || new Date().toISOString().split('T')[0],
+      time: trade.time || '',
       notes: trade.notes || '',
       ...convertedExtra
     }
@@ -348,6 +350,7 @@ export default function AccountPage() {
       pnl: parseFloat(tradeForm.pnl) || 0,
       rr: parseFloat(tradeForm.rr) || 0,
       date: tradeForm.date || new Date().toISOString().split('T')[0],
+      time: tradeForm.time || null,
       notes: tradeForm.notes || '',
       extra_data: JSON.stringify(extraData)
     }).eq('id', editingTrade.id).select().single()

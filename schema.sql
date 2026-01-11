@@ -196,6 +196,7 @@ CREATE TABLE IF NOT EXISTS trades (
   rr DECIMAL(5,2),
   risk DECIMAL(5,2),
   date DATE,
+  time TEXT DEFAULT NULL, -- Time of trade entry (HH:MM format) for daily DD reset time calculations
   direction TEXT CHECK (direction IN ('long', 'short')),
   notes TEXT,
   image_url TEXT,
@@ -208,6 +209,9 @@ DO $$
 BEGIN
   IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'trades' AND column_name = 'extra_data') THEN
     ALTER TABLE trades ADD COLUMN extra_data JSONB DEFAULT NULL;
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'trades' AND column_name = 'time') THEN
+    ALTER TABLE trades ADD COLUMN time TEXT DEFAULT NULL;
   END IF;
 END $$;
 
