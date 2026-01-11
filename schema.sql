@@ -95,6 +95,7 @@ CREATE TABLE IF NOT EXISTS accounts (
   daily_dd_pct DECIMAL(5,2) DEFAULT NULL,
   daily_dd_type TEXT DEFAULT 'static',
   daily_dd_locks_at TEXT DEFAULT 'start_balance',
+  daily_dd_locks_at_pct DECIMAL(5,2) DEFAULT NULL,
   daily_dd_reset_time TEXT DEFAULT '00:00',
   daily_dd_reset_timezone TEXT DEFAULT 'Europe/London',
   -- Max Drawdown settings (red line)
@@ -102,6 +103,7 @@ CREATE TABLE IF NOT EXISTS accounts (
   max_dd_pct DECIMAL(5,2) DEFAULT NULL,
   max_dd_type TEXT DEFAULT 'static',
   max_dd_trailing_stops_at TEXT DEFAULT 'never',
+  max_dd_locks_at_pct DECIMAL(5,2) DEFAULT NULL,
   -- Consistency rule settings
   consistency_enabled BOOLEAN DEFAULT FALSE,
   consistency_pct DECIMAL(5,2) DEFAULT 30,
@@ -141,6 +143,9 @@ BEGIN
   IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'accounts' AND column_name = 'daily_dd_locks_at') THEN
     ALTER TABLE accounts ADD COLUMN daily_dd_locks_at TEXT DEFAULT 'start_balance';
   END IF;
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'accounts' AND column_name = 'daily_dd_locks_at_pct') THEN
+    ALTER TABLE accounts ADD COLUMN daily_dd_locks_at_pct DECIMAL(5,2) DEFAULT NULL;
+  END IF;
   IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'accounts' AND column_name = 'daily_dd_reset_time') THEN
     ALTER TABLE accounts ADD COLUMN daily_dd_reset_time TEXT DEFAULT '00:00';
   END IF;
@@ -159,6 +164,9 @@ BEGIN
   END IF;
   IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'accounts' AND column_name = 'max_dd_trailing_stops_at') THEN
     ALTER TABLE accounts ADD COLUMN max_dd_trailing_stops_at TEXT DEFAULT 'never';
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'accounts' AND column_name = 'max_dd_locks_at_pct') THEN
+    ALTER TABLE accounts ADD COLUMN max_dd_locks_at_pct DECIMAL(5,2) DEFAULT NULL;
   END IF;
   -- Consistency rule fields
   IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'accounts' AND column_name = 'consistency_enabled') THEN

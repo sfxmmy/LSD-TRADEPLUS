@@ -101,17 +101,20 @@ export default function DashboardPage() {
   const [dailyDdEnabled, setDailyDdEnabled] = useState(false)
   const [dailyDdPct, setDailyDdPct] = useState('')
   const [dailyDdType, setDailyDdType] = useState('static') // 'static' or 'trailing'
-  const [dailyDdLocksAt, setDailyDdLocksAt] = useState('start_balance') // 'start_balance' or custom buffer %
+  const [dailyDdLocksAt, setDailyDdLocksAt] = useState('start_balance') // 'start_balance' or 'custom'
+  const [dailyDdLocksAtPct, setDailyDdLocksAtPct] = useState('') // custom % above start
   // Max Drawdown state (create modal)
   const [maxDdEnabled, setMaxDdEnabled] = useState(false)
   const [maxDdPct, setMaxDdPct] = useState('')
+  const [maxDdLocksAtPct, setMaxDdLocksAtPct] = useState('') // custom % above start for max DD
   const [maxDdType, setMaxDdType] = useState('static')
   const [maxDdTrailingStopsAt, setMaxDdTrailingStopsAt] = useState('never')
   // Daily Drawdown state (edit modal)
   const [editDailyDdEnabled, setEditDailyDdEnabled] = useState(false)
   const [editDailyDdPct, setEditDailyDdPct] = useState('')
   const [editDailyDdType, setEditDailyDdType] = useState('static') // 'static' or 'trailing'
-  const [editDailyDdLocksAt, setEditDailyDdLocksAt] = useState('start_balance') // 'start_balance' or custom buffer %
+  const [editDailyDdLocksAt, setEditDailyDdLocksAt] = useState('start_balance') // 'start_balance' or 'custom'
+  const [editDailyDdLocksAtPct, setEditDailyDdLocksAtPct] = useState('') // custom % above start
   const [editDailyDdResetTime, setEditDailyDdResetTime] = useState('00:00')
   const [editDailyDdResetTimezone, setEditDailyDdResetTimezone] = useState('Europe/London')
   // Max Drawdown state (edit modal)
@@ -119,6 +122,7 @@ export default function DashboardPage() {
   const [editMaxDdPct, setEditMaxDdPct] = useState('')
   const [editMaxDdType, setEditMaxDdType] = useState('static')
   const [editMaxDdTrailingStopsAt, setEditMaxDdTrailingStopsAt] = useState('never')
+  const [editMaxDdLocksAtPct, setEditMaxDdLocksAtPct] = useState('') // custom % above start for max DD
   const [creating, setCreating] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
   const [viewMode, setViewMode] = useState('cards') // 'cards' or 'list'
@@ -289,15 +293,17 @@ export default function DashboardPage() {
       daily_dd_pct: dailyDdPct ? parseFloat(dailyDdPct) : null,
       daily_dd_type: dailyDdType,
       daily_dd_locks_at: dailyDdLocksAt,
+      daily_dd_locks_at_pct: dailyDdLocksAtPct ? parseFloat(dailyDdLocksAtPct) : null,
       max_dd_enabled: maxDdEnabled,
       max_dd_pct: maxDdPct ? parseFloat(maxDdPct) : null,
       max_dd_type: maxDdType,
-      max_dd_trailing_stops_at: maxDdTrailingStopsAt
+      max_dd_trailing_stops_at: maxDdTrailingStopsAt,
+      max_dd_locks_at_pct: maxDdLocksAtPct ? parseFloat(maxDdLocksAtPct) : null
     }).select().single()
     if (error) { alert('Error: ' + error.message); setCreating(false); return }
     setAccounts([...accounts, data])
     setTrades({ ...trades, [data.id]: [] })
-    setName(''); setBalance(''); setProfitTarget(''); setMaxDrawdown(''); setConsistencyEnabled(false); setConsistencyPct('30'); setDailyDdEnabled(false); setDailyDdPct(''); setDailyDdType('static'); setDailyDdLocksAt('start_balance'); setMaxDdEnabled(false); setMaxDdPct(''); setMaxDdType('static'); setMaxDdTrailingStopsAt('never'); setShowModal(false); setCreating(false)
+    setName(''); setBalance(''); setProfitTarget(''); setMaxDrawdown(''); setConsistencyEnabled(false); setConsistencyPct('30'); setDailyDdEnabled(false); setDailyDdPct(''); setDailyDdType('static'); setDailyDdLocksAt('start_balance'); setDailyDdLocksAtPct(''); setMaxDdEnabled(false); setMaxDdPct(''); setMaxDdType('static'); setMaxDdTrailingStopsAt('never'); setMaxDdLocksAtPct(''); setShowModal(false); setCreating(false)
   }
 
   async function updateAccount(accountId) {
@@ -313,12 +319,14 @@ export default function DashboardPage() {
       daily_dd_pct: editDailyDdPct ? parseFloat(editDailyDdPct) : null,
       daily_dd_type: editDailyDdType,
       daily_dd_locks_at: editDailyDdLocksAt,
+      daily_dd_locks_at_pct: editDailyDdLocksAtPct ? parseFloat(editDailyDdLocksAtPct) : null,
       daily_dd_reset_time: editDailyDdResetTime || '00:00',
       daily_dd_reset_timezone: editDailyDdResetTimezone || 'Europe/London',
       max_dd_enabled: editMaxDdEnabled,
       max_dd_pct: editMaxDdPct ? parseFloat(editMaxDdPct) : null,
       max_dd_type: editMaxDdType,
-      max_dd_trailing_stops_at: editMaxDdTrailingStopsAt
+      max_dd_trailing_stops_at: editMaxDdTrailingStopsAt,
+      max_dd_locks_at_pct: editMaxDdLocksAtPct ? parseFloat(editMaxDdLocksAtPct) : null
     }).eq('id', accountId)
     setAccounts(accounts.map(a => a.id === accountId ? {
       ...a,
@@ -331,14 +339,16 @@ export default function DashboardPage() {
       daily_dd_pct: editDailyDdPct ? parseFloat(editDailyDdPct) : null,
       daily_dd_type: editDailyDdType,
       daily_dd_locks_at: editDailyDdLocksAt,
+      daily_dd_locks_at_pct: editDailyDdLocksAtPct ? parseFloat(editDailyDdLocksAtPct) : null,
       daily_dd_reset_time: editDailyDdResetTime || '00:00',
       daily_dd_reset_timezone: editDailyDdResetTimezone || 'Europe/London',
       max_dd_enabled: editMaxDdEnabled,
       max_dd_pct: editMaxDdPct ? parseFloat(editMaxDdPct) : null,
       max_dd_type: editMaxDdType,
-      max_dd_trailing_stops_at: editMaxDdTrailingStopsAt
+      max_dd_trailing_stops_at: editMaxDdTrailingStopsAt,
+      max_dd_locks_at_pct: editMaxDdLocksAtPct ? parseFloat(editMaxDdLocksAtPct) : null
     } : a))
-    setShowEditModal(null); setEditName(''); setEditProfitTarget(''); setEditMaxDrawdown(''); setEditConsistencyEnabled(false); setEditConsistencyPct('30'); setEditDailyDdEnabled(false); setEditDailyDdPct(''); setEditDailyDdType('static'); setEditDailyDdLocksAt('start_balance'); setEditDailyDdResetTime('00:00'); setEditDailyDdResetTimezone('Europe/London'); setEditMaxDdEnabled(false); setEditMaxDdPct(''); setEditMaxDdType('static'); setEditMaxDdTrailingStopsAt('never')
+    setShowEditModal(null); setEditName(''); setEditProfitTarget(''); setEditMaxDrawdown(''); setEditConsistencyEnabled(false); setEditConsistencyPct('30'); setEditDailyDdEnabled(false); setEditDailyDdPct(''); setEditDailyDdType('static'); setEditDailyDdLocksAt('start_balance'); setEditDailyDdLocksAtPct(''); setEditDailyDdResetTime('00:00'); setEditDailyDdResetTimezone('Europe/London'); setEditMaxDdEnabled(false); setEditMaxDdPct(''); setEditMaxDdType('static'); setEditMaxDdTrailingStopsAt('never'); setEditMaxDdLocksAtPct('')
   }
 
   async function deleteAccount(accountId) {
@@ -920,6 +930,7 @@ export default function DashboardPage() {
     let dailyDdFloorPoints = []
     const dailyDdType = account?.daily_dd_type || 'static'
     const dailyDdLocksAt = account?.daily_dd_locks_at || 'start_balance'
+    const dailyDdLocksAtPctValue = parseFloat(account?.daily_dd_locks_at_pct) || 0
     if (dailyDdEnabled && dailyDdPct > 0) {
       // Group trades by trading day (accounting for reset time) and calculate daily floor
       // For trailing type, track highest floor and lock when threshold reached
@@ -930,8 +941,7 @@ export default function DashboardPage() {
       // Calculate lock threshold based on dailyDdLocksAt setting
       const getLockThreshold = () => {
         if (dailyDdLocksAt === 'start_balance') return start
-        if (dailyDdLocksAt === 'buffer_5') return start * 1.05
-        if (dailyDdLocksAt === 'buffer_10') return start * 1.10
+        if (dailyDdLocksAt === 'custom' && dailyDdLocksAtPctValue > 0) return start * (1 + dailyDdLocksAtPctValue / 100)
         return start
       }
       const lockThreshold = getLockThreshold()
@@ -978,6 +988,7 @@ export default function DashboardPage() {
     const maxDdPct = !isNaN(maxDdPctRaw) ? Math.min(99, Math.max(0, maxDdPctRaw)) : 0
     const maxDdType = account?.max_dd_type || 'static'
     const maxDdStopsAt = account?.max_dd_trailing_stops_at || 'never'
+    const maxDdLocksAtPctValue = parseFloat(account?.max_dd_locks_at_pct) || 0
     let maxDdFloorPoints = []
     let maxDdStaticFloor = null
     if (maxDdEnabled && maxDdPct > 0) {
@@ -993,8 +1004,7 @@ export default function DashboardPage() {
         // Calculate lock threshold based on maxDdStopsAt setting
         const getLockThreshold = () => {
           if (maxDdStopsAt === 'initial') return start
-          if (maxDdStopsAt === 'buffer') return start * 1.05
-          if (maxDdStopsAt === 'buffer_10') return start * 1.10
+          if (maxDdStopsAt === 'custom' && maxDdLocksAtPctValue > 0) return start * (1 + maxDdLocksAtPctValue / 100)
           return null // 'never' - no threshold
         }
         const lockThreshold = getLockThreshold()
@@ -1050,28 +1060,67 @@ export default function DashboardPage() {
 
     const hasNegative = minBal < 0
     const belowStart = minBal < start // Red if balance ever went below starting
+    const pureNegative = maxBal <= start // All losses, no profit
+    const purePositive = minBal >= start // All wins, no loss
+
     // Calculate tight Y-axis range based on actual data
     const actualMin = Math.min(minBal, start)
     const actualMax = Math.max(maxBal, start)
-    const actualRange = actualMax - actualMin || 1000
-    const yStep = Math.ceil(actualRange / 6 / 1000) * 1000 || 1000
+    const dataRange = actualMax - actualMin || 1000
 
-    // Always add proportional top padding (ensures chart doesn't start at very top)
+    // For pure negative/positive graphs, we need extra padding (25% of visible range)
+    // Calculate desired total range that gives us ~25% padding on the empty side
+    let desiredRange = dataRange
+    if (pureNegative) {
+      // All below start - need 25% padding above start
+      desiredRange = dataRange / 0.75 // This makes dataRange = 75% of total, leaving 25% for padding
+    } else if (purePositive) {
+      // All above start - need 25% padding below start
+      desiredRange = dataRange / 0.75
+    }
+
+    // Calculate yStep based on desired range to get 5-6 labels
+    const targetLabels = 6
+    const yStep = Math.ceil(desiredRange / targetLabels / 1000) * 1000 || 1000
+
+    // Calculate yMax - ensure enough space above
     let yMax = Math.ceil(actualMax / yStep) * yStep
-    // Add at least half a step of padding at top for visual breathing room
+    // Add padding at top for visual breathing room
     if (yMax <= actualMax + yStep * 0.3) yMax += yStep
+    // For pure negative graphs, ensure start line is ~25% from top
+    if (pureNegative) {
+      const targetYMax = start + (start - actualMin) * 0.33 // 25% padding above start
+      yMax = Math.max(yMax, Math.ceil(targetYMax / yStep) * yStep)
+    }
     // Additional padding when showing objectives
     if (showObjectiveLines) {
       if (profitTarget && yMax - profitTarget < yStep) yMax += yStep
-      // If balance hasn't reached profit target yet, still ensure top padding
-      if (!profitTarget || maxBal < start) yMax = Math.max(yMax, start + yStep)
+      // Ensure profit target has breathing room at top
+      if (profitTarget) yMax = Math.max(yMax, Math.ceil((profitTarget + yStep * 0.5) / yStep) * yStep)
     }
+
+    // Calculate yMin - ensure enough space below
     let yMin = Math.floor(actualMin / yStep) * yStep
+    // For pure positive graphs, ensure start line is ~25% from bottom
+    if (purePositive && !showObjectiveLines) {
+      const targetYMin = start - (actualMax - start) * 0.33 // 25% padding below start
+      yMin = Math.min(yMin, Math.floor(targetYMin / yStep) * yStep)
+    }
     // Ensure gap below the lowest DD floor
     if (showObjectiveLines && lowestDdFloor !== null) {
       if (lowestDdFloor - yMin < yStep * 0.5) yMin -= yStep
     }
     if (yMin < 0 && !showObjectiveLines && actualMin >= 0) yMin = 0 // Don't go negative if not needed and not zoomed out
+
+    // Ensure we have at least 5 y-axis labels
+    const currentLabels = Math.round((yMax - yMin) / yStep)
+    if (currentLabels < 5) {
+      // Expand range to get at least 5 labels
+      const extraSteps = 5 - currentLabels
+      yMax += Math.ceil(extraSteps / 2) * yStep
+      yMin -= Math.floor(extraSteps / 2) * yStep
+      if (yMin < 0 && actualMin >= 0 && !showObjectiveLines) yMin = 0
+    }
 
     const yRange = yMax - yMin || yStep
 
@@ -1263,18 +1312,18 @@ export default function DashboardPage() {
                 borderRadius: '4px'
               }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                  <div style={{ width: '16px', height: '0', borderTop: '1px dashed #666' }} />
+                  <div style={{ width: '16px', height: '0', borderTop: '2px dashed #666' }} />
                   <span style={{ fontSize: '9px', color: '#666', fontWeight: 500 }}>Start</span>
                 </div>
                 {profitTargetY !== null && (
                   <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                    <div style={{ width: '16px', height: '0', borderTop: '1px dashed #22c55e' }} />
+                    <div style={{ width: '16px', height: '0', borderTop: '2px solid #22c55e' }} />
                     <span style={{ fontSize: '9px', color: '#22c55e', fontWeight: 500 }}>Profit Target {account?.profit_target}%</span>
                   </div>
                 )}
                 {(maxDdStaticFloorY !== null || trailingMaxDdPath) && (
                   <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                    <div style={{ width: '16px', height: '0', borderTop: '1px dashed #ef4444' }} />
+                    <div style={{ width: '16px', height: '0', borderTop: '2px solid #ef4444' }} />
                     <span style={{ fontSize: '9px', color: '#ef4444', fontWeight: 500 }}>
                       Max Drawdown {account?.max_dd_enabled ? `(${account?.max_dd_type === 'trailing' ? 'trailing' : 'static'}) ${account?.max_dd_pct}%` : `${account?.max_drawdown}%`}
                     </span>
@@ -1282,7 +1331,7 @@ export default function DashboardPage() {
                 )}
                 {dailyDdPath && (
                   <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                    <div style={{ width: '16px', height: '0', borderTop: '1px dashed #f97316' }} />
+                    <div style={{ width: '16px', height: '0', borderTop: '2px solid #f97316' }} />
                     <span style={{ fontSize: '9px', color: '#f97316', fontWeight: 500 }}>Daily Drawdown ({account?.daily_dd_type === 'trailing' ? 'trailing' : 'static'}) {account?.daily_dd_pct}%</span>
                   </div>
                 )}
@@ -1312,42 +1361,42 @@ export default function DashboardPage() {
               {greenPath && <path d={greenPath} fill="none" stroke="#22c55e" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />}
               {redPath && <path d={redPath} fill="none" stroke="#ef4444" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />}
               {/* Daily DD floor line - orange, follows balance curve (only when showing objectives) */}
-              {showObjectiveLines && dailyDdPath && <path d={dailyDdPath} fill="none" stroke="#f97316" strokeWidth="1" strokeDasharray="4,3" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />}
+              {showObjectiveLines && dailyDdPath && <path d={dailyDdPath} fill="none" stroke="#f97316" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />}
               {/* Trailing Max DD floor line - red, follows peak curve (only when showing objectives) */}
-              {showObjectiveLines && trailingMaxDdPath && <path d={trailingMaxDdPath} fill="none" stroke="#ef4444" strokeWidth="1" strokeDasharray="4,3" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />}
+              {showObjectiveLines && trailingMaxDdPath && <path d={trailingMaxDdPath} fill="none" stroke="#ef4444" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />}
             </svg>
             {/* Start line - CSS positioned for consistent fixed gap */}
             {startLineY !== null && (
               <div style={{ position: 'absolute', left: 0, right: 0, top: `${startLineY}%`, borderTop: '1px dashed #666', zIndex: 1 }} />
             )}
-            {/* DD Floor line - red dashed (legacy) - only when showing objectives */}
+            {/* DD Floor line - red solid (legacy) - only when showing objectives */}
             {showObjectiveLines && ddFloorY !== null && !maxDdEnabled && (
               <div
                 style={{ position: 'absolute', left: 0, right: 0, top: `${ddFloorY}%`, height: '12px', transform: 'translateY(-50%)', cursor: 'pointer', zIndex: 2 }}
                 onMouseEnter={() => setHoverLine({ type: 'maxDd', value: ddFloor, y: ddFloorY, label: 'Max Drawdown' })}
                 onMouseLeave={() => setHoverLine(null)}
               >
-                <div style={{ position: 'absolute', left: 0, right: 0, top: '50%', borderTop: '1px dashed #ef4444' }} />
+                <div style={{ position: 'absolute', left: 0, right: 0, top: '50%', borderTop: '2px solid #ef4444' }} />
               </div>
             )}
-            {/* Static Max DD floor line - red dashed horizontal - only when showing objectives */}
+            {/* Static Max DD floor line - red solid horizontal - only when showing objectives */}
             {showObjectiveLines && maxDdStaticFloorY !== null && (
               <div
                 style={{ position: 'absolute', left: 0, right: 0, top: `${maxDdStaticFloorY}%`, height: '12px', transform: 'translateY(-50%)', cursor: 'pointer', zIndex: 2 }}
                 onMouseEnter={() => setHoverLine({ type: 'maxDd', value: maxDdStaticFloor, y: maxDdStaticFloorY, label: 'Max Drawdown' })}
                 onMouseLeave={() => setHoverLine(null)}
               >
-                <div style={{ position: 'absolute', left: 0, right: 0, top: '50%', borderTop: '1px dashed #ef4444' }} />
+                <div style={{ position: 'absolute', left: 0, right: 0, top: '50%', borderTop: '2px solid #ef4444' }} />
               </div>
             )}
-            {/* Profit target line - green dashed - only when showing objectives */}
+            {/* Profit target line - green solid - only when showing objectives */}
             {showObjectiveLines && profitTargetY !== null && (
               <div
                 style={{ position: 'absolute', left: 0, right: 0, top: `${profitTargetY}%`, height: '12px', transform: 'translateY(-50%)', cursor: 'pointer', zIndex: 2 }}
                 onMouseEnter={() => setHoverLine({ type: 'target', value: profitTarget, y: profitTargetY, label: 'Target' })}
                 onMouseLeave={() => setHoverLine(null)}
               >
-                <div style={{ position: 'absolute', left: 0, right: 0, top: '50%', borderTop: '1px dashed #22c55e' }} />
+                <div style={{ position: 'absolute', left: 0, right: 0, top: '50%', borderTop: '2px solid #22c55e' }} />
               </div>
             )}
             {/* Objective line hover tooltip */}
@@ -1887,7 +1936,7 @@ export default function DashboardPage() {
                         <td style={{ padding: '14px 16px' }}>
                           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                             <span style={{ fontSize: '15px', fontWeight: 600, color: '#fff' }}>{account.name}</span>
-                            <button onClick={(e) => { e.stopPropagation(); setEditName(account.name); setEditProfitTarget(account.profit_target || ''); setEditMaxDrawdown(account.max_drawdown || ''); setEditConsistencyEnabled(account.consistency_enabled || false); setEditConsistencyPct(account.consistency_pct || '30'); setEditDailyDdEnabled(account.daily_dd_enabled || false); setEditDailyDdPct(account.daily_dd_pct || ''); setEditDailyDdType(account.daily_dd_type || 'static'); setEditDailyDdLocksAt(account.daily_dd_locks_at || 'start_balance'); setEditDailyDdResetTime(account.daily_dd_reset_time || '00:00'); setEditDailyDdResetTimezone(account.daily_dd_reset_timezone || 'Europe/London'); setEditMaxDdEnabled(account.max_dd_enabled || false); setEditMaxDdPct(account.max_dd_pct || ''); setEditMaxDdType(account.max_dd_type || 'static'); setEditMaxDdTrailingStopsAt(account.max_dd_trailing_stops_at || 'never'); setShowEditModal(account.id) }} style={{ background: 'transparent', border: 'none', cursor: 'pointer', padding: '2px' }}>
+                            <button onClick={(e) => { e.stopPropagation(); setEditName(account.name); setEditProfitTarget(account.profit_target || ''); setEditMaxDrawdown(account.max_drawdown || ''); setEditConsistencyEnabled(account.consistency_enabled || false); setEditConsistencyPct(account.consistency_pct || '30'); setEditDailyDdEnabled(account.daily_dd_enabled || false); setEditDailyDdPct(account.daily_dd_pct || ''); setEditDailyDdType(account.daily_dd_type || 'static'); setEditDailyDdLocksAt(account.daily_dd_locks_at || 'start_balance'); setEditDailyDdLocksAtPct(account.daily_dd_locks_at_pct || ''); setEditDailyDdResetTime(account.daily_dd_reset_time || '00:00'); setEditDailyDdResetTimezone(account.daily_dd_reset_timezone || 'Europe/London'); setEditMaxDdEnabled(account.max_dd_enabled || false); setEditMaxDdPct(account.max_dd_pct || ''); setEditMaxDdType(account.max_dd_type || 'static'); setEditMaxDdTrailingStopsAt(account.max_dd_trailing_stops_at || 'never'); setEditMaxDdLocksAtPct(account.max_dd_locks_at_pct || ''); setShowEditModal(account.id) }} style={{ background: 'transparent', border: 'none', cursor: 'pointer', padding: '2px' }}>
                               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#666" strokeWidth="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" /><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" /></svg>
                             </button>
                           </div>
@@ -1934,7 +1983,7 @@ export default function DashboardPage() {
                   <div style={{ padding: isMobile ? '14px 16px' : '20px 24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: isMobile ? '10px' : '14px' }}>
                       <span style={{ fontSize: isMobile ? '20px' : '28px', fontWeight: 700, color: '#fff' }}>{account.name}</span>
-                      <button onClick={(e) => { e.stopPropagation(); setEditName(account.name); setEditProfitTarget(account.profit_target || ''); setEditMaxDrawdown(account.max_drawdown || ''); setEditConsistencyEnabled(account.consistency_enabled || false); setEditConsistencyPct(account.consistency_pct || '30'); setEditDailyDdEnabled(account.daily_dd_enabled || false); setEditDailyDdPct(account.daily_dd_pct || ''); setEditDailyDdType(account.daily_dd_type || 'static'); setEditDailyDdLocksAt(account.daily_dd_locks_at || 'start_balance'); setEditDailyDdResetTime(account.daily_dd_reset_time || '00:00'); setEditDailyDdResetTimezone(account.daily_dd_reset_timezone || 'Europe/London'); setEditMaxDdEnabled(account.max_dd_enabled || false); setEditMaxDdPct(account.max_dd_pct || ''); setEditMaxDdType(account.max_dd_type || 'static'); setEditMaxDdTrailingStopsAt(account.max_dd_trailing_stops_at || 'never'); setShowEditModal(account.id) }} style={{ background: 'transparent', border: 'none', cursor: 'pointer', padding: '4px' }}>
+                      <button onClick={(e) => { e.stopPropagation(); setEditName(account.name); setEditProfitTarget(account.profit_target || ''); setEditMaxDrawdown(account.max_drawdown || ''); setEditConsistencyEnabled(account.consistency_enabled || false); setEditConsistencyPct(account.consistency_pct || '30'); setEditDailyDdEnabled(account.daily_dd_enabled || false); setEditDailyDdPct(account.daily_dd_pct || ''); setEditDailyDdType(account.daily_dd_type || 'static'); setEditDailyDdLocksAt(account.daily_dd_locks_at || 'start_balance'); setEditDailyDdLocksAtPct(account.daily_dd_locks_at_pct || ''); setEditDailyDdResetTime(account.daily_dd_reset_time || '00:00'); setEditDailyDdResetTimezone(account.daily_dd_reset_timezone || 'Europe/London'); setEditMaxDdEnabled(account.max_dd_enabled || false); setEditMaxDdPct(account.max_dd_pct || ''); setEditMaxDdType(account.max_dd_type || 'static'); setEditMaxDdTrailingStopsAt(account.max_dd_trailing_stops_at || 'never'); setEditMaxDdLocksAtPct(account.max_dd_locks_at_pct || ''); setShowEditModal(account.id) }} style={{ background: 'transparent', border: 'none', cursor: 'pointer', padding: '4px' }}>
                         <svg width={isMobile ? '14' : '18'} height={isMobile ? '14' : '18'} viewBox="0 0 24 24" fill="none" stroke="#666" strokeWidth="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" /><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" /></svg>
                       </button>
                       {/* Show Objective Lines button - purple */}
@@ -2245,11 +2294,19 @@ export default function DashboardPage() {
                     {editDailyDdType === 'trailing' && (
                       <div style={{ marginBottom: '14px' }}>
                         <label style={{ display: 'block', fontSize: '10px', color: '#666', marginBottom: '6px', textTransform: 'uppercase' }}>Locks At</label>
-                        <select value={editDailyDdLocksAt} onChange={e => setEditDailyDdLocksAt(e.target.value)} style={{ width: '100%', padding: '12px 14px', background: '#0d0d12', border: '1px solid #2a2a35', borderRadius: '6px', color: '#fff', fontSize: '14px', boxSizing: 'border-box', cursor: 'pointer' }}>
-                          <option value="start_balance">Start Balance (locks when floor = initial balance)</option>
-                          <option value="buffer_5">+5% Above Start (locks at initial + 5%)</option>
-                          <option value="buffer_10">+10% Above Start (locks at initial + 10%)</option>
-                        </select>
+                        <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                          <select value={editDailyDdLocksAt} onChange={e => setEditDailyDdLocksAt(e.target.value)} style={{ flex: 1, padding: '12px 14px', background: '#0d0d12', border: '1px solid #2a2a35', borderRadius: '6px', color: '#fff', fontSize: '14px', boxSizing: 'border-box', cursor: 'pointer' }}>
+                            <option value="start_balance">Start Balance</option>
+                            <option value="custom">Custom % Above Start</option>
+                          </select>
+                          {editDailyDdLocksAt === 'custom' && (
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                              <span style={{ color: '#666', fontSize: '14px' }}>+</span>
+                              <input type="number" step="0.1" min="0.1" max="100" value={editDailyDdLocksAtPct} onChange={e => setEditDailyDdLocksAtPct(e.target.value)} placeholder="5" style={{ width: '70px', padding: '12px 10px', background: '#0d0d12', border: '1px solid #2a2a35', borderRadius: '6px', color: '#fff', fontSize: '14px', textAlign: 'center', boxSizing: 'border-box' }} />
+                              <span style={{ color: '#666', fontSize: '14px' }}>%</span>
+                            </div>
+                          )}
+                        </div>
                         <div style={{ fontSize: '10px', color: '#555', marginTop: '4px' }}>Once locked, daily DD floor becomes static at that level</div>
                       </div>
                     )}
@@ -2310,12 +2367,20 @@ export default function DashboardPage() {
                     {editMaxDdType === 'trailing' && (
                       <div>
                         <label style={{ display: 'block', fontSize: '10px', color: '#666', marginBottom: '6px', textTransform: 'uppercase' }}>Locks At</label>
-                        <select value={editMaxDdTrailingStopsAt} onChange={e => setEditMaxDdTrailingStopsAt(e.target.value)} style={{ width: '100%', padding: '12px 14px', background: '#0d0d12', border: '1px solid #2a2a35', borderRadius: '6px', color: '#fff', fontSize: '14px', boxSizing: 'border-box', cursor: 'pointer' }}>
-                          <option value="initial">Start Balance (locks when floor = initial balance)</option>
-                          <option value="buffer">+5% Above Start (locks at initial + 5%)</option>
-                          <option value="buffer_10">+10% Above Start (locks at initial + 10%)</option>
-                          <option value="never">Never (always trails with balance)</option>
-                        </select>
+                        <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                          <select value={editMaxDdTrailingStopsAt} onChange={e => setEditMaxDdTrailingStopsAt(e.target.value)} style={{ flex: 1, padding: '12px 14px', background: '#0d0d12', border: '1px solid #2a2a35', borderRadius: '6px', color: '#fff', fontSize: '14px', boxSizing: 'border-box', cursor: 'pointer' }}>
+                            <option value="initial">Start Balance</option>
+                            <option value="custom">Custom % Above Start</option>
+                            <option value="never">Never (always trails)</option>
+                          </select>
+                          {editMaxDdTrailingStopsAt === 'custom' && (
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                              <span style={{ color: '#666', fontSize: '14px' }}>+</span>
+                              <input type="number" step="0.1" min="0.1" max="100" value={editMaxDdLocksAtPct} onChange={e => setEditMaxDdLocksAtPct(e.target.value)} placeholder="5" style={{ width: '70px', padding: '12px 10px', background: '#0d0d12', border: '1px solid #2a2a35', borderRadius: '6px', color: '#fff', fontSize: '14px', textAlign: 'center', boxSizing: 'border-box' }} />
+                              <span style={{ color: '#666', fontSize: '14px' }}>%</span>
+                            </div>
+                          )}
+                        </div>
                         <div style={{ fontSize: '10px', color: '#555', marginTop: '4px' }}>Once locked, max DD floor becomes permanently fixed</div>
                       </div>
                     )}

@@ -2081,16 +2081,57 @@ export default function AccountPage() {
                             // Calculate tight Y-axis range - no huge gaps
                             const actualMin = equityCurveGroupBy === 'total' ? Math.min(minBal, displayStartingBalance) : minBal
                             const actualMax = equityCurveGroupBy === 'total' ? Math.max(maxBal, displayStartingBalance) : maxBal
-                            const actualRange = actualMax - actualMin || 1000
+                            const dataRange = actualMax - actualMin || 1000
+                            const pureNegative = equityCurveGroupBy === 'total' && maxBal <= displayStartingBalance // All losses
+                            const purePositive = equityCurveGroupBy === 'total' && minBal >= displayStartingBalance // All wins
+
+                            // For pure negative/positive graphs, need extra padding (25% of visible range)
+                            let desiredRange = dataRange
+                            if (pureNegative || purePositive) {
+                              desiredRange = dataRange / 0.75 // Makes dataRange = 75% of total, 25% padding
+                            }
+
                             const targetLabels = enlargedChart === 'equity' ? 10 : 6
-                            const yStep = Math.ceil(actualRange / targetLabels / 1000) * 1000 || 1000
-                            // Always add proportional top padding (ensures chart doesn't start at very top)
+                            const yStep = Math.ceil(desiredRange / targetLabels / 1000) * 1000 || 1000
+
+                            // Calculate yMax - ensure enough space above
                             let yMax = Math.ceil(actualMax / yStep) * yStep
                             if (yMax <= actualMax + yStep * 0.3) yMax += yStep
-                            // yMin is just one step below actual minimum - no huge gaps
-                            const yMin = Math.max(0, Math.floor(actualMin / yStep) * yStep)
+                            // For pure negative graphs, ensure start line is ~25% from top
+                            if (pureNegative) {
+                              const targetYMax = displayStartingBalance + (displayStartingBalance - actualMin) * 0.33
+                              yMax = Math.max(yMax, Math.ceil(targetYMax / yStep) * yStep)
+                            }
+                            // Ensure profit target has breathing room at top
+                            if (showObjectiveLines && profitTargetVal) {
+                              yMax = Math.max(yMax, Math.ceil((profitTargetVal + yStep * 0.5) / yStep) * yStep)
+                            }
+
+                            // Calculate yMin - ensure enough space below
+                            let yMin = Math.floor(actualMin / yStep) * yStep
+                            // For pure positive graphs, ensure start line is ~25% from bottom
+                            if (purePositive && !showObjectiveLines) {
+                              const targetYMin = displayStartingBalance - (actualMax - displayStartingBalance) * 0.33
+                              yMin = Math.min(yMin, Math.floor(targetYMin / yStep) * yStep)
+                            }
+                            // Ensure gap below the lowest DD floor
+                            if (showObjectiveLines) {
+                              const lowestFloor = Math.min(ddFloorVal || Infinity, dailyDdFloorVal || Infinity, maxDdFloorVal || Infinity)
+                              if (lowestFloor !== Infinity && lowestFloor - yMin < yStep * 0.5) yMin -= yStep
+                            }
+                            if (yMin < 0 && actualMin >= 0) yMin = 0
+
+                            // Ensure at least 5 y-axis labels
+                            let currentLabels = Math.round((yMax - yMin) / yStep)
+                            if (currentLabels < 5) {
+                              const extraSteps = 5 - currentLabels
+                              yMax += Math.ceil(extraSteps / 2) * yStep
+                              yMin -= Math.floor(extraSteps / 2) * yStep
+                              if (yMin < 0 && actualMin >= 0) yMin = 0
+                            }
+
                             const yRange = yMax - yMin || yStep
-                            
+
                             const yLabels = []
                             for (let v = yMax; v >= yMin; v -= yStep) yLabels.push(v)
                             
@@ -2116,6 +2157,7 @@ export default function AccountPage() {
                             const dailyDdPct = !isNaN(dailyDdPctRaw) ? Math.min(99, Math.max(0, dailyDdPctRaw)) : 0
                             const dailyDdType = account?.daily_dd_type || 'static'
                             const dailyDdLocksAt = account?.daily_dd_locks_at || 'start_balance'
+                            const dailyDdLocksAtPctValue = parseFloat(account?.daily_dd_locks_at_pct) || 0
                             let dailyDdFloorPoints = []
                             if (equityCurveGroupBy === 'total' && dailyDdEnabled && dailyDdPct > 0) {
                               let currentDayStart = displayStartingBalance
@@ -2125,8 +2167,7 @@ export default function AccountPage() {
                               // Calculate lock threshold based on dailyDdLocksAt setting
                               const getLockThreshold = () => {
                                 if (dailyDdLocksAt === 'start_balance') return displayStartingBalance
-                                if (dailyDdLocksAt === 'buffer_5') return displayStartingBalance * 1.05
-                                if (dailyDdLocksAt === 'buffer_10') return displayStartingBalance * 1.10
+                                if (dailyDdLocksAt === 'custom' && dailyDdLocksAtPctValue > 0) return displayStartingBalance * (1 + dailyDdLocksAtPctValue / 100)
                                 return displayStartingBalance
                               }
                               const lockThreshold = getLockThreshold()
@@ -2168,6 +2209,7 @@ export default function AccountPage() {
                             const maxDdPct = !isNaN(maxDdPctRaw) ? Math.min(99, Math.max(0, maxDdPctRaw)) : 0
                             const maxDdType = account?.max_dd_type || 'static'
                             const maxDdStopsAt = account?.max_dd_trailing_stops_at || 'never'
+                            const maxDdLocksAtPctValue = parseFloat(account?.max_dd_locks_at_pct) || 0
                             let maxDdFloorPoints = []
                             let maxDdStaticFloor = null
                             if (equityCurveGroupBy === 'total' && maxDdEnabled && maxDdPct > 0) {
@@ -2181,8 +2223,7 @@ export default function AccountPage() {
                                 // Calculate lock threshold based on maxDdStopsAt setting
                                 const getLockThreshold = () => {
                                   if (maxDdStopsAt === 'initial') return displayStartingBalance
-                                  if (maxDdStopsAt === 'buffer') return displayStartingBalance * 1.05
-                                  if (maxDdStopsAt === 'buffer_10') return displayStartingBalance * 1.10
+                                  if (maxDdStopsAt === 'custom' && maxDdLocksAtPctValue > 0) return displayStartingBalance * (1 + maxDdLocksAtPctValue / 100)
                                   return null // 'never' - no threshold
                                 }
                                 const lockThreshold = getLockThreshold()
@@ -2412,18 +2453,18 @@ export default function AccountPage() {
                                         borderRadius: '4px'
                                       }}>
                                         <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                                          <div style={{ width: '16px', height: '0', borderTop: '1px dashed #666' }} />
+                                          <div style={{ width: '16px', height: '0', borderTop: '2px dashed #666' }} />
                                           <span style={{ fontSize: '9px', color: '#666', fontWeight: 500 }}>Start</span>
                                         </div>
                                         {profitTargetY !== null && (
                                           <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                                            <div style={{ width: '16px', height: '0', borderTop: '1px dashed #22c55e' }} />
+                                            <div style={{ width: '16px', height: '0', borderTop: '2px solid #22c55e' }} />
                                             <span style={{ fontSize: '9px', color: '#22c55e', fontWeight: 500 }}>Profit Target {account?.profit_target}%</span>
                                           </div>
                                         )}
                                         {(maxDdStaticFloorY !== null || trailingMaxDdPath) && (
                                           <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                                            <div style={{ width: '16px', height: '0', borderTop: '1px dashed #ef4444' }} />
+                                            <div style={{ width: '16px', height: '0', borderTop: '2px solid #ef4444' }} />
                                             <span style={{ fontSize: '9px', color: '#ef4444', fontWeight: 500 }}>
                                               Max Drawdown {account?.max_dd_enabled ? `(${account?.max_dd_type === 'trailing' ? 'trailing' : 'static'}) ${account?.max_dd_pct}%` : `${account?.max_drawdown}%`}
                                             </span>
@@ -2431,23 +2472,23 @@ export default function AccountPage() {
                                         )}
                                         {dailyDdPath && (
                                           <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                                            <div style={{ width: '16px', height: '0', borderTop: '1px dashed #f97316' }} />
+                                            <div style={{ width: '16px', height: '0', borderTop: '2px solid #f97316' }} />
                                             <span style={{ fontSize: '9px', color: '#f97316', fontWeight: 500 }}>Daily Drawdown ({account?.daily_dd_type === 'trailing' ? 'trailing' : 'static'}) {account?.daily_dd_pct}%</span>
                                           </div>
                                         )}
                                       </div>
                                     )}
-                                    {/* Drawdown floor line - dashed orange/red */}
+                                    {/* Drawdown floor line - solid orange/red */}
                                     {showObjectiveLines && ddFloorY !== null && (
-                                      <div style={{ position: 'absolute', left: 0, right: 0, top: `${ddFloorY}%`, borderTop: `1px dashed ${propFirmDrawdown?.breached ? '#ef4444' : '#f59e0b'}`, zIndex: 1 }} />
+                                      <div style={{ position: 'absolute', left: 0, right: 0, top: `${ddFloorY}%`, borderTop: `2px solid ${propFirmDrawdown?.breached ? '#ef4444' : '#f59e0b'}`, zIndex: 1 }} />
                                     )}
-                                    {/* Profit target line - dashed blue/green */}
+                                    {/* Profit target line - solid blue/green */}
                                     {showObjectiveLines && profitTargetY !== null && (
-                                      <div style={{ position: 'absolute', left: 0, right: 0, top: `${profitTargetY}%`, borderTop: `1px dashed ${distanceFromTarget?.passed ? '#22c55e' : '#3b82f6'}`, zIndex: 1 }} />
+                                      <div style={{ position: 'absolute', left: 0, right: 0, top: `${profitTargetY}%`, borderTop: `2px solid ${distanceFromTarget?.passed ? '#22c55e' : '#3b82f6'}`, zIndex: 1 }} />
                                     )}
-                                    {/* Static Max DD floor line - red dashed horizontal */}
+                                    {/* Static Max DD floor line - red solid horizontal */}
                                     {showObjectiveLines && maxDdStaticFloorY !== null && (
-                                      <div style={{ position: 'absolute', left: 0, right: 0, top: `${maxDdStaticFloorY}%`, borderTop: '1px dashed #ef4444', zIndex: 1 }} />
+                                      <div style={{ position: 'absolute', left: 0, right: 0, top: `${maxDdStaticFloorY}%`, borderTop: '2px solid #ef4444', zIndex: 1 }} />
                                     )}
                                     <svg style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', overflow: 'visible', zIndex: 2 }} viewBox={`0 0 ${svgW} ${svgH}`} preserveAspectRatio="none"
                                       onMouseMove={e => {
@@ -2491,9 +2532,9 @@ export default function AccountPage() {
                                           {lineData[0].greenPath && <path d={lineData[0].greenPath} fill="none" stroke="#22c55e" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />}
                                           {lineData[0].redPath && <path d={lineData[0].redPath} fill="none" stroke="#ef4444" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />}
                                           {/* Daily DD floor line - orange, follows balance curve */}
-                                          {showObjectiveLines && dailyDdPath && <path d={dailyDdPath} fill="none" stroke="#f97316" strokeWidth="1" strokeDasharray="4,3" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />}
+                                          {showObjectiveLines && dailyDdPath && <path d={dailyDdPath} fill="none" stroke="#f97316" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />}
                                           {/* Trailing Max DD floor line - red, follows peak curve */}
-                                          {showObjectiveLines && trailingMaxDdPath && <path d={trailingMaxDdPath} fill="none" stroke="#ef4444" strokeWidth="1" strokeDasharray="4,3" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />}
+                                          {showObjectiveLines && trailingMaxDdPath && <path d={trailingMaxDdPath} fill="none" stroke="#ef4444" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />}
                                         </>
                                       ) : (() => {
                                         // Sort lines by final Y position (end of line) - top lines first
@@ -4565,12 +4606,54 @@ export default function AccountPage() {
                 const range = maxBal - minBal || 1000
                 const actualMinEnl = equityCurveGroupBy === 'total' ? Math.min(minBal, startingBalance) : minBal
                 const actualMaxEnl = equityCurveGroupBy === 'total' ? Math.max(maxBal, startingBalance) : maxBal
-                const actualRangeEnl = actualMaxEnl - actualMinEnl || 1000
-                const yStep = Math.ceil(actualRangeEnl / 10 / 100) * 100 || 100
-                // Always add proportional top padding
+                const dataRangeEnl = actualMaxEnl - actualMinEnl || 1000
+                const pureNegativeEnl = equityCurveGroupBy === 'total' && maxBal <= startingBalance
+                const purePositiveEnl = equityCurveGroupBy === 'total' && minBal >= startingBalance
+
+                // For pure negative/positive graphs, need extra padding (25% of visible range)
+                let desiredRangeEnl = dataRangeEnl
+                if (pureNegativeEnl || purePositiveEnl) {
+                  desiredRangeEnl = dataRangeEnl / 0.75
+                }
+
+                const yStep = Math.ceil(desiredRangeEnl / 10 / 100) * 100 || 100
+
+                // Calculate yMax - ensure enough space above
                 let yMax = Math.ceil(actualMaxEnl / yStep) * yStep
                 if (yMax <= actualMaxEnl + yStep * 0.3) yMax += yStep
-                const yMin = Math.floor(actualMinEnl / yStep) * yStep
+                // For pure negative graphs, ensure start line is ~25% from top
+                if (pureNegativeEnl) {
+                  const targetYMaxEnl = startingBalance + (startingBalance - actualMinEnl) * 0.33
+                  yMax = Math.max(yMax, Math.ceil(targetYMaxEnl / yStep) * yStep)
+                }
+                // Ensure profit target has breathing room
+                if (showObjectiveLines && profitTargetValEnl) {
+                  yMax = Math.max(yMax, Math.ceil((profitTargetValEnl + yStep * 0.5) / yStep) * yStep)
+                }
+
+                // Calculate yMin
+                let yMin = Math.floor(actualMinEnl / yStep) * yStep
+                // For pure positive, add padding below
+                if (purePositiveEnl && !showObjectiveLines) {
+                  const targetYMinEnl = startingBalance - (actualMaxEnl - startingBalance) * 0.33
+                  yMin = Math.min(yMin, Math.floor(targetYMinEnl / yStep) * yStep)
+                }
+                // Ensure gap below DD floors
+                if (showObjectiveLines) {
+                  const lowestFloorEnl = Math.min(ddFloorValEnl || Infinity, dailyDdFloorValEnl || Infinity, maxDdFloorValEnl || Infinity)
+                  if (lowestFloorEnl !== Infinity && lowestFloorEnl - yMin < yStep * 0.5) yMin -= yStep
+                }
+                if (yMin < 0 && actualMinEnl >= 0) yMin = 0
+
+                // Ensure at least 8 labels for enlarged chart
+                let currentLabelsEnl = Math.round((yMax - yMin) / yStep)
+                if (currentLabelsEnl < 8) {
+                  const extraSteps = 8 - currentLabelsEnl
+                  yMax += Math.ceil(extraSteps / 2) * yStep
+                  yMin -= Math.floor(extraSteps / 2) * yStep
+                  if (yMin < 0 && actualMinEnl >= 0) yMin = 0
+                }
+
                 const yRange = yMax - yMin || yStep
                 const hasNegative = minBal < 0
                 const belowStartEnl = equityCurveGroupBy === 'total' && minBal < startingBalance
@@ -4698,17 +4781,17 @@ export default function AccountPage() {
                               <span style={{ position: 'absolute', right: '4px', top: `${(startYEnl / svgH) * 100}%`, transform: 'translateY(-50%)', fontSize: '10px', color: '#666', fontWeight: 500 }}>Start</span>
                             </>
                           )}
-                          {/* DD Floor line - dashed orange/red horizontal line */}
+                          {/* DD Floor line - solid orange/red horizontal line */}
                           {ddFloorYEnl !== null && (
                             <>
-                              <div style={{ position: 'absolute', left: 0, right: '55px', top: `${ddFloorYEnl}%`, borderTop: `1px dashed ${propFirmDrawdown?.breached ? '#ef4444' : '#f59e0b'}`, zIndex: 1 }} />
+                              <div style={{ position: 'absolute', left: 0, right: '55px', top: `${ddFloorYEnl}%`, borderTop: `2px solid ${propFirmDrawdown?.breached ? '#ef4444' : '#f59e0b'}`, zIndex: 1 }} />
                               <span style={{ position: 'absolute', right: '4px', top: `${ddFloorYEnl}%`, transform: 'translateY(-50%)', fontSize: '10px', color: propFirmDrawdown?.breached ? '#ef4444' : '#f59e0b', fontWeight: 500 }}>{propFirmDrawdown?.breached ? 'BREACHED' : 'DD Floor'}</span>
                             </>
                           )}
-                          {/* Profit target line - dashed blue/green horizontal line */}
+                          {/* Profit target line - solid blue/green horizontal line */}
                           {profitTargetYEnl !== null && (
                             <>
-                              <div style={{ position: 'absolute', left: 0, right: '45px', top: `${profitTargetYEnl}%`, borderTop: `1px dashed ${distanceFromTarget?.passed ? '#22c55e' : '#3b82f6'}`, zIndex: 1 }} />
+                              <div style={{ position: 'absolute', left: 0, right: '45px', top: `${profitTargetYEnl}%`, borderTop: `2px solid ${distanceFromTarget?.passed ? '#22c55e' : '#3b82f6'}`, zIndex: 1 }} />
                               <span style={{ position: 'absolute', right: '4px', top: `${profitTargetYEnl}%`, transform: 'translateY(-50%)', fontSize: '10px', color: distanceFromTarget?.passed ? '#22c55e' : '#3b82f6', fontWeight: 500 }}>{distanceFromTarget?.passed ? 'PASSED' : 'Target'}</span>
                             </>
                           )}
