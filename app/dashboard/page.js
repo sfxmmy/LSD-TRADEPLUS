@@ -1066,14 +1066,13 @@ export default function DashboardPage() {
     const actualMax = Math.max(maxBal, start)
     const dataRange = actualMax - actualMin || 1000
 
-    // When NOT showing objectives: add 1/8 (12.5%) padding above and below
-    // When showing objectives: expand to fit all lines with padding
-    const paddingRatio = 0.125 // 1/8 of chart height as padding on each side
-    const paddingAmount = dataRange * paddingRatio
+    // To get 1/8 of TOTAL graph height as padding on each side:
+    // If data takes 6/8 of total, padding = dataRange / 6 on each side
+    const paddingAmount = dataRange / 6
 
     let yMax, yMin
     if (!showObjectiveLines) {
-      // Tight fit: data + 1/8 padding on each side
+      // Tight fit: data + 1/8 padding on each side (total = dataRange * 4/3)
       yMax = actualMax + paddingAmount
       yMin = actualMin - paddingAmount
       // Don't go negative if not needed
@@ -1088,9 +1087,19 @@ export default function DashboardPage() {
       if (lowestDdFloor !== null) yMin = Math.min(yMin, lowestDdFloor - paddingAmount)
     }
 
-    // Round to nice numbers for y-axis labels
+    // Round to nice numbers - use appropriate step size based on range
     const yRangeRaw = yMax - yMin || 1000
-    const yStep = Math.ceil(yRangeRaw / 5 / 1000) * 1000 || 1000
+    const getNiceStep = (range) => {
+      if (range <= 500) return 50
+      if (range <= 1000) return 100
+      if (range <= 2500) return 250
+      if (range <= 5000) return 500
+      if (range <= 10000) return 1000
+      if (range <= 25000) return 2500
+      if (range <= 50000) return 5000
+      return Math.ceil(range / 10 / 1000) * 1000
+    }
+    const yStep = getNiceStep(yRangeRaw)
     yMax = Math.ceil(yMax / yStep) * yStep
     yMin = Math.floor(yMin / yStep) * yStep
     // Don't go negative if data is all positive
