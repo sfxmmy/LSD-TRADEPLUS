@@ -1184,39 +1184,49 @@ export default function DashboardPage() {
     const redAreaPath = belowStart ? redSegments.map(s => `M ${s.x1} ${s.y1} L ${s.x2} ${s.y2} L ${s.x2} ${startY} L ${s.x1} ${startY} Z`).join(' ') : ''
 
     // Build SVG path for daily DD floor line (orange, stepped stair-step pattern)
-    // Clip at profit target - daily DD floor shouldn't go above profit target
+    // Skip drawing when floor >= profit target to avoid overlap
     // Uses stepped pattern: horizontal line then vertical jump for each day change (_|_|_)
     let dailyDdPath = ''
     let dailyDdLastY = null
     if (dailyDdFloorPoints.length > 0) {
       const ddChartPoints = dailyDdFloorPoints.map((p, i) => {
         const x = points.length > 1 ? (p.idx / (points.length - 1)) * svgW : svgW / 2
-        // Cap floor at profit target if it exceeds it
-        const cappedFloor = profitTarget && p.floor > profitTarget ? profitTarget : p.floor
-        const y = svgH - ((cappedFloor - yMin) / yRange) * svgH
-        return { x, y, floor: cappedFloor, isNewDay: p.isNewDay }
+        const y = svgH - ((p.floor - yMin) / yRange) * svgH
+        // Track if floor is at or above profit target (should skip drawing)
+        const aboveProfitTarget = profitTarget && p.floor >= profitTarget
+        return { x, y, floor: p.floor, isNewDay: p.isNewDay, aboveProfitTarget }
       })
-      // Build stepped path: horizontal line at current floor, then vertical jump to new floor on day change
+      // Build stepped path: skip segments where floor >= profit target to avoid overlap
       let pathParts = []
+      let inPath = false
       for (let i = 0; i < ddChartPoints.length; i++) {
         const p = ddChartPoints[i]
-        if (i === 0) {
+        const prevP = i > 0 ? ddChartPoints[i - 1] : null
+
+        if (p.aboveProfitTarget) {
+          // Don't draw when at or above profit target
+          inPath = false
+          continue
+        }
+
+        if (!inPath) {
+          // Start a new path segment
           pathParts.push(`M ${p.x} ${p.y}`)
+          inPath = true
         } else {
-          const prevP = ddChartPoints[i - 1]
-          // Always draw horizontal first (stay at prev Y), then vertical to new Y
-          // This creates the stepped _|_ pattern
-          pathParts.push(`H ${p.x}`) // Horizontal to new X position (at old Y level)
-          if (p.y !== prevP.y) {
-            pathParts.push(`V ${p.y}`) // Vertical jump to new Y level
+          // Continue path: horizontal first, then vertical
+          pathParts.push(`H ${p.x}`)
+          if (prevP && p.y !== prevP.y && !prevP.aboveProfitTarget) {
+            pathParts.push(`V ${p.y}`)
           }
         }
       }
       dailyDdPath = pathParts.join(' ')
-      // Get last point Y position for label (as percentage)
-      const lastFloor = dailyDdFloorPoints[dailyDdFloorPoints.length - 1].floor
-      const cappedLastFloor = profitTarget && lastFloor > profitTarget ? profitTarget : lastFloor
-      dailyDdLastY = ((yMax - cappedLastFloor) / yRange) * 100
+      // Get last point Y position for label (as percentage) - find last visible point
+      const lastVisiblePoint = ddChartPoints.filter(p => !p.aboveProfitTarget).pop()
+      if (lastVisiblePoint) {
+        dailyDdLastY = ((yMax - lastVisiblePoint.floor) / yRange) * 100
+      }
     }
 
     // Build SVG path for trailing max DD floor line (red, follows curve)

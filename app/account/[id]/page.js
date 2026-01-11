@@ -2376,24 +2376,33 @@ export default function AccountPage() {
                               const ddChartPoints = dailyDdFloorPoints.map((p, i) => {
                                 const totalLen = dailyDdFloorPoints.length
                                 const x = totalLen > 1 ? (p.idx / (totalLen - 1)) * svgW : svgW / 2
-                                // Cap floor at profit target if it exceeds it
-                                const cappedFloor = profitTarget && p.floor > profitTarget ? profitTarget : p.floor
-                                const y = svgH - ((cappedFloor - yMin) / yRange) * svgH
-                                return { x, y, isNewDay: p.isNewDay }
+                                const y = svgH - ((p.floor - yMin) / yRange) * svgH
+                                // Track if floor is at or above profit target (should skip drawing)
+                                const aboveProfitTarget = profitTarget && p.floor >= profitTarget
+                                return { x, y, isNewDay: p.isNewDay, floor: p.floor, aboveProfitTarget }
                               })
-                              // Build stepped path: horizontal line at current floor, then vertical jump to new floor on day change
+                              // Build stepped path: skip segments where floor >= profit target to avoid overlap
                               let pathParts = []
+                              let inPath = false // Are we currently drawing?
                               for (let i = 0; i < ddChartPoints.length; i++) {
                                 const p = ddChartPoints[i]
-                                if (i === 0) {
+                                const prevP = i > 0 ? ddChartPoints[i - 1] : null
+
+                                if (p.aboveProfitTarget) {
+                                  // Don't draw when at or above profit target
+                                  inPath = false
+                                  continue
+                                }
+
+                                if (!inPath) {
+                                  // Start a new path segment
                                   pathParts.push(`M ${p.x} ${p.y}`)
+                                  inPath = true
                                 } else {
-                                  const prevP = ddChartPoints[i - 1]
-                                  // Always draw horizontal first (stay at prev Y), then vertical to new Y
-                                  // This creates the stepped _|_ pattern
-                                  pathParts.push(`H ${p.x}`) // Horizontal to new X position (at old Y level)
-                                  if (p.y !== prevP.y) {
-                                    pathParts.push(`V ${p.y}`) // Vertical jump to new Y level
+                                  // Continue path: horizontal first, then vertical
+                                  pathParts.push(`H ${p.x}`)
+                                  if (prevP && p.y !== prevP.y && !prevP.aboveProfitTarget) {
+                                    pathParts.push(`V ${p.y}`)
                                   }
                                 }
                               }
