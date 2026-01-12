@@ -1173,13 +1173,18 @@ export default function DashboardPage() {
         numLabels = Math.min(12, Math.ceil(totalDays / 1825) + 1)
       }
 
-      // Generate labels evenly spaced with 5% padding on each side (5% to 95%)
-      const actualLabels = Math.min(numLabels, 12)
+      // Generate labels from actual trade dates (evenly spaced selection)
+      const actualLabels = Math.min(numLabels, datesWithTrades.length, 12)
       for (let i = 0; i < actualLabels; i++) {
-        const pct = actualLabels > 1 ? 5 + (i / (actualLabels - 1)) * 90 : 50
-        const dateOffset = actualLabels > 1 ? Math.round((i / (actualLabels - 1)) * totalDays) : 0
-        const labelDate = new Date(firstDate.getTime() + dateOffset * 24 * 60 * 60 * 1000)
-        xLabels.push({ label: `${String(labelDate.getDate()).padStart(2, '0')}/${String(labelDate.getMonth() + 1).padStart(2, '0')}/${String(labelDate.getFullYear()).slice(-2)}`, pct })
+        // Pick evenly spaced indices from actual trade dates
+        const idx = actualLabels > 1 ? Math.round(i * (datesWithTrades.length - 1) / (actualLabels - 1)) : 0
+        const trade = datesWithTrades[idx]
+        if (trade?.date) {
+          const d = new Date(trade.date)
+          // Position based on the trade's actual position in the points array (5% to 95% range)
+          const pct = datesWithTrades.length > 1 ? 5 + (idx / (datesWithTrades.length - 1)) * 90 : 50
+          xLabels.push({ label: `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${String(d.getFullYear()).slice(-2)}`, pct })
+        }
       }
     }
 
@@ -1320,8 +1325,9 @@ export default function DashboardPage() {
           <div style={{ flex: 1, position: 'relative', borderRight: '1px solid #2a2a35', overflow: 'visible' }}>
             {yLabels.map((v, i) => {
               const topPct = yLabels.length > 1 ? (i / (yLabels.length - 1)) * 100 : 0
+              const isLast = i === yLabels.length - 1
               return (
-                <div key={i} style={{ position: 'absolute', left: 0, top: `${topPct}%`, transform: 'translateY(-50%)', display: 'flex', alignItems: 'center' }}>
+                <div key={i} style={{ position: 'absolute', left: 0, ...(isLast ? { bottom: 0, transform: 'translateY(50%)' } : { top: `${topPct}%`, transform: 'translateY(-50%)' }), display: 'flex', alignItems: 'center' }}>
                   <span style={{ fontSize: '10px', color: '#999', lineHeight: 1 }}>{v >= 1000000 ? `$${(v/1000000).toFixed(1)}M` : v >= 1000 ? `$${(v/1000).toFixed(0)}k` : `$${v}`}</span>
                   <div style={{ width: '4px', height: '1px', background: '#333', marginLeft: '4px' }} />
                 </div>
