@@ -1278,8 +1278,9 @@ export default function DashboardPage() {
             {yLabels.map((v, i) => {
               const topPct = yLabels.length > 1 ? (i / (yLabels.length - 1)) * 100 : 0
               const isLast = i === yLabels.length - 1
+              const isFirst = i === 0
               return (
-                <div key={i} style={{ position: 'absolute', left: 0, top: `${topPct}%`, transform: isLast ? 'translateY(-100%)' : 'translateY(-50%)', display: 'flex', alignItems: 'center' }}>
+                <div key={i} style={{ position: 'absolute', left: 0, ...(isLast ? { bottom: 0 } : { top: `${topPct}%`, transform: isFirst ? 'translateY(0)' : 'translateY(-50%)' }), display: 'flex', alignItems: isLast ? 'flex-end' : 'center' }}>
                   <span style={{ fontSize: '10px', color: '#999', lineHeight: 1 }}>{v >= 1000000 ? `$${(v/1000000).toFixed(1)}M` : v >= 1000 ? `$${(v/1000).toFixed(0)}k` : `$${v}`}</span>
                   <div style={{ width: '4px', height: '1px', background: '#333', marginLeft: '4px' }} />
                 </div>
