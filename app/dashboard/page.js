@@ -1273,8 +1273,8 @@ export default function DashboardPage() {
     return (
       <div style={{ position: 'absolute', inset: 0, display: 'flex' }}>
         {/* Y-axis - matches chart area height with spacer for x-axis */}
-        <div style={{ width: '34px', flexShrink: 0, display: 'flex', flexDirection: 'column' }}>
-          <div style={{ flex: 1, position: 'relative', borderRight: '1px solid #2a2a35', borderBottom: '1px solid #2a2a35', overflow: 'visible' }}>
+        <div style={{ width: '32px', flexShrink: 0, display: 'flex', flexDirection: 'column' }}>
+          <div style={{ flex: 1, position: 'relative', borderRight: '1px solid #2a2a35', overflow: 'visible' }}>
             {yLabels.map((v, i) => {
               const topPct = yLabels.length > 1 ? (i / (yLabels.length - 1)) * 100 : 0
               return (
