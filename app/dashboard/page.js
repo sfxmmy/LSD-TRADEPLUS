@@ -1274,7 +1274,7 @@ export default function DashboardPage() {
       <div style={{ position: 'absolute', inset: 0, display: 'flex' }}>
         {/* Y-axis - matches chart area height with spacer for x-axis */}
         <div style={{ width: '46px', flexShrink: 0, display: 'flex', flexDirection: 'column' }}>
-          <div style={{ flex: 1, position: 'relative', borderRight: '1px solid #2a2a35', borderBottom: '1px solid transparent', overflow: 'visible' }}>
+          <div style={{ flex: 1, position: 'relative', borderRight: '1px solid #2a2a35', borderBottom: '1px solid #2a2a35', overflow: 'visible' }}>
             {yLabels.map((v, i) => {
               const topPct = yLabels.length > 1 ? (i / (yLabels.length - 1)) * 100 : 0
               return (
@@ -2050,7 +2050,7 @@ export default function DashboardPage() {
 
                   {/* Recent Trades */}
                   <div onClick={e => e.stopPropagation()} style={{ padding: isMobile ? '0 16px 16px' : '0 24px 16px' }}>
-                    <div style={{ fontSize: '12px', color: '#999', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '8px', marginLeft: isMobile ? '0' : '42px' }}>Recent Trades</div>
+                    <div style={{ fontSize: '12px', color: '#999', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '8px' }}>Recent Trades</div>
                     {recentTrades.length === 0 ? (
                       <div style={{ padding: '20px', textAlign: 'center', color: '#999', fontSize: '14px', border: '1px solid #1a1a22', borderRadius: '8px' }}>No trades yet</div>
                     ) : (() => {
