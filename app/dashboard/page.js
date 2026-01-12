@@ -2145,7 +2145,7 @@ export default function DashboardPage() {
                                 {recentTrades.map((trade) => {
                                   const extra = getExtraData(trade)
                                   return (
-                                    <tr key={trade.id} style={{ borderBottom: '1px solid #1a1a22' }}>
+                                    <tr key={trade.id} style={{ borderBottom: '1px solid #1a1a22', cursor: 'pointer', transition: 'all 0.15s ease' }} onMouseEnter={e => { e.currentTarget.style.background = 'rgba(34,197,94,0.08)'; e.currentTarget.style.boxShadow = 'inset 0 0 20px rgba(34,197,94,0.1)' }} onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.boxShadow = 'none' }} onClick={() => router.push(`/account/${trade.account_id}`)}>
                                       {visibleCols.map(col => (
                                         <td key={col.id} style={{ padding: '12px', textAlign: 'center' }}>{renderCell(col, trade, extra)}</td>
                                       ))}
