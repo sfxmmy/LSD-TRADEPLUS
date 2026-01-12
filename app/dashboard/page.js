@@ -1129,14 +1129,57 @@ export default function DashboardPage() {
     const datesWithTrades = points.filter(p => p.date).map((p, idx) => ({ date: p.date, pointIdx: idx + 1 }))
     const xLabels = []
     if (datesWithTrades.length > 0) {
-      const numLabels = Math.min(8, datesWithTrades.length)
-      for (let i = 0; i < numLabels; i++) {
-        const dataIdx = Math.floor(i * (datesWithTrades.length - 1) / Math.max(1, numLabels - 1))
-        const item = datesWithTrades[dataIdx]
-        const date = new Date(item.date)
-        // Evenly space labels from 5% to 95% so ticks center on text
-        const pct = numLabels > 1 ? 5 + (i / (numLabels - 1)) * 90 : 50
-        xLabels.push({ label: `${String(date.getDate()).padStart(2, '0')}/${String(date.getMonth() + 1).padStart(2, '0')}/${String(date.getFullYear()).slice(-2)}`, pct })
+      const firstDate = new Date(datesWithTrades[0].date)
+      const lastDate = new Date(datesWithTrades[datesWithTrades.length - 1].date)
+      const totalDays = Math.max(1, Math.ceil((lastDate - firstDate) / (1000 * 60 * 60 * 24)))
+
+      // Determine interval and number of labels based on date range (supports up to 100 years)
+      let intervalDays, numLabels
+      if (totalDays <= 12) {
+        intervalDays = 1
+        numLabels = totalDays + 1
+      } else if (totalDays <= 84) {
+        intervalDays = 7
+        numLabels = Math.min(12, Math.ceil(totalDays / 7) + 1)
+      } else if (totalDays <= 180) {
+        intervalDays = 14
+        numLabels = Math.min(12, Math.ceil(totalDays / 14) + 1)
+      } else if (totalDays <= 365) {
+        intervalDays = 30
+        numLabels = Math.min(12, Math.ceil(totalDays / 30) + 1)
+      } else if (totalDays <= 730) {
+        // 1-2 years: every 2 months
+        intervalDays = 60
+        numLabels = Math.min(12, Math.ceil(totalDays / 60) + 1)
+      } else if (totalDays <= 1825) {
+        // 2-5 years: quarterly
+        intervalDays = 90
+        numLabels = Math.min(12, Math.ceil(totalDays / 90) + 1)
+      } else if (totalDays <= 3650) {
+        // 5-10 years: every 6 months
+        intervalDays = 180
+        numLabels = Math.min(12, Math.ceil(totalDays / 180) + 1)
+      } else if (totalDays <= 9125) {
+        // 10-25 years: yearly
+        intervalDays = 365
+        numLabels = Math.min(12, Math.ceil(totalDays / 365) + 1)
+      } else if (totalDays <= 18250) {
+        // 25-50 years: every 2 years
+        intervalDays = 730
+        numLabels = Math.min(12, Math.ceil(totalDays / 730) + 1)
+      } else {
+        // 50-100 years: every 5 years
+        intervalDays = 1825
+        numLabels = Math.min(12, Math.ceil(totalDays / 1825) + 1)
+      }
+
+      // Generate labels evenly spaced
+      const actualLabels = Math.min(numLabels, 12)
+      for (let i = 0; i < actualLabels; i++) {
+        const pct = actualLabels > 1 ? (i / (actualLabels - 1)) * 100 : 50
+        const dateOffset = Math.round((i / (actualLabels - 1)) * totalDays)
+        const labelDate = new Date(firstDate.getTime() + dateOffset * 24 * 60 * 60 * 1000)
+        xLabels.push({ label: `${String(labelDate.getDate()).padStart(2, '0')}/${String(labelDate.getMonth() + 1).padStart(2, '0')}/${String(labelDate.getFullYear()).slice(-2)}`, pct })
       }
     }
 

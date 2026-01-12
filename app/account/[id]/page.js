@@ -2556,15 +2556,43 @@ export default function AccountPage() {
                             const areaBottom = hasNegative ? svgH - ((0 - yMin) / yRange) * svgH : svgH
                             const areaD = equityCurveGroupBy === 'total' && mainLine ? mainLine.pathD + ` L ${mainLine.chartPoints[mainLine.chartPoints.length - 1].x} ${areaBottom} L ${mainLine.chartPoints[0].x} ${areaBottom} Z` : null
                             
-                            // Generate X-axis labels (more evenly spaced dates) - double digit format
-                            const xLabelCount = 10
+                            // Generate X-axis labels based on date range
                             const xLabels = []
-                            for (let i = 0; i < xLabelCount; i++) {
-                              const idx = Math.floor(i * (sorted.length - 1) / (xLabelCount - 1))
-                              const trade = sorted[idx]
-                              if (trade?.date) {
-                                const d = new Date(trade.date)
-                                xLabels.push({ label: `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}`, pct: xLabelCount > 1 ? 5 + (i / (xLabelCount - 1)) * 90 : 50 })
+                            if (sorted.length > 0) {
+                              const firstDate = new Date(sorted[0].date)
+                              const lastDate = new Date(sorted[sorted.length - 1].date)
+                              const totalDays = Math.max(1, Math.ceil((lastDate - firstDate) / (1000 * 60 * 60 * 24)))
+
+                              // Determine number of labels based on date range (supports up to 100 years)
+                              let numLabels
+                              if (totalDays <= 12) {
+                                numLabels = totalDays + 1
+                              } else if (totalDays <= 84) {
+                                numLabels = Math.min(12, Math.ceil(totalDays / 7) + 1)
+                              } else if (totalDays <= 180) {
+                                numLabels = Math.min(12, Math.ceil(totalDays / 14) + 1)
+                              } else if (totalDays <= 365) {
+                                numLabels = Math.min(12, Math.ceil(totalDays / 30) + 1)
+                              } else if (totalDays <= 730) {
+                                numLabels = Math.min(12, Math.ceil(totalDays / 60) + 1)
+                              } else if (totalDays <= 1825) {
+                                numLabels = Math.min(12, Math.ceil(totalDays / 90) + 1)
+                              } else if (totalDays <= 3650) {
+                                numLabels = Math.min(12, Math.ceil(totalDays / 180) + 1)
+                              } else if (totalDays <= 9125) {
+                                numLabels = Math.min(12, Math.ceil(totalDays / 365) + 1)
+                              } else if (totalDays <= 18250) {
+                                numLabels = Math.min(12, Math.ceil(totalDays / 730) + 1)
+                              } else {
+                                numLabels = Math.min(12, Math.ceil(totalDays / 1825) + 1)
+                              }
+
+                              const actualLabels = Math.min(numLabels, 12)
+                              for (let i = 0; i < actualLabels; i++) {
+                                const pct = actualLabels > 1 ? 5 + (i / (actualLabels - 1)) * 90 : 50
+                                const dateOffset = actualLabels > 1 ? Math.round((i / (actualLabels - 1)) * totalDays) : 0
+                                const labelDate = new Date(firstDate.getTime() + dateOffset * 24 * 60 * 60 * 1000)
+                                xLabels.push({ label: `${String(labelDate.getDate()).padStart(2, '0')}/${String(labelDate.getMonth() + 1).padStart(2, '0')}`, pct })
                               }
                             }
 
@@ -3158,14 +3186,43 @@ export default function AccountPage() {
 
                     const sortedData = [...displayData].sort((a, b) => new Date(a.date) - new Date(b.date))
 
-                    // Generate X-axis labels (evenly spaced across the chart) - double digit format
-                    const xLabelCount = Math.min(sortedData.length, 15)
+                    // Generate X-axis labels - adaptive based on date range
                     const xLabels = []
-                    for (let i = 0; i < xLabelCount; i++) {
-                      const idx = Math.floor(i * (sortedData.length - 1) / Math.max(1, xLabelCount - 1))
-                      const d = new Date(sortedData[idx]?.date)
-                      // Use evenly spaced percentages based on label index, not data index
-                      xLabels.push({ label: `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}`, pct: xLabelCount > 1 ? (i / (xLabelCount - 1)) * 100 : 50 })
+                    if (sortedData.length > 0) {
+                      const firstDate = new Date(sortedData[0].date)
+                      const lastDate = new Date(sortedData[sortedData.length - 1].date)
+                      const totalDays = Math.max(1, Math.ceil((lastDate - firstDate) / (1000 * 60 * 60 * 24)))
+
+                      // Determine number of labels based on date range (supports up to 100 years)
+                      let numLabels
+                      if (totalDays <= 12) {
+                        numLabels = totalDays + 1
+                      } else if (totalDays <= 84) {
+                        numLabels = Math.min(12, Math.ceil(totalDays / 7) + 1)
+                      } else if (totalDays <= 180) {
+                        numLabels = Math.min(12, Math.ceil(totalDays / 14) + 1)
+                      } else if (totalDays <= 365) {
+                        numLabels = Math.min(12, Math.ceil(totalDays / 30) + 1)
+                      } else if (totalDays <= 730) {
+                        numLabels = Math.min(12, Math.ceil(totalDays / 60) + 1)
+                      } else if (totalDays <= 1825) {
+                        numLabels = Math.min(12, Math.ceil(totalDays / 90) + 1)
+                      } else if (totalDays <= 3650) {
+                        numLabels = Math.min(12, Math.ceil(totalDays / 180) + 1)
+                      } else if (totalDays <= 9125) {
+                        numLabels = Math.min(12, Math.ceil(totalDays / 365) + 1)
+                      } else if (totalDays <= 18250) {
+                        numLabels = Math.min(12, Math.ceil(totalDays / 730) + 1)
+                      } else {
+                        numLabels = Math.min(12, Math.ceil(totalDays / 1825) + 1)
+                      }
+                      numLabels = Math.min(numLabels, sortedData.length)
+
+                      for (let i = 0; i < numLabels; i++) {
+                        const idx = numLabels > 1 ? Math.floor(i * (sortedData.length - 1) / (numLabels - 1)) : 0
+                        const d = new Date(sortedData[idx]?.date)
+                        xLabels.push({ label: `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}`, pct: numLabels > 1 ? (i / (numLabels - 1)) * 100 : 50 })
+                      }
                     }
 
                     return (
@@ -4901,15 +4958,45 @@ export default function AccountPage() {
                 const yLabels = []
                 for (let v = yMax; v >= yMin; v -= yStep) yLabels.push(v)
 
-                // X-axis labels - double digit format
-                const xLabelCount = 15
+                // X-axis labels - adaptive based on date range
                 const xLabels = []
-                for (let i = 0; i < xLabelCount; i++) {
-                  const idx = Math.floor(i * (sorted.length - 1) / (xLabelCount - 1))
-                  const trade = sorted[idx]
-                  if (trade?.date) {
-                    const d = new Date(trade.date)
-                    xLabels.push({ label: `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}`, pct: xLabelCount > 1 ? 5 + (i / (xLabelCount - 1)) * 90 : 50 })
+                if (sorted.length > 0) {
+                  const firstDate = new Date(sorted[0].date)
+                  const lastDate = new Date(sorted[sorted.length - 1].date)
+                  const totalDays = Math.max(1, Math.ceil((lastDate - firstDate) / (1000 * 60 * 60 * 24)))
+
+                  // Determine number of labels based on date range (supports up to 100 years)
+                  let numLabels
+                  if (totalDays <= 12) {
+                    numLabels = totalDays + 1
+                  } else if (totalDays <= 84) {
+                    numLabels = Math.min(12, Math.ceil(totalDays / 7) + 1)
+                  } else if (totalDays <= 180) {
+                    numLabels = Math.min(12, Math.ceil(totalDays / 14) + 1)
+                  } else if (totalDays <= 365) {
+                    numLabels = Math.min(12, Math.ceil(totalDays / 30) + 1)
+                  } else if (totalDays <= 730) {
+                    numLabels = Math.min(12, Math.ceil(totalDays / 60) + 1)
+                  } else if (totalDays <= 1825) {
+                    numLabels = Math.min(12, Math.ceil(totalDays / 90) + 1)
+                  } else if (totalDays <= 3650) {
+                    numLabels = Math.min(12, Math.ceil(totalDays / 180) + 1)
+                  } else if (totalDays <= 9125) {
+                    numLabels = Math.min(12, Math.ceil(totalDays / 365) + 1)
+                  } else if (totalDays <= 18250) {
+                    numLabels = Math.min(12, Math.ceil(totalDays / 730) + 1)
+                  } else {
+                    numLabels = Math.min(12, Math.ceil(totalDays / 1825) + 1)
+                  }
+                  numLabels = Math.min(numLabels, sorted.length)
+
+                  for (let i = 0; i < numLabels; i++) {
+                    const idx = numLabels > 1 ? Math.floor(i * (sorted.length - 1) / (numLabels - 1)) : 0
+                    const trade = sorted[idx]
+                    if (trade?.date) {
+                      const d = new Date(trade.date)
+                      xLabels.push({ label: `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}`, pct: numLabels > 1 ? 5 + (i / (numLabels - 1)) * 90 : 50 })
+                    }
                   }
                 }
 
