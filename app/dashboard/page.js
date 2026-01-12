@@ -1278,17 +1278,17 @@ export default function DashboardPage() {
             {yLabels.map((v, i) => {
               const topPct = yLabels.length > 1 ? (i / (yLabels.length - 1)) * 100 : 0
               return (
-                <div key={i}>
-                  <span style={{ position: 'absolute', left: 0, top: `${topPct}%`, transform: 'translateY(-50%)', fontSize: '10px', color: '#999', lineHeight: 1 }}>{v >= 1000000 ? `$${(v/1000000).toFixed(1)}M` : v >= 1000 ? `$${(v/1000).toFixed(0)}k` : `$${v}`}</span>
-                  <div style={{ position: 'absolute', right: 0, top: `${topPct}%`, width: '4px', height: '1px', background: '#333' }} />
+                <div key={i} style={{ position: 'absolute', left: 0, top: `${topPct}%`, transform: 'translateY(-50%)', display: 'flex', alignItems: 'center' }}>
+                  <span style={{ fontSize: '10px', color: '#999', lineHeight: 1 }}>{v >= 1000000 ? `$${(v/1000000).toFixed(1)}M` : v >= 1000 ? `$${(v/1000).toFixed(0)}k` : `$${v}`}</span>
+                  <div style={{ width: '4px', height: '1px', background: '#333', marginLeft: '4px' }} />
                 </div>
               )
             })}
             {/* Grey start value on Y-axis */}
             {startLineY !== null && (
-              <div>
-                <span style={{ position: 'absolute', left: 0, top: `${startLineY}%`, transform: 'translateY(-50%)', fontSize: '10px', color: '#888', lineHeight: 1, fontWeight: 600 }}>{start >= 1000000 ? `$${(start/1000000).toFixed(1)}M` : start >= 1000 ? `$${(start/1000).toFixed(0)}k` : `$${start}`}</span>
-                <div style={{ position: 'absolute', right: 0, top: `${startLineY}%`, width: '4px', height: '1px', background: '#888' }} />
+              <div style={{ position: 'absolute', left: 0, top: `${startLineY}%`, transform: 'translateY(-50%)', display: 'flex', alignItems: 'center' }}>
+                <span style={{ fontSize: '10px', color: '#888', lineHeight: 1, fontWeight: 600 }}>{start >= 1000000 ? `$${(start/1000000).toFixed(1)}M` : start >= 1000 ? `$${(start/1000).toFixed(0)}k` : `$${start}`}</span>
+                <div style={{ width: '4px', height: '1px', background: '#888', marginLeft: '4px' }} />
               </div>
             )}
           </div>
