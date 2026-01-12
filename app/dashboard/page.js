@@ -1173,11 +1173,11 @@ export default function DashboardPage() {
         numLabels = Math.min(12, Math.ceil(totalDays / 1825) + 1)
       }
 
-      // Generate labels evenly spaced
+      // Generate labels evenly spaced with 5% padding on each side (5% to 95%)
       const actualLabels = Math.min(numLabels, 12)
       for (let i = 0; i < actualLabels; i++) {
-        const pct = actualLabels > 1 ? (i / (actualLabels - 1)) * 100 : 50
-        const dateOffset = Math.round((i / (actualLabels - 1)) * totalDays)
+        const pct = actualLabels > 1 ? 5 + (i / (actualLabels - 1)) * 90 : 50
+        const dateOffset = actualLabels > 1 ? Math.round((i / (actualLabels - 1)) * totalDays) : 0
         const labelDate = new Date(firstDate.getTime() + dateOffset * 24 * 60 * 60 * 1000)
         xLabels.push({ label: `${String(labelDate.getDate()).padStart(2, '0')}/${String(labelDate.getMonth() + 1).padStart(2, '0')}/${String(labelDate.getFullYear()).slice(-2)}`, pct })
       }
@@ -1479,17 +1479,17 @@ export default function DashboardPage() {
             )}
             </div>
 
-          <div style={{ height: '26px', position: 'relative', overflow: 'visible' }}>
-            {xLabels.map((l, i) => {
-              const isFirst = i === 0
-              const isLast = i === xLabels.length - 1
-              return (
+          {/* X-axis row - spacer + labels (matching stats graph structure) */}
+          <div style={{ display: 'flex', height: '26px' }}>
+            <div style={{ width: '30px', flexShrink: 0 }} />
+            <div style={{ flex: 1, position: 'relative', overflow: 'visible' }}>
+              {xLabels.map((l, i) => (
                 <div key={i} style={{ position: 'absolute', left: `${l.pct}%`, transform: 'translateX(-50%)', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                   <div style={{ width: '1px', height: '4px', background: '#2a2a35' }} />
                   <span style={{ fontSize: '10px', color: '#999', whiteSpace: 'nowrap', marginTop: '4px' }}>{l.label}</span>
                 </div>
-              )
-            })}
+              ))}
+            </div>
           </div>
         </div>
       </div>
