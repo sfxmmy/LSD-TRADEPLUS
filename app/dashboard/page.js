@@ -1327,7 +1327,7 @@ export default function DashboardPage() {
               const topPct = yLabels.length > 1 ? (i / (yLabels.length - 1)) * 100 : 0
               const isLast = i === yLabels.length - 1
               return (
-                <div key={i} style={{ position: 'absolute', left: 0, ...(isLast ? { bottom: 0, transform: 'translateY(50%)' } : { top: `${topPct}%`, transform: 'translateY(-50%)' }), display: 'flex', alignItems: 'center' }}>
+                <div key={i} style={{ position: 'absolute', left: 0, ...(isLast ? { bottom: 0 } : { top: `${topPct}%`, transform: 'translateY(-50%)' }), display: 'flex', alignItems: isLast ? 'flex-end' : 'center' }}>
                   <span style={{ fontSize: '10px', color: '#999', lineHeight: 1 }}>{v >= 1000000 ? `$${(v/1000000).toFixed(1)}M` : v >= 1000 ? `$${(v/1000).toFixed(0)}k` : `$${v}`}</span>
                   <div style={{ width: '4px', height: '1px', background: '#333', marginLeft: '4px' }} />
                 </div>
@@ -1345,7 +1345,7 @@ export default function DashboardPage() {
         </div>
 
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, overflow: 'visible' }}>
-          <div style={{ flex: 1, position: 'relative', borderBottom: '1px solid #2a2a35', overflow: 'visible' }}>
+          <div style={{ flex: 1, position: 'relative', overflow: 'visible' }}>
                         {/* Legend - shows above top grid line when objective lines are visible */}
             {showObjectiveLines && (
               <div style={{
@@ -1487,8 +1487,8 @@ export default function DashboardPage() {
 
           {/* X-axis row - spacer + labels (matching stats graph structure) */}
           <div style={{ display: 'flex', height: '26px' }}>
-            <div style={{ width: '30px', flexShrink: 0 }} />
-            <div style={{ flex: 1, position: 'relative', overflow: 'visible' }}>
+            <div style={{ width: '30px', flexShrink: 0, borderTop: '1px solid #2a2a35' }} />
+            <div style={{ flex: 1, position: 'relative', overflow: 'visible', borderTop: '1px solid #2a2a35' }}>
               {xLabels.map((l, i) => (
                 <div key={i} style={{ position: 'absolute', left: `${l.pct}%`, transform: 'translateX(-50%)', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                   <div style={{ width: '1px', height: '4px', background: '#2a2a35' }} />
