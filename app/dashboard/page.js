@@ -313,7 +313,7 @@ export default function DashboardPage() {
   async function updateAccount(accountId) {
     if (!editName.trim()) return
     const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY)
-    await supabase.from('accounts').update({
+    const { error } = await supabase.from('accounts').update({
       name: editName.trim(),
       profit_target: editProfitTarget ? parseFloat(editProfitTarget) : null,
       max_drawdown: editMaxDrawdown ? parseFloat(editMaxDrawdown) : null,
@@ -332,6 +332,7 @@ export default function DashboardPage() {
       max_dd_trailing_stops_at: editMaxDdTrailingStopsAt,
       max_dd_locks_at_pct: editMaxDdLocksAtPct ? parseFloat(editMaxDdLocksAtPct) : null
     }).eq('id', accountId)
+    if (error) { alert('Failed to update journal: ' + error.message); return }
     setAccounts(accounts.map(a => a.id === accountId ? {
       ...a,
       name: editName.trim(),
@@ -358,7 +359,8 @@ export default function DashboardPage() {
   async function deleteAccount(accountId) {
     if (deleteConfirm.toLowerCase() !== 'delete') return
     const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY)
-    await supabase.from('accounts').delete().eq('id', accountId)
+    const { error } = await supabase.from('accounts').delete().eq('id', accountId)
+    if (error) { alert('Failed to delete journal: ' + error.message); return }
     setAccounts(accounts.filter(a => a.id !== accountId))
     const newTrades = { ...trades }; delete newTrades[accountId]; setTrades(newTrades)
     setShowDeleteModal(null); setDeleteConfirm('')

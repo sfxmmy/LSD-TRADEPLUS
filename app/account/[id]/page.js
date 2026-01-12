@@ -42,6 +42,16 @@ function findOptStyles(opts, val) {
   return { textColor: getOptTextColor(o), bgColor: getOptBgColor(o), borderColor: getOptBorderColor(o) }
 }
 
+// Format large numbers nicely (e.g., 1.2M, 500k)
+function formatPnl(value) {
+  const absVal = Math.abs(value)
+  if (absVal >= 1000000000) return `${(value / 1000000000).toFixed(1)}B`
+  if (absVal >= 1000000) return `${(value / 1000000).toFixed(1)}M`
+  if (absVal >= 100000) return `${(value / 1000).toFixed(0)}k`
+  if (absVal >= 10000) return `${(value / 1000).toFixed(1)}k`
+  return value.toFixed(0)
+}
+
 export default function AccountPage() {
   const params = useParams()
   const searchParams = useSearchParams()
@@ -107,6 +117,7 @@ export default function AccountPage() {
   const [draftFilters, setDraftFilters] = useState({ dateFrom: '', dateTo: '', outcome: '', direction: '', symbol: '', session: '', timeframe: '', confidence: '', rr: '', rating: '', quickSelect: '', custom: {} })
   const [hoverRatings, setHoverRatings] = useState({}) // Track hover per input ID
   const [editingTrade, setEditingTrade] = useState(null)
+  const [viewingTrade, setViewingTrade] = useState(null)
   const [transferFromJournal, setTransferFromJournal] = useState('')
   const [draggedColumn, setDraggedColumn] = useState(null)
   const [dragOverColumn, setDragOverColumn] = useState(null)
@@ -297,7 +308,8 @@ export default function AccountPage() {
 
   async function deleteTrade(tradeId) {
     const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY)
-    await supabase.from('trades').delete().eq('id', tradeId)
+    const { error } = await supabase.from('trades').delete().eq('id', tradeId)
+    if (error) { alert('Failed to delete trade: ' + error.message); return }
     setTrades(trades.filter(t => t.id !== tradeId))
   }
 
@@ -382,7 +394,8 @@ export default function AccountPage() {
 
   async function saveInputs() {
     const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY)
-    await supabase.from('accounts').update({ custom_inputs: JSON.stringify(inputs) }).eq('id', accountId)
+    const { error } = await supabase.from('accounts').update({ custom_inputs: JSON.stringify(inputs) }).eq('id', accountId)
+    if (error) { alert('Failed to save columns: ' + error.message); return }
     const customInputs = inputs.filter(i => !defaultInputs.find(d => d.id === i.id))
     if (customInputs.length > 0) setHasNewInputs(true)
     setShowEditInputs(false)
@@ -396,7 +409,8 @@ export default function AccountPage() {
     else if (notesSubTab === 'weekly') { const weekStart = getWeekStart(noteDate); newNotes.weekly = { ...newNotes.weekly, [weekStart]: noteText } }
     else newNotes.custom = [...(newNotes.custom || []), { title: customNoteTitle || 'Note', text: noteText, date: new Date().toISOString() }]
     // Save notes to profiles (user-level)
-    await supabase.from('profiles').update({ notes_data: JSON.stringify(newNotes) }).eq('id', user.id)
+    const { error } = await supabase.from('profiles').update({ notes_data: JSON.stringify(newNotes) }).eq('id', user.id)
+    if (error) { alert('Failed to save note: ' + error.message); return }
     setNotes(newNotes)
     setNoteText('')
     setCustomNoteTitle('')
@@ -409,7 +423,8 @@ export default function AccountPage() {
     else if (type === 'weekly') delete newNotes.weekly[key]
     else newNotes.custom = notes.custom.filter((_, i) => i !== key)
     // Save notes to profiles (user-level)
-    await supabase.from('profiles').update({ notes_data: JSON.stringify(newNotes) }).eq('id', user.id)
+    const { error } = await supabase.from('profiles').update({ notes_data: JSON.stringify(newNotes) }).eq('id', user.id)
+    if (error) { alert('Failed to delete note: ' + error.message); return }
     setNotes(newNotes)
   }
 
@@ -549,7 +564,8 @@ export default function AccountPage() {
   }
   async function saveInputsOrder(newInputs) {
     const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY)
-    await supabase.from('accounts').update({ custom_inputs: JSON.stringify(newInputs) }).eq('id', accountId)
+    const { error } = await supabase.from('accounts').update({ custom_inputs: JSON.stringify(newInputs) }).eq('id', accountId)
+    if (error) console.error('Failed to save column order:', error.message)
   }
   function toggleOptionBg(idx) {
     const n = [...optionsList]
@@ -569,11 +585,27 @@ export default function AccountPage() {
   function removeOption(idx) { setOptionsList(optionsList.filter((_, i) => i !== idx)) }
 
   // Upload image to Supabase Storage (with base64 fallback)
+  const MAX_IMAGE_SIZE = 5 * 1024 * 1024 // 5MB max
+  const MAX_BASE64_SIZE = 1 * 1024 * 1024 // 1MB max for base64 fallback
+
   async function uploadImage(file, inputId) {
     if (!file || !user?.id || !accountId) {
       console.log('Upload skipped - missing:', { file: !!file, userId: user?.id, accountId })
       return null
     }
+
+    // Validate file size
+    if (file.size > MAX_IMAGE_SIZE) {
+      alert(`Image too large (${(file.size / 1024 / 1024).toFixed(1)}MB). Maximum size is 5MB.`)
+      return null
+    }
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      alert('Please upload an image file (JPEG, PNG, GIF, etc.)')
+      return null
+    }
+
     setUploadingImage(true)
     console.log('Starting upload...', { fileName: file.name, size: file.size, type: file.type })
     try {
@@ -600,7 +632,12 @@ export default function AccountPage() {
       setTradeForm(prev => ({ ...prev, [inputId]: url }))
       return url
     } catch (err) {
-      // Fallback to base64 if storage upload fails
+      // Fallback to base64 only for small files (to prevent database bloat)
+      if (file.size > MAX_BASE64_SIZE) {
+        alert('Upload failed and image is too large for fallback storage. Please try a smaller image (under 1MB) or check your connection.')
+        setUploadingImage(false)
+        return null
+      }
       console.warn('Storage upload failed, using base64 fallback:', err.message)
       return new Promise((resolve) => {
         const reader = new FileReader()
@@ -686,9 +723,20 @@ export default function AccountPage() {
     setTrades(trades.filter(t => !selectedTrades.has(t.id)))
     exitSelectMode()
   }
-  // Get slideshow images
+  // Get slideshow images - uses filtered trades based on journal selection
   function getSlideshowImages() {
-    const target = selectedTrades.size > 0 ? trades.filter(t => selectedTrades.has(t.id)) : trades
+    // Use baseTradesToFilter to respect journal selection (All Journals / Selected / This Journal)
+    const baseTarget = (() => {
+      if (viewMode === 'all' && allAccounts.length > 1) {
+        return Object.values(allAccountsTrades).flat()
+      } else if (viewMode === 'selected' && selectedJournalIds.size > 0) {
+        return Object.entries(allAccountsTrades)
+          .filter(([accId]) => selectedJournalIds.has(accId))
+          .flatMap(([, t]) => t)
+      }
+      return trades
+    })()
+    const target = selectedTrades.size > 0 ? baseTarget.filter(t => selectedTrades.has(t.id)) : baseTarget
     return target.map(t => { const e = getExtraData(t); return { trade: t, image: e.image || e.Image } }).filter(x => x.image)
   }
 
@@ -1672,12 +1720,12 @@ export default function AccountPage() {
                       const pnlValue = parseFloat(trade.pnl) || 0
                       const noteContent = trade.notes || extra.notes || ''
                       return (
-                        <tr key={trade.id} onClick={() => selectMode && toggleTradeSelection(trade.id)} style={{ borderBottom: '1px solid #141418', background: selectMode && selectedTrades.has(trade.id) ? 'rgba(34,197,94,0.06)' : 'transparent', cursor: selectMode ? 'pointer' : 'default' }}>
+                        <tr key={trade.id} onClick={() => selectMode ? toggleTradeSelection(trade.id) : setViewingTrade(trade)} style={{ borderBottom: '1px solid #141418', background: selectMode && selectedTrades.has(trade.id) ? 'rgba(34,197,94,0.06)' : 'transparent', cursor: 'pointer' }}>
                           {selectMode && <td style={{ padding: '14px 6px', width: '32px', minWidth: '32px', textAlign: 'center' }} onClick={(e) => e.stopPropagation()}><input type="checkbox" checked={selectedTrades.has(trade.id)} onChange={() => toggleTradeSelection(trade.id)} style={{ width: '14px', height: '14px', accentColor: '#22c55e', cursor: 'pointer' }} /></td>}
                           {enabledInputs.map(inp => (
                             <td key={inp.id} style={{ padding: '14px 12px', textAlign: 'center', fontSize: '14px', fontWeight: 600, color: '#fff', verticalAlign: 'middle', minWidth: '100px' }}>
                               {inp.id === 'symbol' ? (
-                                <span style={{ fontWeight: 600, fontSize: '16px', color: '#fff' }}>{trade.symbol}</span>
+                                <span style={{ fontWeight: 600, fontSize: '16px', color: '#fff', maxWidth: '120px', display: 'inline-block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={trade.symbol}>{trade.symbol}</span>
                               ) : inp.id === 'outcome' ? (
                                 (() => {
                                   const styles = findOptStyles(inp.options, trade.outcome)
@@ -1688,7 +1736,7 @@ export default function AccountPage() {
                                   )
                                 })()
                               ) : inp.id === 'pnl' ? (
-                                <span style={{ fontWeight: 600, fontSize: '16px', color: pnlValue >= 0 ? '#22c55e' : '#ef4444' }}>{pnlValue >= 0 ? '+' : ''}${pnlValue.toFixed(0)}</span>
+                                <span style={{ fontWeight: 600, fontSize: '16px', color: pnlValue >= 0 ? '#22c55e' : '#ef4444' }}>{pnlValue >= 0 ? '+' : ''}${formatPnl(pnlValue)}</span>
                               ) : inp.id === 'riskPercent' ? (
                                 <span style={{ fontWeight: 600, color: '#fff' }}>{extra.riskPercent || '1'}%</span>
                               ) : inp.id === 'rr' ? (
@@ -1713,14 +1761,14 @@ export default function AccountPage() {
                                   })}
                                 </div>
                               ) : inp.id === 'image' && (extra[inp.id] || extra[inp.label]) ? (
-                                <button onClick={() => setShowExpandedImage(extra[inp.id] || extra[inp.label])} style={{ width: '50px', height: '50px', background: '#1a1a22', borderRadius: '6px', border: '1px solid #2a2a35', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto', overflow: 'hidden', padding: 0 }}>
+                                <button onClick={(e) => { e.stopPropagation(); setShowExpandedImage(extra[inp.id] || extra[inp.label]) }} style={{ width: '50px', height: '50px', background: '#1a1a22', borderRadius: '6px', border: '1px solid #2a2a35', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto', overflow: 'hidden', padding: 0 }}>
                                   <img src={extra[inp.id] || extra[inp.label]} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', imageRendering: 'auto' }} onError={e => { e.target.style.display = 'none' }} />
                                 </button>
                               ) : inp.id === 'image' ? (
                                 <span style={{ color: '#444' }}>-</span>
                               ) : inp.id === 'notes' ? (
                                 noteContent ? (
-                                  <div onClick={() => setShowExpandedNote(noteContent)} style={{ cursor: 'pointer', color: '#fff', fontSize: '14px', fontWeight: 600, maxWidth: '160px', margin: '0 auto', lineHeight: '1.4', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', textAlign: 'left' }}>{noteContent}</div>
+                                  <div onClick={(e) => { e.stopPropagation(); setShowExpandedNote(noteContent) }} style={{ cursor: 'pointer', color: '#fff', fontSize: '14px', fontWeight: 600, maxWidth: '160px', margin: '0 auto', lineHeight: '1.4', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', textAlign: 'left' }}>{noteContent}</div>
                                 ) : <span style={{ color: '#444' }}>-</span>
                               ) : inp.type === 'number' ? (
                                 <span style={{ fontWeight: 600, color: '#fff' }}>{extra[inp.id] || '-'}</span>
@@ -1746,8 +1794,8 @@ export default function AccountPage() {
                           </td>
                           <td style={{ padding: '14px 12px', textAlign: 'center', minWidth: '70px' }}>
                             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
-                              <button onClick={() => startEditTrade(trade)} style={{ background: 'transparent', border: 'none', color: '#666', cursor: 'pointer', fontSize: '14px', padding: '4px' }} title="Edit trade">✎</button>
-                              <button onClick={() => setDeleteConfirmId(trade.id)} style={{ background: 'transparent', border: 'none', color: '#999', cursor: 'pointer', fontSize: '18px', padding: '4px' }} title="Delete trade">×</button>
+                              <button onClick={(e) => { e.stopPropagation(); startEditTrade(trade) }} style={{ background: 'transparent', border: 'none', color: '#666', cursor: 'pointer', fontSize: '14px', padding: '4px' }} title="Edit trade">✎</button>
+                              <button onClick={(e) => { e.stopPropagation(); setDeleteConfirmId(trade.id) }} style={{ background: 'transparent', border: 'none', color: '#999', cursor: 'pointer', fontSize: '18px', padding: '4px' }} title="Delete trade">×</button>
                             </div>
                           </td>
                         </tr>
@@ -1798,6 +1846,147 @@ export default function AccountPage() {
             </div>
           </div>
         )}
+
+        {/* Trade Overview Modal */}
+        {viewingTrade && (() => {
+          const trade = viewingTrade
+          const extra = getExtraData(trade)
+          const pnlValue = parseFloat(trade.pnl) || 0
+          const noteContent = trade.notes || extra.notes || ''
+          const tradeImage = extra.image || extra.Image
+          const outcomeInput = inputs.find(i => i.id === 'outcome')
+          const outcomeStyles = findOptStyles(outcomeInput?.options, trade.outcome)
+          const directionInput = inputs.find(i => i.id === 'direction')
+          const directionStyles = findOptStyles(directionInput?.options, trade.direction)
+          return (
+            <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.9)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }} onClick={() => setViewingTrade(null)}>
+              <div style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '16px', padding: '0', width: '90%', maxWidth: '500px', maxHeight: '90vh', overflow: 'hidden', display: 'flex', flexDirection: 'column' }} onClick={e => e.stopPropagation()}>
+                {/* Header */}
+                <div style={{ padding: '20px 24px', borderBottom: '1px solid #1a1a22', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                    <span style={{ fontSize: '22px', fontWeight: 700, color: '#fff' }}>{trade.symbol}</span>
+                    {trade.direction && (
+                      <span style={{ padding: '4px 10px', borderRadius: '6px', fontSize: '12px', fontWeight: 600, background: directionStyles.bgColor || 'transparent', color: directionStyles.textColor, border: directionStyles.borderColor ? `1px solid ${directionStyles.borderColor}` : 'none' }}>
+                        {trade.direction.toUpperCase()}
+                      </span>
+                    )}
+                  </div>
+                  <button onClick={() => setViewingTrade(null)} style={{ background: 'transparent', border: 'none', color: '#666', fontSize: '24px', cursor: 'pointer', padding: '4px' }}>×</button>
+                </div>
+
+                {/* Content */}
+                <div style={{ padding: '24px', overflow: 'auto', flex: 1 }}>
+                  {/* Main Stats Row */}
+                  <div style={{ display: 'flex', gap: '16px', marginBottom: '24px' }}>
+                    <div style={{ flex: 1, background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '12px', padding: '16px', textAlign: 'center' }}>
+                      <div style={{ fontSize: '11px', color: '#666', textTransform: 'uppercase', marginBottom: '8px' }}>P&L</div>
+                      <div style={{ fontSize: '28px', fontWeight: 700, color: pnlValue >= 0 ? '#22c55e' : '#ef4444' }}>{pnlValue >= 0 ? '+' : ''}${formatPnl(pnlValue)}</div>
+                    </div>
+                    <div style={{ flex: 1, background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '12px', padding: '16px', textAlign: 'center' }}>
+                      <div style={{ fontSize: '11px', color: '#666', textTransform: 'uppercase', marginBottom: '8px' }}>Outcome</div>
+                      <span style={{ padding: '6px 16px', borderRadius: '8px', fontSize: '14px', fontWeight: 600, background: outcomeStyles.bgColor || 'transparent', color: outcomeStyles.textColor, border: outcomeStyles.borderColor ? `1px solid ${outcomeStyles.borderColor}` : 'none' }}>
+                        {trade.outcome?.toUpperCase() || '-'}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Details Grid */}
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '12px', marginBottom: '24px' }}>
+                    <div style={{ background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '10px', padding: '14px' }}>
+                      <div style={{ fontSize: '10px', color: '#666', textTransform: 'uppercase', marginBottom: '6px' }}>Date</div>
+                      <div style={{ fontSize: '15px', fontWeight: 600, color: '#fff' }}>{new Date(trade.date).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })}</div>
+                    </div>
+                    {extra.time && (
+                      <div style={{ background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '10px', padding: '14px' }}>
+                        <div style={{ fontSize: '10px', color: '#666', textTransform: 'uppercase', marginBottom: '6px' }}>Time</div>
+                        <div style={{ fontSize: '15px', fontWeight: 600, color: '#fff' }}>{extra.time}</div>
+                      </div>
+                    )}
+                    {trade.rr && (
+                      <div style={{ background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '10px', padding: '14px' }}>
+                        <div style={{ fontSize: '10px', color: '#666', textTransform: 'uppercase', marginBottom: '6px' }}>Risk:Reward</div>
+                        <div style={{ fontSize: '15px', fontWeight: 600, color: '#fff' }}>{trade.rr}R</div>
+                      </div>
+                    )}
+                    {extra.riskPercent && (
+                      <div style={{ background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '10px', padding: '14px' }}>
+                        <div style={{ fontSize: '10px', color: '#666', textTransform: 'uppercase', marginBottom: '6px' }}>Risk %</div>
+                        <div style={{ fontSize: '15px', fontWeight: 600, color: '#fff' }}>{extra.riskPercent}%</div>
+                      </div>
+                    )}
+                    {extra.session && (
+                      <div style={{ background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '10px', padding: '14px' }}>
+                        <div style={{ fontSize: '10px', color: '#666', textTransform: 'uppercase', marginBottom: '6px' }}>Session</div>
+                        <div style={{ fontSize: '15px', fontWeight: 600, color: '#fff' }}>{extra.session}</div>
+                      </div>
+                    )}
+                    {extra.timeframe && (
+                      <div style={{ background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '10px', padding: '14px' }}>
+                        <div style={{ fontSize: '10px', color: '#666', textTransform: 'uppercase', marginBottom: '6px' }}>Timeframe</div>
+                        <div style={{ fontSize: '15px', fontWeight: 600, color: '#fff' }}>{extra.timeframe}</div>
+                      </div>
+                    )}
+                    {extra.confidence && (
+                      <div style={{ background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '10px', padding: '14px' }}>
+                        <div style={{ fontSize: '10px', color: '#666', textTransform: 'uppercase', marginBottom: '6px' }}>Confidence</div>
+                        <div style={{ fontSize: '15px', fontWeight: 600, color: '#fff' }}>{extra.confidence}</div>
+                      </div>
+                    )}
+                    {/* Rating */}
+                    {extra.rating && (
+                      <div style={{ background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '10px', padding: '14px' }}>
+                        <div style={{ fontSize: '10px', color: '#666', textTransform: 'uppercase', marginBottom: '6px' }}>Rating</div>
+                        <div style={{ display: 'flex', gap: '2px' }}>
+                          {[1,2,3,4,5].map(star => {
+                            const rating = parseFloat(extra.rating || 0)
+                            const isFullStar = rating >= star
+                            const isHalfStar = rating >= star - 0.5 && rating < star
+                            return (
+                              <div key={star} style={{ position: 'relative', width: '18px', height: '18px' }}>
+                                <span style={{ position: 'absolute', color: '#2a2a35', fontSize: '18px', lineHeight: 1 }}>★</span>
+                                {isHalfStar && <span style={{ position: 'absolute', color: '#22c55e', fontSize: '18px', lineHeight: 1, clipPath: 'inset(0 50% 0 0)' }}>★</span>}
+                                {isFullStar && <span style={{ position: 'absolute', color: '#22c55e', fontSize: '18px', lineHeight: 1 }}>★</span>}
+                              </div>
+                            )
+                          })}
+                        </div>
+                      </div>
+                    )}
+                    {/* Custom fields */}
+                    {enabledInputs.filter(inp => !['symbol', 'outcome', 'pnl', 'rr', 'riskPercent', 'date', 'time', 'direction', 'session', 'timeframe', 'confidence', 'rating', 'image', 'notes'].includes(inp.id) && extra[inp.id]).map(inp => (
+                      <div key={inp.id} style={{ background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '10px', padding: '14px' }}>
+                        <div style={{ fontSize: '10px', color: '#666', textTransform: 'uppercase', marginBottom: '6px' }}>{inp.label}</div>
+                        <div style={{ fontSize: '15px', fontWeight: 600, color: '#fff' }}>{extra[inp.id]}</div>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Image */}
+                  {tradeImage && (
+                    <div style={{ marginBottom: '20px' }}>
+                      <div style={{ fontSize: '10px', color: '#666', textTransform: 'uppercase', marginBottom: '10px' }}>Screenshot</div>
+                      <img src={tradeImage} alt="" style={{ width: '100%', borderRadius: '10px', border: '1px solid #1a1a22', cursor: 'pointer' }} onClick={() => setShowExpandedImage(tradeImage)} />
+                    </div>
+                  )}
+
+                  {/* Notes */}
+                  {noteContent && (
+                    <div>
+                      <div style={{ fontSize: '10px', color: '#666', textTransform: 'uppercase', marginBottom: '10px' }}>Notes</div>
+                      <div style={{ background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '10px', padding: '14px', color: '#ccc', fontSize: '14px', lineHeight: '1.6', whiteSpace: 'pre-wrap' }}>{noteContent}</div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Footer */}
+                <div style={{ padding: '16px 24px', borderTop: '1px solid #1a1a22', display: 'flex', gap: '12px' }}>
+                  <button onClick={() => { setViewingTrade(null); startEditTrade(trade) }} style={{ flex: 1, padding: '12px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '8px', color: '#fff', fontWeight: 600, fontSize: '14px', cursor: 'pointer' }}>Edit Trade</button>
+                  <button onClick={() => setViewingTrade(null)} style={{ flex: 1, padding: '12px', background: '#22c55e', border: 'none', borderRadius: '8px', color: '#fff', fontWeight: 600, fontSize: '14px', cursor: 'pointer' }}>Close</button>
+                </div>
+              </div>
+            </div>
+          )
+        })()}
 
         {/* STATISTICS TAB */}
         {activeTab === 'statistics' && (() => {
@@ -2142,8 +2331,16 @@ export default function AccountPage() {
                               return Math.ceil(range / 10 / 1000) * 1000
                             }
                             const yStep = getNiceStep(yRangeRaw)
-                            yMax = Math.ceil(yMax / yStep) * yStep
-                            yMin = Math.floor(yMin / yStep) * yStep
+                            // For multi-line mode, use tighter rounding to preserve 1/8 padding
+                            if (equityCurveGroupBy !== 'total') {
+                              // Keep yMax and yMin close to calculated values, only round to nearest step/2
+                              const halfStep = yStep / 2
+                              yMax = Math.ceil(yMax / halfStep) * halfStep
+                              yMin = Math.floor(yMin / halfStep) * halfStep
+                            } else {
+                              yMax = Math.ceil(yMax / yStep) * yStep
+                              yMin = Math.floor(yMin / yStep) * yStep
+                            }
                             if (yMin < 0 && actualMin >= 0 && !showObjectiveLines) yMin = 0
 
                             const yRange = yMax - yMin || yStep
@@ -2657,88 +2854,7 @@ export default function AccountPage() {
                                       })()}
                                     </svg>
                                     {/* Line labels at end of each line - with collision detection */}
-                                    {equityCurveGroupBy !== 'total' && (() => {
-                                      const minYSpacing = 12 // Minimum Y pixels between labels
-
-                                      // Get label data with positions
-                                      const labels = lineData.map((line, idx) => {
-                                        const pts = line.chartPoints
-                                        if (pts.length < 2) return null
-                                        return { line, idx, pts, yPos: pts[pts.length - 1].y, xPos: pts[pts.length - 1].x, ptIndex: pts.length - 1 }
-                                      }).filter(Boolean)
-
-                                      // Sort by Y position (top to bottom)
-                                      labels.sort((a, b) => a.yPos - b.yPos)
-
-                                      // Check all labels against each other and move back along line if overlapping
-                                      const placedLabels = []
-                                      for (const label of labels) {
-                                        let ptIndex = label.ptIndex
-                                        let attempts = 0
-                                        const maxAttempts = Math.min(20, label.pts.length - 2)
-
-                                        while (attempts < maxAttempts) {
-                                          const testY = label.pts[ptIndex].y
-                                          const testX = label.pts[ptIndex].x
-
-                                          // Check against all placed labels
-                                          let hasCollision = false
-                                          for (const placed of placedLabels) {
-                                            const yDiff = Math.abs(testY - placed.yPos)
-                                            const xDiff = Math.abs(testX - placed.xPos)
-                                            // Collision if both X and Y are close
-                                            if (yDiff < minYSpacing && xDiff < 40) {
-                                              hasCollision = true
-                                              break
-                                            }
-                                          }
-
-                                          if (!hasCollision) {
-                                            label.ptIndex = ptIndex
-                                            label.yPos = testY
-                                            label.xPos = testX
-                                            break
-                                          }
-
-                                          ptIndex--
-                                          if (ptIndex < 1) break
-                                          attempts++
-                                        }
-
-                                        placedLabels.push(label)
-                                      }
-
-                                      return labels.map(({ line, idx, pts, ptIndex }) => {
-                                        const pt = pts[ptIndex]
-                                        const prevPt = pts[Math.max(0, ptIndex - 1)]
-                                        const dx = pt.x - prevPt.x
-                                        const dy = pt.y - prevPt.y
-                                        const angle = Math.atan2(dy, dx) * (180 / Math.PI)
-                                        const clampedAngle = Math.max(-30, Math.min(30, angle))
-                                        const yPct = (pt.y / svgH) * 100
-                                        const xPct = (pt.x / svgW) * 100
-                                        const isAtEnd = ptIndex === pts.length - 1
-
-                                        return (
-                                          <div key={`label${idx}`} style={{
-                                            position: 'absolute',
-                                            right: isAtEnd ? '4px' : 'auto',
-                                            left: isAtEnd ? 'auto' : `${xPct}%`,
-                                            top: `${yPct}%`,
-                                            transform: `translateY(-100%) ${isAtEnd ? '' : 'translateX(-50%)'} rotate(${clampedAngle}deg)`,
-                                            transformOrigin: isAtEnd ? 'right bottom' : 'center bottom',
-                                            fontSize: '9px',
-                                            fontWeight: 600,
-                                            color: line.color,
-                                            whiteSpace: 'nowrap',
-                                            pointerEvents: 'none',
-                                            marginTop: '-2px'
-                                          }}>
-                                            {line.name}
-                                          </div>
-                                        )
-                                      })
-                                    })()}
+{/* Line labels moved to right-side column to avoid overlap */}
                                     {hoverPoint && <div style={{ position: 'absolute', left: `${hoverPoint.xPct}%`, top: `${hoverPoint.yPct}%`, transform: 'translate(-50%, -50%)', width: '10px', height: '10px', borderRadius: '50%', background: equityCurveGroupBy === 'total' ? (hoverPoint.balance >= displayStartingBalance ? '#22c55e' : '#ef4444') : (hoverPoint.lineColor || '#22c55e'), border: '2px solid #fff', pointerEvents: 'none', zIndex: 10 }} />}
                                     {hoverPoint && (
                                       <div style={{ position: 'absolute', left: `${hoverPoint.xPct}%`, top: `${hoverPoint.yPct}%`, transform: `translate(${hoverPoint.xPct > 80 ? 'calc(-100% - 15px)' : '15px'}, ${hoverPoint.yPct < 20 ? '0%' : hoverPoint.yPct > 80 ? '-100%' : '-50%'})`, background: '#1a1a22', border: '1px solid #2a2a35', borderRadius: '6px', padding: '8px 12px', fontSize: '11px', whiteSpace: 'nowrap', zIndex: 10, pointerEvents: 'none' }}>
@@ -2748,18 +2864,59 @@ export default function AccountPage() {
                                         {hoverPoint.symbol && <div style={{ color: hoverPoint.pnl >= 0 ? '#22c55e' : '#ef4444' }}>{hoverPoint.symbol}: {hoverPoint.pnl >= 0 ? '+' : ''}${hoverPoint.pnl?.toFixed(0)}</div>}
                                       </div>
                                     )}
-                                    {/* Legend - only for multi-line mode */}
-                                    {equityCurveGroupBy !== 'total' && (
-                                      <div style={{ position: 'absolute', top: '4px', left: '4px', display: 'flex', flexDirection: 'column', gap: '3px', background: 'rgba(13,13,18,0.9)', padding: '6px 8px', borderRadius: '4px', fontSize: '8px' }}>
-                                        {lineData.map((line, idx) => (
-                                          <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                                            <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: line.color }} />
-                                            <span style={{ color: '#aaa' }}>{line.name}</span>
-                                          </div>
-                                        ))}
-                                      </div>
-                                    )}
                                   </div>
+                                  {/* Right-side labels for multi-line mode - outside graph area */}
+                                  {equityCurveGroupBy !== 'total' && lineData.length > 0 && (
+                                    <div style={{ width: '60px', flexShrink: 0, position: 'relative', overflow: 'visible', marginLeft: '4px' }}>
+                                      {(() => {
+                                        // Get final Y positions for each line and sort
+                                        const labelData = lineData.map((line, idx) => {
+                                          const pts = line.chartPoints
+                                          if (pts.length === 0) return null
+                                          const endY = pts[pts.length - 1].y
+                                          const yPct = (endY / svgH) * 100
+                                          return { line, idx, yPct, originalYPct: yPct }
+                                        }).filter(Boolean)
+
+                                        // Sort by Y position
+                                        labelData.sort((a, b) => a.yPct - b.yPct)
+
+                                        // Distribute labels with minimum spacing (12% of chart height)
+                                        const minSpacing = 10
+                                        for (let i = 1; i < labelData.length; i++) {
+                                          const prev = labelData[i - 1]
+                                          const curr = labelData[i]
+                                          if (curr.yPct - prev.yPct < minSpacing) {
+                                            curr.yPct = prev.yPct + minSpacing
+                                          }
+                                        }
+
+                                        // Clamp to bounds
+                                        labelData.forEach(d => {
+                                          d.yPct = Math.max(2, Math.min(95, d.yPct))
+                                        })
+
+                                        return labelData.map(({ line, idx, yPct }) => (
+                                          <div key={idx} style={{
+                                            position: 'absolute',
+                                            left: '4px',
+                                            top: `${yPct}%`,
+                                            transform: 'translateY(-50%)',
+                                            fontSize: '9px',
+                                            fontWeight: 600,
+                                            color: line.color,
+                                            whiteSpace: 'nowrap',
+                                            overflow: 'hidden',
+                                            textOverflow: 'ellipsis',
+                                            maxWidth: '56px',
+                                            lineHeight: 1.2
+                                          }}>
+                                            {line.name}
+                                          </div>
+                                        ))
+                                      })()}
+                                    </div>
+                                  )}
                                 </div>
                                 {/* X-axis row - spacer + labels */}
                                 <div style={{ display: 'flex' }}>
@@ -2772,6 +2929,7 @@ export default function AccountPage() {
                                       </div>
                                     ))}
                                   </div>
+                                  {equityCurveGroupBy !== 'total' && lineData.length > 0 && <div style={{ width: '60px', flexShrink: 0, marginLeft: '4px' }} />}
                                 </div>
                               </>
                             )
@@ -3703,11 +3861,11 @@ export default function AccountPage() {
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
                 <span style={{ fontSize: '13px', color: '#999', textTransform: 'uppercase' }}>Write {notesSubTab} Note</span>
                 <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-                  {notesSubTab === 'custom' && <input type="text" placeholder="Note title..." value={customNoteTitle} onChange={e => setCustomNoteTitle(e.target.value)} style={{ padding: '8px 12px', background: '#0a0a0e', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '13px', width: '160px' }} />}
+                  {notesSubTab === 'custom' && <input type="text" placeholder="Note title..." value={customNoteTitle} onChange={e => setCustomNoteTitle(e.target.value)} maxLength={100} style={{ padding: '8px 12px', background: '#0a0a0e', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '13px', width: '160px' }} />}
                   <input type="date" value={noteDate} onChange={e => setNoteDate(e.target.value)} style={{ padding: '8px 12px', background: '#0a0a0e', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '13px' }} />
                 </div>
               </div>
-              <textarea value={noteText} onChange={e => setNoteText(e.target.value)} placeholder={`Write your ${notesSubTab} note...`} style={{ width: '100%', minHeight: '140px', padding: '14px', background: '#0a0a0e', border: '1px solid #1a1a22', borderRadius: '8px', color: '#fff', fontSize: '14px', lineHeight: '1.6', resize: 'vertical', boxSizing: 'border-box' }} />
+              <textarea value={noteText} onChange={e => setNoteText(e.target.value)} maxLength={10000} placeholder={`Write your ${notesSubTab} note...`} style={{ width: '100%', minHeight: '140px', padding: '14px', background: '#0a0a0e', border: '1px solid #1a1a22', borderRadius: '8px', color: '#fff', fontSize: '14px', lineHeight: '1.6', resize: 'vertical', boxSizing: 'border-box' }} />
               <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '12px' }}>
                 <button onClick={saveNote} disabled={!noteText.trim()} style={{ padding: '12px 24px', background: noteText.trim() ? '#22c55e' : '#1a1a22', border: 'none', borderRadius: '8px', color: noteText.trim() ? '#fff' : '#666', fontWeight: 600, fontSize: '14px', cursor: noteText.trim() ? 'pointer' : 'not-allowed' }}>Save Note</button>
               </div>
@@ -4003,7 +4161,7 @@ export default function AccountPage() {
                         {optionsArr.map((o, idx) => <option key={idx} value={getOptVal(o).toLowerCase()}>{getOptVal(o)}</option>)}
                       </select>
                     ) : input.type === 'textarea' ? (
-                      <textarea value={tradeForm[input.id] || ''} onChange={e => setTradeForm({...tradeForm, [input.id]: e.target.value})} placeholder="..." rows={3} style={{ width: '100%', padding: '10px 12px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '13px', boxSizing: 'border-box', resize: 'vertical', fontFamily: 'inherit' }} />
+                      <textarea value={tradeForm[input.id] || ''} onChange={e => setTradeForm({...tradeForm, [input.id]: e.target.value})} maxLength={5000} placeholder="..." rows={3} style={{ width: '100%', padding: '10px 12px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '13px', boxSizing: 'border-box', resize: 'vertical', fontFamily: 'inherit' }} />
                     ) : input.type === 'rating' ? (
                       <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                         <div style={{ display: 'flex', gap: '2px', padding: '8px 10px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px', alignItems: 'center' }} onMouseLeave={() => setHoverRatings(prev => ({...prev, [input.id]: 0}))}>
@@ -4048,7 +4206,7 @@ export default function AccountPage() {
                         <input type="number" value={tradeForm[input.id] || ''} onChange={e => setTradeForm({...tradeForm, [input.id]: e.target.value})} placeholder="0" style={{ flex: 1, padding: '10px 12px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '0 6px 6px 0', color: '#fff', fontSize: '13px', boxSizing: 'border-box' }} />
                       </div>
                     ) : (
-                      <input type={input.type === 'number' ? 'number' : input.type === 'date' ? 'date' : input.type === 'time' ? 'time' : 'text'} value={tradeForm[input.id] || ''} onChange={e => setTradeForm({...tradeForm, [input.id]: e.target.value})} placeholder={input.id === 'symbol' ? 'XAUUSD' : input.id === 'rr' ? '2.5' : input.id === 'riskPercent' ? '1' : ''} style={{ width: '100%', padding: '10px 12px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '13px', boxSizing: 'border-box' }} />
+                      <input type={input.type === 'number' ? 'number' : input.type === 'date' ? 'date' : input.type === 'time' ? 'time' : 'text'} value={tradeForm[input.id] || ''} onChange={e => setTradeForm({...tradeForm, [input.id]: e.target.value})} placeholder={input.id === 'symbol' ? 'XAUUSD' : input.id === 'rr' ? '2.5' : input.id === 'riskPercent' ? '1' : ''} maxLength={input.type === 'text' ? (input.id === 'symbol' ? 20 : 100) : undefined} style={{ width: '100%', padding: '10px 12px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '13px', boxSizing: 'border-box' }} />
                     )}
                   </div>
                 )
@@ -4709,8 +4867,15 @@ export default function AccountPage() {
                   return Math.ceil(range / 10 / 1000) * 1000
                 }
                 const yStep = getNiceStepEnl(yRangeRawEnl)
-                yMax = Math.ceil(yMax / yStep) * yStep
-                yMin = Math.floor(yMin / yStep) * yStep
+                // For multi-line mode, use tighter rounding to preserve 1/8 padding
+                if (equityCurveGroupBy !== 'total') {
+                  const halfStep = yStep / 2
+                  yMax = Math.ceil(yMax / halfStep) * halfStep
+                  yMin = Math.floor(yMin / halfStep) * halfStep
+                } else {
+                  yMax = Math.ceil(yMax / yStep) * yStep
+                  yMin = Math.floor(yMin / yStep) * yStep
+                }
                 if (yMin < 0 && actualMinEnl >= 0 && !showObjectiveLines) yMin = 0
 
                 // Ensure at least 10 labels for enlarged chart

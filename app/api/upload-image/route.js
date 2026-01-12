@@ -29,6 +29,16 @@ export async function POST(request) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
     }
 
+    // Server-side validation
+    const MAX_SIZE = 5 * 1024 * 1024 // 5MB
+    if (file.size > MAX_SIZE) {
+      return NextResponse.json({ error: `File too large (${(file.size / 1024 / 1024).toFixed(1)}MB). Maximum is 5MB.` }, { status: 400 })
+    }
+
+    if (!file.type?.startsWith('image/')) {
+      return NextResponse.json({ error: 'Only image files are allowed' }, { status: 400 })
+    }
+
     // Create unique filename
     const timestamp = Date.now()
     const ext = file.name?.split('.').pop() || 'png'

@@ -155,16 +155,8 @@ export default function AdminPage() {
     }
   }
 
-  const toggleAdmin = async (userId, currentAdmin) => {
-    const { error } = await supabase
-      .from('profiles')
-      .update({ is_admin: !currentAdmin })
-      .eq('id', userId)
-
-    if (!error) {
-      await loadUsers()
-    }
-  }
+  // Admin is determined by subscription_status = 'admin', not is_admin field
+  const isUserAdmin = (user) => user?.subscription_status === 'admin'
 
   const filteredUsers = users.filter(u =>
     u.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -172,12 +164,14 @@ export default function AdminPage() {
   )
 
   const getStatusColor = (status) => {
+    if (status === 'admin') return '#f59e0b'
     if (status === 'subscribing') return '#22c55e'
     if (status === 'free subscription') return '#3b82f6'
     return '#ef4444'
   }
 
   const getStatusBadge = (status) => {
+    if (status === 'admin') return 'ADMIN'
     if (status === 'subscribing') return 'PAID'
     if (status === 'free subscription') return 'FREE'
     return 'NONE'
@@ -262,10 +256,7 @@ export default function AdminPage() {
                     <div style={{ fontSize: '11px', color: '#666', marginTop: '2px' }}>{user.email}</div>
                   </div>
                   <div style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
-                    {user.is_admin && (
-                      <span style={{ fontSize: '9px', padding: '2px 6px', background: '#f59e0b', color: '#000', borderRadius: '4px', fontWeight: 700 }}>ADMIN</span>
-                    )}
-                    <span style={{ fontSize: '9px', padding: '2px 6px', background: getStatusColor(user.subscription_status), color: '#fff', borderRadius: '4px', fontWeight: 600 }}>
+                    <span style={{ fontSize: '9px', padding: '2px 6px', background: getStatusColor(user.subscription_status), color: user.subscription_status === 'admin' ? '#000' : '#fff', borderRadius: '4px', fontWeight: 600 }}>
                       {getStatusBadge(user.subscription_status)}
                     </span>
                   </div>
@@ -286,33 +277,20 @@ export default function AdminPage() {
         <div style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
           <div style={{ padding: '12px', borderBottom: '1px solid #1a1a22' }}>
             <div style={{ fontSize: '13px', fontWeight: 600, color: '#22c55e' }}>
-              {selectedUser ? `${selectedUser.username}'s ACCOUNTS` : 'SELECT A USER'}
+              {selectedUser ? `${selectedUser.username || selectedUser.email?.split('@')[0] || 'User'}'s ACCOUNTS` : 'SELECT A USER'}
             </div>
             {selectedUser && (
-              <div style={{ marginTop: '8px', display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+              <div style={{ marginTop: '8px' }}>
                 <select
                   value={selectedUser.subscription_status}
                   onChange={e => updateUserRole(selectedUser.id, e.target.value)}
-                  style={{ padding: '4px 8px', background: '#141418', border: '1px solid #333', borderRadius: '4px', color: '#fff', fontSize: '10px', cursor: 'pointer' }}
+                  style={{ padding: '6px 10px', background: '#141418', border: '1px solid #333', borderRadius: '4px', color: '#fff', fontSize: '11px', cursor: 'pointer' }}
                 >
                   <option value="not subscribing">Not Subscribing</option>
                   <option value="subscribing">Subscribing (Paid)</option>
                   <option value="free subscription">Free Subscription</option>
+                  <option value="admin">Admin</option>
                 </select>
-                <button
-                  onClick={() => toggleAdmin(selectedUser.id, selectedUser.is_admin)}
-                  style={{
-                    padding: '4px 8px',
-                    background: selectedUser.is_admin ? '#f59e0b' : '#141418',
-                    border: '1px solid #333',
-                    borderRadius: '4px',
-                    color: '#fff',
-                    fontSize: '10px',
-                    cursor: 'pointer'
-                  }}
-                >
-                  {selectedUser.is_admin ? 'Remove Admin' : 'Make Admin'}
-                </button>
               </div>
             )}
           </div>
