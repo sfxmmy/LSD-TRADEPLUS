@@ -1278,17 +1278,15 @@ export default function DashboardPage() {
             {yLabels.map((v, i) => {
               const topPct = yLabels.length > 1 ? (i / (yLabels.length - 1)) * 100 : 0
               return (
-                <div key={i} style={{ position: 'absolute', right: 0, top: `${topPct}%`, transform: 'translateY(-50%)', display: 'flex', alignItems: 'center' }}>
-                  <span style={{ fontSize: '10px', color: '#999', lineHeight: 1, textAlign: 'right' }}>{v >= 1000000 ? `$${(v/1000000).toFixed(1)}M` : v >= 1000 ? `$${(v/1000).toFixed(0)}k` : `$${v}`}</span>
-                  <div style={{ width: '4px', height: '1px', background: '#333', marginLeft: '2px' }} />
+                <div key={i} style={{ position: 'absolute', left: 0, top: `${topPct}%`, transform: 'translateY(-50%)', display: 'flex', alignItems: 'center' }}>
+                  <span style={{ fontSize: '10px', color: '#999', lineHeight: 1, textAlign: 'left' }}>{v >= 1000000 ? `$${(v/1000000).toFixed(1)}M` : v >= 1000 ? `$${(v/1000).toFixed(0)}k` : `$${v}`}</span>
                 </div>
               )
             })}
             {/* Grey start value on Y-axis */}
             {startLineY !== null && (
-              <div style={{ position: 'absolute', right: 0, top: `${startLineY}%`, transform: 'translateY(-50%)', display: 'flex', alignItems: 'center' }}>
-                <span style={{ fontSize: '10px', color: '#888', lineHeight: 1, textAlign: 'right', fontWeight: 600 }}>{start >= 1000000 ? `$${(start/1000000).toFixed(1)}M` : start >= 1000 ? `$${(start/1000).toFixed(0)}k` : `$${start}`}</span>
-                <div style={{ width: '4px', height: '1px', background: '#888', marginLeft: '2px' }} />
+              <div style={{ position: 'absolute', left: 0, top: `${startLineY}%`, transform: 'translateY(-50%)', display: 'flex', alignItems: 'center' }}>
+                <span style={{ fontSize: '10px', color: '#888', lineHeight: 1, textAlign: 'left', fontWeight: 600 }}>{start >= 1000000 ? `$${(start/1000000).toFixed(1)}M` : start >= 1000 ? `$${(start/1000).toFixed(0)}k` : `$${start}`}</span>
               </div>
             )}
           </div>
@@ -2050,7 +2048,7 @@ export default function DashboardPage() {
 
                   {/* Recent Trades */}
                   <div onClick={e => e.stopPropagation()} style={{ padding: isMobile ? '0 16px 16px' : '0 24px 16px' }}>
-                    <div style={{ fontSize: '12px', color: '#999', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '8px', marginLeft: isMobile ? '0' : '42px' }}>Recent Trades</div>
+                    <div style={{ fontSize: '12px', color: '#999', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '8px' }}>Recent Trades</div>
                     {recentTrades.length === 0 ? (
                       <div style={{ padding: '20px', textAlign: 'center', color: '#999', fontSize: '14px', border: '1px solid #1a1a22', borderRadius: '8px' }}>No trades yet</div>
                     ) : (() => {
