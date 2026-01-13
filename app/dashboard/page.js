@@ -1589,17 +1589,134 @@ export default function DashboardPage() {
           const worstDay = Object.values(dailyPnls).length > 0 ? Math.min(...Object.values(dailyPnls)) : 0
 
           return (
-            <div style={{ background: '#0f0f14', border: '1px solid #1a1a22', borderRadius: '12px', padding: '12px 16px', marginBottom: '16px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                {/* Overall Stats Label + Mini Chart */}
-                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', background: '#0a0a0f', borderRadius: '6px', padding: '6px 10px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#22c55e" strokeWidth="2"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg>
-                    <span style={{ fontSize: '11px', color: '#fff', fontWeight: 600 }}>OVERALL STATS</span>
+            <div style={{ display: 'flex', gap: '16px', marginBottom: '20px' }}>
+              {/* LOG TRADE Widget - Fixed Left */}
+              {!isMobile && accounts.length > 0 && (
+                <div style={{ width: '280px', flexShrink: 0, background: 'linear-gradient(135deg, #0f0f14 0%, #0a0a0f 100%)', border: '1px solid #1a1a22', borderRadius: '16px', padding: '20px', boxShadow: '0 4px 24px rgba(0,0,0,0.3)' }}>
+                  {/* Header */}
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px', paddingBottom: '12px', borderBottom: '1px solid rgba(34,197,94,0.2)' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#22c55e', boxShadow: '0 0 8px #22c55e' }} />
+                      <span style={{ fontSize: '13px', color: '#22c55e', fontWeight: 700, letterSpacing: '1px' }}>LOG TRADE</span>
+                    </div>
+                    {getSelectedAccountCustomInputs().length > 2 && (
+                      <button onClick={() => setSidebarExpanded(true)} style={{ padding: '6px 8px', background: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.3)', borderRadius: '6px', color: '#22c55e', cursor: 'pointer', display: 'flex', alignItems: 'center' }} title="Expand">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/>
+                        </svg>
+                      </button>
+                    )}
                   </div>
-                  {/* Mini Chart inline */}
+
+                  {/* Journal Select - Dropdown */}
+                  <div style={{ marginBottom: '14px', position: 'relative' }}>
+                    <button onClick={() => setJournalDropdownOpen(!journalDropdownOpen)} style={{ width: '100%', padding: '10px 14px', background: 'rgba(34,197,94,0.08)', border: '1px solid rgba(34,197,94,0.3)', borderRadius: journalDropdownOpen ? '10px 10px 0 0' : '10px', color: '#22c55e', fontSize: '13px', fontWeight: 600, cursor: 'pointer', textAlign: 'left', display: 'flex', alignItems: 'center', justifyContent: 'space-between', transition: 'all 0.2s' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#22c55e', boxShadow: '0 0 4px #22c55e' }} />
+                        {accounts.find(a => a.id === quickTradeAccount)?.name || 'Select Journal'}
+                      </div>
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ transform: journalDropdownOpen ? 'rotate(180deg)' : 'rotate(0)', transition: 'transform 0.2s' }}><path d="M6 9l6 6 6-6"/></svg>
+                    </button>
+                    {journalDropdownOpen && (
+                      <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, background: '#0d0d12', border: '1px solid rgba(34,197,94,0.3)', borderTop: 'none', borderRadius: '0 0 10px 10px', padding: '6px', zIndex: 10, display: 'flex', flexDirection: 'column', gap: '4px', boxShadow: '0 8px 24px rgba(0,0,0,0.4)' }}>
+                        {accounts.map(acc => {
+                          const isSelected = quickTradeAccount === acc.id
+                          const accTrades = trades[acc.id] || []
+                          const totalPnl = accTrades.reduce((sum, t) => sum + (parseFloat(t.pnl) || 0), 0)
+                          return (
+                            <button key={acc.id} onClick={() => { setQuickTradeAccount(acc.id); setJournalDropdownOpen(false) }} style={{ width: '100%', padding: '10px 12px', background: isSelected ? 'rgba(34,197,94,0.12)' : '#0a0a0f', border: `1px solid ${isSelected ? 'rgba(34,197,94,0.4)' : '#1a1a22'}`, borderRadius: '8px', color: isSelected ? '#22c55e' : '#999', fontSize: '12px', fontWeight: 600, cursor: 'pointer', textAlign: 'left', transition: 'all 0.15s' }}>
+                              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                  <div style={{ width: '5px', height: '5px', borderRadius: '50%', background: isSelected ? '#22c55e' : '#444' }} />
+                                  {acc.name}
+                                </div>
+                                <span style={{ fontSize: '11px', color: totalPnl >= 0 ? '#22c55e' : '#ef4444' }}>{totalPnl >= 0 ? '+' : ''}${Math.round(totalPnl).toLocaleString()}</span>
+                              </div>
+                            </button>
+                          )
+                        })}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Core Fields Grid */}
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '14px' }}>
+                    <div>
+                      <label style={{ display: 'block', fontSize: '9px', color: '#555', marginBottom: '5px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Symbol</label>
+                      <input type="text" value={quickTradeSymbol} onChange={e => setQuickTradeSymbol(e.target.value)} placeholder="XAUUSD" style={{ width: '100%', padding: '10px 12px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '8px', color: '#fff', fontSize: '13px', boxSizing: 'border-box', transition: 'border-color 0.2s' }} />
+                    </div>
+                    <div>
+                      <label style={{ display: 'block', fontSize: '9px', color: '#555', marginBottom: '5px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>P&L ($)</label>
+                      <input type="number" value={quickTradePnl} onChange={e => setQuickTradePnl(e.target.value)} placeholder="0" style={{ width: '100%', padding: '10px 12px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '8px', color: '#fff', fontSize: '13px', boxSizing: 'border-box' }} />
+                    </div>
+                  </div>
+
+                  {/* Direction + Outcome Row */}
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '14px' }}>
+                    <div>
+                      <label style={{ display: 'block', fontSize: '9px', color: '#555', marginBottom: '5px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Direction</label>
+                      <select value={quickTradeDirection} onChange={e => setQuickTradeDirection(e.target.value)} style={{ width: '100%', padding: '10px 12px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '8px', color: quickTradeDirection === 'long' ? '#22c55e' : quickTradeDirection === 'short' ? '#ef4444' : '#fff', fontSize: '13px', boxSizing: 'border-box', cursor: 'pointer' }}>
+                        <option value="long">Long</option>
+                        <option value="short">Short</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label style={{ display: 'block', fontSize: '9px', color: '#555', marginBottom: '5px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Outcome</label>
+                      <select value={quickTradeOutcome} onChange={e => setQuickTradeOutcome(e.target.value)} style={{ width: '100%', padding: '10px 12px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '8px', color: quickTradeOutcome === 'win' ? '#22c55e' : quickTradeOutcome === 'loss' ? '#ef4444' : '#f59e0b', fontSize: '13px', boxSizing: 'border-box', cursor: 'pointer' }}>
+                        <option value="win">Win</option>
+                        <option value="loss">Loss</option>
+                        <option value="be">Breakeven</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  {/* RR + Date */}
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '14px' }}>
+                    <div>
+                      <label style={{ display: 'block', fontSize: '9px', color: '#555', marginBottom: '5px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>RR</label>
+                      <input type="text" value={quickTradeRR} onChange={e => setQuickTradeRR(e.target.value)} placeholder="2.5" style={{ width: '100%', padding: '10px 12px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '8px', color: '#fff', fontSize: '13px', boxSizing: 'border-box' }} />
+                    </div>
+                    <div>
+                      <label style={{ display: 'block', fontSize: '9px', color: '#555', marginBottom: '5px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Date</label>
+                      <input type="date" value={quickTradeDate} onChange={e => setQuickTradeDate(e.target.value)} style={{ width: '100%', padding: '10px 12px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '8px', color: '#fff', fontSize: '13px', boxSizing: 'border-box' }} />
+                    </div>
+                  </div>
+
+                  {/* Notes */}
+                  <div style={{ marginBottom: '16px' }}>
+                    <label style={{ display: 'block', fontSize: '9px', color: '#555', marginBottom: '5px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Notes</label>
+                    <input type="text" value={quickTradeNotes} onChange={e => setQuickTradeNotes(e.target.value)} placeholder="Quick notes..." style={{ width: '100%', padding: '10px 12px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '8px', color: '#fff', fontSize: '13px', boxSizing: 'border-box' }} />
+                  </div>
+
+                  {/* Action Buttons */}
+                  <div style={{ display: 'flex', gap: '10px' }}>
+                    <button onClick={submitQuickTrade} disabled={submittingTrade || !quickTradeSymbol.trim() || !quickTradePnl || !quickTradeDate} style={{ flex: 1, padding: '12px', background: (submittingTrade || !quickTradeSymbol.trim() || !quickTradePnl || !quickTradeDate) ? '#1a1a22' : 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)', border: 'none', borderRadius: '10px', color: (submittingTrade || !quickTradeSymbol.trim() || !quickTradePnl || !quickTradeDate) ? '#555' : '#fff', fontWeight: 700, fontSize: '13px', cursor: (submittingTrade || !quickTradeSymbol.trim() || !quickTradePnl || !quickTradeDate) ? 'not-allowed' : 'pointer', transition: 'all 0.2s', boxShadow: (submittingTrade || !quickTradeSymbol.trim() || !quickTradePnl || !quickTradeDate) ? 'none' : '0 4px 20px rgba(34,197,94,0.4)' }}>
+                      {submittingTrade ? 'Adding...' : 'Log Trade'}
+                    </button>
+                    <button onClick={() => setShowEditInputsModal(true)} style={{ padding: '12px 14px', background: '#0a0a0f', border: '1px solid #2a2a35', borderRadius: '10px', color: '#666', fontWeight: 500, fontSize: '12px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" /><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" /></svg>
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* Overall Stats - Right Side */}
+              <div style={{ flex: 1, background: 'linear-gradient(135deg, #0f0f14 0%, #0a0a0f 100%)', border: '1px solid #1a1a22', borderRadius: '16px', padding: '20px', boxShadow: '0 4px 24px rgba(0,0,0,0.3)' }}>
+                {/* Top Row: Title + Mini Chart + Key Stats */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '20px', marginBottom: '16px', paddingBottom: '16px', borderBottom: '1px solid rgba(34,197,94,0.15)' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                    <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: 'rgba(34,197,94,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#22c55e" strokeWidth="2"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg>
+                    </div>
+                    <div>
+                      <div style={{ fontSize: '10px', color: '#555', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '2px' }}>Overall Stats</div>
+                      <div style={{ fontSize: '24px', fontWeight: 800, color: cumPnl >= 0 ? '#22c55e' : '#ef4444' }}>{cumPnl >= 0 ? '+' : ''}${Math.round(cumPnl).toLocaleString()}</div>
+                    </div>
+                  </div>
+
+                  {/* Mini Chart */}
                   {pnlPoints.length > 1 && (() => {
-                    const svgW = 120, svgH = 32
+                    const svgW = 140, svgH = 45
                     const chartPts = pnlPoints.map((p, i) => ({
                       x: pnlPoints.length > 1 ? (i / (pnlPoints.length - 1)) * svgW : svgW / 2,
                       y: svgH - ((p.value - minPnl) / pnlRange) * svgH,
@@ -1608,315 +1725,65 @@ export default function DashboardPage() {
                     const pathD = chartPts.map((p, i) => `${i === 0 ? 'M' : 'L'}${p.x},${p.y}`).join(' ')
                     const areaD = `${pathD} L${svgW},${svgH} L0,${svgH} Z`
                     return (
-                      <svg width={svgW} height={svgH} viewBox={`0 0 ${svgW} ${svgH}`} preserveAspectRatio="none" style={{ display: 'block' }}>
-                        {minPnl < 0 && maxPnl > 0 && <line x1="0" y1={svgH - ((0 - minPnl) / pnlRange) * svgH} x2={svgW} y2={svgH - ((0 - minPnl) / pnlRange) * svgH} stroke="#333" strokeWidth="1" strokeDasharray="2,2" vectorEffect="non-scaling-stroke" />}
-                        <path fill={cumPnl >= 0 ? 'rgba(34,197,94,0.2)' : 'rgba(239,68,68,0.2)'} d={areaD} />
-                        <path fill="none" stroke={cumPnl >= 0 ? '#22c55e' : '#ef4444'} strokeWidth="2" strokeLinejoin="round" vectorEffect="non-scaling-stroke" d={pathD} />
-                      </svg>
+                      <div style={{ padding: '8px 12px', background: '#0a0a0f', borderRadius: '10px', border: '1px solid #1a1a22' }}>
+                        <svg width={svgW} height={svgH} viewBox={`0 0 ${svgW} ${svgH}`} preserveAspectRatio="none" style={{ display: 'block' }}>
+                          {minPnl < 0 && maxPnl > 0 && <line x1="0" y1={svgH - ((0 - minPnl) / pnlRange) * svgH} x2={svgW} y2={svgH - ((0 - minPnl) / pnlRange) * svgH} stroke="#333" strokeWidth="1" strokeDasharray="3,3" vectorEffect="non-scaling-stroke" />}
+                          <path fill={cumPnl >= 0 ? 'rgba(34,197,94,0.15)' : 'rgba(239,68,68,0.15)'} d={areaD} />
+                          <path fill="none" stroke={cumPnl >= 0 ? '#22c55e' : '#ef4444'} strokeWidth="2.5" strokeLinejoin="round" vectorEffect="non-scaling-stroke" d={pathD} />
+                        </svg>
+                      </div>
                     )
                   })()}
-                  <div style={{ borderLeft: '1px solid #333', paddingLeft: '10px', marginLeft: '4px' }}>
-                    <div style={{ fontSize: '8px', color: '#666', textTransform: 'uppercase' }}>TOTAL P&L</div>
-                    <div style={{ fontSize: '14px', fontWeight: 700, color: cumPnl >= 0 ? '#22c55e' : '#ef4444' }}>{cumPnl >= 0 ? '+' : ''}${Math.round(cumPnl).toLocaleString()}</div>
-                  </div>
-                  <div style={{ borderLeft: '1px solid #333', paddingLeft: '10px' }}>
-                    <div style={{ fontSize: '8px', color: '#666', textTransform: 'uppercase' }}>TODAY</div>
-                    <div style={{ fontSize: '14px', fontWeight: 700, color: todaysPnl >= 0 ? '#22c55e' : todaysPnl < 0 ? '#ef4444' : '#666' }}>{todaysPnl >= 0 ? '+' : ''}${Math.round(todaysPnl).toLocaleString()}</div>
+
+                  {/* Key Stats */}
+                  <div style={{ display: 'flex', gap: '16px', marginLeft: 'auto' }}>
+                    <div style={{ textAlign: 'center' }}>
+                      <div style={{ fontSize: '9px', color: '#555', textTransform: 'uppercase', marginBottom: '4px' }}>Today</div>
+                      <div style={{ fontSize: '18px', fontWeight: 700, color: todaysPnl >= 0 ? '#22c55e' : todaysPnl < 0 ? '#ef4444' : '#666' }}>{todaysPnl >= 0 ? '+' : ''}${Math.round(todaysPnl).toLocaleString()}</div>
+                    </div>
+                    <div style={{ textAlign: 'center' }}>
+                      <div style={{ fontSize: '9px', color: '#555', textTransform: 'uppercase', marginBottom: '4px' }}>Balance</div>
+                      <div style={{ fontSize: '18px', fontWeight: 700, color: stats.currentBalance >= stats.totalStartingBalance ? '#22c55e' : '#ef4444' }}>${stats.currentBalance.toLocaleString()}</div>
+                    </div>
+                    <div style={{ textAlign: 'center' }}>
+                      <div style={{ fontSize: '9px', color: '#555', textTransform: 'uppercase', marginBottom: '4px' }}>Win Rate</div>
+                      <div style={{ fontSize: '18px', fontWeight: 700, color: stats.winrate >= 50 ? '#22c55e' : '#ef4444' }}>{stats.winrate}%</div>
+                    </div>
                   </div>
                 </div>
 
-                {/* Stats Row - Horizontal */}
-                <div style={{ flex: 1, display: 'flex', gap: '6px', flexWrap: 'wrap', alignItems: 'center' }}>
+                {/* Stats Grid */}
+                <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
                   {[
-                    { label: 'BALANCE', value: `$${stats.currentBalance.toLocaleString()}`, color: stats.currentBalance >= stats.totalStartingBalance ? '#22c55e' : '#ef4444' },
-                    { label: 'WINRATE', value: `${stats.winrate}%`, color: stats.winrate >= 50 ? '#22c55e' : '#ef4444' },
-                    { label: 'PF', value: stats.profitFactor, color: stats.profitFactor === '-' ? '#666' : stats.profitFactor === '∞' ? '#22c55e' : parseFloat(stats.profitFactor) >= 1 ? '#22c55e' : '#ef4444' },
+                    { label: 'PROFIT FACTOR', value: stats.profitFactor, color: stats.profitFactor === '-' ? '#666' : stats.profitFactor === '∞' ? '#22c55e' : parseFloat(stats.profitFactor) >= 1 ? '#22c55e' : '#ef4444' },
                     { label: 'TRADES', value: stats.totalTrades, color: '#fff' },
-                    { label: 'W/L', value: `${stats.wins}/${stats.losses}`, color: '#fff' },
+                    { label: 'WINS', value: stats.wins, color: '#22c55e' },
+                    { label: 'LOSSES', value: stats.losses, color: '#ef4444' },
                     { label: 'AVG WIN', value: `+$${stats.avgWin}`, color: '#22c55e' },
                     { label: 'AVG LOSS', value: `-$${stats.avgLoss}`, color: '#ef4444' },
                     { label: 'BEST DAY', value: `${bestDay >= 0 ? '+' : ''}$${bestDay.toLocaleString()}`, color: '#22c55e' },
                     { label: 'WORST DAY', value: `${worstDay >= 0 ? '+' : '-'}$${Math.abs(worstDay).toLocaleString()}`, color: worstDay >= 0 ? '#22c55e' : '#ef4444' },
-                    { label: 'JOURNALS', value: accounts.length, color: '#fff' },
-                    { label: 'DAYS', value: uniqueDays, color: '#fff' },
+                    { label: 'JOURNALS', value: accounts.length, color: '#8b5cf6' },
+                    { label: 'TRADING DAYS', value: uniqueDays, color: '#3b82f6' },
                   ].map((stat, i) => (
-                    <div key={i} style={{ padding: '5px 8px', background: '#0a0a0f', borderRadius: '4px' }}>
-                      <div style={{ fontSize: '8px', color: '#555', marginBottom: '1px', textTransform: 'uppercase' }}>{stat.label}</div>
-                      <div style={{ fontSize: '12px', fontWeight: 700, color: stat.color }}>{stat.value}</div>
+                    <div key={i} style={{ padding: '10px 14px', background: '#0a0a0f', borderRadius: '10px', border: '1px solid #1a1a22', minWidth: '85px' }}>
+                      <div style={{ fontSize: '9px', color: '#555', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{stat.label}</div>
+                      <div style={{ fontSize: '15px', fontWeight: 700, color: stat.color }}>{stat.value}</div>
                     </div>
                   ))}
+                  {accounts.length > 0 && (
+                    <a href={`/account/${accounts[0]?.id}?tab=statistics&cumulative=true`} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', padding: '10px 18px', background: 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)', borderRadius: '10px', color: '#fff', fontSize: '12px', fontWeight: 700, textDecoration: 'none', whiteSpace: 'nowrap', boxShadow: '0 4px 16px rgba(34,197,94,0.3)' }}>
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg>
+                      Full Stats
+                    </a>
+                  )}
                 </div>
-
-                {/* View Full Stats Button */}
-                {accounts.length > 0 && (
-                  <a href={`/account/${accounts[0]?.id}?tab=statistics&cumulative=true`} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', padding: '8px 14px', background: '#22c55e', borderRadius: '6px', color: '#fff', fontSize: '11px', fontWeight: 600, textDecoration: 'none', whiteSpace: 'nowrap' }}>
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg>
-                    Full Stats
-                  </a>
-                )}
               </div>
             </div>
           )
         })()}
 
-        <div style={{ display: 'flex', gap: '12px' }}>
-        {/* Fixed Left Sidebar - Journal a Trade Only */}
-        {!isMobile && accounts.length > 0 && (
-          <div style={{ width: '260px', flexShrink: 0, display: 'flex', flexDirection: 'column', gap: '12px' }}>
-            {/* Trade Entry Card */}
-            <div style={{ background: 'linear-gradient(180deg, #0f0f14 0%, #0a0a0f 100%)', border: '1px solid #1a1a22', borderRadius: '12px', padding: '16px' }}>
-              {/* Header */}
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px', paddingBottom: '10px', borderBottom: '1px solid #1a1a22' }}>
-                <span style={{ fontSize: '12px', color: '#fff', fontWeight: 600, letterSpacing: '0.5px' }}>LOG TRADE</span>
-                {/* Expand Toggle - pops out modal */}
-                {getSelectedAccountCustomInputs().length > 2 && (
-                  <button onClick={() => setSidebarExpanded(true)} style={{ padding: '5px 7px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px', color: '#666', cursor: 'pointer', display: 'flex', alignItems: 'center' }} title="Expand">
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/>
-                    </svg>
-                  </button>
-                )}
-              </div>
-
-              {/* Journal Select - Dropdown */}
-              <div style={{ marginBottom: '12px', position: 'relative' }}>
-                {/* Dropdown Header */}
-                <button
-                  onClick={() => setJournalDropdownOpen(!journalDropdownOpen)}
-                  style={{
-                    width: '100%',
-                    padding: '10px 12px',
-                    background: 'rgba(34,197,94,0.1)',
-                    border: '1px solid rgba(34,197,94,0.4)',
-                    borderRadius: journalDropdownOpen ? '8px 8px 0 0' : '8px',
-                    color: '#22c55e',
-                    fontSize: '13px',
-                    fontWeight: 600,
-                    cursor: 'pointer',
-                    textAlign: 'left',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    boxShadow: '0 0 12px rgba(34,197,94,0.15)'
-                  }}
-                >
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#22c55e', boxShadow: '0 0 6px #22c55e' }} />
-                    {accounts.find(a => a.id === quickTradeAccount)?.name || 'Select Journal'}
-                  </div>
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ transform: journalDropdownOpen ? 'rotate(180deg)' : 'rotate(0)', transition: 'transform 0.2s' }}>
-                    <path d="M6 9l6 6 6-6"/>
-                  </svg>
-                </button>
-                {/* Dropdown Content */}
-                {journalDropdownOpen && (
-                  <div style={{
-                    position: 'absolute',
-                    top: '100%',
-                    left: 0,
-                    right: 0,
-                    background: '#0d0d12',
-                    border: '1px solid rgba(34,197,94,0.3)',
-                    borderTop: 'none',
-                    borderRadius: '0 0 8px 8px',
-                    padding: '6px',
-                    zIndex: 10,
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: '4px',
-                    boxShadow: '0 4px 12px rgba(0,0,0,0.3)'
-                  }}>
-                    {accounts.map(acc => {
-                      const isSelected = quickTradeAccount === acc.id
-                      const accTrades = trades[acc.id] || []
-                      const totalPnl = accTrades.reduce((sum, t) => sum + (parseFloat(t.pnl) || 0), 0)
-                      return (
-                        <button
-                          key={acc.id}
-                          onClick={() => { setQuickTradeAccount(acc.id); setJournalDropdownOpen(false) }}
-                          style={{
-                            width: '100%',
-                            padding: '10px 12px',
-                            background: isSelected ? 'rgba(34,197,94,0.15)' : '#0a0a0f',
-                            border: `1px solid ${isSelected ? 'rgba(34,197,94,0.5)' : '#1a1a22'}`,
-                            borderRadius: '6px',
-                            color: isSelected ? '#22c55e' : '#999',
-                            fontSize: '12px',
-                            fontWeight: 600,
-                            cursor: 'pointer',
-                            textAlign: 'left',
-                            transition: 'all 0.15s ease',
-                            boxShadow: isSelected ? '0 0 10px rgba(34,197,94,0.2), inset 0 0 15px rgba(34,197,94,0.05)' : 'none'
-                          }}
-                        >
-                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                              <div style={{
-                                width: '6px',
-                                height: '6px',
-                                borderRadius: '50%',
-                                background: isSelected ? '#22c55e' : '#444',
-                                boxShadow: isSelected ? '0 0 4px #22c55e' : 'none'
-                              }} />
-                              {acc.name}
-                            </div>
-                            <span style={{ fontSize: '11px', color: totalPnl >= 0 ? '#22c55e' : '#ef4444' }}>
-                              {totalPnl >= 0 ? '+' : ''}${Math.round(totalPnl).toLocaleString()}
-                            </span>
-                          </div>
-                        </button>
-                      )
-                    })}
-                  </div>
-                )}
-              </div>
-
-              {/* Core Fields Grid */}
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '12px', paddingBottom: '12px', borderBottom: '1px solid #1a1a22' }}>
-                {/* Symbol */}
-                <div>
-                  <label style={{ display: 'block', fontSize: '9px', color: '#666', marginBottom: '4px', textTransform: 'uppercase' }}>Symbol</label>
-                  <input type="text" value={quickTradeSymbol} onChange={e => setQuickTradeSymbol(e.target.value)} placeholder="XAUUSD" style={{ width: '100%', padding: '8px 10px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '12px', boxSizing: 'border-box' }} />
-                </div>
-                {/* PnL */}
-                <div>
-                  <label style={{ display: 'block', fontSize: '9px', color: '#666', marginBottom: '4px', textTransform: 'uppercase' }}>P&L ($)</label>
-                  <input type="number" value={quickTradePnl} onChange={e => setQuickTradePnl(e.target.value)} placeholder="0" style={{ width: '100%', padding: '8px 10px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '12px', boxSizing: 'border-box' }} />
-                </div>
-              </div>
-
-              {/* Direction + Outcome Row */}
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '12px', paddingBottom: '12px', borderBottom: '1px solid #1a1a22' }}>
-                <div>
-                  <label style={{ display: 'block', fontSize: '9px', color: '#666', marginBottom: '4px', textTransform: 'uppercase' }}>Direction</label>
-                  <select value={quickTradeDirection} onChange={e => setQuickTradeDirection(e.target.value)} style={{ width: '100%', padding: '8px 10px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px', color: quickTradeDirection === 'long' ? '#22c55e' : quickTradeDirection === 'short' ? '#ef4444' : '#fff', fontSize: '12px', boxSizing: 'border-box' }}>
-                    <option value="long">Long</option>
-                    <option value="short">Short</option>
-                  </select>
-                </div>
-                <div>
-                  <label style={{ display: 'block', fontSize: '9px', color: '#666', marginBottom: '4px', textTransform: 'uppercase' }}>Outcome</label>
-                  <select value={quickTradeOutcome} onChange={e => setQuickTradeOutcome(e.target.value)} style={{ width: '100%', padding: '8px 10px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px', color: quickTradeOutcome === 'win' ? '#22c55e' : quickTradeOutcome === 'loss' ? '#ef4444' : '#f59e0b', fontSize: '12px', boxSizing: 'border-box' }}>
-                    <option value="win">Win</option>
-                    <option value="loss">Loss</option>
-                    <option value="be">Breakeven</option>
-                  </select>
-                </div>
-              </div>
-
-              {/* Secondary Fields */}
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '12px' }}>
-                <div>
-                  <label style={{ display: 'block', fontSize: '9px', color: '#666', marginBottom: '4px', textTransform: 'uppercase' }}>RR</label>
-                  <input type="text" value={quickTradeRR} onChange={e => setQuickTradeRR(e.target.value)} placeholder="2.5" style={{ width: '100%', padding: '8px 10px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '12px', boxSizing: 'border-box' }} />
-                </div>
-                <div>
-                  <label style={{ display: 'block', fontSize: '9px', color: '#666', marginBottom: '4px', textTransform: 'uppercase' }}>% Risk</label>
-                  <input type="number" value={quickTradeRiskPercent} onChange={e => setQuickTradeRiskPercent(e.target.value)} placeholder="1" style={{ width: '100%', padding: '8px 10px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '12px', boxSizing: 'border-box' }} />
-                </div>
-              </div>
-
-              {/* Date */}
-              <div style={{ marginBottom: '12px' }}>
-                <label style={{ display: 'block', fontSize: '9px', color: '#666', marginBottom: '4px', textTransform: 'uppercase' }}>Date</label>
-                <input type="date" value={quickTradeDate} onChange={e => setQuickTradeDate(e.target.value)} style={{ width: '100%', padding: '8px 10px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '12px', boxSizing: 'border-box' }} />
-              </div>
-
-              {/* Optional Fields - Collapsible when not expanded */}
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '12px', marginBottom: '12px' }}>
-                <div>
-                  <label style={{ display: 'block', fontSize: '9px', color: '#666', marginBottom: '4px', textTransform: 'uppercase' }}>Confidence</label>
-                  <select value={quickTradeConfidence} onChange={e => setQuickTradeConfidence(e.target.value)} style={{ width: '100%', padding: '8px 10px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '12px' }}>
-                    <option value="">-</option>
-                    <option value="High">High</option>
-                    <option value="Medium">Medium</option>
-                    <option value="Low">Low</option>
-                  </select>
-                </div>
-                <div>
-                  <label style={{ display: 'block', fontSize: '9px', color: '#666', marginBottom: '4px', textTransform: 'uppercase' }}>Rating</label>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <div style={{ display: 'inline-flex', gap: '2px', padding: '6px 10px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px' }} onMouseLeave={() => setHoverRating(0)}>
-                      {[1, 2, 3, 4, 5].map(star => {
-                        const displayRating = hoverRating || parseFloat(quickTradeRating) || 0
-                        const isFullStar = displayRating >= star
-                        const isHalfStar = displayRating >= star - 0.5 && displayRating < star
-                        return (
-                          <div key={star} style={{ position: 'relative', width: '24px', height: '24px', cursor: 'pointer' }}
-                            onMouseMove={(e) => { const rect = e.currentTarget.getBoundingClientRect(); const x = e.clientX - rect.left; setHoverRating(x < rect.width / 2 ? star - 0.5 : star) }}
-                            onClick={(e) => { const rect = e.currentTarget.getBoundingClientRect(); const x = e.clientX - rect.left; const newRating = x < rect.width / 2 ? star - 0.5 : star; setQuickTradeRating(parseFloat(quickTradeRating) === newRating ? '' : String(newRating)) }}>
-                            <span style={{ position: 'absolute', color: '#2a2a35', fontSize: '24px', lineHeight: 1 }}>★</span>
-                            {isHalfStar && <span style={{ position: 'absolute', color: '#22c55e', fontSize: '24px', lineHeight: 1, width: '48%', overflow: 'hidden' }}>★</span>}
-                            {isFullStar && <span style={{ position: 'absolute', color: '#22c55e', fontSize: '24px', lineHeight: 1 }}>★</span>}
-                          </div>
-                        )
-                      })}
-                    </div>
-                    <span style={{ background: '#1a1a22', padding: '4px 8px', borderRadius: '4px', fontSize: '12px', color: '#fff', whiteSpace: 'nowrap', minWidth: '35px', textAlign: 'center' }}>
-                      {hoverRating || parseFloat(quickTradeRating) || 0} / 5
-                    </span>
-                  </div>
-                </div>
-                <div>
-                  <label style={{ display: 'block', fontSize: '9px', color: '#666', marginBottom: '4px', textTransform: 'uppercase' }}>Timeframe</label>
-                  <select value={quickTradeTimeframe} onChange={e => setQuickTradeTimeframe(e.target.value)} style={{ width: '100%', padding: '8px 10px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '12px' }}>
-                    <option value="">-</option>
-                    <option value="1m">1m</option>
-                    <option value="5m">5m</option>
-                    <option value="15m">15m</option>
-                    <option value="1H">1H</option>
-                    <option value="4H">4H</option>
-                    <option value="Daily">Daily</option>
-                  </select>
-                </div>
-                <div>
-                  <label style={{ display: 'block', fontSize: '9px', color: '#666', marginBottom: '4px', textTransform: 'uppercase' }}>Session</label>
-                  <select value={quickTradeSession} onChange={e => setQuickTradeSession(e.target.value)} style={{ width: '100%', padding: '8px 10px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '12px' }}>
-                    <option value="">-</option>
-                    <option value="London">London</option>
-                    <option value="New York">NY</option>
-                    <option value="Asian">Asian</option>
-                  </select>
-                </div>
-              </div>
-
-              {/* Custom Inputs */}
-              {getSelectedAccountCustomInputs().length > 0 && (
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '12px', marginBottom: '12px' }}>
-                  {getSelectedAccountCustomInputs().map(input => (
-                    <div key={input.id}>
-                      <label style={{ display: 'block', fontSize: '9px', color: '#666', marginBottom: '4px', textTransform: 'uppercase' }}>{(input.label || input.id).slice(0, 10)}</label>
-                      <select value={quickTradeExtraData[input.id] || ''} onChange={e => setQuickTradeExtraData(prev => ({ ...prev, [input.id]: e.target.value }))} style={{ width: '100%', padding: '8px 10px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '12px' }}>
-                        <option value="">-</option>
-                        {(input.options || []).map(opt => <option key={getOptVal(opt)} value={getOptVal(opt)}>{getOptVal(opt)}</option>)}
-                      </select>
-                    </div>
-                  ))}
-                </div>
-              )}
-
-              {/* Notes */}
-              <div style={{ marginBottom: '12px' }}>
-                <label style={{ display: 'block', fontSize: '9px', color: '#666', marginBottom: '4px', textTransform: 'uppercase' }}>Notes</label>
-                <input type="text" value={quickTradeNotes} onChange={e => setQuickTradeNotes(e.target.value)} placeholder="Quick notes..." style={{ width: '100%', padding: '8px 10px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '12px', boxSizing: 'border-box' }} />
-              </div>
-
-              {/* Action Buttons */}
-              <div style={{ display: 'flex', gap: '12px' }}>
-                <button onClick={submitQuickTrade} disabled={submittingTrade || !quickTradeSymbol.trim() || !quickTradePnl || !quickTradeDate} style={{ flex: 1, padding: '12px', background: (submittingTrade || !quickTradeSymbol.trim() || !quickTradePnl || !quickTradeDate) ? '#1a1a22' : 'linear-gradient(135deg, #9333ea 0%, #7c3aed 100%)', border: 'none', borderRadius: '8px', color: (submittingTrade || !quickTradeSymbol.trim() || !quickTradePnl || !quickTradeDate) ? '#666' : '#fff', fontWeight: 600, fontSize: '13px', cursor: (submittingTrade || !quickTradeSymbol.trim() || !quickTradePnl || !quickTradeDate) ? 'not-allowed' : 'pointer', transition: 'all 0.2s', boxShadow: (submittingTrade || !quickTradeSymbol.trim() || !quickTradePnl || !quickTradeDate) ? 'none' : '0 0 20px rgba(147,51,234,0.5), 0 0 40px rgba(147,51,234,0.3)' }}>
-                  {submittingTrade ? 'Adding...' : 'Log Trade'}
-                </button>
-                <button onClick={() => setShowEditInputsModal(true)} style={{ padding: '12px 14px', background: '#0a0a0f', border: '1px solid #2a2a35', borderRadius: '8px', color: '#888', fontWeight: 500, fontSize: '12px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" /><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" /></svg>
-                  Edit
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Main Content */}
-        <div style={{ flex: 1, minWidth: 0 }}>
+        {/* Main Content Area */}
         {accounts.length === 0 ? (
           <div style={{ textAlign: 'center', padding: isMobile ? '40px 20px' : '80px 40px', background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '10px' }}>
             <h2 style={{ fontSize: isMobile ? '20px' : '24px', marginBottom: '12px' }}>Welcome to TRADESAVE+</h2>
@@ -1977,7 +1844,7 @@ export default function DashboardPage() {
               </table>
             </div>
           ) : (
-          <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(3, 1fr)', gap: '12px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(3, 1fr)', gap: '16px' }}>
             {accounts.map(account => {
               const accTrades = trades[account.id] || []
               const wins = accTrades.filter(t => t.outcome === 'win').length
@@ -1993,50 +1860,58 @@ export default function DashboardPage() {
               accTrades.forEach(t => { if (!tradeDays[t.date]) tradeDays[t.date] = 0; tradeDays[t.date] += parseFloat(t.pnl) || 0 })
               const consistency = Object.keys(tradeDays).length > 0 ? Math.round((Object.values(tradeDays).filter(v => v > 0).length / Object.keys(tradeDays).length) * 100) : 0
               const recentTrades = [...accTrades].reverse()
+              const isProfitable = totalPnl >= 0
 
               return (
-                <div key={account.id} style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '10px', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
-                  {/* Compact Header */}
-                  <div style={{ padding: '12px 14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #1a1a22' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <span style={{ fontSize: '16px', fontWeight: 700, color: '#fff' }}>{account.name}</span>
-                      <button onClick={(e) => { e.stopPropagation(); setEditName(account.name); setEditProfitTarget(account.profit_target || ''); setEditMaxDrawdown(account.max_drawdown || ''); setEditConsistencyEnabled(account.consistency_enabled || false); setEditConsistencyPct(account.consistency_pct || '30'); setEditDailyDdEnabled(account.daily_dd_enabled || false); setEditDailyDdPct(account.daily_dd_pct || ''); setEditDailyDdType(account.daily_dd_type || 'static'); setEditDailyDdLocksAt(account.daily_dd_locks_at || 'start_balance'); setEditDailyDdLocksAtPct(account.daily_dd_locks_at_pct || ''); setEditDailyDdResetTime(account.daily_dd_reset_time || '00:00'); setEditDailyDdResetTimezone(account.daily_dd_reset_timezone || 'Europe/London'); setEditMaxDdEnabled(account.max_dd_enabled || false); setEditMaxDdPct(account.max_dd_pct || ''); setEditMaxDdType(account.max_dd_type || 'static'); setEditMaxDdTrailingStopsAt(account.max_dd_trailing_stops_at || 'never'); setEditMaxDdLocksAtPct(account.max_dd_locks_at_pct || ''); setShowEditModal(account.id) }} style={{ background: 'transparent', border: 'none', cursor: 'pointer', padding: '2px' }}>
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#666" strokeWidth="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" /><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" /></svg>
-                      </button>
+                <div key={account.id} style={{ background: 'linear-gradient(135deg, #0f0f14 0%, #0a0a0f 100%)', border: '1px solid #1a1a22', borderRadius: '16px', overflow: 'hidden', display: 'flex', flexDirection: 'column', boxShadow: '0 4px 24px rgba(0,0,0,0.3)', transition: 'transform 0.2s, box-shadow 0.2s' }}>
+                  {/* Header with gradient accent */}
+                  <div style={{ padding: '16px 18px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', borderBottom: `1px solid ${isProfitable ? 'rgba(34,197,94,0.2)' : 'rgba(239,68,68,0.2)'}`, background: isProfitable ? 'linear-gradient(135deg, rgba(34,197,94,0.05) 0%, transparent 100%)' : 'linear-gradient(135deg, rgba(239,68,68,0.05) 0%, transparent 100%)' }}>
+                    <div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '6px' }}>
+                        <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: isProfitable ? '#22c55e' : '#ef4444', boxShadow: isProfitable ? '0 0 8px #22c55e' : '0 0 8px #ef4444' }} />
+                        <span style={{ fontSize: '17px', fontWeight: 700, color: '#fff', letterSpacing: '-0.3px' }}>{account.name}</span>
+                        <button onClick={(e) => { e.stopPropagation(); setEditName(account.name); setEditProfitTarget(account.profit_target || ''); setEditMaxDrawdown(account.max_drawdown || ''); setEditConsistencyEnabled(account.consistency_enabled || false); setEditConsistencyPct(account.consistency_pct || '30'); setEditDailyDdEnabled(account.daily_dd_enabled || false); setEditDailyDdPct(account.daily_dd_pct || ''); setEditDailyDdType(account.daily_dd_type || 'static'); setEditDailyDdLocksAt(account.daily_dd_locks_at || 'start_balance'); setEditDailyDdLocksAtPct(account.daily_dd_locks_at_pct || ''); setEditDailyDdResetTime(account.daily_dd_reset_time || '00:00'); setEditDailyDdResetTimezone(account.daily_dd_reset_timezone || 'Europe/London'); setEditMaxDdEnabled(account.max_dd_enabled || false); setEditMaxDdPct(account.max_dd_pct || ''); setEditMaxDdType(account.max_dd_type || 'static'); setEditMaxDdTrailingStopsAt(account.max_dd_trailing_stops_at || 'never'); setEditMaxDdLocksAtPct(account.max_dd_locks_at_pct || ''); setShowEditModal(account.id) }} style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid #2a2a35', borderRadius: '6px', cursor: 'pointer', padding: '4px 6px', display: 'flex', alignItems: 'center' }}>
+                          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#666" strokeWidth="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" /><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" /></svg>
+                        </button>
+                      </div>
+                      <div style={{ fontSize: '10px', color: '#555', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Balance</div>
                     </div>
-                    <span style={{ fontSize: '14px', fontWeight: 700, color: currentBalance >= (parseFloat(account.starting_balance) || 0) ? '#22c55e' : '#ef4444' }}>${currentBalance.toLocaleString()}</span>
+                    <div style={{ textAlign: 'right' }}>
+                      <div style={{ fontSize: '22px', fontWeight: 800, color: isProfitable ? '#22c55e' : '#ef4444', lineHeight: 1.1 }}>${currentBalance.toLocaleString()}</div>
+                      <div style={{ fontSize: '12px', color: isProfitable ? '#22c55e' : '#ef4444', marginTop: '2px' }}>{totalPnl >= 0 ? '+' : ''}${totalPnl.toLocaleString()}</div>
+                    </div>
                   </div>
 
                   {/* Mini Chart */}
-                  <div style={{ padding: '10px 14px', flex: 1 }}>
-                    <div style={{ height: '120px', position: 'relative' }}>
+                  <div style={{ padding: '12px 18px', flex: 1 }}>
+                    <div style={{ height: '110px', position: 'relative', background: '#0a0a0f', borderRadius: '10px', padding: '8px', border: '1px solid #1a1a22' }}>
                       <EquityCurve accountTrades={accTrades} startingBalance={account.starting_balance} account={account} showObjectiveLines={showObjectiveLinesMap[account.id] || false} />
                     </div>
                   </div>
 
-                  {/* Compact Stats Grid */}
-                  <div style={{ padding: '0 14px 10px' }}>
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '6px' }}>
+                  {/* Stats Grid - Enhanced */}
+                  <div style={{ padding: '0 18px 14px' }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px' }}>
                       {[
-                        { label: 'P&L', value: `${totalPnl >= 0 ? '+' : ''}$${totalPnl.toLocaleString()}`, color: totalPnl >= 0 ? '#22c55e' : '#ef4444' },
-                        { label: 'WIN', value: `${winrate}%`, color: winrate >= 50 ? '#22c55e' : '#ef4444' },
-                        { label: 'PF', value: profitFactor, color: profitFactor === '-' ? '#666' : profitFactor === '∞' ? '#22c55e' : parseFloat(profitFactor) >= 1 ? '#22c55e' : '#ef4444' },
-                        { label: 'RR', value: `${avgRR}R`, color: '#fff' },
-                        { label: 'TRADES', value: accTrades.length, color: '#fff' },
-                        { label: 'CONS', value: `${consistency}%`, color: '#fff' },
+                        { label: 'Win Rate', value: `${winrate}%`, color: winrate >= 50 ? '#22c55e' : '#ef4444' },
+                        { label: 'Profit Factor', value: profitFactor, color: profitFactor === '-' ? '#666' : profitFactor === '∞' ? '#22c55e' : parseFloat(profitFactor) >= 1 ? '#22c55e' : '#ef4444' },
+                        { label: 'Avg RR', value: `${avgRR}R`, color: '#fff' },
+                        { label: 'Trades', value: accTrades.length, color: '#8b5cf6' },
+                        { label: 'W / L', value: `${wins} / ${losses}`, color: '#fff' },
+                        { label: 'Consistency', value: `${consistency}%`, color: consistency >= 50 ? '#3b82f6' : '#666' },
                       ].map((stat, i) => (
-                        <div key={i} style={{ padding: '6px 8px', background: '#0a0a0f', borderRadius: '4px', textAlign: 'center' }}>
-                          <div style={{ fontSize: '8px', color: '#555', textTransform: 'uppercase' }}>{stat.label}</div>
-                          <div style={{ fontSize: '12px', fontWeight: 700, color: stat.color }}>{stat.value}</div>
+                        <div key={i} style={{ padding: '10px 8px', background: '#0a0a0f', borderRadius: '8px', textAlign: 'center', border: '1px solid #1a1a22' }}>
+                          <div style={{ fontSize: '9px', color: '#555', textTransform: 'uppercase', marginBottom: '4px', letterSpacing: '0.3px' }}>{stat.label}</div>
+                          <div style={{ fontSize: '14px', fontWeight: 700, color: stat.color }}>{stat.value}</div>
                         </div>
                       ))}
                     </div>
                   </div>
 
-                  {/* Compact Buttons */}
-                  <div onClick={e => e.stopPropagation()} style={{ padding: '10px 14px', display: 'flex', gap: '8px', borderTop: '1px solid #1a1a22' }}>
-                    <a href={`/account/${account.id}`} style={{ flex: 2, padding: '10px', background: '#22c55e', borderRadius: '6px', color: '#fff', fontWeight: 600, fontSize: '12px', textAlign: 'center', textDecoration: 'none' }}>ENTER</a>
-                    <a href={`/account/${account.id}?tab=statistics`} style={{ flex: 1, padding: '10px', background: 'transparent', border: '1px solid #22c55e', borderRadius: '6px', color: '#22c55e', fontWeight: 600, fontSize: '12px', textAlign: 'center', textDecoration: 'none' }}>STATS</a>
+                  {/* Action Buttons - Enhanced */}
+                  <div onClick={e => e.stopPropagation()} style={{ padding: '14px 18px', display: 'flex', gap: '10px', borderTop: '1px solid #1a1a22', background: 'rgba(0,0,0,0.2)' }}>
+                    <a href={`/account/${account.id}`} style={{ flex: 2, padding: '12px', background: 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)', borderRadius: '10px', color: '#fff', fontWeight: 700, fontSize: '13px', textAlign: 'center', textDecoration: 'none', boxShadow: '0 4px 16px rgba(34,197,94,0.3)', transition: 'transform 0.2s' }}>ENTER JOURNAL</a>
+                    <a href={`/account/${account.id}?tab=statistics`} style={{ flex: 1, padding: '12px', background: 'transparent', border: '1px solid rgba(34,197,94,0.5)', borderRadius: '10px', color: '#22c55e', fontWeight: 600, fontSize: '13px', textAlign: 'center', textDecoration: 'none', transition: 'all 0.2s' }}>STATS</a>
                   </div>
                 </div>
               )
@@ -2045,8 +1920,6 @@ export default function DashboardPage() {
           )}
           </>
         )}
-        </div>
-        </div>
 
         {/* Modals */}
         {showModal && (
