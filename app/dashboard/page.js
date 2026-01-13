@@ -1093,19 +1093,22 @@ export default function DashboardPage() {
       if (lowestDdFloor !== null) yMin = Math.min(yMin, lowestDdFloor - paddingAmount)
     }
 
-    // Round to nice numbers - use appropriate step size based on range
-    const yRangeRaw = yMax - yMin || 1000
-    const getNiceStep = (range) => {
-      if (range <= 500) return 50
-      if (range <= 1000) return 100
-      if (range <= 2500) return 250
-      if (range <= 5000) return 500
-      if (range <= 10000) return 1000
-      if (range <= 25000) return 2500
-      if (range <= 50000) return 5000
-      return Math.ceil(range / 10 / 1000) * 1000
-    }
-    const yStep = getNiceStep(yRangeRaw)
+    // Calculate step size to get ~6 unique labels based on display range
+    const displayRange = yMax - yMin || 1000
+    const targetLabels = 6
+    const rawStep = displayRange / (targetLabels - 1)
+
+    // Round to a nice step value
+    const magnitude = Math.pow(10, Math.floor(Math.log10(rawStep)))
+    const normalized = rawStep / magnitude
+    let niceStep
+    if (normalized <= 1) niceStep = magnitude
+    else if (normalized <= 2) niceStep = 2 * magnitude
+    else if (normalized <= 2.5) niceStep = 2.5 * magnitude
+    else if (normalized <= 5) niceStep = 5 * magnitude
+    else niceStep = 10 * magnitude
+
+    const yStep = niceStep
     yMax = Math.ceil(yMax / yStep) * yStep
     yMin = Math.floor(yMin / yStep) * yStep
     // Don't go negative if data is all positive
@@ -1124,6 +1127,17 @@ export default function DashboardPage() {
     const yLabels = []
     for (let v = yMax; v >= yMin; v -= yStep) {
       yLabels.push(v)
+    }
+
+    // Format y-axis label with appropriate precision based on step size
+    const formatYLabel = (v) => {
+      if (Math.abs(v) >= 1000000) return `$${(v/1000000).toFixed(1)}M`
+      if (Math.abs(v) >= 1000) {
+        // Use decimal precision when step is small to avoid duplicate labels
+        const needsDecimal = yStep < 1000
+        return needsDecimal ? `$${(v/1000).toFixed(1)}k` : `$${(v/1000).toFixed(0)}k`
+      }
+      return `$${v}`
     }
 
     const datesWithTrades = points.filter(p => p.date).map((p, idx) => ({ date: p.date, pointIdx: idx + 1 }))
@@ -1328,7 +1342,7 @@ export default function DashboardPage() {
               const isLast = i === yLabels.length - 1
               return (
                 <div key={i} style={{ position: 'absolute', left: 0, ...(isLast ? { bottom: 0 } : { top: `${topPct}%`, transform: 'translateY(-50%)' }), display: 'flex', alignItems: isLast ? 'flex-end' : 'center' }}>
-                  <span style={{ fontSize: '10px', color: '#999', lineHeight: 1 }}>{v >= 1000000 ? `$${(v/1000000).toFixed(1)}M` : v >= 1000 ? `$${(v/1000).toFixed(0)}k` : `$${v}`}</span>
+                  <span style={{ fontSize: '10px', color: '#999', lineHeight: 1 }}>{formatYLabel(v)}</span>
                   <div style={{ width: '4px', height: '1px', background: '#333', marginLeft: '4px' }} />
                 </div>
               )
@@ -1336,7 +1350,7 @@ export default function DashboardPage() {
             {/* Grey start value on Y-axis */}
             {startLineY !== null && (
               <div style={{ position: 'absolute', left: 0, top: `${startLineY}%`, transform: 'translateY(-50%)', display: 'flex', alignItems: 'center' }}>
-                <span style={{ fontSize: '10px', color: '#888', lineHeight: 1, fontWeight: 600 }}>{start >= 1000000 ? `$${(start/1000000).toFixed(1)}M` : start >= 1000 ? `$${(start/1000).toFixed(0)}k` : `$${start}`}</span>
+                <span style={{ fontSize: '10px', color: '#888', lineHeight: 1, fontWeight: 600 }}>{formatYLabel(start)}</span>
                 <div style={{ width: '4px', height: '1px', background: '#888', marginLeft: '4px' }} />
               </div>
             )}

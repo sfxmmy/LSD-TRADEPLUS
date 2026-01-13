@@ -2318,22 +2318,24 @@ export default function AccountPage() {
                               if (lowestFloor !== Infinity) yMin = Math.min(yMin, lowestFloor - paddingAmount)
                             }
 
-                            // Round to nice numbers - use appropriate step size based on range
-                            const yRangeRaw = yMax - yMin || 1000
-                            const getNiceStep = (range) => {
-                              if (range <= 500) return 50
-                              if (range <= 1000) return 100
-                              if (range <= 2500) return 250
-                              if (range <= 5000) return 500
-                              if (range <= 10000) return 1000
-                              if (range <= 25000) return 2500
-                              if (range <= 50000) return 5000
-                              return Math.ceil(range / 10 / 1000) * 1000
-                            }
-                            const yStep = getNiceStep(yRangeRaw)
+                            // Calculate step size to get ~6 unique labels based on display range
+                            const displayRange = yMax - yMin || 1000
+                            const targetLabels = 6
+                            const rawStep = displayRange / (targetLabels - 1)
+
+                            // Round to a nice step value
+                            const magnitude = Math.pow(10, Math.floor(Math.log10(rawStep)))
+                            const normalized = rawStep / magnitude
+                            let niceStep
+                            if (normalized <= 1) niceStep = magnitude
+                            else if (normalized <= 2) niceStep = 2 * magnitude
+                            else if (normalized <= 2.5) niceStep = 2.5 * magnitude
+                            else if (normalized <= 5) niceStep = 5 * magnitude
+                            else niceStep = 10 * magnitude
+
+                            const yStep = niceStep
                             // For multi-line mode, use tighter rounding to preserve 1/8 padding
                             if (equityCurveGroupBy !== 'total') {
-                              // Keep yMax and yMin close to calculated values, only round to nearest step/2
                               const halfStep = yStep / 2
                               yMax = Math.ceil(yMax / halfStep) * halfStep
                               yMin = Math.floor(yMin / halfStep) * halfStep
@@ -2345,7 +2347,17 @@ export default function AccountPage() {
 
                             const yRange = yMax - yMin || yStep
 
-                            // Generate more y-axis labels (aim for 8-12 labels)
+                            // Format y-axis label with appropriate precision based on step size
+                            const formatYLabel = (v) => {
+                              if (Math.abs(v) >= 1000000) return `$${(v/1000000).toFixed(1)}M`
+                              if (Math.abs(v) >= 1000) {
+                                const needsDecimal = yStep < 1000
+                                return needsDecimal ? `$${(v/1000).toFixed(1)}k` : `$${(v/1000).toFixed(0)}k`
+                              }
+                              return `$${v}`
+                            }
+
+                            // Generate y-axis labels
                             const yLabels = []
                             for (let v = yMax; v >= yMin; v -= yStep) yLabels.push(v)
                             
@@ -2659,7 +2671,7 @@ export default function AccountPage() {
                                       const topPct = yLabels.length > 1 ? (i / (yLabels.length - 1)) * 100 : 0
                                       return (
                                         <Fragment key={i}>
-                                          <span style={{ position: 'absolute', right: '5px', top: `${topPct}%`, transform: 'translateY(-50%)', fontSize: '8px', color: '#999', lineHeight: 1, textAlign: 'right' }}>{equityCurveGroupBy === 'total' ? `$${(v/1000).toFixed(v >= 1000 ? 0 : 1)}k` : `$${v}`}</span>
+                                          <span style={{ position: 'absolute', right: '5px', top: `${topPct}%`, transform: 'translateY(-50%)', fontSize: '8px', color: '#999', lineHeight: 1, textAlign: 'right' }}>{formatYLabel(v)}</span>
                                           <div style={{ position: 'absolute', right: 0, top: `${topPct}%`, width: '4px', borderTop: '1px solid #2a2a35' }} />
                                         </Fragment>
                                       )
@@ -2667,28 +2679,28 @@ export default function AccountPage() {
                                     {/* Start value on Y-axis - grey */}
                                     {startLineY !== null && (
                                       <Fragment>
-                                        <span style={{ position: 'absolute', right: '5px', top: `${startLineY}%`, transform: 'translateY(-50%)', fontSize: '8px', color: '#888', lineHeight: 1, textAlign: 'right', fontWeight: 600 }}>{displayStartingBalance >= 1000000 ? `$${(displayStartingBalance/1000000).toFixed(1)}M` : displayStartingBalance >= 1000 ? `$${(displayStartingBalance/1000).toFixed(0)}k` : `$${displayStartingBalance}`}</span>
+                                        <span style={{ position: 'absolute', right: '5px', top: `${startLineY}%`, transform: 'translateY(-50%)', fontSize: '8px', color: '#888', lineHeight: 1, textAlign: 'right', fontWeight: 600 }}>{formatYLabel(displayStartingBalance)}</span>
                                         <div style={{ position: 'absolute', right: 0, top: `${startLineY}%`, width: '4px', borderTop: '1px solid #888' }} />
                                       </Fragment>
                                     )}
                                     {/* Red DD floor value on Y-axis */}
                                     {showObjectiveLines && ddFloorY !== null && (
                                       <Fragment>
-                                        <span style={{ position: 'absolute', right: '5px', top: `${ddFloorY}%`, transform: 'translateY(-50%)', fontSize: '8px', color: propFirmDrawdown?.breached ? '#ef4444' : '#f59e0b', lineHeight: 1, textAlign: 'right', fontWeight: 600 }}>{ddFloor >= 1000000 ? `$${(ddFloor/1000000).toFixed(1)}M` : ddFloor >= 1000 ? `$${(ddFloor/1000).toFixed(0)}k` : `$${ddFloor}`}</span>
+                                        <span style={{ position: 'absolute', right: '5px', top: `${ddFloorY}%`, transform: 'translateY(-50%)', fontSize: '8px', color: propFirmDrawdown?.breached ? '#ef4444' : '#f59e0b', lineHeight: 1, textAlign: 'right', fontWeight: 600 }}>{formatYLabel(ddFloor)}</span>
                                         <div style={{ position: 'absolute', right: 0, top: `${ddFloorY}%`, width: '4px', borderTop: `1px solid ${propFirmDrawdown?.breached ? '#ef4444' : '#f59e0b'}` }} />
                                       </Fragment>
                                     )}
                                     {/* Profit target value on Y-axis */}
                                     {showObjectiveLines && profitTargetY !== null && (
                                       <Fragment>
-                                        <span style={{ position: 'absolute', right: '5px', top: `${profitTargetY}%`, transform: 'translateY(-50%)', fontSize: '8px', color: distanceFromTarget?.passed ? '#22c55e' : '#3b82f6', lineHeight: 1, textAlign: 'right', fontWeight: 600 }}>{profitTarget >= 1000000 ? `$${(profitTarget/1000000).toFixed(1)}M` : profitTarget >= 1000 ? `$${(profitTarget/1000).toFixed(0)}k` : `$${profitTarget}`}</span>
+                                        <span style={{ position: 'absolute', right: '5px', top: `${profitTargetY}%`, transform: 'translateY(-50%)', fontSize: '8px', color: distanceFromTarget?.passed ? '#22c55e' : '#3b82f6', lineHeight: 1, textAlign: 'right', fontWeight: 600 }}>{formatYLabel(profitTarget)}</span>
                                         <div style={{ position: 'absolute', right: 0, top: `${profitTargetY}%`, width: '4px', borderTop: `1px solid ${distanceFromTarget?.passed ? '#22c55e' : '#3b82f6'}` }} />
                                       </Fragment>
                                     )}
                                     {/* Static Max DD floor value on Y-axis */}
                                     {showObjectiveLines && maxDdStaticFloorY !== null && (
                                       <Fragment>
-                                        <span style={{ position: 'absolute', right: '5px', top: `${maxDdStaticFloorY}%`, transform: 'translateY(-50%)', fontSize: '8px', color: '#ef4444', lineHeight: 1, textAlign: 'right', fontWeight: 600 }}>{maxDdStaticFloor >= 1000000 ? `$${(maxDdStaticFloor/1000000).toFixed(1)}M` : maxDdStaticFloor >= 1000 ? `$${(maxDdStaticFloor/1000).toFixed(0)}k` : `$${maxDdStaticFloor}`}</span>
+                                        <span style={{ position: 'absolute', right: '5px', top: `${maxDdStaticFloorY}%`, transform: 'translateY(-50%)', fontSize: '8px', color: '#ef4444', lineHeight: 1, textAlign: 'right', fontWeight: 600 }}>{formatYLabel(maxDdStaticFloor)}</span>
                                         <div style={{ position: 'absolute', right: 0, top: `${maxDdStaticFloorY}%`, width: '4px', borderTop: '1px solid #ef4444' }} />
                                       </Fragment>
                                     )}
@@ -3171,18 +3183,33 @@ export default function AccountPage() {
                     }
 
                     const maxAbs = Math.max(...displayData.map(x => Math.abs(x.pnl)), 1)
-                    const getNiceMax = (v) => {
-                      if (v <= 50) return Math.ceil(v / 10) * 10
-                      if (v <= 100) return Math.ceil(v / 20) * 20
-                      if (v <= 250) return Math.ceil(v / 50) * 50
-                      if (v <= 500) return Math.ceil(v / 100) * 100
-                      if (v <= 1000) return Math.ceil(v / 200) * 200
-                      return Math.ceil(v / 500) * 500
-                    }
-                    const yMax = getNiceMax(maxAbs)
-                    const yStep = yMax / 5
+
+                    // Calculate step size to get ~6 labels (no lower padding - starts from 0)
+                    const targetLabels = 6
+                    const rawStep = maxAbs / (targetLabels - 1)
+                    const magnitude = Math.pow(10, Math.floor(Math.log10(rawStep || 1)))
+                    const normalized = rawStep / magnitude
+                    let niceStep
+                    if (normalized <= 1) niceStep = magnitude
+                    else if (normalized <= 2) niceStep = 2 * magnitude
+                    else if (normalized <= 2.5) niceStep = 2.5 * magnitude
+                    else if (normalized <= 5) niceStep = 5 * magnitude
+                    else niceStep = 10 * magnitude
+
+                    const yStep = niceStep
+                    const yMax = Math.ceil(maxAbs / yStep) * yStep
                     const yLabels = []
                     for (let v = yMax; v >= 0; v -= yStep) yLabels.push(Math.round(v))
+
+                    // Format bar chart y-label with appropriate precision
+                    const formatBarYLabel = (v) => {
+                      if (v === 0) return '$0'
+                      if (Math.abs(v) >= 1000) {
+                        const needsDecimal = yStep < 1000
+                        return needsDecimal ? `$${(v/1000).toFixed(1)}k` : `$${(v/1000).toFixed(0)}k`
+                      }
+                      return `$${v}`
+                    }
 
                     const sortedData = [...displayData].sort((a, b) => new Date(a.date) - new Date(b.date))
 
@@ -3233,10 +3260,9 @@ export default function AccountPage() {
                           <div style={{ width: '28px', flexShrink: 0, position: 'relative', borderBottom: '1px solid transparent' }}>
                             {yLabels.map((v, i) => {
                               const topPct = yLabels.length > 1 ? (i / (yLabels.length - 1)) * 100 : 0
-                              const isLast = i === yLabels.length - 1
                               return (
                                 <Fragment key={i}>
-                                  <span style={{ position: 'absolute', right: '5px', top: `${topPct}%`, transform: 'translateY(-50%)', fontSize: '8px', color: '#999', lineHeight: 1, textAlign: 'right' }}>{isLast ? '$0' : `$${v}`}</span>
+                                  <span style={{ position: 'absolute', right: '5px', top: `${topPct}%`, transform: 'translateY(-50%)', fontSize: '8px', color: '#999', lineHeight: 1, textAlign: 'right' }}>{formatBarYLabel(v)}</span>
                                   <div style={{ position: 'absolute', right: 0, top: `${topPct}%`, width: '4px', borderTop: '1px solid #2a2a35' }} />
                                 </Fragment>
                               )
@@ -4911,19 +4937,22 @@ export default function AccountPage() {
                   if (lowestFloorEnl !== Infinity) yMin = Math.min(yMin, lowestFloorEnl - paddingAmountEnl)
                 }
 
-                // Round to nice numbers - use appropriate step size based on range
-                const yRangeRawEnl = yMax - yMin || 1000
-                const getNiceStepEnl = (range) => {
-                  if (range <= 500) return 50
-                  if (range <= 1000) return 100
-                  if (range <= 2500) return 250
-                  if (range <= 5000) return 500
-                  if (range <= 10000) return 1000
-                  if (range <= 25000) return 2500
-                  if (range <= 50000) return 5000
-                  return Math.ceil(range / 10 / 1000) * 1000
-                }
-                const yStep = getNiceStepEnl(yRangeRawEnl)
+                // Calculate step size to get ~10 unique labels for enlarged chart
+                const displayRangeEnl = yMax - yMin || 1000
+                const targetLabelsEnl = 10
+                const rawStepEnl = displayRangeEnl / (targetLabelsEnl - 1)
+
+                // Round to a nice step value
+                const magnitudeEnl = Math.pow(10, Math.floor(Math.log10(rawStepEnl)))
+                const normalizedEnl = rawStepEnl / magnitudeEnl
+                let niceStepEnl
+                if (normalizedEnl <= 1) niceStepEnl = magnitudeEnl
+                else if (normalizedEnl <= 2) niceStepEnl = 2 * magnitudeEnl
+                else if (normalizedEnl <= 2.5) niceStepEnl = 2.5 * magnitudeEnl
+                else if (normalizedEnl <= 5) niceStepEnl = 5 * magnitudeEnl
+                else niceStepEnl = 10 * magnitudeEnl
+
+                const yStep = niceStepEnl
                 // For multi-line mode, use tighter rounding to preserve 1/8 padding
                 if (equityCurveGroupBy !== 'total') {
                   const halfStep = yStep / 2
@@ -4935,16 +4964,17 @@ export default function AccountPage() {
                 }
                 if (yMin < 0 && actualMinEnl >= 0 && !showObjectiveLines) yMin = 0
 
-                // Ensure at least 10 labels for enlarged chart
-                let currentLabelsEnl = Math.round((yMax - yMin) / yStep)
-                if (currentLabelsEnl < 10) {
-                  const extraSteps = 10 - currentLabelsEnl
-                  yMax += Math.ceil(extraSteps / 2) * yStep
-                  yMin -= Math.floor(extraSteps / 2) * yStep
-                  if (yMin < 0 && actualMinEnl >= 0) yMin = 0
-                }
-
                 const yRange = yMax - yMin || yStep
+
+                // Format y-axis label with appropriate precision based on step size
+                const formatYLabelEnl = (v) => {
+                  if (Math.abs(v) >= 1000000) return `$${(v/1000000).toFixed(1)}M`
+                  if (Math.abs(v) >= 1000) {
+                    const needsDecimal = yStep < 1000
+                    return needsDecimal ? `$${(v/1000).toFixed(1)}k` : `$${(v/1000).toFixed(0)}k`
+                  }
+                  return `$${v}`
+                }
                 const hasNegative = minBal < 0
                 const belowStartEnl = equityCurveGroupBy === 'total' && minBal < startingBalance
                 const zeroY = hasNegative ? ((yMax - 0) / yRange) * 100 : null
@@ -5055,7 +5085,7 @@ export default function AccountPage() {
                           const topPct = yLabels.length > 1 ? (i / (yLabels.length - 1)) * 100 : 0
                           return (
                             <Fragment key={i}>
-                              <span style={{ position: 'absolute', right: '5px', top: `${topPct}%`, transform: 'translateY(-50%)', fontSize: '10px', color: '#999', textAlign: 'right' }}>{equityCurveGroupBy === 'total' ? `$${(v/1000).toFixed(v >= 1000 ? 0 : 1)}k` : `$${v}`}</span>
+                              <span style={{ position: 'absolute', right: '5px', top: `${topPct}%`, transform: 'translateY(-50%)', fontSize: '10px', color: '#999', textAlign: 'right' }}>{formatYLabelEnl(v)}</span>
                               <div style={{ position: 'absolute', right: 0, top: `${topPct}%`, width: '4px', borderTop: '1px solid #2a2a35' }} />
                             </Fragment>
                           )
@@ -5063,21 +5093,21 @@ export default function AccountPage() {
                         {/* Start value on Y-axis - grey */}
                         {equityCurveGroupBy === 'total' && startYEnl >= 0 && startYEnl <= svgH && (
                           <Fragment>
-                            <span style={{ position: 'absolute', right: '5px', top: `${(startYEnl / svgH) * 100}%`, transform: 'translateY(-50%)', fontSize: '10px', color: '#888', textAlign: 'right', fontWeight: 600 }}>{startingBalance >= 1000000 ? `$${(startingBalance/1000000).toFixed(1)}M` : startingBalance >= 1000 ? `$${(startingBalance/1000).toFixed(0)}k` : `$${startingBalance}`}</span>
+                            <span style={{ position: 'absolute', right: '5px', top: `${(startYEnl / svgH) * 100}%`, transform: 'translateY(-50%)', fontSize: '10px', color: '#888', textAlign: 'right', fontWeight: 600 }}>{formatYLabelEnl(startingBalance)}</span>
                             <div style={{ position: 'absolute', right: 0, top: `${(startYEnl / svgH) * 100}%`, width: '4px', borderTop: '1px solid #888' }} />
                           </Fragment>
                         )}
                         {/* DD Floor value on Y-axis */}
                         {ddFloorYEnl !== null && (
                           <Fragment>
-                            <span style={{ position: 'absolute', right: '5px', top: `${ddFloorYEnl}%`, transform: 'translateY(-50%)', fontSize: '10px', color: propFirmDrawdown?.breached ? '#ef4444' : '#f59e0b', textAlign: 'right', fontWeight: 600 }}>{ddFloorEnl >= 1000000 ? `$${(ddFloorEnl/1000000).toFixed(1)}M` : ddFloorEnl >= 1000 ? `$${(ddFloorEnl/1000).toFixed(0)}k` : `$${ddFloorEnl}`}</span>
+                            <span style={{ position: 'absolute', right: '5px', top: `${ddFloorYEnl}%`, transform: 'translateY(-50%)', fontSize: '10px', color: propFirmDrawdown?.breached ? '#ef4444' : '#f59e0b', textAlign: 'right', fontWeight: 600 }}>{formatYLabelEnl(ddFloorEnl)}</span>
                             <div style={{ position: 'absolute', right: 0, top: `${ddFloorYEnl}%`, width: '4px', borderTop: `1px solid ${propFirmDrawdown?.breached ? '#ef4444' : '#f59e0b'}` }} />
                           </Fragment>
                         )}
                         {/* Profit target value on Y-axis */}
                         {profitTargetYEnl !== null && (
                           <Fragment>
-                            <span style={{ position: 'absolute', right: '5px', top: `${profitTargetYEnl}%`, transform: 'translateY(-50%)', fontSize: '10px', color: distanceFromTarget?.passed ? '#22c55e' : '#3b82f6', textAlign: 'right', fontWeight: 600 }}>{profitTargetEnl >= 1000000 ? `$${(profitTargetEnl/1000000).toFixed(1)}M` : profitTargetEnl >= 1000 ? `$${(profitTargetEnl/1000).toFixed(0)}k` : `$${profitTargetEnl}`}</span>
+                            <span style={{ position: 'absolute', right: '5px', top: `${profitTargetYEnl}%`, transform: 'translateY(-50%)', fontSize: '10px', color: distanceFromTarget?.passed ? '#22c55e' : '#3b82f6', textAlign: 'right', fontWeight: 600 }}>{formatYLabelEnl(profitTargetEnl)}</span>
                             <div style={{ position: 'absolute', right: 0, top: `${profitTargetYEnl}%`, width: '4px', borderTop: `1px solid ${distanceFromTarget?.passed ? '#22c55e' : '#3b82f6'}` }} />
                           </Fragment>
                         )}
