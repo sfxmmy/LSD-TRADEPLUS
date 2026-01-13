@@ -1846,7 +1846,7 @@ export default function DashboardPage() {
                               return (v < 0 ? '-' : '') + '$' + Math.round(abs)
                             }
 
-                            // Generate X-axis labels
+                            // Generate X-axis labels - matching account page structure
                             const xLabels = []
                             if (sortedTrades.length > 0) {
                               const firstDate = new Date(sortedTrades[0].date)
@@ -1854,7 +1854,7 @@ export default function DashboardPage() {
                               const totalDays = Math.max(1, Math.ceil((lastDate - firstDate) / (1000 * 60 * 60 * 24)))
                               const numXLabels = Math.min(6, sortedTrades.length)
                               for (let i = 0; i < numXLabels; i++) {
-                                const pct = numXLabels > 1 ? (i / (numXLabels - 1)) * 100 : 50
+                                const pct = numXLabels > 1 ? 5 + (i / (numXLabels - 1)) * 90 : 50
                                 const dateOffset = numXLabels > 1 ? Math.round((i / (numXLabels - 1)) * totalDays) : 0
                                 const labelDate = new Date(firstDate.getTime() + dateOffset * 24 * 60 * 60 * 1000)
                                 xLabels.push({ label: `${String(labelDate.getDate()).padStart(2, '0')}/${String(labelDate.getMonth() + 1).padStart(2, '0')}`, pct })
@@ -1901,35 +1901,38 @@ export default function DashboardPage() {
 
                             return (
                               <div style={{ display: 'flex', flexDirection: 'column' }}>
-                                {/* Chart row */}
-                                <div style={{ display: 'flex', height: '160px' }}>
-                                  {/* Y-axis labels with tick marks */}
-                                  <div style={{ width: '40px', flexShrink: 0, position: 'relative', borderRight: '1px solid #2a2a35' }}>
+                                {/* Chart row - Y-axis and chart area aligned */}
+                                <div style={{ flex: 1, display: 'flex', height: '160px' }}>
+                                  {/* Y-axis labels - same height as chart */}
+                                  <div style={{ width: '28px', flexShrink: 0, position: 'relative', borderRight: '1px solid #2a2a35', borderBottom: '1px solid transparent', overflow: 'visible' }}>
                                     {yLabels.map((v, i) => {
                                       const topPct = yLabels.length > 1 ? (i / (yLabels.length - 1)) * 100 : 0
                                       return (
                                         <Fragment key={i}>
-                                          <span style={{ position: 'absolute', right: '6px', top: `${topPct}%`, transform: 'translateY(-50%)', fontSize: '9px', color: '#888', lineHeight: 1, textAlign: 'right' }}>{formatYLabel(v)}</span>
+                                          <span style={{ position: 'absolute', right: '5px', top: `${topPct}%`, transform: 'translateY(-50%)', fontSize: '8px', color: '#999', lineHeight: 1, textAlign: 'right' }}>{formatYLabel(v)}</span>
                                           <div style={{ position: 'absolute', right: 0, top: `${topPct}%`, width: '4px', borderTop: '1px solid #2a2a35' }} />
                                         </Fragment>
                                       )
                                     })}
-                                    {/* Starting balance on Y-axis */}
+                                    {/* Starting balance on Y-axis - grey */}
                                     {startLineYPct >= 0 && startLineYPct <= 100 && (
                                       <Fragment>
-                                        <span style={{ position: 'absolute', right: '6px', top: `${startLineYPct}%`, transform: 'translateY(-50%)', fontSize: '9px', color: '#888', lineHeight: 1, textAlign: 'right', fontWeight: 600 }}>{formatYLabel(displayStartingBalance)}</span>
+                                        <span style={{ position: 'absolute', right: '5px', top: `${startLineYPct}%`, transform: 'translateY(-50%)', fontSize: '8px', color: '#888', lineHeight: 1, textAlign: 'right', fontWeight: 600 }}>{formatYLabel(displayStartingBalance)}</span>
                                         <div style={{ position: 'absolute', right: 0, top: `${startLineYPct}%`, width: '4px', borderTop: '1px solid #888' }} />
                                       </Fragment>
                                     )}
                                   </div>
                                   {/* Chart area */}
-                                  <div style={{ flex: 1, position: 'relative', borderBottom: '1px solid #2a2a35' }}>
-                                    {/* Horizontal grid lines */}
-                                    {yLabels.map((_, i) => {
-                                      if (i === yLabels.length - 1) return null
-                                      const topPct = yLabels.length > 1 ? (i / (yLabels.length - 1)) * 100 : 0
-                                      return <div key={i} style={{ position: 'absolute', left: 0, right: 0, top: `${topPct}%`, borderTop: '1px solid rgba(42,42,53,0.5)' }} />
-                                    })}
+                                  <div style={{ flex: 1, position: 'relative', overflow: 'visible', borderBottom: '1px solid #2a2a35' }}>
+                                    {/* Horizontal grid lines - bottom line is x-axis border */}
+                                    <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}>
+                                      {yLabels.map((_, i) => {
+                                        const topPct = yLabels.length > 1 ? (i / (yLabels.length - 1)) * 100 : 0
+                                        const isLast = i === yLabels.length - 1
+                                        if (isLast) return null
+                                        return <div key={i} style={{ position: 'absolute', left: 0, right: 0, top: `${topPct}%`, borderTop: '1px solid rgba(51,51,51,0.5)' }} />
+                                      })}
+                                    </div>
                                     {/* Starting balance dashed line */}
                                     {startLineYPct >= 0 && startLineYPct <= 100 && (
                                       <div style={{ position: 'absolute', left: 0, right: 0, top: `${startLineYPct}%`, borderTop: '1px dashed #666', zIndex: 1 }} />
@@ -1947,11 +1950,17 @@ export default function DashboardPage() {
                                     </svg>
                                   </div>
                                 </div>
-                                {/* X-axis labels */}
-                                <div style={{ display: 'flex', marginLeft: '40px', height: '20px', position: 'relative' }}>
-                                  {xLabels.map((x, i) => (
-                                    <span key={i} style={{ position: 'absolute', left: `${x.pct}%`, transform: 'translateX(-50%)', fontSize: '10px', color: '#666', marginTop: '4px' }}>{x.label}</span>
-                                  ))}
+                                {/* X-axis row - spacer + labels */}
+                                <div style={{ display: 'flex' }}>
+                                  <div style={{ width: '28px', flexShrink: 0 }} />
+                                  <div style={{ flex: 1, height: '24px', position: 'relative' }}>
+                                    {xLabels.map((l, i) => (
+                                      <div key={i} style={{ position: 'absolute', left: `${l.pct}%`, transform: 'translateX(-50%)', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                                        <div style={{ width: '1px', height: '4px', background: '#2a2a35' }} />
+                                        <span style={{ fontSize: '9px', color: '#999', marginTop: '4px', whiteSpace: 'nowrap' }}>{l.label}</span>
+                                      </div>
+                                    ))}
+                                  </div>
                                 </div>
                               </div>
                             )
