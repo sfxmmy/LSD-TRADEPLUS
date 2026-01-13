@@ -174,7 +174,7 @@ export default function SettingsPage() {
       <div style={{ minHeight: '100vh', background: '#0a0a0f', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         <div style={{ textAlign: 'center' }}>
           <div style={{ fontSize: '40px', marginBottom: '16px', fontWeight: 700 }}>
-            <span style={{ color: '#22c55e' }}>LSD</span><span style={{ color: '#fff' }}>TRADE</span><span style={{ color: '#22c55e' }}>+</span>
+            <span style={{ color: '#22c55e' }}>TRADE</span><span style={{ color: '#fff' }}>SAVE</span><span style={{ color: '#22c55e' }}>+</span>
           </div>
           <div style={{ color: '#999' }}>Loading...</div>
         </div>
@@ -189,7 +189,7 @@ export default function SettingsPage() {
       {/* Header */}
       <header style={{ padding: '4px 40px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #1a1a22' }}>
         <a href="/" style={{ fontSize: '42px', fontWeight: 700, textDecoration: 'none', letterSpacing: '-0.5px' }}>
-          <span style={{ color: '#22c55e' }}>LSD</span><span style={{ color: '#fff' }}>TRADE</span><span style={{ color: '#22c55e' }}>+</span>
+          <span style={{ color: '#22c55e' }}>TRADE</span><span style={{ color: '#fff' }}>SAVE</span><span style={{ color: '#22c55e' }}>+</span>
         </a>
         <a href="/dashboard" style={{ padding: '8px 16px', background: '#22c55e', borderRadius: '6px', color: '#fff', fontWeight: 600, fontSize: '13px', textDecoration: 'none' }}>
           Back to Journal
@@ -363,7 +363,7 @@ export default function SettingsPage() {
 
           {profile?.subscription_status === 'free subscription' && (
             <div style={{ padding: '12px', background: 'rgba(59,130,246,0.1)', border: '1px solid rgba(59,130,246,0.3)', borderRadius: '8px', color: '#3b82f6', fontSize: '14px' }}>
-              You have free access to LSDTRADE+
+              You have free access to TRADESAVE+
             </div>
           )}
 
@@ -422,7 +422,7 @@ export default function SettingsPage() {
         {/* Sign Out Section */}
         <div style={{ background: '#14141a', border: '1px solid #222230', borderRadius: '16px', padding: '24px' }}>
           <h2 style={{ fontSize: '16px', fontWeight: 600, marginBottom: '12px', color: '#fff' }}>Account</h2>
-          <p style={{ color: '#666', fontSize: '14px', marginBottom: '16px' }}>Sign out of your LSDTRADE+ account</p>
+          <p style={{ color: '#666', fontSize: '14px', marginBottom: '16px' }}>Sign out of your TRADESAVE+ account</p>
           <button
             onClick={handleSignOut}
             style={{

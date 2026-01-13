@@ -1,7 +1,7 @@
 import './globals.css'
 
 export const metadata = {
-  title: 'LSDTRADE+ | Trading Journal',
+  title: 'TRADESAVE+ | Trading Journal',
   description: 'Professional trading journal for serious traders',
 }
 

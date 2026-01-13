@@ -5,7 +5,7 @@ import Stripe from 'stripe'
 export async function POST(request) {
   try {
     // Get site URL - fallback to production URL if env var not set
-    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://lsdtradeplus.com'
+    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://tradesaveplus.com'
 
     // Get auth token from Authorization header
     const authHeader = request.headers.get('Authorization')

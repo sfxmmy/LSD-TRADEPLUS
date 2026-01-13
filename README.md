@@ -1,4 +1,4 @@
-# LSDTRADE+ Trading Journal
+# TRADESAVE+ Trading Journal
 
 Professional trading journal application built with Next.js, Supabase, and Stripe.
 
@@ -65,12 +65,12 @@ Professional trading journal application built with Next.js, Supabase, and Strip
 2. Get your **Secret Key** from Developers > API Keys → `STRIPE_SECRET_KEY`
 3. Create a Product:
    - Go to **Products > Add Product**
-   - Name: "LSDTRADE+ Pro"
+   - Name: "TRADESAVE+ Pro"
    - Price: £9/month recurring
    - Copy the Price ID → `STRIPE_PRICE_ID`
 4. Set up Webhook:
    - Go to **Developers > Webhooks > Add Endpoint**
-   - URL: `https://lsdtradeplus.com/api/stripe/webhook`
+   - URL: `https://tradesaveplus.com/api/stripe/webhook`
    - Events: Select all `checkout.session.*`, `customer.subscription.*`, `invoice.*`
    - Copy Signing Secret → `STRIPE_WEBHOOK_SECRET`
 
@@ -86,14 +86,14 @@ Professional trading journal application built with Next.js, Supabase, and Strip
    - `STRIPE_SECRET_KEY`
    - `STRIPE_WEBHOOK_SECRET`
    - `STRIPE_PRICE_ID`
-   - `NEXT_PUBLIC_SITE_URL` = `https://lsdtradeplus.com`
+   - `NEXT_PUBLIC_SITE_URL` = `https://tradesaveplus.com`
    - `DISCORD_GUILD_ID` (optional)
 5. Deploy!
 
 ### Step 5: Connect Domain
 
 1. In Vercel, go to **Settings > Domains**
-2. Add `lsdtradeplus.com`
+2. Add `tradesaveplus.com`
 3. Follow DNS configuration instructions
 
 ---
@@ -129,7 +129,7 @@ npm run dev
 ### Discord Member (Free)
 1. Visit homepage → Click "Discord Members"
 2. Login with Discord OAuth
-3. System checks if user is in LSDTRADE+ Discord server
+3. System checks if user is in TRADESAVE+ Discord server
 4. If YES → Free "active" subscription → Dashboard
 5. If NO → Show error, suggest paid subscription
 

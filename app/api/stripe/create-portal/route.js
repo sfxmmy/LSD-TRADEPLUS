@@ -41,7 +41,7 @@ export async function POST(request) {
     }
 
     const stripe = new Stripe(process.env.STRIPE_SECRET_KEY)
-    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://lsdtradeplus.com'
+    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://tradesaveplus.com'
 
     const session = await stripe.billingPortal.sessions.create({
       customer: customerId,

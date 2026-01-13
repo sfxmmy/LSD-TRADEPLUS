@@ -1,5 +1,5 @@
 -- =====================================================
--- LSDTRADE+ DATABASE SCHEMA v4
+-- TRADESAVE+ DATABASE SCHEMA v4
 -- Run this ENTIRE script in Supabase SQL Editor
 -- Safe to run multiple times (idempotent)
 -- =====================================================
