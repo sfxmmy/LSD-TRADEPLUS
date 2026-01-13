@@ -1339,27 +1339,26 @@ export default function DashboardPage() {
           <div style={{ flex: 1, position: 'relative', borderRight: '1px solid #2a2a35', overflow: 'visible' }}>
             {yLabels.map((v, i) => {
               const topPct = yLabels.length > 1 ? (i / (yLabels.length - 1)) * 100 : 0
-              const isLast = i === yLabels.length - 1
               return (
-                <div key={i} style={{ position: 'absolute', left: 0, ...(isLast ? { bottom: 0 } : { top: `${topPct}%`, transform: 'translateY(-50%)' }), display: 'flex', alignItems: isLast ? 'flex-end' : 'center' }}>
-                  <span style={{ fontSize: '10px', color: '#999', lineHeight: 1 }}>{formatYLabel(v)}</span>
-                  <div style={{ width: '4px', height: '1px', background: '#333', marginLeft: '4px' }} />
-                </div>
+                <>
+                  <span key={`label-${i}`} style={{ position: 'absolute', right: '5px', top: `${topPct}%`, transform: 'translateY(-50%)', fontSize: '10px', color: '#999', lineHeight: 1, textAlign: 'right' }}>{formatYLabel(v)}</span>
+                  <div key={`tick-${i}`} style={{ position: 'absolute', right: 0, top: `${topPct}%`, width: '4px', borderTop: '1px solid #333' }} />
+                </>
               )
             })}
             {/* Grey start value on Y-axis */}
             {startLineY !== null && (
-              <div style={{ position: 'absolute', left: 0, top: `${startLineY}%`, transform: 'translateY(-50%)', display: 'flex', alignItems: 'center' }}>
-                <span style={{ fontSize: '10px', color: '#888', lineHeight: 1, fontWeight: 600 }}>{formatYLabel(start)}</span>
-                <div style={{ width: '4px', height: '1px', background: '#888', marginLeft: '4px' }} />
-              </div>
+              <>
+                <span style={{ position: 'absolute', right: '5px', top: `${startLineY}%`, transform: 'translateY(-50%)', fontSize: '10px', color: '#888', lineHeight: 1, fontWeight: 600, textAlign: 'right' }}>{formatYLabel(start)}</span>
+                <div style={{ position: 'absolute', right: 0, top: `${startLineY}%`, width: '4px', borderTop: '1px solid #888' }} />
+              </>
             )}
           </div>
-          <div style={{ height: '26px' }} />
+          <div style={{ height: '26px', borderRight: '1px solid #2a2a35' }} />
         </div>
 
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, overflow: 'visible' }}>
-          <div style={{ flex: 1, position: 'relative', overflow: 'visible' }}>
+          <div style={{ flex: 1, position: 'relative', overflow: 'visible', borderBottom: '1px solid #2a2a35' }}>
                         {/* Legend - shows above top grid line when objective lines are visible */}
             {showObjectiveLines && (
               <div style={{
@@ -1501,8 +1500,8 @@ export default function DashboardPage() {
 
           {/* X-axis row - spacer + labels (matching stats graph structure) */}
           <div style={{ display: 'flex', height: '26px' }}>
-            <div style={{ width: '30px', flexShrink: 0, borderTop: '1px solid #2a2a35' }} />
-            <div style={{ flex: 1, position: 'relative', overflow: 'visible', borderTop: '1px solid #2a2a35' }}>
+            <div style={{ width: '30px', flexShrink: 0 }} />
+            <div style={{ flex: 1, position: 'relative', overflow: 'visible' }}>
               {xLabels.map((l, i) => (
                 <div key={i} style={{ position: 'absolute', left: `${l.pct}%`, transform: 'translateX(-50%)', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                   <div style={{ width: '1px', height: '4px', background: '#2a2a35' }} />
