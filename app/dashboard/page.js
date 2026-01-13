@@ -1565,34 +1565,11 @@ export default function DashboardPage() {
       </header>
 
       <div style={{ maxWidth: '1800px', margin: '0 auto', padding: '16px', minHeight: 'calc(100vh - 80px)' }}>
-        {/* Overall Stats Bar - Full Width Horizontal at Top */}
-        {!isMobile && accounts.length > 0 && (() => {
-          const stats = getCumulativeStats()
-          const allTrades = getAllTrades()
-          let cumPnl = 0
-          const sortedTrades = allTrades.slice().sort((a, b) => new Date(a.date) - new Date(b.date))
-          const pnlPoints = sortedTrades.map(t => {
-            cumPnl += parseFloat(t.pnl) || 0
-            return { value: cumPnl, date: t.date, symbol: t.symbol, pnl: parseFloat(t.pnl) || 0 }
-          })
-          const maxPnl = pnlPoints.length > 0 ? Math.max(...pnlPoints.map(p => p.value), 0) : 0
-          const minPnl = pnlPoints.length > 0 ? Math.min(...pnlPoints.map(p => p.value), 0) : 0
-          const pnlRange = maxPnl - minPnl || 1
-          const today = new Date().toISOString().split('T')[0]
-          const todaysPnl = allTrades.filter(t => t.date === today).reduce((sum, t) => sum + (parseFloat(t.pnl) || 0), 0)
-          const last7Days = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
-          const recentTradesCount = allTrades.filter(t => t.date >= last7Days).length
-          const uniqueDays = new Set(allTrades.map(t => t.date)).size
-          const dailyPnls = {}
-          allTrades.forEach(t => { dailyPnls[t.date] = (dailyPnls[t.date] || 0) + (parseFloat(t.pnl) || 0) })
-          const bestDay = Object.values(dailyPnls).length > 0 ? Math.max(...Object.values(dailyPnls)) : 0
-          const worstDay = Object.values(dailyPnls).length > 0 ? Math.min(...Object.values(dailyPnls)) : 0
-
-          return (
-            <div style={{ display: 'flex', gap: '16px', marginBottom: '20px' }}>
-              {/* LOG TRADE Widget - Fixed Left */}
-              {!isMobile && accounts.length > 0 && (
-                <div style={{ width: '280px', flexShrink: 0, background: 'linear-gradient(135deg, #0f0f14 0%, #0a0a0f 100%)', border: '1px solid #1a1a22', borderRadius: '16px', padding: '20px', boxShadow: '0 4px 24px rgba(0,0,0,0.3)' }}>
+        {/* Main Layout: LOG TRADE Sidebar (left) + Main Content (right 2/3) */}
+        {!isMobile && accounts.length > 0 ? (
+          <div style={{ display: 'flex', gap: '20px' }}>
+            {/* LOG TRADE Widget - Fixed Left Sidebar */}
+            <div style={{ width: '280px', flexShrink: 0, background: 'linear-gradient(135deg, #0f0f14 0%, #0a0a0f 100%)', border: '1px solid #1a1a22', borderRadius: '16px', padding: '20px', boxShadow: '0 4px 24px rgba(0,0,0,0.3)', alignSelf: 'flex-start' }}>
                   {/* Header */}
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px', paddingBottom: '12px', borderBottom: '1px solid rgba(34,197,94,0.2)' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -1670,22 +1647,101 @@ export default function DashboardPage() {
                     </div>
                   </div>
 
-                  {/* RR + Date */}
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '14px' }}>
+                  {/* Secondary Fields */}
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '12px' }}>
                     <div>
-                      <label style={{ display: 'block', fontSize: '9px', color: '#555', marginBottom: '5px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>RR</label>
-                      <input type="text" value={quickTradeRR} onChange={e => setQuickTradeRR(e.target.value)} placeholder="2.5" style={{ width: '100%', padding: '10px 12px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '8px', color: '#fff', fontSize: '13px', boxSizing: 'border-box' }} />
+                      <label style={{ display: 'block', fontSize: '9px', color: '#666', marginBottom: '4px', textTransform: 'uppercase' }}>RR</label>
+                      <input type="text" value={quickTradeRR} onChange={e => setQuickTradeRR(e.target.value)} placeholder="2.5" style={{ width: '100%', padding: '8px 10px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '12px', boxSizing: 'border-box' }} />
                     </div>
                     <div>
-                      <label style={{ display: 'block', fontSize: '9px', color: '#555', marginBottom: '5px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Date</label>
-                      <input type="date" value={quickTradeDate} onChange={e => setQuickTradeDate(e.target.value)} style={{ width: '100%', padding: '10px 12px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '8px', color: '#fff', fontSize: '13px', boxSizing: 'border-box' }} />
+                      <label style={{ display: 'block', fontSize: '9px', color: '#666', marginBottom: '4px', textTransform: 'uppercase' }}>% Risk</label>
+                      <input type="number" value={quickTradeRiskPercent} onChange={e => setQuickTradeRiskPercent(e.target.value)} placeholder="1" style={{ width: '100%', padding: '8px 10px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '12px', boxSizing: 'border-box' }} />
                     </div>
                   </div>
 
+                  {/* Date */}
+                  <div style={{ marginBottom: '12px' }}>
+                    <label style={{ display: 'block', fontSize: '9px', color: '#666', marginBottom: '4px', textTransform: 'uppercase' }}>Date</label>
+                    <input type="date" value={quickTradeDate} onChange={e => setQuickTradeDate(e.target.value)} style={{ width: '100%', padding: '8px 10px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '12px', boxSizing: 'border-box' }} />
+                  </div>
+
+                  {/* Optional Fields */}
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '12px', marginBottom: '12px' }}>
+                    <div>
+                      <label style={{ display: 'block', fontSize: '9px', color: '#666', marginBottom: '4px', textTransform: 'uppercase' }}>Confidence</label>
+                      <select value={quickTradeConfidence} onChange={e => setQuickTradeConfidence(e.target.value)} style={{ width: '100%', padding: '8px 10px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '12px' }}>
+                        <option value="">-</option>
+                        <option value="High">High</option>
+                        <option value="Medium">Medium</option>
+                        <option value="Low">Low</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label style={{ display: 'block', fontSize: '9px', color: '#666', marginBottom: '4px', textTransform: 'uppercase' }}>Rating</label>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <div style={{ display: 'inline-flex', gap: '2px', padding: '6px 10px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px' }} onMouseLeave={() => setHoverRating(0)}>
+                          {[1, 2, 3, 4, 5].map(star => {
+                            const displayRating = hoverRating || parseFloat(quickTradeRating) || 0
+                            const isFullStar = displayRating >= star
+                            const isHalfStar = displayRating >= star - 0.5 && displayRating < star
+                            return (
+                              <div key={star} style={{ position: 'relative', width: '24px', height: '24px', cursor: 'pointer' }}
+                                onMouseMove={(e) => { const rect = e.currentTarget.getBoundingClientRect(); const x = e.clientX - rect.left; setHoverRating(x < rect.width / 2 ? star - 0.5 : star) }}
+                                onClick={(e) => { const rect = e.currentTarget.getBoundingClientRect(); const x = e.clientX - rect.left; const newRating = x < rect.width / 2 ? star - 0.5 : star; setQuickTradeRating(parseFloat(quickTradeRating) === newRating ? '' : String(newRating)) }}>
+                                <span style={{ position: 'absolute', color: '#2a2a35', fontSize: '24px', lineHeight: 1 }}>★</span>
+                                {isHalfStar && <span style={{ position: 'absolute', color: '#22c55e', fontSize: '24px', lineHeight: 1, width: '48%', overflow: 'hidden' }}>★</span>}
+                                {isFullStar && <span style={{ position: 'absolute', color: '#22c55e', fontSize: '24px', lineHeight: 1 }}>★</span>}
+                              </div>
+                            )
+                          })}
+                        </div>
+                        <span style={{ background: '#1a1a22', padding: '4px 8px', borderRadius: '4px', fontSize: '12px', color: '#fff', whiteSpace: 'nowrap', minWidth: '35px', textAlign: 'center' }}>
+                          {hoverRating || parseFloat(quickTradeRating) || 0} / 5
+                        </span>
+                      </div>
+                    </div>
+                    <div>
+                      <label style={{ display: 'block', fontSize: '9px', color: '#666', marginBottom: '4px', textTransform: 'uppercase' }}>Timeframe</label>
+                      <select value={quickTradeTimeframe} onChange={e => setQuickTradeTimeframe(e.target.value)} style={{ width: '100%', padding: '8px 10px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '12px' }}>
+                        <option value="">-</option>
+                        <option value="1m">1m</option>
+                        <option value="5m">5m</option>
+                        <option value="15m">15m</option>
+                        <option value="1H">1H</option>
+                        <option value="4H">4H</option>
+                        <option value="Daily">Daily</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label style={{ display: 'block', fontSize: '9px', color: '#666', marginBottom: '4px', textTransform: 'uppercase' }}>Session</label>
+                      <select value={quickTradeSession} onChange={e => setQuickTradeSession(e.target.value)} style={{ width: '100%', padding: '8px 10px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '12px' }}>
+                        <option value="">-</option>
+                        <option value="London">London</option>
+                        <option value="New York">NY</option>
+                        <option value="Asian">Asian</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  {/* Custom Inputs */}
+                  {getSelectedAccountCustomInputs().length > 0 && (
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '12px', marginBottom: '12px' }}>
+                      {getSelectedAccountCustomInputs().map(input => (
+                        <div key={input.id}>
+                          <label style={{ display: 'block', fontSize: '9px', color: '#666', marginBottom: '4px', textTransform: 'uppercase' }}>{(input.label || input.id).slice(0, 10)}</label>
+                          <select value={quickTradeExtraData[input.id] || ''} onChange={e => setQuickTradeExtraData(prev => ({ ...prev, [input.id]: e.target.value }))} style={{ width: '100%', padding: '8px 10px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '12px' }}>
+                            <option value="">-</option>
+                            {(input.options || []).map(opt => <option key={getOptVal(opt)} value={getOptVal(opt)}>{getOptVal(opt)}</option>)}
+                          </select>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
                   {/* Notes */}
-                  <div style={{ marginBottom: '16px' }}>
-                    <label style={{ display: 'block', fontSize: '9px', color: '#555', marginBottom: '5px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Notes</label>
-                    <input type="text" value={quickTradeNotes} onChange={e => setQuickTradeNotes(e.target.value)} placeholder="Quick notes..." style={{ width: '100%', padding: '10px 12px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '8px', color: '#fff', fontSize: '13px', boxSizing: 'border-box' }} />
+                  <div style={{ marginBottom: '12px' }}>
+                    <label style={{ display: 'block', fontSize: '9px', color: '#666', marginBottom: '4px', textTransform: 'uppercase' }}>Notes</label>
+                    <input type="text" value={quickTradeNotes} onChange={e => setQuickTradeNotes(e.target.value)} placeholder="Quick notes..." style={{ width: '100%', padding: '8px 10px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '12px', boxSizing: 'border-box' }} />
                   </div>
 
                   {/* Action Buttons */}
@@ -1698,112 +1754,101 @@ export default function DashboardPage() {
                     </button>
                   </div>
                 </div>
-              )}
 
-              {/* Overall Stats - Right Side */}
-              <div style={{ flex: 1, background: 'linear-gradient(135deg, #0f0f14 0%, #0a0a0f 100%)', border: '1px solid #1a1a22', borderRadius: '16px', padding: '20px', boxShadow: '0 4px 24px rgba(0,0,0,0.3)' }}>
-                {/* Top Row: Title + Mini Chart + Key Stats */}
-                <div style={{ display: 'flex', alignItems: 'center', gap: '20px', marginBottom: '16px', paddingBottom: '16px', borderBottom: '1px solid rgba(34,197,94,0.15)' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                    <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: 'rgba(34,197,94,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#22c55e" strokeWidth="2"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg>
-                    </div>
-                    <div>
-                      <div style={{ fontSize: '10px', color: '#555', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '2px' }}>Overall Stats</div>
-                      <div style={{ fontSize: '24px', fontWeight: 800, color: cumPnl >= 0 ? '#22c55e' : '#ef4444' }}>{cumPnl >= 0 ? '+' : ''}${Math.round(cumPnl).toLocaleString()}</div>
-                    </div>
-                  </div>
+              {/* Right Content Area (Overall Stats + Journal Cards) */}
+              <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                {/* Overall Stats */}
+                {(() => {
+                  const stats = getCumulativeStats()
+                  const allTrades = getAllTrades()
+                  let cumPnl = 0
+                  const sortedTrades = allTrades.slice().sort((a, b) => new Date(a.date) - new Date(b.date))
+                  const pnlPoints = sortedTrades.map(t => {
+                    cumPnl += parseFloat(t.pnl) || 0
+                    return { value: cumPnl, date: t.date, symbol: t.symbol, pnl: parseFloat(t.pnl) || 0 }
+                  })
+                  const maxPnl = pnlPoints.length > 0 ? Math.max(...pnlPoints.map(p => p.value), 0) : 0
+                  const minPnl = pnlPoints.length > 0 ? Math.min(...pnlPoints.map(p => p.value), 0) : 0
+                  const pnlRange = maxPnl - minPnl || 1
+                  const today = new Date().toISOString().split('T')[0]
+                  const todaysPnl = allTrades.filter(t => t.date === today).reduce((sum, t) => sum + (parseFloat(t.pnl) || 0), 0)
+                  const uniqueDays = new Set(allTrades.map(t => t.date)).size
+                  const dailyPnls = {}
+                  allTrades.forEach(t => { dailyPnls[t.date] = (dailyPnls[t.date] || 0) + (parseFloat(t.pnl) || 0) })
+                  const bestDay = Object.values(dailyPnls).length > 0 ? Math.max(...Object.values(dailyPnls)) : 0
+                  const worstDay = Object.values(dailyPnls).length > 0 ? Math.min(...Object.values(dailyPnls)) : 0
 
-                  {/* Mini Chart */}
-                  {pnlPoints.length > 1 && (() => {
-                    const svgW = 140, svgH = 45
-                    const chartPts = pnlPoints.map((p, i) => ({
-                      x: pnlPoints.length > 1 ? (i / (pnlPoints.length - 1)) * svgW : svgW / 2,
-                      y: svgH - ((p.value - minPnl) / pnlRange) * svgH,
-                      ...p
-                    }))
-                    const pathD = chartPts.map((p, i) => `${i === 0 ? 'M' : 'L'}${p.x},${p.y}`).join(' ')
-                    const areaD = `${pathD} L${svgW},${svgH} L0,${svgH} Z`
-                    return (
-                      <div style={{ padding: '8px 12px', background: '#0a0a0f', borderRadius: '10px', border: '1px solid #1a1a22' }}>
-                        <svg width={svgW} height={svgH} viewBox={`0 0 ${svgW} ${svgH}`} preserveAspectRatio="none" style={{ display: 'block' }}>
-                          {minPnl < 0 && maxPnl > 0 && <line x1="0" y1={svgH - ((0 - minPnl) / pnlRange) * svgH} x2={svgW} y2={svgH - ((0 - minPnl) / pnlRange) * svgH} stroke="#333" strokeWidth="1" strokeDasharray="3,3" vectorEffect="non-scaling-stroke" />}
-                          <path fill={cumPnl >= 0 ? 'rgba(34,197,94,0.15)' : 'rgba(239,68,68,0.15)'} d={areaD} />
-                          <path fill="none" stroke={cumPnl >= 0 ? '#22c55e' : '#ef4444'} strokeWidth="2.5" strokeLinejoin="round" vectorEffect="non-scaling-stroke" d={pathD} />
-                        </svg>
+                  return (
+                    <div style={{ background: 'linear-gradient(135deg, #0f0f14 0%, #0a0a0f 100%)', border: '1px solid #1a1a22', borderRadius: '16px', padding: '20px', boxShadow: '0 4px 24px rgba(0,0,0,0.3)' }}>
+                      {/* Title */}
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
+                        <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: 'rgba(34,197,94,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#22c55e" strokeWidth="2"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg>
+                        </div>
+                        <div>
+                          <div style={{ fontSize: '10px', color: '#555', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '2px' }}>Overall Stats</div>
+                          <div style={{ fontSize: '26px', fontWeight: 800, color: cumPnl >= 0 ? '#22c55e' : '#ef4444' }}>{cumPnl >= 0 ? '+' : ''}${Math.round(cumPnl).toLocaleString()}</div>
+                        </div>
                       </div>
-                    )
-                  })()}
 
-                  {/* Key Stats */}
-                  <div style={{ display: 'flex', gap: '16px', marginLeft: 'auto' }}>
-                    <div style={{ textAlign: 'center' }}>
-                      <div style={{ fontSize: '9px', color: '#555', textTransform: 'uppercase', marginBottom: '4px' }}>Today</div>
-                      <div style={{ fontSize: '18px', fontWeight: 700, color: todaysPnl >= 0 ? '#22c55e' : todaysPnl < 0 ? '#ef4444' : '#666' }}>{todaysPnl >= 0 ? '+' : ''}${Math.round(todaysPnl).toLocaleString()}</div>
-                    </div>
-                    <div style={{ textAlign: 'center' }}>
-                      <div style={{ fontSize: '9px', color: '#555', textTransform: 'uppercase', marginBottom: '4px' }}>Balance</div>
-                      <div style={{ fontSize: '18px', fontWeight: 700, color: stats.currentBalance >= stats.totalStartingBalance ? '#22c55e' : '#ef4444' }}>${stats.currentBalance.toLocaleString()}</div>
-                    </div>
-                    <div style={{ textAlign: 'center' }}>
-                      <div style={{ fontSize: '9px', color: '#555', textTransform: 'uppercase', marginBottom: '4px' }}>Win Rate</div>
-                      <div style={{ fontSize: '18px', fontWeight: 700, color: stats.winrate >= 50 ? '#22c55e' : '#ef4444' }}>{stats.winrate}%</div>
-                    </div>
-                  </div>
-                </div>
+                      {/* Graph + Stats Row */}
+                      <div style={{ display: 'flex', gap: '20px', alignItems: 'flex-start' }}>
+                        {/* Graph */}
+                        <div style={{ flex: '0 0 auto', width: '280px', padding: '12px', background: '#0a0a0f', borderRadius: '12px', border: '1px solid #1a1a22' }}>
+                          {pnlPoints.length > 1 ? (() => {
+                            const svgW = 256, svgH = 100
+                            const chartPts = pnlPoints.map((p, i) => ({
+                              x: pnlPoints.length > 1 ? (i / (pnlPoints.length - 1)) * svgW : svgW / 2,
+                              y: svgH - ((p.value - minPnl) / pnlRange) * svgH,
+                              ...p
+                            }))
+                            const pathD = chartPts.map((p, i) => `${i === 0 ? 'M' : 'L'}${p.x},${p.y}`).join(' ')
+                            const areaD = `${pathD} L${svgW},${svgH} L0,${svgH} Z`
+                            return (
+                              <svg width={svgW} height={svgH} viewBox={`0 0 ${svgW} ${svgH}`} preserveAspectRatio="none" style={{ display: 'block' }}>
+                                {minPnl < 0 && maxPnl > 0 && <line x1="0" y1={svgH - ((0 - minPnl) / pnlRange) * svgH} x2={svgW} y2={svgH - ((0 - minPnl) / pnlRange) * svgH} stroke="#333" strokeWidth="1" strokeDasharray="3,3" vectorEffect="non-scaling-stroke" />}
+                                <path fill={cumPnl >= 0 ? 'rgba(34,197,94,0.15)' : 'rgba(239,68,68,0.15)'} d={areaD} />
+                                <path fill="none" stroke={cumPnl >= 0 ? '#22c55e' : '#ef4444'} strokeWidth="2.5" strokeLinejoin="round" vectorEffect="non-scaling-stroke" d={pathD} />
+                              </svg>
+                            )
+                          })() : (
+                            <div style={{ height: '100px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#444', fontSize: '12px' }}>No data yet</div>
+                          )}
+                        </div>
 
-                {/* Stats Grid */}
-                <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                  {[
-                    { label: 'PROFIT FACTOR', value: stats.profitFactor, color: stats.profitFactor === '-' ? '#666' : stats.profitFactor === '∞' ? '#22c55e' : parseFloat(stats.profitFactor) >= 1 ? '#22c55e' : '#ef4444' },
-                    { label: 'TRADES', value: stats.totalTrades, color: '#fff' },
-                    { label: 'WINS', value: stats.wins, color: '#22c55e' },
-                    { label: 'LOSSES', value: stats.losses, color: '#ef4444' },
-                    { label: 'AVG WIN', value: `+$${stats.avgWin}`, color: '#22c55e' },
-                    { label: 'AVG LOSS', value: `-$${stats.avgLoss}`, color: '#ef4444' },
-                    { label: 'BEST DAY', value: `${bestDay >= 0 ? '+' : ''}$${bestDay.toLocaleString()}`, color: '#22c55e' },
-                    { label: 'WORST DAY', value: `${worstDay >= 0 ? '+' : '-'}$${Math.abs(worstDay).toLocaleString()}`, color: worstDay >= 0 ? '#22c55e' : '#ef4444' },
-                    { label: 'JOURNALS', value: accounts.length, color: '#8b5cf6' },
-                    { label: 'TRADING DAYS', value: uniqueDays, color: '#3b82f6' },
-                  ].map((stat, i) => (
-                    <div key={i} style={{ padding: '10px 14px', background: '#0a0a0f', borderRadius: '10px', border: '1px solid #1a1a22', minWidth: '85px' }}>
-                      <div style={{ fontSize: '9px', color: '#555', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{stat.label}</div>
-                      <div style={{ fontSize: '15px', fontWeight: 700, color: stat.color }}>{stat.value}</div>
+                        {/* Stats to the Right of Graph */}
+                        <div style={{ flex: 1, display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(100px, 1fr))', gap: '10px' }}>
+                          {[
+                            { label: 'Today', value: `${todaysPnl >= 0 ? '+' : ''}$${Math.round(todaysPnl).toLocaleString()}`, color: todaysPnl >= 0 ? '#22c55e' : '#ef4444' },
+                            { label: 'Balance', value: `$${stats.currentBalance.toLocaleString()}`, color: stats.currentBalance >= stats.totalStartingBalance ? '#22c55e' : '#ef4444' },
+                            { label: 'Win Rate', value: `${stats.winrate}%`, color: stats.winrate >= 50 ? '#22c55e' : '#ef4444' },
+                            { label: 'Profit Factor', value: stats.profitFactor, color: stats.profitFactor === '-' ? '#666' : stats.profitFactor === '∞' ? '#22c55e' : parseFloat(stats.profitFactor) >= 1 ? '#22c55e' : '#ef4444' },
+                            { label: 'Trades', value: stats.totalTrades, color: '#fff' },
+                            { label: 'W / L', value: `${stats.wins} / ${stats.losses}`, color: '#fff' },
+                            { label: 'Best Day', value: `+$${bestDay.toLocaleString()}`, color: '#22c55e' },
+                            { label: 'Worst Day', value: `${worstDay >= 0 ? '+' : '-'}$${Math.abs(worstDay).toLocaleString()}`, color: worstDay >= 0 ? '#22c55e' : '#ef4444' },
+                            { label: 'Journals', value: accounts.length, color: '#8b5cf6' },
+                            { label: 'Trading Days', value: uniqueDays, color: '#3b82f6' },
+                          ].map((stat, i) => (
+                            <div key={i} style={{ padding: '12px', background: '#0a0a0f', borderRadius: '10px', border: '1px solid #1a1a22', textAlign: 'center' }}>
+                              <div style={{ fontSize: '9px', color: '#555', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{stat.label}</div>
+                              <div style={{ fontSize: '15px', fontWeight: 700, color: stat.color }}>{stat.value}</div>
+                            </div>
+                          ))}
+                          {accounts.length > 0 && (
+                            <a href={`/account/${accounts[0]?.id}?tab=statistics&cumulative=true`} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', padding: '12px', background: 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)', borderRadius: '10px', color: '#fff', fontSize: '12px', fontWeight: 700, textDecoration: 'none', boxShadow: '0 4px 16px rgba(34,197,94,0.3)' }}>
+                              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg>
+                              Full Stats
+                            </a>
+                          )}
+                        </div>
+                      </div>
                     </div>
-                  ))}
-                  {accounts.length > 0 && (
-                    <a href={`/account/${accounts[0]?.id}?tab=statistics&cumulative=true`} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', padding: '10px 18px', background: 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)', borderRadius: '10px', color: '#fff', fontSize: '12px', fontWeight: 700, textDecoration: 'none', whiteSpace: 'nowrap', boxShadow: '0 4px 16px rgba(34,197,94,0.3)' }}>
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg>
-                      Full Stats
-                    </a>
-                  )}
-                </div>
-              </div>
-            </div>
-          )
-        })()}
+                  )
+                })()}
 
-        {/* Main Content Area */}
-        {accounts.length === 0 ? (
-          <div style={{ textAlign: 'center', padding: isMobile ? '40px 20px' : '80px 40px', background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '10px' }}>
-            <h2 style={{ fontSize: isMobile ? '20px' : '24px', marginBottom: '12px' }}>Welcome to TRADESAVE+</h2>
-            <p style={{ color: '#999', marginBottom: '28px', fontSize: isMobile ? '14px' : '16px' }}>Create your first trading journal to get started</p>
-            <button onClick={() => setShowModal(true)} style={{ padding: isMobile ? '12px 20px' : '14px 28px', background: '#22c55e', border: 'none', borderRadius: '6px', color: '#fff', fontWeight: 600, fontSize: isMobile ? '14px' : '16px', cursor: 'pointer' }}>+ Create Your First Journal</button>
-          </div>
-        ) : (
-          <>
-          {/* List View */}
-          {viewMode === 'list' ? (
-            <div style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '10px', overflow: 'hidden' }}>
-              <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                <thead>
-                  <tr style={{ borderBottom: '1px solid #1a1a22' }}>
-                    {['Journal', 'Balance', 'P&L', 'Winrate', 'Trades', 'Profit Factor', 'Avg RR', 'Actions'].map((h, i) => (
-                      <th key={i} style={{ padding: '14px 16px', textAlign: i === 0 ? 'left' : 'center', color: '#999', fontSize: '11px', fontWeight: 600, textTransform: 'uppercase' }}>{h}</th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
+                {/* Journal Cards Grid */}
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px' }}>
                   {accounts.map(account => {
                     const accTrades = trades[account.id] || []
                     const wins = accTrades.filter(t => t.outcome === 'win').length
@@ -1815,110 +1860,102 @@ export default function DashboardPage() {
                     const grossProfit = accTrades.filter(t => parseFloat(t.pnl) > 0).reduce((sum, t) => sum + parseFloat(t.pnl), 0)
                     const grossLoss = Math.abs(accTrades.filter(t => parseFloat(t.pnl) < 0).reduce((sum, t) => sum + parseFloat(t.pnl), 0))
                     const profitFactor = grossLoss > 0 ? (grossProfit / grossLoss).toFixed(1) : grossProfit > 0 ? '∞' : '-'
+                    const tradeDays = {}
+                    accTrades.forEach(t => { if (!tradeDays[t.date]) tradeDays[t.date] = 0; tradeDays[t.date] += parseFloat(t.pnl) || 0 })
+                    const consistency = Object.keys(tradeDays).length > 0 ? Math.round((Object.values(tradeDays).filter(v => v > 0).length / Object.keys(tradeDays).length) * 100) : 0
+                    const isProfitable = totalPnl >= 0
+
+                    // Calculate equity curve points for mini graph
+                    let cumPnl = 0
+                    const sortedTrades = accTrades.slice().sort((a, b) => new Date(a.date) - new Date(b.date))
+                    const pnlPoints = sortedTrades.map(t => {
+                      cumPnl += parseFloat(t.pnl) || 0
+                      return { value: cumPnl }
+                    })
+                    const maxPnl = pnlPoints.length > 0 ? Math.max(...pnlPoints.map(p => p.value), 0) : 0
+                    const minPnl = pnlPoints.length > 0 ? Math.min(...pnlPoints.map(p => p.value), 0) : 0
+                    const pnlRange = maxPnl - minPnl || 1
+
                     return (
-                      <tr key={account.id} onClick={() => router.push(`/account/${account.id}`)} style={{ borderBottom: '1px solid #1a1a22', cursor: 'pointer', transition: 'background 0.15s' }} onMouseEnter={e => e.currentTarget.style.background = '#141418'} onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
-                        <td style={{ padding: '14px 16px' }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                            <span style={{ fontSize: '15px', fontWeight: 600, color: '#fff' }}>{account.name}</span>
-                            <button onClick={(e) => { e.stopPropagation(); setEditName(account.name); setEditProfitTarget(account.profit_target || ''); setEditMaxDrawdown(account.max_drawdown || ''); setEditConsistencyEnabled(account.consistency_enabled || false); setEditConsistencyPct(account.consistency_pct || '30'); setEditDailyDdEnabled(account.daily_dd_enabled || false); setEditDailyDdPct(account.daily_dd_pct || ''); setEditDailyDdType(account.daily_dd_type || 'static'); setEditDailyDdLocksAt(account.daily_dd_locks_at || 'start_balance'); setEditDailyDdLocksAtPct(account.daily_dd_locks_at_pct || ''); setEditDailyDdResetTime(account.daily_dd_reset_time || '00:00'); setEditDailyDdResetTimezone(account.daily_dd_reset_timezone || 'Europe/London'); setEditMaxDdEnabled(account.max_dd_enabled || false); setEditMaxDdPct(account.max_dd_pct || ''); setEditMaxDdType(account.max_dd_type || 'static'); setEditMaxDdTrailingStopsAt(account.max_dd_trailing_stops_at || 'never'); setEditMaxDdLocksAtPct(account.max_dd_locks_at_pct || ''); setShowEditModal(account.id) }} style={{ background: 'transparent', border: 'none', cursor: 'pointer', padding: '2px' }}>
-                              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#666" strokeWidth="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" /><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" /></svg>
-                            </button>
+                      <div key={account.id} style={{ background: 'linear-gradient(135deg, #0f0f14 0%, #0a0a0f 100%)', border: '1px solid #1a1a22', borderRadius: '16px', overflow: 'hidden', display: 'flex', flexDirection: 'column', boxShadow: '0 4px 24px rgba(0,0,0,0.3)' }}>
+                        {/* Header - Title */}
+                        <div style={{ padding: '16px 18px', borderBottom: `1px solid ${isProfitable ? 'rgba(34,197,94,0.2)' : 'rgba(239,68,68,0.2)'}`, background: isProfitable ? 'linear-gradient(135deg, rgba(34,197,94,0.05) 0%, transparent 100%)' : 'linear-gradient(135deg, rgba(239,68,68,0.05) 0%, transparent 100%)' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                              <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: isProfitable ? '#22c55e' : '#ef4444', boxShadow: isProfitable ? '0 0 8px #22c55e' : '0 0 8px #ef4444' }} />
+                              <span style={{ fontSize: '17px', fontWeight: 700, color: '#fff' }}>{account.name}</span>
+                              <button onClick={(e) => { e.stopPropagation(); setEditName(account.name); setEditProfitTarget(account.profit_target || ''); setEditMaxDrawdown(account.max_drawdown || ''); setEditConsistencyEnabled(account.consistency_enabled || false); setEditConsistencyPct(account.consistency_pct || '30'); setEditDailyDdEnabled(account.daily_dd_enabled || false); setEditDailyDdPct(account.daily_dd_pct || ''); setEditDailyDdType(account.daily_dd_type || 'static'); setEditDailyDdLocksAt(account.daily_dd_locks_at || 'start_balance'); setEditDailyDdLocksAtPct(account.daily_dd_locks_at_pct || ''); setEditDailyDdResetTime(account.daily_dd_reset_time || '00:00'); setEditDailyDdResetTimezone(account.daily_dd_reset_timezone || 'Europe/London'); setEditMaxDdEnabled(account.max_dd_enabled || false); setEditMaxDdPct(account.max_dd_pct || ''); setEditMaxDdType(account.max_dd_type || 'static'); setEditMaxDdTrailingStopsAt(account.max_dd_trailing_stops_at || 'never'); setEditMaxDdLocksAtPct(account.max_dd_locks_at_pct || ''); setShowEditModal(account.id) }} style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid #2a2a35', borderRadius: '6px', cursor: 'pointer', padding: '4px 6px', display: 'flex', alignItems: 'center' }}>
+                                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#666" strokeWidth="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" /><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" /></svg>
+                              </button>
+                            </div>
+                            <div style={{ textAlign: 'right' }}>
+                              <div style={{ fontSize: '20px', fontWeight: 800, color: isProfitable ? '#22c55e' : '#ef4444' }}>${currentBalance.toLocaleString()}</div>
+                              <div style={{ fontSize: '11px', color: isProfitable ? '#22c55e' : '#ef4444' }}>{totalPnl >= 0 ? '+' : ''}${totalPnl.toLocaleString()}</div>
+                            </div>
                           </div>
-                        </td>
-                        <td style={{ padding: '14px 16px', textAlign: 'center', fontWeight: 600, fontSize: '14px', color: currentBalance >= (parseFloat(account.starting_balance) || 0) ? '#22c55e' : '#ef4444' }}>${currentBalance.toLocaleString()}</td>
-                        <td style={{ padding: '14px 16px', textAlign: 'center', fontWeight: 600, fontSize: '14px', color: totalPnl >= 0 ? '#22c55e' : '#ef4444' }}>{totalPnl >= 0 ? '+' : ''}${totalPnl.toLocaleString()}</td>
-                        <td style={{ padding: '14px 16px', textAlign: 'center', fontSize: '14px', color: winrate >= 50 ? '#22c55e' : '#ef4444' }}>{winrate}%</td>
-                        <td style={{ padding: '14px 16px', textAlign: 'center', fontSize: '14px', color: '#999' }}>{accTrades.length}</td>
-                        <td style={{ padding: '14px 16px', textAlign: 'center', fontSize: '14px', color: profitFactor === '-' ? '#666' : profitFactor === '∞' ? '#22c55e' : parseFloat(profitFactor) >= 1 ? '#22c55e' : '#ef4444' }}>{profitFactor}</td>
-                        <td style={{ padding: '14px 16px', textAlign: 'center', fontSize: '14px', color: '#999' }}>{avgRR}R</td>
-                        <td style={{ padding: '14px 16px', textAlign: 'center' }}>
-                          <div onClick={e => e.stopPropagation()} style={{ display: 'flex', gap: '8px', justifyContent: 'center' }}>
-                            <a href={`/account/${account.id}`} style={{ padding: '8px 14px', background: '#22c55e', borderRadius: '4px', color: '#fff', fontWeight: 600, fontSize: '12px', textDecoration: 'none' }}>Enter Journal</a>
-                            <a href={`/account/${account.id}?tab=statistics`} style={{ padding: '8px 14px', background: 'transparent', border: '1px solid #22c55e', borderRadius: '4px', color: '#22c55e', fontWeight: 600, fontSize: '12px', textDecoration: 'none' }}>Stats</a>
+                        </div>
+
+                        {/* Mini Graph */}
+                        <div style={{ padding: '12px 18px' }}>
+                          <div style={{ height: '80px', background: '#0a0a0f', borderRadius: '10px', padding: '8px', border: '1px solid #1a1a22', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                            {pnlPoints.length > 1 ? (() => {
+                              const svgW = 200, svgH = 64
+                              const chartPts = pnlPoints.map((p, i) => ({
+                                x: (i / (pnlPoints.length - 1)) * svgW,
+                                y: svgH - ((p.value - minPnl) / pnlRange) * svgH
+                              }))
+                              const pathD = chartPts.map((p, i) => `${i === 0 ? 'M' : 'L'}${p.x},${p.y}`).join(' ')
+                              const areaD = `${pathD} L${svgW},${svgH} L0,${svgH} Z`
+                              return (
+                                <svg width="100%" height="100%" viewBox={`0 0 ${svgW} ${svgH}`} preserveAspectRatio="none">
+                                  {minPnl < 0 && maxPnl > 0 && <line x1="0" y1={svgH - ((0 - minPnl) / pnlRange) * svgH} x2={svgW} y2={svgH - ((0 - minPnl) / pnlRange) * svgH} stroke="#333" strokeWidth="1" strokeDasharray="3,3" vectorEffect="non-scaling-stroke" />}
+                                  <path fill={isProfitable ? 'rgba(34,197,94,0.15)' : 'rgba(239,68,68,0.15)'} d={areaD} />
+                                  <path fill="none" stroke={isProfitable ? '#22c55e' : '#ef4444'} strokeWidth="2" strokeLinejoin="round" vectorEffect="non-scaling-stroke" d={pathD} />
+                                </svg>
+                              )
+                            })() : (
+                              <span style={{ color: '#444', fontSize: '12px' }}>No trades yet</span>
+                            )}
                           </div>
-                        </td>
-                      </tr>
+                        </div>
+
+                        {/* 6 Stats in 2 Columns */}
+                        <div style={{ padding: '0 18px 14px' }}>
+                          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px' }}>
+                            {[
+                              { label: 'Win Rate', value: `${winrate}%`, color: winrate >= 50 ? '#22c55e' : '#ef4444' },
+                              { label: 'Profit Factor', value: profitFactor, color: profitFactor === '-' ? '#666' : profitFactor === '∞' ? '#22c55e' : parseFloat(profitFactor) >= 1 ? '#22c55e' : '#ef4444' },
+                              { label: 'Avg RR', value: `${avgRR}R`, color: '#fff' },
+                              { label: 'Trades', value: accTrades.length, color: '#8b5cf6' },
+                              { label: 'W / L', value: `${wins} / ${losses}`, color: '#fff' },
+                              { label: 'Consistency', value: `${consistency}%`, color: consistency >= 50 ? '#3b82f6' : '#666' },
+                            ].map((stat, i) => (
+                              <div key={i} style={{ padding: '10px', background: '#0a0a0f', borderRadius: '8px', textAlign: 'center', border: '1px solid #1a1a22' }}>
+                                <div style={{ fontSize: '9px', color: '#555', textTransform: 'uppercase', marginBottom: '4px' }}>{stat.label}</div>
+                                <div style={{ fontSize: '14px', fontWeight: 700, color: stat.color }}>{stat.value}</div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+
+                        {/* Two Buttons: Enter Journal + See Statistics */}
+                        <div onClick={e => e.stopPropagation()} style={{ padding: '14px 18px', display: 'flex', gap: '10px', borderTop: '1px solid #1a1a22', background: 'rgba(0,0,0,0.2)' }}>
+                          <a href={`/account/${account.id}`} style={{ flex: 1, padding: '12px', background: 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)', borderRadius: '10px', color: '#fff', fontWeight: 700, fontSize: '12px', textAlign: 'center', textDecoration: 'none', boxShadow: '0 4px 16px rgba(34,197,94,0.3)' }}>ENTER JOURNAL</a>
+                          <a href={`/account/${account.id}?tab=statistics`} style={{ flex: 1, padding: '12px', background: 'transparent', border: '1px solid rgba(34,197,94,0.5)', borderRadius: '10px', color: '#22c55e', fontWeight: 600, fontSize: '12px', textAlign: 'center', textDecoration: 'none' }}>SEE STATISTICS</a>
+                        </div>
+                      </div>
                     )
                   })}
-                </tbody>
-              </table>
-            </div>
-          ) : (
-          <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(3, 1fr)', gap: '16px' }}>
-            {accounts.map(account => {
-              const accTrades = trades[account.id] || []
-              const wins = accTrades.filter(t => t.outcome === 'win').length
-              const losses = accTrades.filter(t => t.outcome === 'loss').length
-              const totalPnl = accTrades.reduce((sum, t) => sum + (parseFloat(t.pnl) || 0), 0)
-              const winrate = (wins + losses) > 0 ? Math.round((wins / (wins + losses)) * 100) : 0
-              const avgRR = accTrades.length > 0 ? (accTrades.reduce((sum, t) => sum + (parseFloat(t.rr) || 0), 0) / accTrades.length).toFixed(1) : '-'
-              const currentBalance = (parseFloat(account.starting_balance) || 0) + totalPnl
-              const grossProfit = accTrades.filter(t => parseFloat(t.pnl) > 0).reduce((sum, t) => sum + parseFloat(t.pnl), 0)
-              const grossLoss = Math.abs(accTrades.filter(t => parseFloat(t.pnl) < 0).reduce((sum, t) => sum + parseFloat(t.pnl), 0))
-              const profitFactor = grossLoss > 0 ? (grossProfit / grossLoss).toFixed(1) : grossProfit > 0 ? '∞' : '-'
-              const tradeDays = {}
-              accTrades.forEach(t => { if (!tradeDays[t.date]) tradeDays[t.date] = 0; tradeDays[t.date] += parseFloat(t.pnl) || 0 })
-              const consistency = Object.keys(tradeDays).length > 0 ? Math.round((Object.values(tradeDays).filter(v => v > 0).length / Object.keys(tradeDays).length) * 100) : 0
-              const recentTrades = [...accTrades].reverse()
-              const isProfitable = totalPnl >= 0
-
-              return (
-                <div key={account.id} style={{ background: 'linear-gradient(135deg, #0f0f14 0%, #0a0a0f 100%)', border: '1px solid #1a1a22', borderRadius: '16px', overflow: 'hidden', display: 'flex', flexDirection: 'column', boxShadow: '0 4px 24px rgba(0,0,0,0.3)', transition: 'transform 0.2s, box-shadow 0.2s' }}>
-                  {/* Header with gradient accent */}
-                  <div style={{ padding: '16px 18px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', borderBottom: `1px solid ${isProfitable ? 'rgba(34,197,94,0.2)' : 'rgba(239,68,68,0.2)'}`, background: isProfitable ? 'linear-gradient(135deg, rgba(34,197,94,0.05) 0%, transparent 100%)' : 'linear-gradient(135deg, rgba(239,68,68,0.05) 0%, transparent 100%)' }}>
-                    <div>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '6px' }}>
-                        <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: isProfitable ? '#22c55e' : '#ef4444', boxShadow: isProfitable ? '0 0 8px #22c55e' : '0 0 8px #ef4444' }} />
-                        <span style={{ fontSize: '17px', fontWeight: 700, color: '#fff', letterSpacing: '-0.3px' }}>{account.name}</span>
-                        <button onClick={(e) => { e.stopPropagation(); setEditName(account.name); setEditProfitTarget(account.profit_target || ''); setEditMaxDrawdown(account.max_drawdown || ''); setEditConsistencyEnabled(account.consistency_enabled || false); setEditConsistencyPct(account.consistency_pct || '30'); setEditDailyDdEnabled(account.daily_dd_enabled || false); setEditDailyDdPct(account.daily_dd_pct || ''); setEditDailyDdType(account.daily_dd_type || 'static'); setEditDailyDdLocksAt(account.daily_dd_locks_at || 'start_balance'); setEditDailyDdLocksAtPct(account.daily_dd_locks_at_pct || ''); setEditDailyDdResetTime(account.daily_dd_reset_time || '00:00'); setEditDailyDdResetTimezone(account.daily_dd_reset_timezone || 'Europe/London'); setEditMaxDdEnabled(account.max_dd_enabled || false); setEditMaxDdPct(account.max_dd_pct || ''); setEditMaxDdType(account.max_dd_type || 'static'); setEditMaxDdTrailingStopsAt(account.max_dd_trailing_stops_at || 'never'); setEditMaxDdLocksAtPct(account.max_dd_locks_at_pct || ''); setShowEditModal(account.id) }} style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid #2a2a35', borderRadius: '6px', cursor: 'pointer', padding: '4px 6px', display: 'flex', alignItems: 'center' }}>
-                          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#666" strokeWidth="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" /><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" /></svg>
-                        </button>
-                      </div>
-                      <div style={{ fontSize: '10px', color: '#555', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Balance</div>
-                    </div>
-                    <div style={{ textAlign: 'right' }}>
-                      <div style={{ fontSize: '22px', fontWeight: 800, color: isProfitable ? '#22c55e' : '#ef4444', lineHeight: 1.1 }}>${currentBalance.toLocaleString()}</div>
-                      <div style={{ fontSize: '12px', color: isProfitable ? '#22c55e' : '#ef4444', marginTop: '2px' }}>{totalPnl >= 0 ? '+' : ''}${totalPnl.toLocaleString()}</div>
-                    </div>
-                  </div>
-
-                  {/* Mini Chart */}
-                  <div style={{ padding: '12px 18px', flex: 1 }}>
-                    <div style={{ height: '110px', position: 'relative', background: '#0a0a0f', borderRadius: '10px', padding: '8px', border: '1px solid #1a1a22' }}>
-                      <EquityCurve accountTrades={accTrades} startingBalance={account.starting_balance} account={account} showObjectiveLines={showObjectiveLinesMap[account.id] || false} />
-                    </div>
-                  </div>
-
-                  {/* Stats Grid - Enhanced */}
-                  <div style={{ padding: '0 18px 14px' }}>
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px' }}>
-                      {[
-                        { label: 'Win Rate', value: `${winrate}%`, color: winrate >= 50 ? '#22c55e' : '#ef4444' },
-                        { label: 'Profit Factor', value: profitFactor, color: profitFactor === '-' ? '#666' : profitFactor === '∞' ? '#22c55e' : parseFloat(profitFactor) >= 1 ? '#22c55e' : '#ef4444' },
-                        { label: 'Avg RR', value: `${avgRR}R`, color: '#fff' },
-                        { label: 'Trades', value: accTrades.length, color: '#8b5cf6' },
-                        { label: 'W / L', value: `${wins} / ${losses}`, color: '#fff' },
-                        { label: 'Consistency', value: `${consistency}%`, color: consistency >= 50 ? '#3b82f6' : '#666' },
-                      ].map((stat, i) => (
-                        <div key={i} style={{ padding: '10px 8px', background: '#0a0a0f', borderRadius: '8px', textAlign: 'center', border: '1px solid #1a1a22' }}>
-                          <div style={{ fontSize: '9px', color: '#555', textTransform: 'uppercase', marginBottom: '4px', letterSpacing: '0.3px' }}>{stat.label}</div>
-                          <div style={{ fontSize: '14px', fontWeight: 700, color: stat.color }}>{stat.value}</div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Action Buttons - Enhanced */}
-                  <div onClick={e => e.stopPropagation()} style={{ padding: '14px 18px', display: 'flex', gap: '10px', borderTop: '1px solid #1a1a22', background: 'rgba(0,0,0,0.2)' }}>
-                    <a href={`/account/${account.id}`} style={{ flex: 2, padding: '12px', background: 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)', borderRadius: '10px', color: '#fff', fontWeight: 700, fontSize: '13px', textAlign: 'center', textDecoration: 'none', boxShadow: '0 4px 16px rgba(34,197,94,0.3)', transition: 'transform 0.2s' }}>ENTER JOURNAL</a>
-                    <a href={`/account/${account.id}?tab=statistics`} style={{ flex: 1, padding: '12px', background: 'transparent', border: '1px solid rgba(34,197,94,0.5)', borderRadius: '10px', color: '#22c55e', fontWeight: 600, fontSize: '13px', textAlign: 'center', textDecoration: 'none', transition: 'all 0.2s' }}>STATS</a>
-                  </div>
                 </div>
-              )
-            })}
+              </div>
+            </div>
+        ) : (
+          /* Mobile View OR No Accounts - Show Welcome Screen */
+          <div style={{ textAlign: 'center', padding: isMobile ? '40px 20px' : '80px 40px', background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '10px' }}>
+            <h2 style={{ fontSize: isMobile ? '20px' : '24px', marginBottom: '12px' }}>Welcome to TRADESAVE+</h2>
+            <p style={{ color: '#999', marginBottom: '28px', fontSize: isMobile ? '14px' : '16px' }}>Create your first trading journal to get started</p>
+            <button onClick={() => setShowModal(true)} style={{ padding: isMobile ? '12px 20px' : '14px 28px', background: '#22c55e', border: 'none', borderRadius: '6px', color: '#fff', fontWeight: 600, fontSize: isMobile ? '14px' : '16px', cursor: 'pointer' }}>+ Create Your First Journal</button>
           </div>
-          )}
-          </>
         )}
 
         {/* Modals */}
