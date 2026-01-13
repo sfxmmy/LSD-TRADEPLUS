@@ -33,7 +33,8 @@
       "Bash(npm install:*)",
       "Bash(git rm:*)",
       "Bash(git remote set-url:*)",
-      "Bash(git checkout:*)"
+      "Bash(git checkout:*)",
+      "Bash(git reset:*)"
     ]
   }
 }

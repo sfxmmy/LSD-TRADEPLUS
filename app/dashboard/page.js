@@ -1946,7 +1946,7 @@ export default function DashboardPage() {
 
                     return (
                       <div key={account.id} style={{ background: 'linear-gradient(135deg, #0f0f14 0%, #0a0a0f 100%)', border: '1px solid #1a1a22', borderRadius: '16px', overflow: 'hidden', display: 'flex', flexDirection: 'column', boxShadow: '0 4px 24px rgba(0,0,0,0.3)' }}>
-                        {/* Header - Title */}
+                        {/* Header - Title + Buttons */}
                         <div style={{ padding: '16px 18px', borderBottom: `1px solid ${isProfitable ? 'rgba(34,197,94,0.2)' : 'rgba(239,68,68,0.2)'}`, background: isProfitable ? 'linear-gradient(135deg, rgba(34,197,94,0.05) 0%, transparent 100%)' : 'linear-gradient(135deg, rgba(239,68,68,0.05) 0%, transparent 100%)' }}>
                           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
@@ -1956,9 +1956,9 @@ export default function DashboardPage() {
                                 <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#666" strokeWidth="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" /><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" /></svg>
                               </button>
                             </div>
-                            <div style={{ textAlign: 'right' }}>
-                              <div style={{ fontSize: '20px', fontWeight: 800, color: isProfitable ? '#22c55e' : '#ef4444' }}>${currentBalance.toLocaleString()}</div>
-                              <div style={{ fontSize: '11px', color: isProfitable ? '#22c55e' : '#ef4444' }}>{totalPnl >= 0 ? '+' : ''}${totalPnl.toLocaleString()}</div>
+                            <div onClick={e => e.stopPropagation()} style={{ display: 'flex', gap: '8px' }}>
+                              <a href={`/account/${account.id}`} style={{ padding: '8px 12px', background: 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)', borderRadius: '8px', color: '#fff', fontWeight: 700, fontSize: '11px', textAlign: 'center', textDecoration: 'none', boxShadow: '0 4px 16px rgba(34,197,94,0.3)' }}>ENTER JOURNAL</a>
+                              <a href={`/account/${account.id}?tab=statistics`} style={{ padding: '8px 12px', background: 'transparent', border: '1px solid rgba(34,197,94,0.5)', borderRadius: '8px', color: '#22c55e', fontWeight: 600, fontSize: '11px', textAlign: 'center', textDecoration: 'none' }}>SEE STATISTICS</a>
                             </div>
                           </div>
                         </div>
@@ -2006,10 +2006,16 @@ export default function DashboardPage() {
                           </div>
                         </div>
 
-                        {/* Two Buttons: Enter Journal + See Statistics */}
-                        <div onClick={e => e.stopPropagation()} style={{ padding: '14px 18px', display: 'flex', gap: '10px', borderTop: '1px solid #1a1a22', background: 'rgba(0,0,0,0.2)' }}>
-                          <a href={`/account/${account.id}`} style={{ flex: 1, padding: '12px', background: 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)', borderRadius: '10px', color: '#fff', fontWeight: 700, fontSize: '12px', textAlign: 'center', textDecoration: 'none', boxShadow: '0 4px 16px rgba(34,197,94,0.3)' }}>ENTER JOURNAL</a>
-                          <a href={`/account/${account.id}?tab=statistics`} style={{ flex: 1, padding: '12px', background: 'transparent', border: '1px solid rgba(34,197,94,0.5)', borderRadius: '10px', color: '#22c55e', fontWeight: 600, fontSize: '12px', textAlign: 'center', textDecoration: 'none' }}>SEE STATISTICS</a>
+                        {/* PnL Display */}
+                        <div style={{ padding: '14px 18px', borderTop: '1px solid #1a1a22', background: 'rgba(0,0,0,0.2)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                          <div>
+                            <div style={{ fontSize: '10px', color: '#888', textTransform: 'uppercase', marginBottom: '4px', letterSpacing: '0.5px', fontWeight: 600 }}>Current Balance</div>
+                            <div style={{ fontSize: '20px', fontWeight: 800, color: isProfitable ? '#22c55e' : '#ef4444' }}>${currentBalance.toLocaleString()}</div>
+                          </div>
+                          <div style={{ textAlign: 'right' }}>
+                            <div style={{ fontSize: '10px', color: '#888', textTransform: 'uppercase', marginBottom: '4px', letterSpacing: '0.5px', fontWeight: 600 }}>Total P&L</div>
+                            <div style={{ fontSize: '20px', fontWeight: 800, color: isProfitable ? '#22c55e' : '#ef4444' }}>{totalPnl >= 0 ? '+' : ''}${totalPnl.toLocaleString()}</div>
+                          </div>
                         </div>
                       </div>
                     )
