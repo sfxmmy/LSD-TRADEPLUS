@@ -1782,10 +1782,7 @@ export default function DashboardPage() {
                     <div style={{ background: 'linear-gradient(135deg, #0f0f14 0%, #0a0a0f 100%)', border: '1px solid #1a1a22', borderRadius: '16px', padding: '20px', boxShadow: '0 4px 24px rgba(0,0,0,0.3)' }}>
                       {/* Title + PnL + % Change */}
                       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                          <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: cumPnl >= 0 ? '#22c55e' : '#ef4444', boxShadow: cumPnl >= 0 ? '0 0 8px #22c55e' : '0 0 8px #ef4444' }} />
-                          <span style={{ fontSize: '17px', fontWeight: 700, color: '#fff' }}>Overall Stats</span>
-                        </div>
+                        <span style={{ fontSize: '24px', fontWeight: 700, color: '#fff' }}>Overall Stats</span>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                           <div style={{ fontSize: '18px', fontWeight: 800, color: cumPnl >= 0 ? '#22c55e' : '#ef4444' }}>{cumPnl >= 0 ? '+' : ''}${Math.round(cumPnl).toLocaleString()}</div>
                           <div style={{ padding: '4px 8px', background: cumPnl >= 0 ? 'rgba(34,197,94,0.15)' : 'rgba(239,68,68,0.15)', borderRadius: '6px', fontSize: '12px', fontWeight: 700, color: cumPnl >= 0 ? '#22c55e' : '#ef4444' }}>
@@ -2076,8 +2073,7 @@ export default function DashboardPage() {
                         <div style={{ padding: '16px 18px', borderBottom: `1px solid ${isProfitable ? 'rgba(34,197,94,0.2)' : 'rgba(239,68,68,0.2)'}`, background: isProfitable ? 'linear-gradient(135deg, rgba(34,197,94,0.05) 0%, transparent 100%)' : 'linear-gradient(135deg, rgba(239,68,68,0.05) 0%, transparent 100%)' }}>
                           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                              <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: isProfitable ? '#22c55e' : '#ef4444', boxShadow: isProfitable ? '0 0 8px #22c55e' : '0 0 8px #ef4444' }} />
-                              <span style={{ fontSize: '17px', fontWeight: 700, color: '#fff' }}>{account.name}</span>
+                              <span style={{ fontSize: '24px', fontWeight: 700, color: '#fff' }}>{account.name}</span>
                               <button onClick={(e) => { e.stopPropagation(); setEditName(account.name); setEditProfitTarget(account.profit_target || ''); setEditMaxDrawdown(account.max_drawdown || ''); setEditConsistencyEnabled(account.consistency_enabled || false); setEditConsistencyPct(account.consistency_pct || '30'); setEditDailyDdEnabled(account.daily_dd_enabled || false); setEditDailyDdPct(account.daily_dd_pct || ''); setEditDailyDdType(account.daily_dd_type || 'static'); setEditDailyDdLocksAt(account.daily_dd_locks_at || 'start_balance'); setEditDailyDdLocksAtPct(account.daily_dd_locks_at_pct || ''); setEditDailyDdResetTime(account.daily_dd_reset_time || '00:00'); setEditDailyDdResetTimezone(account.daily_dd_reset_timezone || 'Europe/London'); setEditMaxDdEnabled(account.max_dd_enabled || false); setEditMaxDdPct(account.max_dd_pct || ''); setEditMaxDdType(account.max_dd_type || 'static'); setEditMaxDdTrailingStopsAt(account.max_dd_trailing_stops_at || 'never'); setEditMaxDdLocksAtPct(account.max_dd_locks_at_pct || ''); setShowEditModal(account.id) }} style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid #2a2a35', borderRadius: '6px', cursor: 'pointer', padding: '4px 6px', display: 'flex', alignItems: 'center' }}>
                                 <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#666" strokeWidth="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" /><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" /></svg>
                               </button>
