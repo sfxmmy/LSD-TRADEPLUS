@@ -1785,10 +1785,7 @@ export default function DashboardPage() {
                         <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: 'rgba(34,197,94,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#22c55e" strokeWidth="2"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg>
                         </div>
-                        <div>
-                          <div style={{ fontSize: '10px', color: '#555', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '2px' }}>Overall Stats</div>
-                          <div style={{ fontSize: '26px', fontWeight: 800, color: cumPnl >= 0 ? '#22c55e' : '#ef4444' }}>{cumPnl >= 0 ? '+' : ''}${Math.round(cumPnl).toLocaleString()}</div>
-                        </div>
+                        <div style={{ fontSize: '18px', fontWeight: 700, color: '#fff' }}>Overall Stats</div>
                       </div>
 
                       {/* Graph + Stats Row */}
@@ -1884,31 +1881,67 @@ export default function DashboardPage() {
                           )}
                         </div>
 
-                        {/* Stats to the Right of Graph */}
-                        <div style={{ flex: 1, display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(90px, 1fr))', gap: '8px' }}>
-                          {[
-                            { label: 'Today', value: `${todaysPnl >= 0 ? '+' : ''}$${Math.round(todaysPnl).toLocaleString()}`, color: todaysPnl >= 0 ? '#22c55e' : '#ef4444' },
-                            { label: 'Balance', value: `$${stats.currentBalance.toLocaleString()}`, color: stats.currentBalance >= stats.totalStartingBalance ? '#22c55e' : '#ef4444' },
-                            { label: 'Win Rate', value: `${stats.winrate}%`, color: stats.winrate >= 50 ? '#22c55e' : '#ef4444' },
-                            { label: 'Profit Factor', value: stats.profitFactor, color: stats.profitFactor === '-' ? '#666' : stats.profitFactor === '∞' ? '#22c55e' : parseFloat(stats.profitFactor) >= 1 ? '#22c55e' : '#ef4444' },
-                            { label: 'Trades', value: stats.totalTrades, color: '#fff' },
-                            { label: 'W / L', value: `${stats.wins} / ${stats.losses}`, color: '#fff' },
-                            { label: 'Best Day', value: `+$${bestDay.toLocaleString()}`, color: '#22c55e' },
-                            { label: 'Worst Day', value: `${worstDay >= 0 ? '+' : '-'}$${Math.abs(worstDay).toLocaleString()}`, color: worstDay >= 0 ? '#22c55e' : '#ef4444' },
-                            { label: 'Journals', value: accounts.length, color: '#8b5cf6' },
-                            { label: 'Trading Days', value: uniqueDays, color: '#3b82f6' },
-                          ].map((stat, i) => (
-                            <div key={i} style={{ padding: '10px 8px', background: '#0d0d12', borderRadius: '8px', border: '1px solid #1a1a22', textAlign: 'center' }}>
-                              <div style={{ fontSize: '10px', color: '#888', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '0.5px', fontWeight: 600 }}>{stat.label}</div>
-                              <div style={{ fontSize: '14px', fontWeight: 700, color: stat.color }}>{stat.value}</div>
+                        {/* Stats + Recent Trades */}
+                        <div style={{ flex: 1, display: 'flex', gap: '16px' }}>
+                          {/* Stats Grid */}
+                          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px', alignContent: 'start' }}>
+                            {[
+                              { label: 'Total P&L', value: `${cumPnl >= 0 ? '+' : ''}$${Math.round(cumPnl).toLocaleString()}`, color: cumPnl >= 0 ? '#22c55e' : '#ef4444' },
+                              { label: 'Balance', value: `$${stats.currentBalance.toLocaleString()}`, color: stats.currentBalance >= stats.totalStartingBalance ? '#22c55e' : '#ef4444' },
+                              { label: 'Today', value: `${todaysPnl >= 0 ? '+' : ''}$${Math.round(todaysPnl).toLocaleString()}`, color: todaysPnl >= 0 ? '#22c55e' : '#ef4444' },
+                              { label: 'Win Rate', value: `${stats.winrate}%`, color: stats.winrate >= 50 ? '#22c55e' : '#ef4444' },
+                              { label: 'Profit Factor', value: stats.profitFactor, color: stats.profitFactor === '-' ? '#666' : stats.profitFactor === '∞' ? '#22c55e' : parseFloat(stats.profitFactor) >= 1 ? '#22c55e' : '#ef4444' },
+                              { label: 'Trades', value: stats.totalTrades, color: '#fff' },
+                              { label: 'W / L', value: `${stats.wins} / ${stats.losses}`, color: '#fff' },
+                              { label: 'Best Day', value: `+$${bestDay.toLocaleString()}`, color: '#22c55e' },
+                              { label: 'Worst Day', value: `${worstDay >= 0 ? '+' : '-'}$${Math.abs(worstDay).toLocaleString()}`, color: worstDay >= 0 ? '#22c55e' : '#ef4444' },
+                              { label: 'Trading Days', value: uniqueDays, color: '#3b82f6' },
+                            ].map((stat, i) => (
+                              <div key={i} style={{ padding: '10px 8px', background: '#0d0d12', borderRadius: '8px', border: '1px solid #1a1a22', textAlign: 'center', minWidth: '85px' }}>
+                                <div style={{ fontSize: '10px', color: '#888', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '0.5px', fontWeight: 600 }}>{stat.label}</div>
+                                <div style={{ fontSize: '14px', fontWeight: 700, color: stat.color }}>{stat.value}</div>
+                              </div>
+                            ))}
+                          </div>
+
+                          {/* Recent Trades Widget */}
+                          <div style={{ flex: 1, background: '#0d0d12', borderRadius: '10px', border: '1px solid #1a1a22', display: 'flex', flexDirection: 'column', minWidth: '180px', maxHeight: '220px' }}>
+                            <div style={{ padding: '10px 12px', borderBottom: '1px solid #1a1a22', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                              <span style={{ fontSize: '11px', fontWeight: 700, color: '#888', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Recent Trades</span>
+                              {accounts.length > 0 && (
+                                <a href={`/account/${accounts[0]?.id}?tab=statistics&cumulative=true`} style={{ fontSize: '10px', color: '#22c55e', textDecoration: 'none', fontWeight: 600 }}>View All →</a>
+                              )}
                             </div>
-                          ))}
-                          {accounts.length > 0 && (
-                            <a href={`/account/${accounts[0]?.id}?tab=statistics&cumulative=true`} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', padding: '10px 8px', background: 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)', borderRadius: '8px', color: '#fff', fontSize: '11px', fontWeight: 700, textDecoration: 'none', boxShadow: '0 4px 16px rgba(34,197,94,0.3)' }}>
-                              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg>
-                              Full Stats
-                            </a>
-                          )}
+                            <div style={{ flex: 1, overflowY: 'auto', padding: '8px' }}>
+                              {(() => {
+                                const recentTrades = allTrades.slice().sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, 20)
+                                if (recentTrades.length === 0) {
+                                  return <div style={{ padding: '20px', textAlign: 'center', color: '#444', fontSize: '11px' }}>No trades yet</div>
+                                }
+                                return recentTrades.map((trade, i) => {
+                                  const tradeDate = new Date(trade.date)
+                                  const today = new Date()
+                                  const diffTime = today - tradeDate
+                                  const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24))
+                                  const daysAgo = diffDays === 0 ? 'Today' : diffDays === 1 ? '1d ago' : `${diffDays}d ago`
+                                  const pnl = parseFloat(trade.pnl) || 0
+                                  const isWin = trade.outcome === 'win'
+                                  return (
+                                    <div key={i} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '6px 8px', borderRadius: '6px', marginBottom: '4px', background: 'rgba(255,255,255,0.02)' }}>
+                                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                        <span style={{ fontSize: '12px', fontWeight: 600, color: '#fff' }}>{trade.symbol || '-'}</span>
+                                        <span style={{ fontSize: '9px', padding: '2px 5px', borderRadius: '4px', fontWeight: 600, background: isWin ? 'rgba(34,197,94,0.15)' : 'rgba(239,68,68,0.15)', color: isWin ? '#22c55e' : '#ef4444' }}>{isWin ? 'WIN' : 'LOSS'}</span>
+                                      </div>
+                                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                        <span style={{ fontSize: '12px', fontWeight: 700, color: pnl >= 0 ? '#22c55e' : '#ef4444' }}>{pnl >= 0 ? '+' : ''}${pnl.toLocaleString()}</span>
+                                        <span style={{ fontSize: '10px', color: '#555', minWidth: '45px', textAlign: 'right' }}>{daysAgo}</span>
+                                      </div>
+                                    </div>
+                                  )
+                                })
+                              })()}
+                            </div>
+                          </div>
                         </div>
                       </div>
                     </div>
