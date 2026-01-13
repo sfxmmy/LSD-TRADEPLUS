@@ -1333,10 +1333,11 @@ export default function DashboardPage() {
     }
 
     return (
-      <div style={{ position: 'absolute', inset: 0, display: 'flex' }}>
-        {/* Y-axis - matches chart area height with spacer for x-axis */}
-        <div style={{ width: '30px', flexShrink: 0, display: 'flex', flexDirection: 'column' }}>
-          <div style={{ flex: 1, position: 'relative', borderRight: '1px solid #2a2a35', overflow: 'visible' }}>
+      <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column' }}>
+        {/* Chart row - Y-axis and chart area aligned */}
+        <div style={{ flex: 1, display: 'flex' }}>
+          {/* Y-axis labels */}
+          <div style={{ width: '30px', flexShrink: 0, position: 'relative', borderRight: '1px solid #2a2a35', borderBottom: '1px solid transparent', overflow: 'visible' }}>
             {yLabels.map((v, i) => {
               const topPct = yLabels.length > 1 ? (i / (yLabels.length - 1)) * 100 : 0
               return (
@@ -1354,10 +1355,7 @@ export default function DashboardPage() {
               </>
             )}
           </div>
-          <div style={{ height: '26px', borderRight: '1px solid #2a2a35' }} />
-        </div>
-
-        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, overflow: 'visible' }}>
+          {/* Chart area */}
           <div style={{ flex: 1, position: 'relative', overflow: 'visible', borderBottom: '1px solid #2a2a35' }}>
                         {/* Legend - shows above top grid line when objective lines are visible */}
             {showObjectiveLines && (
@@ -1496,19 +1494,19 @@ export default function DashboardPage() {
                 {hoverPoint.symbol && <div style={{ color: hoverPoint.pnl >= 0 ? '#22c55e' : '#ef4444' }}>{hoverPoint.symbol}: {hoverPoint.pnl >= 0 ? '+' : ''}${hoverPoint.pnl.toFixed(0)}</div>}
               </div>
             )}
-            </div>
+          </div>
+        </div>
 
-          {/* X-axis row - spacer + labels (matching stats graph structure) */}
-          <div style={{ display: 'flex', height: '26px' }}>
-            <div style={{ width: '30px', flexShrink: 0 }} />
-            <div style={{ flex: 1, position: 'relative', overflow: 'visible' }}>
-              {xLabels.map((l, i) => (
-                <div key={i} style={{ position: 'absolute', left: `${l.pct}%`, transform: 'translateX(-50%)', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                  <div style={{ width: '1px', height: '4px', background: '#2a2a35' }} />
-                  <span style={{ fontSize: '10px', color: '#999', whiteSpace: 'nowrap', marginTop: '4px' }}>{l.label}</span>
-                </div>
-              ))}
-            </div>
+        {/* X-axis row - spacer + labels */}
+        <div style={{ display: 'flex', height: '26px' }}>
+          <div style={{ width: '30px', flexShrink: 0 }} />
+          <div style={{ flex: 1, position: 'relative', overflow: 'visible' }}>
+            {xLabels.map((l, i) => (
+              <div key={i} style={{ position: 'absolute', left: `${l.pct}%`, transform: 'translateX(-50%)', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                <div style={{ width: '1px', height: '4px', background: '#2a2a35' }} />
+                <span style={{ fontSize: '10px', color: '#999', whiteSpace: 'nowrap', marginTop: '4px' }}>{l.label}</span>
+              </div>
+            ))}
           </div>
         </div>
       </div>
