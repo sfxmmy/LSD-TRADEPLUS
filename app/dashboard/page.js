@@ -1781,11 +1781,8 @@ export default function DashboardPage() {
                   return (
                     <div style={{ background: 'linear-gradient(135deg, #0f0f14 0%, #0a0a0f 100%)', border: '1px solid #1a1a22', borderRadius: '16px', padding: '20px', boxShadow: '0 4px 24px rgba(0,0,0,0.3)' }}>
                       {/* Title */}
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
-                        <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: 'rgba(34,197,94,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#22c55e" strokeWidth="2"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg>
-                        </div>
-                        <div style={{ fontSize: '18px', fontWeight: 700, color: '#fff' }}>Overall Stats</div>
+                      <div style={{ marginBottom: '16px' }}>
+                        <div style={{ fontSize: '17px', fontWeight: 700, color: '#fff' }}>Overall Stats</div>
                       </div>
 
                       {/* Graph + Stats Row */}
@@ -1978,14 +1975,14 @@ export default function DashboardPage() {
                           </div>
 
                           {/* Recent Trades Widget */}
-                          <div style={{ flex: 1, background: '#0d0d12', borderRadius: '10px', border: '1px solid #1a1a22', display: 'flex', flexDirection: 'column', minWidth: '180px', maxHeight: '220px' }}>
-                            <div style={{ padding: '10px 12px', borderBottom: '1px solid #1a1a22', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: '180px', maxHeight: '220px' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
                               <span style={{ fontSize: '11px', fontWeight: 700, color: '#888', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Recent Trades</span>
                               {accounts.length > 0 && (
                                 <a href={`/account/${accounts[0]?.id}?tab=statistics&cumulative=true`} style={{ fontSize: '10px', color: '#22c55e', textDecoration: 'none', fontWeight: 600 }}>View All →</a>
                               )}
                             </div>
-                            <div style={{ flex: 1, overflowY: 'auto', padding: '8px' }}>
+                            <div style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '6px' }}>
                               {(() => {
                                 const recentTrades = allTrades.slice().sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, 20)
                                 if (recentTrades.length === 0) {
@@ -2000,14 +1997,14 @@ export default function DashboardPage() {
                                   const pnl = parseFloat(trade.pnl) || 0
                                   const isWin = trade.outcome === 'win'
                                   return (
-                                    <div key={i} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '6px 8px', borderRadius: '6px', marginBottom: '4px', background: 'rgba(255,255,255,0.02)' }}>
-                                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                        <span style={{ fontSize: '12px', fontWeight: 600, color: '#fff' }}>{trade.symbol || '-'}</span>
-                                        <span style={{ fontSize: '9px', padding: '2px 5px', borderRadius: '4px', fontWeight: 600, background: isWin ? 'rgba(34,197,94,0.15)' : 'rgba(239,68,68,0.15)', color: isWin ? '#22c55e' : '#ef4444' }}>{isWin ? 'WIN' : 'LOSS'}</span>
-                                      </div>
+                                    <div key={i} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 10px', background: '#0d0d12', borderRadius: '6px', border: '1px solid #1a1a22' }}>
                                       <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                                        <span style={{ fontSize: '12px', fontWeight: 700, color: pnl >= 0 ? '#22c55e' : '#ef4444' }}>{pnl >= 0 ? '+' : ''}${pnl.toLocaleString()}</span>
-                                        <span style={{ fontSize: '10px', color: '#555', minWidth: '45px', textAlign: 'right' }}>{daysAgo}</span>
+                                        <span style={{ fontSize: '12px', fontWeight: 600, color: '#fff' }}>{trade.symbol || '-'}</span>
+                                        <span style={{ fontSize: '9px', padding: '2px 6px', borderRadius: '4px', fontWeight: 600, background: isWin ? 'rgba(34,197,94,0.15)' : 'rgba(239,68,68,0.15)', color: isWin ? '#22c55e' : '#ef4444' }}>{isWin ? 'WIN' : 'LOSS'}</span>
+                                      </div>
+                                      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                                        <span style={{ fontSize: '13px', fontWeight: 700, color: pnl >= 0 ? '#22c55e' : '#ef4444' }}>{pnl >= 0 ? '+' : ''}${pnl.toLocaleString()}</span>
+                                        <span style={{ fontSize: '10px', color: '#666', minWidth: '45px', textAlign: 'right' }}>{daysAgo}</span>
                                       </div>
                                     </div>
                                   )
