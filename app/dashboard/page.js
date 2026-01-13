@@ -1792,32 +1792,100 @@ export default function DashboardPage() {
                       </div>
 
                       {/* Graph + Stats Row */}
-                      <div style={{ display: 'flex', gap: '20px', alignItems: 'flex-start' }}>
-                        {/* Graph */}
-                        <div style={{ flex: '0 0 auto', width: '280px', padding: '12px', background: '#0a0a0f', borderRadius: '12px', border: '1px solid #1a1a22' }}>
+                      <div style={{ display: 'flex', gap: '24px', alignItems: 'flex-start' }}>
+                        {/* Graph with Y-axis and X-axis */}
+                        <div style={{ flex: '1 1 auto', minWidth: '400px', maxWidth: '550px' }}>
                           {pnlPoints.length > 1 ? (() => {
-                            const svgW = 256, svgH = 100
+                            const svgW = 500, svgH = 160
+                            // Generate Y-axis labels
+                            const yMin = minPnl
+                            const yMax = maxPnl
+                            const yRange = yMax - yMin || 1
+                            const numYLabels = 5
+                            const yLabels = []
+                            for (let i = 0; i < numYLabels; i++) {
+                              yLabels.push(yMax - (i / (numYLabels - 1)) * yRange)
+                            }
+                            const formatYLabel = (v) => {
+                              const abs = Math.abs(v)
+                              if (abs >= 1000000) return (v < 0 ? '-' : '') + '$' + (abs / 1000000).toFixed(1) + 'M'
+                              if (abs >= 1000) return (v < 0 ? '-' : '') + '$' + (abs / 1000).toFixed(0) + 'k'
+                              return (v < 0 ? '-' : '') + '$' + Math.round(abs)
+                            }
+                            // Generate X-axis labels
+                            const xLabels = []
+                            if (sortedTrades.length > 0) {
+                              const firstDate = new Date(sortedTrades[0].date)
+                              const lastDate = new Date(sortedTrades[sortedTrades.length - 1].date)
+                              const totalDays = Math.max(1, Math.ceil((lastDate - firstDate) / (1000 * 60 * 60 * 24)))
+                              const numXLabels = Math.min(6, sortedTrades.length)
+                              for (let i = 0; i < numXLabels; i++) {
+                                const pct = numXLabels > 1 ? (i / (numXLabels - 1)) * 100 : 50
+                                const dateOffset = numXLabels > 1 ? Math.round((i / (numXLabels - 1)) * totalDays) : 0
+                                const labelDate = new Date(firstDate.getTime() + dateOffset * 24 * 60 * 60 * 1000)
+                                xLabels.push({ label: `${String(labelDate.getDate()).padStart(2, '0')}/${String(labelDate.getMonth() + 1).padStart(2, '0')}`, pct })
+                              }
+                            }
                             const chartPts = pnlPoints.map((p, i) => ({
                               x: pnlPoints.length > 1 ? (i / (pnlPoints.length - 1)) * svgW : svgW / 2,
-                              y: svgH - ((p.value - minPnl) / pnlRange) * svgH,
+                              y: svgH - ((p.value - yMin) / yRange) * svgH,
                               ...p
                             }))
                             const pathD = chartPts.map((p, i) => `${i === 0 ? 'M' : 'L'}${p.x},${p.y}`).join(' ')
                             const areaD = `${pathD} L${svgW},${svgH} L0,${svgH} Z`
+                            const zeroY = yMin < 0 && yMax > 0 ? ((yMax - 0) / yRange) * 100 : null
+                            const startLineY = stats.totalStartingBalance > yMin && stats.totalStartingBalance < yMax ? ((yMax - stats.totalStartingBalance) / yRange) * 100 : null
                             return (
-                              <svg width={svgW} height={svgH} viewBox={`0 0 ${svgW} ${svgH}`} preserveAspectRatio="none" style={{ display: 'block' }}>
-                                {minPnl < 0 && maxPnl > 0 && <line x1="0" y1={svgH - ((0 - minPnl) / pnlRange) * svgH} x2={svgW} y2={svgH - ((0 - minPnl) / pnlRange) * svgH} stroke="#333" strokeWidth="1" strokeDasharray="3,3" vectorEffect="non-scaling-stroke" />}
-                                <path fill={cumPnl >= 0 ? 'rgba(34,197,94,0.15)' : 'rgba(239,68,68,0.15)'} d={areaD} />
-                                <path fill="none" stroke={cumPnl >= 0 ? '#22c55e' : '#ef4444'} strokeWidth="2.5" strokeLinejoin="round" vectorEffect="non-scaling-stroke" d={pathD} />
-                              </svg>
+                              <div style={{ display: 'flex', flexDirection: 'column' }}>
+                                {/* Chart row */}
+                                <div style={{ display: 'flex', height: '160px' }}>
+                                  {/* Y-axis labels */}
+                                  <div style={{ width: '40px', flexShrink: 0, position: 'relative', borderRight: '1px solid #2a2a35' }}>
+                                    {yLabels.map((v, i) => {
+                                      const topPct = (i / (yLabels.length - 1)) * 100
+                                      return (
+                                        <span key={i} style={{ position: 'absolute', right: '6px', top: `${topPct}%`, transform: 'translateY(-50%)', fontSize: '10px', color: '#666', lineHeight: 1, textAlign: 'right' }}>{formatYLabel(v)}</span>
+                                      )
+                                    })}
+                                  </div>
+                                  {/* Chart area */}
+                                  <div style={{ flex: 1, position: 'relative', borderBottom: '1px solid #2a2a35' }}>
+                                    {/* Horizontal grid lines */}
+                                    {yLabels.map((_, i) => {
+                                      if (i === yLabels.length - 1) return null
+                                      const topPct = (i / (yLabels.length - 1)) * 100
+                                      return <div key={i} style={{ position: 'absolute', left: 0, right: 0, top: `${topPct}%`, borderTop: '1px solid rgba(42,42,53,0.5)' }} />
+                                    })}
+                                    {/* Zero line */}
+                                    {zeroY !== null && <div style={{ position: 'absolute', left: 0, right: 0, top: `${zeroY}%`, borderTop: '1px dashed #666', zIndex: 1 }} />}
+                                    {/* Starting balance line */}
+                                    {startLineY !== null && <div style={{ position: 'absolute', left: 0, right: 0, top: `${startLineY}%`, borderTop: '1px dashed #888', zIndex: 1 }} />}
+                                    {/* SVG Chart */}
+                                    <svg style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', overflow: 'visible' }} viewBox={`0 0 ${svgW} ${svgH}`} preserveAspectRatio="none">
+                                      <defs>
+                                        <linearGradient id="eqGreenDash" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stopColor="#22c55e" stopOpacity="0.3" /><stop offset="100%" stopColor="#22c55e" stopOpacity="0" /></linearGradient>
+                                        <linearGradient id="eqRedDash" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stopColor="#ef4444" stopOpacity="0.3" /><stop offset="100%" stopColor="#ef4444" stopOpacity="0" /></linearGradient>
+                                      </defs>
+                                      <path fill={cumPnl >= 0 ? 'url(#eqGreenDash)' : 'url(#eqRedDash)'} d={areaD} />
+                                      <path fill="none" stroke={cumPnl >= 0 ? '#22c55e' : '#ef4444'} strokeWidth="2" strokeLinejoin="round" vectorEffect="non-scaling-stroke" d={pathD} />
+                                    </svg>
+                                  </div>
+                                </div>
+                                {/* X-axis labels */}
+                                <div style={{ display: 'flex', marginLeft: '40px', height: '20px', position: 'relative' }}>
+                                  {xLabels.map((x, i) => (
+                                    <span key={i} style={{ position: 'absolute', left: `${x.pct}%`, transform: 'translateX(-50%)', fontSize: '10px', color: '#666', marginTop: '4px' }}>{x.label}</span>
+                                  ))}
+                                </div>
+                              </div>
                             )
                           })() : (
-                            <div style={{ height: '100px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#444', fontSize: '12px' }}>No data yet</div>
+                            <div style={{ height: '180px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#444', fontSize: '12px' }}>No data yet</div>
                           )}
                         </div>
 
                         {/* Stats to the Right of Graph */}
-                        <div style={{ flex: 1, display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(100px, 1fr))', gap: '10px' }}>
+                        <div style={{ flex: 1, display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(90px, 1fr))', gap: '8px' }}>
                           {[
                             { label: 'Today', value: `${todaysPnl >= 0 ? '+' : ''}$${Math.round(todaysPnl).toLocaleString()}`, color: todaysPnl >= 0 ? '#22c55e' : '#ef4444' },
                             { label: 'Balance', value: `$${stats.currentBalance.toLocaleString()}`, color: stats.currentBalance >= stats.totalStartingBalance ? '#22c55e' : '#ef4444' },
@@ -1830,14 +1898,14 @@ export default function DashboardPage() {
                             { label: 'Journals', value: accounts.length, color: '#8b5cf6' },
                             { label: 'Trading Days', value: uniqueDays, color: '#3b82f6' },
                           ].map((stat, i) => (
-                            <div key={i} style={{ padding: '12px', background: '#0a0a0f', borderRadius: '10px', border: '1px solid #1a1a22', textAlign: 'center' }}>
-                              <div style={{ fontSize: '9px', color: '#555', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{stat.label}</div>
-                              <div style={{ fontSize: '15px', fontWeight: 700, color: stat.color }}>{stat.value}</div>
+                            <div key={i} style={{ padding: '10px 8px', background: '#0d0d12', borderRadius: '8px', border: '1px solid #1a1a22', textAlign: 'center' }}>
+                              <div style={{ fontSize: '10px', color: '#888', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '0.5px', fontWeight: 600 }}>{stat.label}</div>
+                              <div style={{ fontSize: '14px', fontWeight: 700, color: stat.color }}>{stat.value}</div>
                             </div>
                           ))}
                           {accounts.length > 0 && (
-                            <a href={`/account/${accounts[0]?.id}?tab=statistics&cumulative=true`} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', padding: '12px', background: 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)', borderRadius: '10px', color: '#fff', fontSize: '12px', fontWeight: 700, textDecoration: 'none', boxShadow: '0 4px 16px rgba(34,197,94,0.3)' }}>
-                              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg>
+                            <a href={`/account/${accounts[0]?.id}?tab=statistics&cumulative=true`} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', padding: '10px 8px', background: 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)', borderRadius: '8px', color: '#fff', fontSize: '11px', fontWeight: 700, textDecoration: 'none', boxShadow: '0 4px 16px rgba(34,197,94,0.3)' }}>
+                              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg>
                               Full Stats
                             </a>
                           )}
@@ -1897,9 +1965,9 @@ export default function DashboardPage() {
 
                         {/* Mini Graph */}
                         <div style={{ padding: '12px 18px' }}>
-                          <div style={{ height: '80px', background: '#0a0a0f', borderRadius: '10px', padding: '8px', border: '1px solid #1a1a22', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                          <div style={{ height: '100px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                             {pnlPoints.length > 1 ? (() => {
-                              const svgW = 200, svgH = 64
+                              const svgW = 250, svgH = 100
                               const chartPts = pnlPoints.map((p, i) => ({
                                 x: (i / (pnlPoints.length - 1)) * svgW,
                                 y: svgH - ((p.value - minPnl) / pnlRange) * svgH
@@ -1930,8 +1998,8 @@ export default function DashboardPage() {
                               { label: 'W / L', value: `${wins} / ${losses}`, color: '#fff' },
                               { label: 'Consistency', value: `${consistency}%`, color: consistency >= 50 ? '#3b82f6' : '#666' },
                             ].map((stat, i) => (
-                              <div key={i} style={{ padding: '10px', background: '#0a0a0f', borderRadius: '8px', textAlign: 'center', border: '1px solid #1a1a22' }}>
-                                <div style={{ fontSize: '9px', color: '#555', textTransform: 'uppercase', marginBottom: '4px' }}>{stat.label}</div>
+                              <div key={i} style={{ padding: '10px 8px', background: '#0d0d12', borderRadius: '8px', textAlign: 'center', border: '1px solid #1a1a22' }}>
+                                <div style={{ fontSize: '10px', color: '#888', textTransform: 'uppercase', marginBottom: '4px', letterSpacing: '0.5px', fontWeight: 600 }}>{stat.label}</div>
                                 <div style={{ fontSize: '14px', fontWeight: 700, color: stat.color }}>{stat.value}</div>
                               </div>
                             ))}
