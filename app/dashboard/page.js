@@ -1780,9 +1780,21 @@ export default function DashboardPage() {
 
                   return (
                     <div style={{ background: 'linear-gradient(135deg, #0f0f14 0%, #0a0a0f 100%)', border: '1px solid #1a1a22', borderRadius: '16px', padding: '20px', boxShadow: '0 4px 24px rgba(0,0,0,0.3)' }}>
-                      {/* Title */}
-                      <div style={{ marginBottom: '16px' }}>
-                        <div style={{ fontSize: '17px', fontWeight: 700, color: '#fff' }}>Overall Stats</div>
+                      {/* Title + PnL + % Change */}
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                          <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: cumPnl >= 0 ? '#22c55e' : '#ef4444', boxShadow: cumPnl >= 0 ? '0 0 8px #22c55e' : '0 0 8px #ef4444' }} />
+                          <span style={{ fontSize: '17px', fontWeight: 700, color: '#fff' }}>Overall Stats</span>
+                        </div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                          <div style={{ fontSize: '18px', fontWeight: 800, color: cumPnl >= 0 ? '#22c55e' : '#ef4444' }}>{cumPnl >= 0 ? '+' : ''}${Math.round(cumPnl).toLocaleString()}</div>
+                          <div style={{ padding: '4px 8px', background: cumPnl >= 0 ? 'rgba(34,197,94,0.15)' : 'rgba(239,68,68,0.15)', borderRadius: '6px', fontSize: '12px', fontWeight: 700, color: cumPnl >= 0 ? '#22c55e' : '#ef4444' }}>
+                            {(() => {
+                              const pctChange = stats.totalStartingBalance > 0 ? ((cumPnl / stats.totalStartingBalance) * 100).toFixed(1) : '0.0'
+                              return `${parseFloat(pctChange) >= 0 ? '+' : ''}${pctChange}%`
+                            })()}
+                          </div>
+                        </div>
                       </div>
 
                       {/* Graph + Stats Row */}
