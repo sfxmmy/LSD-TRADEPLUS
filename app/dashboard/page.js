@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, Fragment } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@supabase/supabase-js'
 import * as XLSX from 'xlsx'
@@ -1794,21 +1794,52 @@ export default function DashboardPage() {
                         <div style={{ flex: '1 1 auto', minWidth: '400px', maxWidth: '550px' }}>
                           {pnlPoints.length > 1 ? (() => {
                             const svgW = 500, svgH = 160
+                            const displayStartingBalance = stats.totalStartingBalance
+
+                            // Calculate tight Y-axis range like account page
+                            const actualMin = Math.min(minPnl, displayStartingBalance)
+                            const actualMax = Math.max(maxPnl, displayStartingBalance)
+                            const dataRange = actualMax - actualMin || 1000
+                            const paddingAmount = dataRange / 6
+
+                            let yMax = actualMax + paddingAmount
+                            let yMin = actualMin - paddingAmount
+                            if (yMin < 0 && actualMin >= 0) yMin = 0
+
+                            // Calculate nice step size for ~6 labels
+                            const displayRange = yMax - yMin || 1000
+                            const targetLabels = 6
+                            const rawStep = displayRange / (targetLabels - 1)
+                            const magnitude = Math.pow(10, Math.floor(Math.log10(rawStep)))
+                            const normalized = rawStep / magnitude
+                            let niceStep
+                            if (normalized <= 1) niceStep = magnitude
+                            else if (normalized <= 2) niceStep = 2 * magnitude
+                            else if (normalized <= 2.5) niceStep = 2.5 * magnitude
+                            else if (normalized <= 5) niceStep = 5 * magnitude
+                            else niceStep = 10 * magnitude
+
+                            const yStep = niceStep
+                            yMax = Math.ceil(yMax / yStep) * yStep
+                            yMin = Math.floor(yMin / yStep) * yStep
+                            if (yMin < 0 && actualMin >= 0) yMin = 0
+
+                            const yRange = yMax - yMin || yStep
+
                             // Generate Y-axis labels
-                            const yMin = minPnl
-                            const yMax = maxPnl
-                            const yRange = yMax - yMin || 1
-                            const numYLabels = 5
                             const yLabels = []
-                            for (let i = 0; i < numYLabels; i++) {
-                              yLabels.push(yMax - (i / (numYLabels - 1)) * yRange)
-                            }
+                            for (let v = yMax; v >= yMin; v -= yStep) yLabels.push(v)
+
                             const formatYLabel = (v) => {
                               const abs = Math.abs(v)
                               if (abs >= 1000000) return (v < 0 ? '-' : '') + '$' + (abs / 1000000).toFixed(1) + 'M'
-                              if (abs >= 1000) return (v < 0 ? '-' : '') + '$' + (abs / 1000).toFixed(0) + 'k'
+                              if (abs >= 1000) {
+                                const needsDecimal = yStep < 1000
+                                return (v < 0 ? '-' : '') + '$' + (needsDecimal ? (abs / 1000).toFixed(1) : (abs / 1000).toFixed(0)) + 'k'
+                              }
                               return (v < 0 ? '-' : '') + '$' + Math.round(abs)
                             }
+
                             // Generate X-axis labels
                             const xLabels = []
                             if (sortedTrades.length > 0) {
@@ -1823,48 +1854,90 @@ export default function DashboardPage() {
                                 xLabels.push({ label: `${String(labelDate.getDate()).padStart(2, '0')}/${String(labelDate.getMonth() + 1).padStart(2, '0')}`, pct })
                               }
                             }
+
+                            // Calculate starting balance Y position in SVG
+                            const startY = svgH - ((displayStartingBalance - yMin) / yRange) * svgH
+                            const startLineYPct = ((yMax - displayStartingBalance) / yRange) * 100
+
                             const chartPts = pnlPoints.map((p, i) => ({
                               x: pnlPoints.length > 1 ? (i / (pnlPoints.length - 1)) * svgW : svgW / 2,
                               y: svgH - ((p.value - yMin) / yRange) * svgH,
+                              balance: p.value,
                               ...p
                             }))
-                            const pathD = chartPts.map((p, i) => `${i === 0 ? 'M' : 'L'}${p.x},${p.y}`).join(' ')
-                            const areaD = `${pathD} L${svgW},${svgH} L0,${svgH} Z`
-                            const zeroY = yMin < 0 && yMax > 0 ? ((yMax - 0) / yRange) * 100 : null
-                            const startLineY = stats.totalStartingBalance > yMin && stats.totalStartingBalance < yMax ? ((yMax - stats.totalStartingBalance) / yRange) * 100 : null
+
+                            // Build split paths (green above start, red below)
+                            const greenSegments = [], redSegments = []
+                            for (let i = 0; i < chartPts.length - 1; i++) {
+                              const p1 = chartPts[i], p2 = chartPts[i + 1]
+                              const above1 = p1.balance >= displayStartingBalance, above2 = p2.balance >= displayStartingBalance
+                              if (above1 === above2) {
+                                const arr = above1 ? greenSegments : redSegments
+                                arr.push({ x1: p1.x, y1: p1.y, x2: p2.x, y2: p2.y })
+                              } else {
+                                const t = (displayStartingBalance - p1.balance) / (p2.balance - p1.balance)
+                                const ix = p1.x + t * (p2.x - p1.x), iy = startY
+                                if (above1) {
+                                  greenSegments.push({ x1: p1.x, y1: p1.y, x2: ix, y2: iy })
+                                  redSegments.push({ x1: ix, y1: iy, x2: p2.x, y2: p2.y })
+                                } else {
+                                  redSegments.push({ x1: p1.x, y1: p1.y, x2: ix, y2: iy })
+                                  greenSegments.push({ x1: ix, y1: iy, x2: p2.x, y2: p2.y })
+                                }
+                              }
+                            }
+                            const buildPath = (segs) => segs.map((s) => `M ${s.x1} ${s.y1} L ${s.x2} ${s.y2}`).join(' ')
+                            const buildAreaPath = (segs) => segs.map(s => `M ${s.x1} ${s.y1} L ${s.x2} ${s.y2} L ${s.x2} ${startY} L ${s.x1} ${startY} Z`).join(' ')
+                            const greenPath = buildPath(greenSegments)
+                            const redPath = buildPath(redSegments)
+                            const greenAreaPath = buildAreaPath(greenSegments)
+                            const redAreaPath = buildAreaPath(redSegments)
+
                             return (
                               <div style={{ display: 'flex', flexDirection: 'column' }}>
                                 {/* Chart row */}
                                 <div style={{ display: 'flex', height: '160px' }}>
-                                  {/* Y-axis labels */}
+                                  {/* Y-axis labels with tick marks */}
                                   <div style={{ width: '40px', flexShrink: 0, position: 'relative', borderRight: '1px solid #2a2a35' }}>
                                     {yLabels.map((v, i) => {
-                                      const topPct = (i / (yLabels.length - 1)) * 100
+                                      const topPct = yLabels.length > 1 ? (i / (yLabels.length - 1)) * 100 : 0
                                       return (
-                                        <span key={i} style={{ position: 'absolute', right: '6px', top: `${topPct}%`, transform: 'translateY(-50%)', fontSize: '10px', color: '#666', lineHeight: 1, textAlign: 'right' }}>{formatYLabel(v)}</span>
+                                        <Fragment key={i}>
+                                          <span style={{ position: 'absolute', right: '6px', top: `${topPct}%`, transform: 'translateY(-50%)', fontSize: '9px', color: '#888', lineHeight: 1, textAlign: 'right' }}>{formatYLabel(v)}</span>
+                                          <div style={{ position: 'absolute', right: 0, top: `${topPct}%`, width: '4px', borderTop: '1px solid #2a2a35' }} />
+                                        </Fragment>
                                       )
                                     })}
+                                    {/* Starting balance on Y-axis */}
+                                    {startLineYPct >= 0 && startLineYPct <= 100 && (
+                                      <Fragment>
+                                        <span style={{ position: 'absolute', right: '6px', top: `${startLineYPct}%`, transform: 'translateY(-50%)', fontSize: '9px', color: '#888', lineHeight: 1, textAlign: 'right', fontWeight: 600 }}>{formatYLabel(displayStartingBalance)}</span>
+                                        <div style={{ position: 'absolute', right: 0, top: `${startLineYPct}%`, width: '4px', borderTop: '1px solid #888' }} />
+                                      </Fragment>
+                                    )}
                                   </div>
                                   {/* Chart area */}
                                   <div style={{ flex: 1, position: 'relative', borderBottom: '1px solid #2a2a35' }}>
                                     {/* Horizontal grid lines */}
                                     {yLabels.map((_, i) => {
                                       if (i === yLabels.length - 1) return null
-                                      const topPct = (i / (yLabels.length - 1)) * 100
+                                      const topPct = yLabels.length > 1 ? (i / (yLabels.length - 1)) * 100 : 0
                                       return <div key={i} style={{ position: 'absolute', left: 0, right: 0, top: `${topPct}%`, borderTop: '1px solid rgba(42,42,53,0.5)' }} />
                                     })}
-                                    {/* Zero line */}
-                                    {zeroY !== null && <div style={{ position: 'absolute', left: 0, right: 0, top: `${zeroY}%`, borderTop: '1px dashed #666', zIndex: 1 }} />}
-                                    {/* Starting balance line */}
-                                    {startLineY !== null && <div style={{ position: 'absolute', left: 0, right: 0, top: `${startLineY}%`, borderTop: '1px dashed #888', zIndex: 1 }} />}
-                                    {/* SVG Chart */}
-                                    <svg style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', overflow: 'visible' }} viewBox={`0 0 ${svgW} ${svgH}`} preserveAspectRatio="none">
+                                    {/* Starting balance dashed line */}
+                                    {startLineYPct >= 0 && startLineYPct <= 100 && (
+                                      <div style={{ position: 'absolute', left: 0, right: 0, top: `${startLineYPct}%`, borderTop: '1px dashed #666', zIndex: 1 }} />
+                                    )}
+                                    {/* SVG Chart with split colors */}
+                                    <svg style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', overflow: 'visible', zIndex: 2 }} viewBox={`0 0 ${svgW} ${svgH}`} preserveAspectRatio="none">
                                       <defs>
                                         <linearGradient id="eqGreenDash" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stopColor="#22c55e" stopOpacity="0.3" /><stop offset="100%" stopColor="#22c55e" stopOpacity="0" /></linearGradient>
                                         <linearGradient id="eqRedDash" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stopColor="#ef4444" stopOpacity="0.3" /><stop offset="100%" stopColor="#ef4444" stopOpacity="0" /></linearGradient>
                                       </defs>
-                                      <path fill={cumPnl >= 0 ? 'url(#eqGreenDash)' : 'url(#eqRedDash)'} d={areaD} />
-                                      <path fill="none" stroke={cumPnl >= 0 ? '#22c55e' : '#ef4444'} strokeWidth="2" strokeLinejoin="round" vectorEffect="non-scaling-stroke" d={pathD} />
+                                      {greenAreaPath && <path d={greenAreaPath} fill="url(#eqGreenDash)" />}
+                                      {redAreaPath && <path d={redAreaPath} fill="url(#eqRedDash)" />}
+                                      {greenPath && <path d={greenPath} fill="none" stroke="#22c55e" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />}
+                                      {redPath && <path d={redPath} fill="none" stroke="#ef4444" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />}
                                     </svg>
                                   </div>
                                 </div>
@@ -1883,11 +1956,11 @@ export default function DashboardPage() {
 
                         {/* Stats + Recent Trades */}
                         <div style={{ flex: 1, display: 'flex', gap: '16px' }}>
-                          {/* Stats Grid */}
+                          {/* Stats Grid - 2 columns */}
                           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px', alignContent: 'start' }}>
                             {[
                               { label: 'Total P&L', value: `${cumPnl >= 0 ? '+' : ''}$${Math.round(cumPnl).toLocaleString()}`, color: cumPnl >= 0 ? '#22c55e' : '#ef4444' },
-                              { label: 'Balance', value: `$${stats.currentBalance.toLocaleString()}`, color: stats.currentBalance >= stats.totalStartingBalance ? '#22c55e' : '#ef4444' },
+                              { label: 'Balance', value: `$${Math.round(stats.currentBalance).toLocaleString()}`, color: stats.currentBalance >= stats.totalStartingBalance ? '#22c55e' : '#ef4444' },
                               { label: 'Today', value: `${todaysPnl >= 0 ? '+' : ''}$${Math.round(todaysPnl).toLocaleString()}`, color: todaysPnl >= 0 ? '#22c55e' : '#ef4444' },
                               { label: 'Win Rate', value: `${stats.winrate}%`, color: stats.winrate >= 50 ? '#22c55e' : '#ef4444' },
                               { label: 'Profit Factor', value: stats.profitFactor, color: stats.profitFactor === '-' ? '#666' : stats.profitFactor === '∞' ? '#22c55e' : parseFloat(stats.profitFactor) >= 1 ? '#22c55e' : '#ef4444' },
@@ -1897,9 +1970,9 @@ export default function DashboardPage() {
                               { label: 'Worst Day', value: `${worstDay >= 0 ? '+' : '-'}$${Math.abs(worstDay).toLocaleString()}`, color: worstDay >= 0 ? '#22c55e' : '#ef4444' },
                               { label: 'Trading Days', value: uniqueDays, color: '#3b82f6' },
                             ].map((stat, i) => (
-                              <div key={i} style={{ padding: '10px 8px', background: '#0d0d12', borderRadius: '8px', border: '1px solid #1a1a22', textAlign: 'center', minWidth: '85px' }}>
-                                <div style={{ fontSize: '10px', color: '#888', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '0.5px', fontWeight: 600 }}>{stat.label}</div>
-                                <div style={{ fontSize: '14px', fontWeight: 700, color: stat.color }}>{stat.value}</div>
+                              <div key={i} style={{ padding: '8px 10px', background: '#0d0d12', borderRadius: '6px', border: '1px solid #1a1a22', display: 'flex', justifyContent: 'space-between', alignItems: 'center', minWidth: '90px' }}>
+                                <span style={{ fontSize: '11px', color: '#888', fontWeight: 500 }}>{stat.label}</span>
+                                <span style={{ fontSize: '13px', fontWeight: 700, color: stat.color }}>{stat.value}</span>
                               </div>
                             ))}
                           </div>
@@ -1967,15 +2040,26 @@ export default function DashboardPage() {
                     const isProfitable = totalPnl >= 0
 
                     // Calculate equity curve points for mini graph
-                    let cumPnl = 0
+                    const startingBalance = parseFloat(account.starting_balance) || 0
+                    let cumBalance = startingBalance
                     const sortedTrades = accTrades.slice().sort((a, b) => new Date(a.date) - new Date(b.date))
-                    const pnlPoints = sortedTrades.map(t => {
-                      cumPnl += parseFloat(t.pnl) || 0
-                      return { value: cumPnl }
+                    const balancePoints = [{ value: startingBalance }]
+                    sortedTrades.forEach(t => {
+                      cumBalance += parseFloat(t.pnl) || 0
+                      balancePoints.push({ value: cumBalance })
                     })
-                    const maxPnl = pnlPoints.length > 0 ? Math.max(...pnlPoints.map(p => p.value), 0) : 0
-                    const minPnl = pnlPoints.length > 0 ? Math.min(...pnlPoints.map(p => p.value), 0) : 0
-                    const pnlRange = maxPnl - minPnl || 1
+
+                    // Get objective lines
+                    const profitTargetPct = parseFloat(account.profit_target)
+                    const profitTarget = !isNaN(profitTargetPct) && profitTargetPct > 0 ? startingBalance * (1 + profitTargetPct / 100) : null
+                    const maxDdPct = parseFloat(account.max_dd_enabled ? account.max_dd_pct : account.max_drawdown)
+                    const maxDdFloor = !isNaN(maxDdPct) && maxDdPct > 0 ? startingBalance * (1 - maxDdPct / 100) : null
+
+                    // Calculate range including objective lines
+                    let maxBal = balancePoints.length > 0 ? Math.max(...balancePoints.map(p => p.value)) : startingBalance
+                    let minBal = balancePoints.length > 0 ? Math.min(...balancePoints.map(p => p.value)) : startingBalance
+                    if (profitTarget) maxBal = Math.max(maxBal, profitTarget)
+                    if (maxDdFloor) minBal = Math.min(minBal, maxDdFloor)
 
                     return (
                       <div key={account.id} style={{ background: 'linear-gradient(135deg, #0f0f14 0%, #0a0a0f 100%)', border: '1px solid #1a1a22', borderRadius: '16px', overflow: 'hidden', display: 'flex', flexDirection: 'column', boxShadow: '0 4px 24px rgba(0,0,0,0.3)' }}>
@@ -2002,23 +2086,84 @@ export default function DashboardPage() {
                           </div>
                         </div>
 
-                        {/* Mini Graph */}
+                        {/* Mini Graph with objective lines */}
                         <div style={{ padding: '12px 18px' }}>
                           <div style={{ height: '100px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                            {pnlPoints.length > 1 ? (() => {
+                            {balancePoints.length > 1 ? (() => {
                               const svgW = 250, svgH = 100
-                              const chartPts = pnlPoints.map((p, i) => ({
-                                x: (i / (pnlPoints.length - 1)) * svgW,
-                                y: svgH - ((p.value - minPnl) / pnlRange) * svgH
+                              // Add padding to range
+                              const dataRange = maxBal - minBal || 1000
+                              const paddingAmount = dataRange / 8
+                              const yMax = maxBal + paddingAmount
+                              const yMin = minBal - paddingAmount
+                              const yRange = yMax - yMin || 1
+
+                              // Calculate starting balance Y position
+                              const startY = svgH - ((startingBalance - yMin) / yRange) * svgH
+                              const startLineYPct = ((yMax - startingBalance) / yRange) * 100
+
+                              // Calculate objective line positions
+                              const profitTargetYPct = profitTarget ? ((yMax - profitTarget) / yRange) * 100 : null
+                              const maxDdFloorYPct = maxDdFloor ? ((yMax - maxDdFloor) / yRange) * 100 : null
+
+                              const chartPts = balancePoints.map((p, i) => ({
+                                x: (i / (balancePoints.length - 1)) * svgW,
+                                y: svgH - ((p.value - yMin) / yRange) * svgH,
+                                balance: p.value
                               }))
-                              const pathD = chartPts.map((p, i) => `${i === 0 ? 'M' : 'L'}${p.x},${p.y}`).join(' ')
-                              const areaD = `${pathD} L${svgW},${svgH} L0,${svgH} Z`
+
+                              // Build split paths (green above start, red below)
+                              const greenSegments = [], redSegments = []
+                              for (let i = 0; i < chartPts.length - 1; i++) {
+                                const p1 = chartPts[i], p2 = chartPts[i + 1]
+                                const above1 = p1.balance >= startingBalance, above2 = p2.balance >= startingBalance
+                                if (above1 === above2) {
+                                  const arr = above1 ? greenSegments : redSegments
+                                  arr.push({ x1: p1.x, y1: p1.y, x2: p2.x, y2: p2.y })
+                                } else {
+                                  const t = (startingBalance - p1.balance) / (p2.balance - p1.balance)
+                                  const ix = p1.x + t * (p2.x - p1.x), iy = startY
+                                  if (above1) {
+                                    greenSegments.push({ x1: p1.x, y1: p1.y, x2: ix, y2: iy })
+                                    redSegments.push({ x1: ix, y1: iy, x2: p2.x, y2: p2.y })
+                                  } else {
+                                    redSegments.push({ x1: p1.x, y1: p1.y, x2: ix, y2: iy })
+                                    greenSegments.push({ x1: ix, y1: iy, x2: p2.x, y2: p2.y })
+                                  }
+                                }
+                              }
+                              const buildPath = (segs) => segs.map((s) => `M ${s.x1} ${s.y1} L ${s.x2} ${s.y2}`).join(' ')
+                              const buildAreaPath = (segs) => segs.map(s => `M ${s.x1} ${s.y1} L ${s.x2} ${s.y2} L ${s.x2} ${startY} L ${s.x1} ${startY} Z`).join(' ')
+                              const greenPath = buildPath(greenSegments)
+                              const redPath = buildPath(redSegments)
+                              const greenAreaPath = buildAreaPath(greenSegments)
+                              const redAreaPath = buildAreaPath(redSegments)
+
                               return (
-                                <svg width="100%" height="100%" viewBox={`0 0 ${svgW} ${svgH}`} preserveAspectRatio="none">
-                                  {minPnl < 0 && maxPnl > 0 && <line x1="0" y1={svgH - ((0 - minPnl) / pnlRange) * svgH} x2={svgW} y2={svgH - ((0 - minPnl) / pnlRange) * svgH} stroke="#333" strokeWidth="1" strokeDasharray="3,3" vectorEffect="non-scaling-stroke" />}
-                                  <path fill={isProfitable ? 'rgba(34,197,94,0.15)' : 'rgba(239,68,68,0.15)'} d={areaD} />
-                                  <path fill="none" stroke={isProfitable ? '#22c55e' : '#ef4444'} strokeWidth="2" strokeLinejoin="round" vectorEffect="non-scaling-stroke" d={pathD} />
-                                </svg>
+                                <div style={{ width: '100%', height: '100%', position: 'relative' }}>
+                                  {/* Starting balance dashed line */}
+                                  {startLineYPct >= 0 && startLineYPct <= 100 && (
+                                    <div style={{ position: 'absolute', left: 0, right: 0, top: `${startLineYPct}%`, borderTop: '1px dashed #555', zIndex: 1 }} />
+                                  )}
+                                  {/* Profit target line - green */}
+                                  {profitTargetYPct !== null && profitTargetYPct >= 0 && profitTargetYPct <= 100 && (
+                                    <div style={{ position: 'absolute', left: 0, right: 0, top: `${profitTargetYPct}%`, borderTop: '1px solid #22c55e', zIndex: 1 }} />
+                                  )}
+                                  {/* Max DD floor line - red */}
+                                  {maxDdFloorYPct !== null && maxDdFloorYPct >= 0 && maxDdFloorYPct <= 100 && (
+                                    <div style={{ position: 'absolute', left: 0, right: 0, top: `${maxDdFloorYPct}%`, borderTop: '1px solid #ef4444', zIndex: 1 }} />
+                                  )}
+                                  <svg width="100%" height="100%" viewBox={`0 0 ${svgW} ${svgH}`} preserveAspectRatio="none" style={{ position: 'relative', zIndex: 2 }}>
+                                    <defs>
+                                      <linearGradient id={`eqGreenMini${account.id}`} x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stopColor="#22c55e" stopOpacity="0.3" /><stop offset="100%" stopColor="#22c55e" stopOpacity="0" /></linearGradient>
+                                      <linearGradient id={`eqRedMini${account.id}`} x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stopColor="#ef4444" stopOpacity="0.3" /><stop offset="100%" stopColor="#ef4444" stopOpacity="0" /></linearGradient>
+                                    </defs>
+                                    {greenAreaPath && <path d={greenAreaPath} fill={`url(#eqGreenMini${account.id})`} />}
+                                    {redAreaPath && <path d={redAreaPath} fill={`url(#eqRedMini${account.id})`} />}
+                                    {greenPath && <path d={greenPath} fill="none" stroke="#22c55e" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />}
+                                    {redPath && <path d={redPath} fill="none" stroke="#ef4444" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />}
+                                  </svg>
+                                </div>
                               )
                             })() : (
                               <span style={{ color: '#444', fontSize: '12px' }}>No trades yet</span>
@@ -2026,9 +2171,9 @@ export default function DashboardPage() {
                           </div>
                         </div>
 
-                        {/* 6 Stats in 2 Columns */}
+                        {/* 6 Stats in 2 Columns - horizontal format like account page */}
                         <div style={{ padding: '0 18px 14px' }}>
-                          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px' }}>
+                          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '6px' }}>
                             {[
                               { label: 'Win Rate', value: `${winrate}%`, color: winrate >= 50 ? '#22c55e' : '#ef4444' },
                               { label: 'Profit Factor', value: profitFactor, color: profitFactor === '-' ? '#666' : profitFactor === '∞' ? '#22c55e' : parseFloat(profitFactor) >= 1 ? '#22c55e' : '#ef4444' },
@@ -2037,9 +2182,9 @@ export default function DashboardPage() {
                               { label: 'W / L', value: `${wins} / ${losses}`, color: '#fff' },
                               { label: 'Consistency', value: `${consistency}%`, color: consistency >= 50 ? '#3b82f6' : '#666' },
                             ].map((stat, i) => (
-                              <div key={i} style={{ padding: '10px 8px', background: '#0d0d12', borderRadius: '8px', textAlign: 'center', border: '1px solid #1a1a22' }}>
-                                <div style={{ fontSize: '10px', color: '#888', textTransform: 'uppercase', marginBottom: '4px', letterSpacing: '0.5px', fontWeight: 600 }}>{stat.label}</div>
-                                <div style={{ fontSize: '14px', fontWeight: 700, color: stat.color }}>{stat.value}</div>
+                              <div key={i} style={{ padding: '6px 10px', background: '#0d0d12', borderRadius: '6px', border: '1px solid #1a1a22', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                <span style={{ fontSize: '11px', color: '#888', fontWeight: 500 }}>{stat.label}</span>
+                                <span style={{ fontSize: '13px', fontWeight: 700, color: stat.color }}>{stat.value}</span>
                               </div>
                             ))}
                           </div>
