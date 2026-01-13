@@ -1589,17 +1589,17 @@ export default function DashboardPage() {
           const worstDay = Object.values(dailyPnls).length > 0 ? Math.min(...Object.values(dailyPnls)) : 0
 
           return (
-            <div style={{ background: '#0f0f14', border: '1px solid #1a1a22', borderRadius: '12px', padding: '16px 20px', marginBottom: '16px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '24px' }}>
-                {/* Title + Chart Section */}
-                <div style={{ display: 'flex', alignItems: 'center', gap: '16px', minWidth: '320px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#22c55e" strokeWidth="2"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg>
-                    <span style={{ fontSize: '13px', color: '#fff', fontWeight: 600, letterSpacing: '0.5px' }}>OVERALL STATS</span>
+            <div style={{ background: '#0f0f14', border: '1px solid #1a1a22', borderRadius: '12px', padding: '12px 16px', marginBottom: '16px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                {/* Overall Stats Label + Mini Chart */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', background: '#0a0a0f', borderRadius: '6px', padding: '6px 10px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#22c55e" strokeWidth="2"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg>
+                    <span style={{ fontSize: '11px', color: '#fff', fontWeight: 600 }}>OVERALL STATS</span>
                   </div>
-                  {/* Mini Chart */}
+                  {/* Mini Chart inline */}
                   {pnlPoints.length > 1 && (() => {
-                    const svgW = 160, svgH = 40
+                    const svgW = 120, svgH = 32
                     const chartPts = pnlPoints.map((p, i) => ({
                       x: pnlPoints.length > 1 ? (i / (pnlPoints.length - 1)) * svgW : svgW / 2,
                       y: svgH - ((p.value - minPnl) / pnlRange) * svgH,
@@ -1608,23 +1608,25 @@ export default function DashboardPage() {
                     const pathD = chartPts.map((p, i) => `${i === 0 ? 'M' : 'L'}${p.x},${p.y}`).join(' ')
                     const areaD = `${pathD} L${svgW},${svgH} L0,${svgH} Z`
                     return (
-                      <div style={{ background: '#0a0a0f', borderRadius: '6px', padding: '8px 12px', display: 'flex', alignItems: 'center', gap: '12px' }}>
-                        <svg width={svgW} height={svgH} viewBox={`0 0 ${svgW} ${svgH}`} preserveAspectRatio="none" style={{ display: 'block' }}>
-                          {minPnl < 0 && maxPnl > 0 && <line x1="0" y1={svgH - ((0 - minPnl) / pnlRange) * svgH} x2={svgW} y2={svgH - ((0 - minPnl) / pnlRange) * svgH} stroke="#333" strokeWidth="1" strokeDasharray="2,2" vectorEffect="non-scaling-stroke" />}
-                          <path fill={cumPnl >= 0 ? 'rgba(34,197,94,0.2)' : 'rgba(239,68,68,0.2)'} d={areaD} />
-                          <path fill="none" stroke={cumPnl >= 0 ? '#22c55e' : '#ef4444'} strokeWidth="2" strokeLinejoin="round" vectorEffect="non-scaling-stroke" d={pathD} />
-                        </svg>
-                        <div>
-                          <div style={{ fontSize: '8px', color: '#666', textTransform: 'uppercase' }}>Total P&L</div>
-                          <div style={{ fontSize: '16px', fontWeight: 700, color: cumPnl >= 0 ? '#22c55e' : '#ef4444' }}>{cumPnl >= 0 ? '+' : ''}${Math.round(cumPnl).toLocaleString()}</div>
-                        </div>
-                      </div>
+                      <svg width={svgW} height={svgH} viewBox={`0 0 ${svgW} ${svgH}`} preserveAspectRatio="none" style={{ display: 'block' }}>
+                        {minPnl < 0 && maxPnl > 0 && <line x1="0" y1={svgH - ((0 - minPnl) / pnlRange) * svgH} x2={svgW} y2={svgH - ((0 - minPnl) / pnlRange) * svgH} stroke="#333" strokeWidth="1" strokeDasharray="2,2" vectorEffect="non-scaling-stroke" />}
+                        <path fill={cumPnl >= 0 ? 'rgba(34,197,94,0.2)' : 'rgba(239,68,68,0.2)'} d={areaD} />
+                        <path fill="none" stroke={cumPnl >= 0 ? '#22c55e' : '#ef4444'} strokeWidth="2" strokeLinejoin="round" vectorEffect="non-scaling-stroke" d={pathD} />
+                      </svg>
                     )
                   })()}
+                  <div style={{ borderLeft: '1px solid #333', paddingLeft: '10px', marginLeft: '4px' }}>
+                    <div style={{ fontSize: '8px', color: '#666', textTransform: 'uppercase' }}>TOTAL P&L</div>
+                    <div style={{ fontSize: '14px', fontWeight: 700, color: cumPnl >= 0 ? '#22c55e' : '#ef4444' }}>{cumPnl >= 0 ? '+' : ''}${Math.round(cumPnl).toLocaleString()}</div>
+                  </div>
+                  <div style={{ borderLeft: '1px solid #333', paddingLeft: '10px' }}>
+                    <div style={{ fontSize: '8px', color: '#666', textTransform: 'uppercase' }}>TODAY</div>
+                    <div style={{ fontSize: '14px', fontWeight: 700, color: todaysPnl >= 0 ? '#22c55e' : todaysPnl < 0 ? '#ef4444' : '#666' }}>{todaysPnl >= 0 ? '+' : ''}${Math.round(todaysPnl).toLocaleString()}</div>
+                  </div>
                 </div>
 
                 {/* Stats Row - Horizontal */}
-                <div style={{ flex: 1, display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                <div style={{ flex: 1, display: 'flex', gap: '6px', flexWrap: 'wrap', alignItems: 'center' }}>
                   {[
                     { label: 'BALANCE', value: `$${stats.currentBalance.toLocaleString()}`, color: stats.currentBalance >= stats.totalStartingBalance ? '#22c55e' : '#ef4444' },
                     { label: 'WINRATE', value: `${stats.winrate}%`, color: stats.winrate >= 50 ? '#22c55e' : '#ef4444' },
@@ -1633,22 +1635,21 @@ export default function DashboardPage() {
                     { label: 'W/L', value: `${stats.wins}/${stats.losses}`, color: '#fff' },
                     { label: 'AVG WIN', value: `+$${stats.avgWin}`, color: '#22c55e' },
                     { label: 'AVG LOSS', value: `-$${stats.avgLoss}`, color: '#ef4444' },
-                    { label: 'BEST DAY', value: `+$${bestDay.toLocaleString()}`, color: '#22c55e' },
+                    { label: 'BEST DAY', value: `${bestDay >= 0 ? '+' : ''}$${bestDay.toLocaleString()}`, color: '#22c55e' },
                     { label: 'WORST DAY', value: `${worstDay >= 0 ? '+' : '-'}$${Math.abs(worstDay).toLocaleString()}`, color: worstDay >= 0 ? '#22c55e' : '#ef4444' },
                     { label: 'JOURNALS', value: accounts.length, color: '#fff' },
                     { label: 'DAYS', value: uniqueDays, color: '#fff' },
-                    { label: 'TODAY', value: `${todaysPnl >= 0 ? '+' : '-'}$${Math.abs(todaysPnl).toLocaleString()}`, color: todaysPnl >= 0 ? '#22c55e' : todaysPnl < 0 ? '#ef4444' : '#666' },
                   ].map((stat, i) => (
-                    <div key={i} style={{ padding: '6px 10px', background: '#0a0a0f', borderRadius: '4px', minWidth: '70px' }}>
+                    <div key={i} style={{ padding: '5px 8px', background: '#0a0a0f', borderRadius: '4px' }}>
                       <div style={{ fontSize: '8px', color: '#555', marginBottom: '1px', textTransform: 'uppercase' }}>{stat.label}</div>
-                      <div style={{ fontSize: '13px', fontWeight: 700, color: stat.color }}>{stat.value}</div>
+                      <div style={{ fontSize: '12px', fontWeight: 700, color: stat.color }}>{stat.value}</div>
                     </div>
                   ))}
                 </div>
 
                 {/* View Full Stats Button */}
                 {accounts.length > 0 && (
-                  <a href={`/account/${accounts[0]?.id}?tab=statistics&cumulative=true`} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', padding: '10px 16px', background: '#22c55e', borderRadius: '6px', color: '#fff', fontSize: '11px', fontWeight: 600, textDecoration: 'none', whiteSpace: 'nowrap' }}>
+                  <a href={`/account/${accounts[0]?.id}?tab=statistics&cumulative=true`} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', padding: '8px 14px', background: '#22c55e', borderRadius: '6px', color: '#fff', fontSize: '11px', fontWeight: 600, textDecoration: 'none', whiteSpace: 'nowrap' }}>
                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg>
                     Full Stats
                   </a>
