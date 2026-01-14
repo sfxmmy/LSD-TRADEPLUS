@@ -2119,8 +2119,8 @@ export default function DashboardPage() {
 
                     return (
                       <div key={account.id} style={{ background: 'linear-gradient(135deg, #0f0f14 0%, #0a0a0f 100%)', border: '1px solid #1a1a22', borderRadius: '16px', overflow: 'hidden', display: 'flex', flexDirection: 'column', boxShadow: '0 4px 24px rgba(0,0,0,0.3)' }}>
-                        {/* Header - Title + Balance in border */}
-                        <div style={{ padding: '12px', borderBottom: '1px solid #1a1a22' }}>
+                        {/* Header - Title + Balance */}
+                        <div style={{ padding: '12px' }}>
                           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                               <span style={{ fontSize: '20px', fontWeight: 700, color: '#fff' }}>{account.name}</span>
@@ -2148,7 +2148,8 @@ export default function DashboardPage() {
                         </div>
 
                         {/* Mini Graph - Same quality as Overall Stats graph */}
-                        <div style={{ padding: '12px' }}>
+                        <div style={{ padding: '0 12px' }}>
+                          <div style={{ background: 'rgba(0,0,0,0.3)', border: '1px solid #1a1a22', borderRadius: '10px', padding: '12px' }}>
                           {(() => {
                             if (balancePoints.length < 2) {
                               return <div style={{ height: '140px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#444', fontSize: '12px' }}>No trades yet</div>
@@ -2330,6 +2331,7 @@ export default function DashboardPage() {
                               </div>
                             )
                           })()}
+                          </div>
                         </div>
 
                         {/* Stats - 2 columns like stats area format */}
@@ -2416,7 +2418,7 @@ export default function DashboardPage() {
                         </div>
 
                         {/* Buttons */}
-                        <div onClick={e => e.stopPropagation()} style={{ padding: '14px 18px', display: 'flex', gap: '10px', borderTop: '1px solid #1a1a22', background: 'rgba(0,0,0,0.2)' }}>
+                        <div onClick={e => e.stopPropagation()} style={{ padding: '14px 18px', display: 'flex', gap: '10px' }}>
                           <a href={`/account/${account.id}`} style={{ flex: 1, padding: '12px', background: 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)', borderRadius: '10px', color: '#fff', fontWeight: 700, fontSize: '12px', textAlign: 'center', textDecoration: 'none', boxShadow: '0 4px 16px rgba(34,197,94,0.3)' }}>ENTER JOURNAL</a>
                           <a href={`/account/${account.id}?tab=statistics`} style={{ flex: 1, padding: '12px', background: 'transparent', border: '1px solid rgba(34,197,94,0.5)', borderRadius: '10px', color: '#22c55e', fontWeight: 600, fontSize: '12px', textAlign: 'center', textDecoration: 'none' }}>SEE STATISTICS</a>
                         </div>
