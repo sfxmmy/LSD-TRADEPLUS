@@ -2067,7 +2067,7 @@ export default function DashboardPage() {
                         </div>
 
                         {/* Buttons - 280px to match stats width, extends up to stats */}
-                        <div style={{ width: '280px', flexShrink: 0, display: 'flex', flexDirection: 'column', gap: '6px', marginTop: '-24px' }}>
+                        <div style={{ width: '280px', flexShrink: 0, display: 'flex', flexDirection: 'column', gap: '6px', marginTop: '-8px' }}>
                           <a href="/journal" style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)', borderRadius: '8px', color: '#fff', fontWeight: 700, fontSize: '11px', textAlign: 'center', textDecoration: 'none', boxShadow: '0 4px 16px rgba(34,197,94,0.3)' }}>VIEW FULL JOURNAL</a>
                           <a href="/statistics" style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'transparent', border: '1px solid rgba(34,197,94,0.5)', borderRadius: '8px', color: '#22c55e', fontWeight: 600, fontSize: '11px', textAlign: 'center', textDecoration: 'none' }}>VIEW FULL STATISTICS</a>
                           <a href="/notes" style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'transparent', border: '1px solid rgba(34,197,94,0.5)', borderRadius: '8px', color: '#22c55e', fontWeight: 600, fontSize: '11px', textAlign: 'center', textDecoration: 'none' }}>VIEW FULL NOTES</a>
