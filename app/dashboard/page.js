@@ -1816,7 +1816,7 @@ export default function DashboardPage() {
                             <div style={{ fontSize: '13px', color: '#666', marginBottom: '2px' }}>Overall Stats</div>
                             <div style={{ display: 'flex', alignItems: 'baseline', gap: '12px' }}>
                               <span style={{ fontSize: '24px', fontWeight: 700, color: isProfitable ? '#22c55e' : '#ef4444' }}>${Math.round(totalBalance).toLocaleString()}</span>
-                              <span style={{ fontSize: '14px', fontWeight: 600, color: cumPnl >= 0 ? '#22c55e' : '#ef4444' }}>{cumPnl >= 0 ? '+' : ''}${Math.round(cumPnl).toLocaleString()}</span>
+                              <span style={{ fontSize: '14px', fontWeight: 600, color: '#666' }}>${Math.round(stats.totalStartingBalance).toLocaleString()}</span>
                             </div>
                           </div>
                         </div>
@@ -1986,11 +1986,13 @@ export default function DashboardPage() {
                         <div style={{ flex: 1, display: 'flex', gap: '12px' }}>
                           {/* Stats - 2 columns, flows top to bottom, full height with 2 grey lines at top */}
                           <div style={{ flex: 2, display: 'flex', flexDirection: 'column' }}>
-                            {/* Two grey lines at top to align with graph */}
-                            <div style={{ flex: 1, borderBottom: '1px solid #1a1a22' }} />
-                            <div style={{ flex: 1, borderBottom: '1px solid #1a1a22' }} />
+                            {/* Two grey lines side by side at top (matching column gap) */}
+                            <div style={{ display: 'flex', gap: '24px', paddingBottom: '6px' }}>
+                              <div style={{ flex: 1, borderBottom: '1px solid #1a1a22' }} />
+                              <div style={{ flex: 1, borderBottom: '1px solid #1a1a22' }} />
+                            </div>
                             {/* Stats grid - 6 rows */}
-                            <div style={{ flex: 6, display: 'grid', gridTemplateColumns: '1fr 1fr', gridTemplateRows: 'repeat(6, 1fr)', gridAutoFlow: 'column', gap: '0 24px', alignContent: 'stretch' }}>
+                            <div style={{ flex: 1, display: 'grid', gridTemplateColumns: '1fr 1fr', gridTemplateRows: 'repeat(6, 1fr)', gridAutoFlow: 'column', gap: '0 24px', alignContent: 'stretch' }}>
                             {[
                               { label: 'Trades', value: stats.totalTrades, color: '#fff' },
                               { label: 'Winrate', value: `${stats.winrate}%`, color: stats.winrate >= 50 ? '#22c55e' : '#ef4444' },
