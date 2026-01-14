@@ -1078,13 +1078,13 @@ export default function DashboardPage() {
     const actualMax = Math.max(maxBal, start)
     const dataRange = actualMax - actualMin || 1000
 
-    // To get 1/8 of TOTAL graph height as padding on each side:
-    // If data takes 6/8 of total, padding = dataRange / 6 on each side
-    const paddingAmount = dataRange / 6
+    // To get 1/16 of TOTAL graph height as padding on each side:
+    // If data takes 14/16 of total, padding = dataRange / 14 on each side
+    const paddingAmount = dataRange / 14
 
     let yMax, yMin
     if (!showObjectiveLines) {
-      // Tight fit: data + 1/8 padding on each side (total = dataRange * 4/3)
+      // Tight fit: data + 1/16 padding on each side
       yMax = actualMax + paddingAmount
       yMin = actualMin - paddingAmount
       // Don't go negative if not needed
@@ -1382,13 +1382,13 @@ export default function DashboardPage() {
                 </div>
                 {profitTargetY !== null && (
                   <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                    <div style={{ width: '16px', height: '0', borderTop: '2px solid #22c55e' }} />
+                    <div style={{ width: '16px', height: '0', borderTop: '1px dashed #22c55e' }} />
                     <span style={{ fontSize: '9px', color: '#22c55e', fontWeight: 500 }}>Profit Target {account?.profit_target}%</span>
                   </div>
                 )}
                 {(maxDdStaticFloorY !== null || trailingMaxDdPath) && (
                   <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                    <div style={{ width: '16px', height: '0', borderTop: '2px solid #ef4444' }} />
+                    <div style={{ width: '16px', height: '0', borderTop: '1px dashed #ef4444' }} />
                     <span style={{ fontSize: '9px', color: '#ef4444', fontWeight: 500 }}>
                       Max Drawdown {account?.max_dd_enabled ? `(${account?.max_dd_type === 'trailing' ? 'trailing' : 'static'}) ${account?.max_dd_pct}%` : `${account?.max_drawdown}%`}
                     </span>
@@ -1396,7 +1396,7 @@ export default function DashboardPage() {
                 )}
                 {dailyDdPath && (
                   <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                    <div style={{ width: '16px', height: '0', borderTop: '2px solid #f97316' }} />
+                    <div style={{ width: '16px', height: '0', borderTop: '1px dashed #f97316' }} />
                     <span style={{ fontSize: '9px', color: '#f97316', fontWeight: 500 }}>Daily Drawdown ({account?.daily_dd_type === 'trailing' ? 'trailing' : 'static'}) {account?.daily_dd_pct}%</span>
                   </div>
                 )}
@@ -1434,34 +1434,34 @@ export default function DashboardPage() {
             {startLineY !== null && (
               <div style={{ position: 'absolute', left: 0, right: 0, top: `${startLineY}%`, borderTop: '1px dashed #666', zIndex: 1 }} />
             )}
-            {/* DD Floor line - red solid (legacy) - only when showing objectives */}
+            {/* DD Floor line - red dashed (legacy) - only when showing objectives */}
             {showObjectiveLines && ddFloorY !== null && !maxDdEnabled && (
               <div
                 style={{ position: 'absolute', left: 0, right: 0, top: `${ddFloorY}%`, height: '12px', transform: 'translateY(-50%)', cursor: 'pointer', zIndex: 2 }}
                 onMouseEnter={() => setHoverLine({ type: 'maxDd', value: ddFloor, y: ddFloorY, label: 'Max Drawdown' })}
                 onMouseLeave={() => setHoverLine(null)}
               >
-                <div style={{ position: 'absolute', left: 0, right: 0, top: '50%', borderTop: '2px solid #ef4444' }} />
+                <div style={{ position: 'absolute', left: 0, right: 0, top: '50%', borderTop: '1px dashed #ef4444' }} />
               </div>
             )}
-            {/* Static Max DD floor line - red solid horizontal - only when showing objectives */}
+            {/* Static Max DD floor line - red dashed horizontal - only when showing objectives */}
             {showObjectiveLines && maxDdStaticFloorY !== null && (
               <div
                 style={{ position: 'absolute', left: 0, right: 0, top: `${maxDdStaticFloorY}%`, height: '12px', transform: 'translateY(-50%)', cursor: 'pointer', zIndex: 2 }}
                 onMouseEnter={() => setHoverLine({ type: 'maxDd', value: maxDdStaticFloor, y: maxDdStaticFloorY, label: 'Max Drawdown' })}
                 onMouseLeave={() => setHoverLine(null)}
               >
-                <div style={{ position: 'absolute', left: 0, right: 0, top: '50%', borderTop: '2px solid #ef4444' }} />
+                <div style={{ position: 'absolute', left: 0, right: 0, top: '50%', borderTop: '1px dashed #ef4444' }} />
               </div>
             )}
-            {/* Profit target line - green solid - only when showing objectives */}
+            {/* Profit target line - green dashed - only when showing objectives */}
             {showObjectiveLines && profitTargetY !== null && (
               <div
                 style={{ position: 'absolute', left: 0, right: 0, top: `${profitTargetY}%`, height: '12px', transform: 'translateY(-50%)', cursor: 'pointer', zIndex: 2 }}
                 onMouseEnter={() => setHoverLine({ type: 'target', value: profitTarget, y: profitTargetY, label: 'Target' })}
                 onMouseLeave={() => setHoverLine(null)}
               >
-                <div style={{ position: 'absolute', left: 0, right: 0, top: '50%', borderTop: '2px solid #22c55e' }} />
+                <div style={{ position: 'absolute', left: 0, right: 0, top: '50%', borderTop: '1px dashed #22c55e' }} />
               </div>
             )}
             {/* Objective line hover tooltip */}
@@ -1842,7 +1842,7 @@ export default function DashboardPage() {
                             const dataMin = Math.min(...allValues, startBal)
                             const dataMax = Math.max(...allValues, startBal)
                             const dataRange = dataMax - dataMin || 1000
-                            const paddingAmt = dataRange / 6
+                            const paddingAmt = dataRange / 14  // 1/16 padding
 
                             let yMin = dataMin - paddingAmt
                             let yMax = dataMax + paddingAmt
@@ -2011,15 +2011,15 @@ export default function DashboardPage() {
                           <div style={{ background: '#0d0d12', borderRadius: '8px', border: '1px solid #1a1a22', overflow: 'hidden' }}>
                             <div style={{ maxHeight: '120px', overflowY: 'auto' }}>
                               <table style={{ width: '100%', borderCollapse: 'collapse', tableLayout: 'fixed' }}>
-                                <thead>
+                                <thead style={{ position: 'sticky', top: 0, zIndex: 1 }}>
                                   <tr style={{ background: '#0d0d12' }}>
-                                    <th style={{ padding: '6px 12px', textAlign: 'center', fontSize: '10px', color: '#888', fontWeight: 600, textTransform: 'uppercase', borderBottom: '1px solid #1a1a22' }}>Symbol</th>
-                                    <th style={{ padding: '6px 12px', textAlign: 'center', fontSize: '10px', color: '#888', fontWeight: 600, textTransform: 'uppercase', borderBottom: '1px solid #1a1a22' }}>Result</th>
-                                    <th style={{ padding: '6px 12px', textAlign: 'center', fontSize: '10px', color: '#888', fontWeight: 600, textTransform: 'uppercase', borderBottom: '1px solid #1a1a22' }}>PnL</th>
-                                    <th style={{ padding: '6px 12px', textAlign: 'center', fontSize: '10px', color: '#888', fontWeight: 600, textTransform: 'uppercase', borderBottom: '1px solid #1a1a22' }}>RR</th>
-                                    <th style={{ padding: '6px 12px', textAlign: 'center', fontSize: '10px', color: '#888', fontWeight: 600, textTransform: 'uppercase', borderBottom: '1px solid #1a1a22' }}>Rating</th>
-                                    <th style={{ padding: '6px 12px', textAlign: 'center', fontSize: '10px', color: '#888', fontWeight: 600, textTransform: 'uppercase', borderBottom: '1px solid #1a1a22' }}>Placed</th>
-                                    <th style={{ padding: '6px 12px', textAlign: 'center', fontSize: '10px', color: '#888', fontWeight: 600, textTransform: 'uppercase', borderBottom: '1px solid #1a1a22' }}>Date</th>
+                                    <th style={{ padding: '6px 12px', textAlign: 'center', fontSize: '10px', color: '#888', fontWeight: 600, textTransform: 'uppercase', borderBottom: '1px solid #1a1a22', background: '#0d0d12' }}>Symbol</th>
+                                    <th style={{ padding: '6px 12px', textAlign: 'center', fontSize: '10px', color: '#888', fontWeight: 600, textTransform: 'uppercase', borderBottom: '1px solid #1a1a22', background: '#0d0d12' }}>Result</th>
+                                    <th style={{ padding: '6px 12px', textAlign: 'center', fontSize: '10px', color: '#888', fontWeight: 600, textTransform: 'uppercase', borderBottom: '1px solid #1a1a22', background: '#0d0d12' }}>PnL</th>
+                                    <th style={{ padding: '6px 12px', textAlign: 'center', fontSize: '10px', color: '#888', fontWeight: 600, textTransform: 'uppercase', borderBottom: '1px solid #1a1a22', background: '#0d0d12' }}>RR</th>
+                                    <th style={{ padding: '6px 12px', textAlign: 'center', fontSize: '10px', color: '#888', fontWeight: 600, textTransform: 'uppercase', borderBottom: '1px solid #1a1a22', background: '#0d0d12' }}>Rating</th>
+                                    <th style={{ padding: '6px 12px', textAlign: 'center', fontSize: '10px', color: '#888', fontWeight: 600, textTransform: 'uppercase', borderBottom: '1px solid #1a1a22', background: '#0d0d12' }}>Placed</th>
+                                    <th style={{ padding: '6px 12px', textAlign: 'center', fontSize: '10px', color: '#888', fontWeight: 600, textTransform: 'uppercase', borderBottom: '1px solid #1a1a22', background: '#0d0d12' }}>Date</th>
                                   </tr>
                                 </thead>
                                 <tbody>
@@ -2164,7 +2164,7 @@ export default function DashboardPage() {
                             const rangeMin = showObjLines && maxDdFloor ? Math.min(dataMin, maxDdFloor) : dataMin
                             const rangeMax = showObjLines && profitTarget ? Math.max(dataMax, profitTarget) : dataMax
                             const dataRange = rangeMax - rangeMin || 1000
-                            const paddingAmt = dataRange / 8  // 1/8 padding mechanism
+                            const paddingAmt = dataRange / 14  // 1/16 padding
 
                             let yMin = rangeMin - paddingAmt
                             let yMax = rangeMax + paddingAmt
@@ -2284,9 +2284,9 @@ export default function DashboardPage() {
                                     {/* Starting balance line */}
                                     {startLineY >= 0 && startLineY <= 100 && <div style={{ position: 'absolute', left: 0, right: 0, top: `${startLineY}%`, borderTop: '1px dashed #555', zIndex: 1 }} />}
                                     {/* Profit target line - only when objectives toggled on */}
-                                    {showObjLines && profitTargetLineY !== null && profitTargetLineY >= 0 && profitTargetLineY <= 100 && <div style={{ position: 'absolute', left: 0, right: 0, top: `${profitTargetLineY}%`, borderTop: '2px solid #22c55e', zIndex: 1 }} />}
+                                    {showObjLines && profitTargetLineY !== null && profitTargetLineY >= 0 && profitTargetLineY <= 100 && <div style={{ position: 'absolute', left: 0, right: 0, top: `${profitTargetLineY}%`, borderTop: '1px dashed #22c55e', zIndex: 1 }} />}
                                     {/* Max DD line - only when objectives toggled on */}
-                                    {showObjLines && maxDdFloorLineY !== null && maxDdFloorLineY >= 0 && maxDdFloorLineY <= 100 && <div style={{ position: 'absolute', left: 0, right: 0, top: `${maxDdFloorLineY}%`, borderTop: '2px solid #ef4444', zIndex: 1 }} />}
+                                    {showObjLines && maxDdFloorLineY !== null && maxDdFloorLineY >= 0 && maxDdFloorLineY <= 100 && <div style={{ position: 'absolute', left: 0, right: 0, top: `${maxDdFloorLineY}%`, borderTop: '1px dashed #ef4444', zIndex: 1 }} />}
                                     {/* SVG Graph */}
                                     <svg style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', overflow: 'visible', zIndex: 2 }} viewBox={`0 0 ${svgW} ${svgH}`} preserveAspectRatio="none"
                                       onMouseMove={e => { const rect = e.currentTarget.getBoundingClientRect(); const mouseX = ((e.clientX - rect.left) / rect.width) * svgW; let closest = chartPts[0], minDist = Math.abs(mouseX - chartPts[0].x); chartPts.forEach(p => { const d = Math.abs(mouseX - p.x); if (d < minDist) { minDist = d; closest = p } }); setJournalHover({ ...closest, accountId: account.id, xPct: (closest.x / svgW) * 100, yPct: (closest.y / svgH) * 100 }) }}
@@ -3586,7 +3586,7 @@ export default function DashboardPage() {
                   <div style={{ fontSize: '11px', color: '#666', textTransform: 'uppercase', marginBottom: '8px' }}>Preview (first 5 rows)</div>
                   <div style={{ overflow: 'auto', marginBottom: '20px', border: '1px solid #1a1a22', borderRadius: '8px' }}>
                     <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '12px' }}>
-                      <thead>
+                      <thead style={{ position: 'sticky', top: 0, zIndex: 1 }}>
                         <tr style={{ background: '#0a0a0f' }}>
                           {importHeaders.map((header, idx) => (
                             <th key={idx} style={{ padding: '10px 12px', textAlign: 'left', color: importMapping[idx] ? '#9333ea' : '#666', fontWeight: 500, borderBottom: '1px solid #1a1a22', whiteSpace: 'nowrap' }}>
@@ -3646,7 +3646,7 @@ export default function DashboardPage() {
           if (maxDdFloor) minBal = Math.min(minBal, maxDdFloor)
 
           const dataRange = maxBal - minBal || 1000
-          const paddingAmount = dataRange / 8
+          const paddingAmount = dataRange / 14  // 1/16 padding
           const yMax = maxBal + paddingAmount
           const yMin = minBal - paddingAmount
           const yRange = yMax - yMin || 1
@@ -3779,11 +3779,11 @@ export default function DashboardPage() {
                       )}
                       {/* Profit target line */}
                       {profitTargetYPct !== null && profitTargetYPct >= 0 && profitTargetYPct <= 100 && (
-                        <div style={{ position: 'absolute', left: 0, right: 0, top: `${profitTargetYPct}%`, borderTop: '2px solid #22c55e', zIndex: 1 }} />
+                        <div style={{ position: 'absolute', left: 0, right: 0, top: `${profitTargetYPct}%`, borderTop: '1px dashed #22c55e', zIndex: 1 }} />
                       )}
                       {/* Max DD line */}
                       {maxDdFloorYPct !== null && maxDdFloorYPct >= 0 && maxDdFloorYPct <= 100 && (
-                        <div style={{ position: 'absolute', left: 0, right: 0, top: `${maxDdFloorYPct}%`, borderTop: '2px solid #ef4444', zIndex: 1 }} />
+                        <div style={{ position: 'absolute', left: 0, right: 0, top: `${maxDdFloorYPct}%`, borderTop: '1px dashed #ef4444', zIndex: 1 }} />
                       )}
                       {/* SVG Graph */}
                       <svg width="100%" height="100%" viewBox={`0 0 ${svgW} ${svgH}`} preserveAspectRatio="none" style={{ position: 'relative', zIndex: 2 }}>

@@ -2299,14 +2299,14 @@ export default function AccountPage() {
                             const actualMax = equityCurveGroupBy === 'total' ? Math.max(maxBal, displayStartingBalance) : maxBal
                             const dataRange = actualMax - actualMin || 1000
 
-                            // To get 1/8 of TOTAL graph height as padding on each side:
-                            // If data takes 6/8 of total, padding = dataRange / 6 on each side
-                            const paddingAmount = dataRange / 6
+                            // To get 1/16 of TOTAL graph height as padding on each side:
+                            // If data takes 14/16 of total, padding = dataRange / 14 on each side
+                            const paddingAmount = dataRange / 14
                             const lowestFloor = Math.min(ddFloorVal || Infinity, dailyDdFloorVal || Infinity, maxDdFloorVal || Infinity)
 
                             let yMax, yMin
                             if (!showObjectiveLines) {
-                              // Tight fit: data + 1/8 padding on each side (total = dataRange * 4/3)
+                              // Tight fit: data + 1/16 padding on each side
                               yMax = actualMax + paddingAmount
                               yMin = actualMin - paddingAmount
                               if (yMin < 0 && actualMin >= 0) yMin = 0
@@ -2743,13 +2743,13 @@ export default function AccountPage() {
                                         </div>
                                         {profitTargetY !== null && (
                                           <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                                            <div style={{ width: '16px', height: '0', borderTop: '2px solid #22c55e' }} />
+                                            <div style={{ width: '16px', height: '0', borderTop: '1px dashed #22c55e' }} />
                                             <span style={{ fontSize: '9px', color: '#22c55e', fontWeight: 500 }}>Profit Target {account?.profit_target}%</span>
                                           </div>
                                         )}
                                         {(maxDdStaticFloorY !== null || trailingMaxDdPath) && (
                                           <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                                            <div style={{ width: '16px', height: '0', borderTop: '2px solid #ef4444' }} />
+                                            <div style={{ width: '16px', height: '0', borderTop: '1px dashed #ef4444' }} />
                                             <span style={{ fontSize: '9px', color: '#ef4444', fontWeight: 500 }}>
                                               Max Drawdown {account?.max_dd_enabled ? `(${account?.max_dd_type === 'trailing' ? 'trailing' : 'static'}) ${account?.max_dd_pct}%` : `${account?.max_drawdown}%`}
                                             </span>
@@ -2757,23 +2757,23 @@ export default function AccountPage() {
                                         )}
                                         {dailyDdPath && (
                                           <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                                            <div style={{ width: '16px', height: '0', borderTop: '2px solid #f97316' }} />
+                                            <div style={{ width: '16px', height: '0', borderTop: '1px dashed #f97316' }} />
                                             <span style={{ fontSize: '9px', color: '#f97316', fontWeight: 500 }}>Daily Drawdown ({account?.daily_dd_type === 'trailing' ? 'trailing' : 'static'}) {account?.daily_dd_pct}%</span>
                                           </div>
                                         )}
                                       </div>
                                     )}
-                                    {/* Drawdown floor line - solid orange/red */}
+                                    {/* Drawdown floor line - dashed orange/red */}
                                     {showObjectiveLines && ddFloorY !== null && (
-                                      <div style={{ position: 'absolute', left: 0, right: 0, top: `${ddFloorY}%`, borderTop: `2px solid ${propFirmDrawdown?.breached ? '#ef4444' : '#f59e0b'}`, zIndex: 1 }} />
+                                      <div style={{ position: 'absolute', left: 0, right: 0, top: `${ddFloorY}%`, borderTop: `1px dashed ${propFirmDrawdown?.breached ? '#ef4444' : '#f59e0b'}`, zIndex: 1 }} />
                                     )}
-                                    {/* Profit target line - solid blue/green */}
+                                    {/* Profit target line - dashed blue/green */}
                                     {showObjectiveLines && profitTargetY !== null && (
-                                      <div style={{ position: 'absolute', left: 0, right: 0, top: `${profitTargetY}%`, borderTop: `2px solid ${distanceFromTarget?.passed ? '#22c55e' : '#3b82f6'}`, zIndex: 1 }} />
+                                      <div style={{ position: 'absolute', left: 0, right: 0, top: `${profitTargetY}%`, borderTop: `1px dashed ${distanceFromTarget?.passed ? '#22c55e' : '#3b82f6'}`, zIndex: 1 }} />
                                     )}
-                                    {/* Static Max DD floor line - red solid horizontal */}
+                                    {/* Static Max DD floor line - red dashed horizontal */}
                                     {showObjectiveLines && maxDdStaticFloorY !== null && (
-                                      <div style={{ position: 'absolute', left: 0, right: 0, top: `${maxDdStaticFloorY}%`, borderTop: '2px solid #ef4444', zIndex: 1 }} />
+                                      <div style={{ position: 'absolute', left: 0, right: 0, top: `${maxDdStaticFloorY}%`, borderTop: '1px dashed #ef4444', zIndex: 1 }} />
                                     )}
                                     <svg style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', overflow: 'visible', zIndex: 2 }} viewBox={`0 0 ${svgW} ${svgH}`} preserveAspectRatio="none"
                                       onMouseMove={e => {
@@ -4918,14 +4918,14 @@ export default function AccountPage() {
                 const actualMaxEnl = equityCurveGroupBy === 'total' ? Math.max(maxBal, startingBalance) : maxBal
                 const dataRangeEnl = actualMaxEnl - actualMinEnl || 1000
 
-                // To get 1/8 of TOTAL graph height as padding on each side:
-                // If data takes 6/8 of total, padding = dataRange / 6 on each side
-                const paddingAmountEnl = dataRangeEnl / 6
+                // To get 1/16 of TOTAL graph height as padding on each side:
+                // If data takes 14/16 of total, padding = dataRange / 14 on each side
+                const paddingAmountEnl = dataRangeEnl / 14
                 const lowestFloorEnl = Math.min(ddFloorValEnl || Infinity, dailyDdFloorValEnl || Infinity, maxDdFloorValEnl || Infinity)
 
                 let yMax, yMin
                 if (!showObjectiveLines) {
-                  // Tight fit: data + 1/8 padding on each side (total = dataRange * 4/3)
+                  // Tight fit: data + 1/16 padding on each side
                   yMax = actualMaxEnl + paddingAmountEnl
                   yMin = actualMinEnl - paddingAmountEnl
                   if (yMin < 0 && actualMinEnl >= 0) yMin = 0
@@ -5131,17 +5131,17 @@ export default function AccountPage() {
                               <span style={{ position: 'absolute', right: '4px', top: `${(startYEnl / svgH) * 100}%`, transform: 'translateY(-50%)', fontSize: '10px', color: '#666', fontWeight: 500 }}>Start</span>
                             </>
                           )}
-                          {/* DD Floor line - solid orange/red horizontal line */}
+                          {/* DD Floor line - dashed orange/red horizontal line */}
                           {ddFloorYEnl !== null && (
                             <>
-                              <div style={{ position: 'absolute', left: 0, right: '55px', top: `${ddFloorYEnl}%`, borderTop: `2px solid ${propFirmDrawdown?.breached ? '#ef4444' : '#f59e0b'}`, zIndex: 1 }} />
+                              <div style={{ position: 'absolute', left: 0, right: '55px', top: `${ddFloorYEnl}%`, borderTop: `1px dashed ${propFirmDrawdown?.breached ? '#ef4444' : '#f59e0b'}`, zIndex: 1 }} />
                               <span style={{ position: 'absolute', right: '4px', top: `${ddFloorYEnl}%`, transform: 'translateY(-50%)', fontSize: '10px', color: propFirmDrawdown?.breached ? '#ef4444' : '#f59e0b', fontWeight: 500 }}>{propFirmDrawdown?.breached ? 'BREACHED' : 'DD Floor'}</span>
                             </>
                           )}
-                          {/* Profit target line - solid blue/green horizontal line */}
+                          {/* Profit target line - dashed blue/green horizontal line */}
                           {profitTargetYEnl !== null && (
                             <>
-                              <div style={{ position: 'absolute', left: 0, right: '45px', top: `${profitTargetYEnl}%`, borderTop: `2px solid ${distanceFromTarget?.passed ? '#22c55e' : '#3b82f6'}`, zIndex: 1 }} />
+                              <div style={{ position: 'absolute', left: 0, right: '45px', top: `${profitTargetYEnl}%`, borderTop: `1px dashed ${distanceFromTarget?.passed ? '#22c55e' : '#3b82f6'}`, zIndex: 1 }} />
                               <span style={{ position: 'absolute', right: '4px', top: `${profitTargetYEnl}%`, transform: 'translateY(-50%)', fontSize: '10px', color: distanceFromTarget?.passed ? '#22c55e' : '#3b82f6', fontWeight: 500 }}>{distanceFromTarget?.passed ? 'PASSED' : 'Target'}</span>
                             </>
                           )}
