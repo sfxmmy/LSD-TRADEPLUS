@@ -1987,9 +1987,9 @@ export default function DashboardPage() {
                         </div>
 
                         {/* Right Panel: Stats (2 cols top-to-bottom) + Buttons bottom right */}
-                        <div style={{ flex: 1, display: 'flex', gap: '12px', paddingTop: '12px' }}>
-                          {/* Stats - 2 columns, flows top to bottom, wider */}
-                          <div style={{ flex: 2, display: 'grid', gridTemplateColumns: '1fr 1fr', gridTemplateRows: 'repeat(6, auto)', gridAutoFlow: 'column', gap: '6px 24px', alignContent: 'start' }}>
+                        <div style={{ flex: 1, display: 'flex', gap: '12px' }}>
+                          {/* Stats - 2 columns, flows top to bottom, full height */}
+                          <div style={{ flex: 2, display: 'grid', gridTemplateColumns: '1fr 1fr', gridTemplateRows: 'repeat(6, 1fr)', gridAutoFlow: 'column', gap: '0 24px', alignContent: 'stretch' }}>
                             {[
                               { label: 'Trades', value: stats.totalTrades, color: '#fff' },
                               { label: 'Winrate', value: `${stats.winrate}%`, color: stats.winrate >= 50 ? '#22c55e' : '#ef4444' },
