@@ -1827,7 +1827,7 @@ export default function DashboardPage() {
                       </div>
 
                       {/* Main content: Graph (1.5 journal card width) + Right panel (stats, buttons) */}
-                      <div style={{ display: 'flex', flex: 1, padding: '0 12px 12px 0', gap: '12px' }}>
+                      <div style={{ display: 'flex', flex: 1, padding: '0 12px 0 0', gap: '12px' }}>
                         {/* Chart - 50% width (1.5 journal cards), full height */}
                         <div style={{ width: '50%', flexShrink: 0, display: 'flex', flexDirection: 'column' }}>
                           {(() => {
@@ -1970,7 +1970,7 @@ export default function DashboardPage() {
                                     )}
                                   </div>
                                 </div>
-                                <div style={{ display: 'flex' }}>
+                                <div style={{ display: 'flex', paddingBottom: '12px' }}>
                                   <div style={{ width: '42px', flexShrink: 0 }} />
                                   <div style={{ flex: 1, height: '20px', position: 'relative' }}>
                                     {xLabels.map((l, i) => (
