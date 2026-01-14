@@ -1757,7 +1757,7 @@ export default function DashboardPage() {
                 </div>
 
               {/* Right Content Area (Overall Stats + Journal Cards) */}
-              <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '20px' }}>
+              <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '12px' }}>
                 {/* Overall Stats */}
                 {(() => {
                   const stats = getCumulativeStats()
@@ -2031,7 +2031,7 @@ export default function DashboardPage() {
                 })()}
 
                 {/* Journal Cards Grid */}
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px' }}>
                   {accounts.map(account => {
                     const accTrades = trades[account.id] || []
                     const wins = accTrades.filter(t => t.outcome === 'win').length
