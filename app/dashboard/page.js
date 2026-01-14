@@ -1794,238 +1794,184 @@ export default function DashboardPage() {
                         </div>
                       </div>
 
-                      {/* Graph + Stats Row */}
-                      <div style={{ display: 'flex', gap: '24px', alignItems: 'flex-start' }}>
-                        {/* Graph with Y-axis and X-axis - matching account page structure */}
-                        <div style={{ flex: '1 1 auto', minWidth: '400px', maxWidth: '600px' }}>
-                          {pnlPoints.length > 1 ? (() => {
-                            // Use normalized SVG coordinates like account page
+                      {/* Graph + Stats + Recent Trades Row */}
+                      <div style={{ display: 'flex', gap: '20px', alignItems: 'stretch' }}>
+                        {/* Equity Curve Graph */}
+                        <div style={{ flex: '0 0 auto', width: '420px' }}>
+                          {(() => {
+                            // Build balance points (starting balance + cumulative pnl)
+                            const startBal = stats.totalStartingBalance || 0
+                            let runningBal = startBal
+                            const balancePoints = [{ value: startBal, date: null }]
+                            sortedTrades.forEach(t => {
+                              runningBal += parseFloat(t.pnl) || 0
+                              balancePoints.push({ value: runningBal, date: t.date, symbol: t.symbol, pnl: parseFloat(t.pnl) || 0 })
+                            })
+
+                            if (balancePoints.length < 2) {
+                              return <div style={{ height: '160px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#444', fontSize: '12px' }}>No data yet</div>
+                            }
+
                             const svgW = 100, svgH = 100
-                            const displayStartingBalance = stats.totalStartingBalance
+                            const allValues = balancePoints.map(p => p.value)
+                            const dataMin = Math.min(...allValues)
+                            const dataMax = Math.max(...allValues)
+                            const dataRange = dataMax - dataMin || 1000
+                            const padding = dataRange * 0.1
 
-                            // Calculate tight Y-axis range
-                            const actualMin = Math.min(minPnl, displayStartingBalance)
-                            const actualMax = Math.max(maxPnl, displayStartingBalance)
-                            const dataRange = actualMax - actualMin || 1000
-                            const paddingAmount = dataRange * 0.15
+                            let yMin = dataMin - padding
+                            let yMax = dataMax + padding
+                            if (yMin < 0 && dataMin >= 0) yMin = 0
 
-                            let yMax = actualMax + paddingAmount
-                            let yMin = actualMin - paddingAmount
-                            if (yMin < 0 && actualMin >= 0) yMin = 0
+                            const yRange = yMax - yMin || 1
 
-                            // Calculate nice step size for ~6 labels
-                            const displayRange = yMax - yMin || 1000
-                            const targetLabels = 6
-                            const rawStep = displayRange / (targetLabels - 1)
-                            const magnitude = Math.pow(10, Math.floor(Math.log10(rawStep)))
-                            const normalized = rawStep / magnitude
-                            let niceStep
-                            if (normalized <= 1) niceStep = magnitude
-                            else if (normalized <= 2) niceStep = 2 * magnitude
-                            else if (normalized <= 2.5) niceStep = 2.5 * magnitude
-                            else if (normalized <= 5) niceStep = 5 * magnitude
-                            else niceStep = 10 * magnitude
-
-                            const yStep = niceStep
-                            yMax = Math.ceil(yMax / yStep) * yStep
-                            yMin = Math.floor(yMin / yStep) * yStep
-                            if (yMin < 0 && actualMin >= 0) yMin = 0
-
-                            const yRange = yMax - yMin || yStep
-
-                            // Generate Y-axis labels
+                            // Y-axis labels (5 labels)
                             const yLabels = []
-                            for (let v = yMax; v >= yMin; v -= yStep) yLabels.push(v)
+                            for (let i = 0; i < 5; i++) {
+                              yLabels.push(yMax - (i / 4) * (yMax - yMin))
+                            }
 
-                            const formatYLabel = (v) => {
+                            const formatY = (v) => {
                               const abs = Math.abs(v)
                               if (abs >= 1000000) return (v < 0 ? '-' : '') + '$' + (abs / 1000000).toFixed(1) + 'M'
                               if (abs >= 1000) return (v < 0 ? '-' : '') + '$' + (abs / 1000).toFixed(0) + 'k'
                               return (v < 0 ? '-' : '') + '$' + Math.round(abs)
                             }
 
-                            // Generate X-axis labels
+                            // X-axis labels
                             const xLabels = []
                             if (sortedTrades.length > 0) {
-                              const firstDate = new Date(sortedTrades[0].date)
-                              const lastDate = new Date(sortedTrades[sortedTrades.length - 1].date)
-                              const totalDays = Math.max(1, Math.ceil((lastDate - firstDate) / (1000 * 60 * 60 * 24)))
-                              const numXLabels = Math.min(6, sortedTrades.length)
-                              for (let i = 0; i < numXLabels; i++) {
-                                const pct = numXLabels > 1 ? 5 + (i / (numXLabels - 1)) * 90 : 50
-                                const dateOffset = numXLabels > 1 ? Math.round((i / (numXLabels - 1)) * totalDays) : 0
-                                const labelDate = new Date(firstDate.getTime() + dateOffset * 24 * 60 * 60 * 1000)
-                                xLabels.push({ label: `${String(labelDate.getDate()).padStart(2, '0')}/${String(labelDate.getMonth() + 1).padStart(2, '0')}`, pct })
+                              const dates = sortedTrades.map(t => new Date(t.date))
+                              const firstDate = dates[0]
+                              const lastDate = dates[dates.length - 1]
+                              const numLabels = Math.min(5, sortedTrades.length)
+                              for (let i = 0; i < numLabels; i++) {
+                                const pct = numLabels > 1 ? 5 + (i / (numLabels - 1)) * 90 : 50
+                                const dateIdx = Math.round((i / (numLabels - 1)) * (dates.length - 1))
+                                const d = dates[dateIdx] || firstDate
+                                xLabels.push({ label: `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}`, pct })
                               }
                             }
 
-                            // Calculate starting balance Y position
-                            const startY = svgH - ((displayStartingBalance - yMin) / yRange) * svgH
-                            const startLineY = ((yMax - displayStartingBalance) / yRange) * 100
-
-                            // Build chart points
-                            const chartPts = pnlPoints.map((p, i) => ({
-                              x: pnlPoints.length > 1 ? (i / (pnlPoints.length - 1)) * svgW : svgW / 2,
+                            // Chart points
+                            const pts = balancePoints.map((p, i) => ({
+                              x: (i / (balancePoints.length - 1)) * svgW,
                               y: svgH - ((p.value - yMin) / yRange) * svgH,
-                              balance: p.value,
-                              ...p
+                              value: p.value
                             }))
 
-                            // Build split paths (green above start, red below)
-                            const greenSegments = [], redSegments = []
-                            for (let i = 0; i < chartPts.length - 1; i++) {
-                              const p1 = chartPts[i], p2 = chartPts[i + 1]
-                              const above1 = p1.balance >= displayStartingBalance, above2 = p2.balance >= displayStartingBalance
+                            // Starting balance line position
+                            const startLineY = ((yMax - startBal) / yRange) * 100
+                            const startSvgY = svgH - ((startBal - yMin) / yRange) * svgH
+
+                            // Split into green (above start) and red (below start) segments
+                            const greenSegs = [], redSegs = []
+                            for (let i = 0; i < pts.length - 1; i++) {
+                              const p1 = pts[i], p2 = pts[i + 1]
+                              const v1 = balancePoints[i].value, v2 = balancePoints[i + 1].value
+                              const above1 = v1 >= startBal, above2 = v2 >= startBal
                               if (above1 === above2) {
-                                (above1 ? greenSegments : redSegments).push({ x1: p1.x, y1: p1.y, x2: p2.x, y2: p2.y })
+                                (above1 ? greenSegs : redSegs).push({ x1: p1.x, y1: p1.y, x2: p2.x, y2: p2.y })
                               } else {
-                                const t = (displayStartingBalance - p1.balance) / (p2.balance - p1.balance)
-                                const ix = p1.x + t * (p2.x - p1.x), iy = startY
+                                const t = (startBal - v1) / (v2 - v1)
+                                const ix = p1.x + t * (p2.x - p1.x)
                                 if (above1) {
-                                  greenSegments.push({ x1: p1.x, y1: p1.y, x2: ix, y2: iy })
-                                  redSegments.push({ x1: ix, y1: iy, x2: p2.x, y2: p2.y })
+                                  greenSegs.push({ x1: p1.x, y1: p1.y, x2: ix, y2: startSvgY })
+                                  redSegs.push({ x1: ix, y1: startSvgY, x2: p2.x, y2: p2.y })
                                 } else {
-                                  redSegments.push({ x1: p1.x, y1: p1.y, x2: ix, y2: iy })
-                                  greenSegments.push({ x1: ix, y1: iy, x2: p2.x, y2: p2.y })
+                                  redSegs.push({ x1: p1.x, y1: p1.y, x2: ix, y2: startSvgY })
+                                  greenSegs.push({ x1: ix, y1: startSvgY, x2: p2.x, y2: p2.y })
                                 }
                               }
                             }
-                            const buildPath = (segs) => segs.map(s => `M ${s.x1} ${s.y1} L ${s.x2} ${s.y2}`).join(' ')
-                            const buildAreaPath = (segs) => segs.map(s => `M ${s.x1} ${s.y1} L ${s.x2} ${s.y2} L ${s.x2} ${startY} L ${s.x1} ${startY} Z`).join(' ')
-                            const greenPath = buildPath(greenSegments)
-                            const redPath = buildPath(redSegments)
-                            const greenAreaPath = buildAreaPath(greenSegments)
-                            const redAreaPath = buildAreaPath(redSegments)
+
+                            const mkPath = segs => segs.map(s => `M${s.x1},${s.y1}L${s.x2},${s.y2}`).join('')
+                            const mkArea = segs => segs.map(s => `M${s.x1},${s.y1}L${s.x2},${s.y2}L${s.x2},${startSvgY}L${s.x1},${startSvgY}Z`).join('')
 
                             return (
                               <div style={{ display: 'flex', flexDirection: 'column' }}>
-                                {/* Chart row - Y-axis and chart area */}
-                                <div style={{ flex: 1, display: 'flex', height: '140px' }}>
-                                  {/* Y-axis labels */}
-                                  <div style={{ width: '44px', flexShrink: 0, position: 'relative', borderRight: '1px solid #2a2a35', overflow: 'visible' }}>
-                                    {yLabels.map((v, i) => {
-                                      const topPct = yLabels.length > 1 ? (i / (yLabels.length - 1)) * 100 : 0
-                                      return (
-                                        <Fragment key={i}>
-                                          <span style={{ position: 'absolute', right: '6px', top: `${topPct}%`, transform: 'translateY(-50%)', fontSize: '9px', color: '#888', lineHeight: 1, textAlign: 'right' }}>{formatYLabel(v)}</span>
-                                          <div style={{ position: 'absolute', right: 0, top: `${topPct}%`, width: '4px', borderTop: '1px solid #2a2a35' }} />
-                                        </Fragment>
-                                      )
-                                    })}
-                                    {/* Starting balance on Y-axis */}
-                                    {startLineY >= 0 && startLineY <= 100 && (
-                                      <Fragment>
-                                        <span style={{ position: 'absolute', right: '6px', top: `${startLineY}%`, transform: 'translateY(-50%)', fontSize: '9px', color: '#666', lineHeight: 1, textAlign: 'right', fontWeight: 600 }}>{formatYLabel(displayStartingBalance)}</span>
-                                        <div style={{ position: 'absolute', right: 0, top: `${startLineY}%`, width: '4px', borderTop: '1px solid #666' }} />
-                                      </Fragment>
-                                    )}
+                                <div style={{ display: 'flex', height: '140px' }}>
+                                  {/* Y-axis */}
+                                  <div style={{ width: '40px', flexShrink: 0, position: 'relative', borderRight: '1px solid #2a2a35' }}>
+                                    {yLabels.map((v, i) => (
+                                      <span key={i} style={{ position: 'absolute', right: '6px', top: `${(i / 4) * 100}%`, transform: 'translateY(-50%)', fontSize: '9px', color: '#666', whiteSpace: 'nowrap' }}>{formatY(v)}</span>
+                                    ))}
                                   </div>
-                                  {/* Chart area */}
-                                  <div style={{ flex: 1, position: 'relative', overflow: 'visible', borderBottom: '1px solid #2a2a35' }}>
-                                    {/* Horizontal grid lines */}
-                                    <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}>
-                                      {yLabels.map((_, i) => {
-                                        const topPct = yLabels.length > 1 ? (i / (yLabels.length - 1)) * 100 : 0
-                                        if (i === yLabels.length - 1) return null
-                                        return <div key={i} style={{ position: 'absolute', left: 0, right: 0, top: `${topPct}%`, borderTop: '1px solid rgba(51,51,51,0.5)' }} />
-                                      })}
-                                    </div>
-                                    {/* Starting balance dashed line */}
+                                  {/* Chart */}
+                                  <div style={{ flex: 1, position: 'relative', borderBottom: '1px solid #2a2a35' }}>
                                     {startLineY >= 0 && startLineY <= 100 && (
-                                      <div style={{ position: 'absolute', left: 0, right: 0, top: `${startLineY}%`, borderTop: '1px dashed #666', zIndex: 1 }} />
+                                      <div style={{ position: 'absolute', left: 0, right: 0, top: `${startLineY}%`, borderTop: '1px dashed #555', zIndex: 1 }} />
                                     )}
-                                    {/* SVG Chart */}
-                                    <svg style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', overflow: 'visible', zIndex: 2 }} viewBox={`0 0 ${svgW} ${svgH}`} preserveAspectRatio="none">
+                                    <svg style={{ position: 'absolute', inset: 0, width: '100%', height: '100%' }} viewBox={`0 0 ${svgW} ${svgH}`} preserveAspectRatio="none">
                                       <defs>
-                                        <linearGradient id="dashGreen" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stopColor="#22c55e" stopOpacity="0.3" /><stop offset="100%" stopColor="#22c55e" stopOpacity="0" /></linearGradient>
-                                        <linearGradient id="dashRed" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stopColor="#ef4444" stopOpacity="0.3" /><stop offset="100%" stopColor="#ef4444" stopOpacity="0" /></linearGradient>
+                                        <linearGradient id="dashGr" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stopColor="#22c55e" stopOpacity="0.25" /><stop offset="100%" stopColor="#22c55e" stopOpacity="0" /></linearGradient>
+                                        <linearGradient id="dashRd" x1="0%" y1="100%" x2="0%" y2="0%"><stop offset="0%" stopColor="#ef4444" stopOpacity="0.25" /><stop offset="100%" stopColor="#ef4444" stopOpacity="0" /></linearGradient>
                                       </defs>
-                                      {greenAreaPath && <path d={greenAreaPath} fill="url(#dashGreen)" />}
-                                      {redAreaPath && <path d={redAreaPath} fill="url(#dashRed)" />}
-                                      {greenPath && <path d={greenPath} fill="none" stroke="#22c55e" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />}
-                                      {redPath && <path d={redPath} fill="none" stroke="#ef4444" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />}
+                                      <path d={mkArea(greenSegs)} fill="url(#dashGr)" />
+                                      <path d={mkArea(redSegs)} fill="url(#dashRd)" />
+                                      <path d={mkPath(greenSegs)} fill="none" stroke="#22c55e" strokeWidth="2" vectorEffect="non-scaling-stroke" />
+                                      <path d={mkPath(redSegs)} fill="none" stroke="#ef4444" strokeWidth="2" vectorEffect="non-scaling-stroke" />
                                     </svg>
                                   </div>
                                 </div>
-                                {/* X-axis labels */}
+                                {/* X-axis */}
                                 <div style={{ display: 'flex' }}>
-                                  <div style={{ width: '44px', flexShrink: 0 }} />
-                                  <div style={{ flex: 1, height: '22px', position: 'relative' }}>
+                                  <div style={{ width: '40px', flexShrink: 0 }} />
+                                  <div style={{ flex: 1, height: '20px', position: 'relative' }}>
                                     {xLabels.map((l, i) => (
-                                      <div key={i} style={{ position: 'absolute', left: `${l.pct}%`, transform: 'translateX(-50%)', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                                        <div style={{ width: '1px', height: '4px', background: '#2a2a35' }} />
-                                        <span style={{ fontSize: '9px', color: '#888', marginTop: '2px', whiteSpace: 'nowrap' }}>{l.label}</span>
-                                      </div>
+                                      <span key={i} style={{ position: 'absolute', left: `${l.pct}%`, transform: 'translateX(-50%)', fontSize: '9px', color: '#666', marginTop: '4px' }}>{l.label}</span>
                                     ))}
                                   </div>
                                 </div>
                               </div>
                             )
-                          })() : (
-                            <div style={{ height: '160px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#444', fontSize: '12px' }}>No data yet</div>
-                          )}
+                          })()}
                         </div>
 
-                        {/* Stats + Recent Trades */}
-                        <div style={{ flex: 1, display: 'flex', gap: '16px' }}>
-                          {/* Stats Grid - 2 columns */}
-                          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px', alignContent: 'start' }}>
-                            {[
-                              { label: 'Total P&L', value: `${cumPnl >= 0 ? '+' : ''}$${Math.round(cumPnl).toLocaleString()}`, color: cumPnl >= 0 ? '#22c55e' : '#ef4444' },
-                              { label: 'Balance', value: `$${Math.round(stats.currentBalance).toLocaleString()}`, color: stats.currentBalance >= stats.totalStartingBalance ? '#22c55e' : '#ef4444' },
-                              { label: 'Today', value: `${todaysPnl >= 0 ? '+' : ''}$${Math.round(todaysPnl).toLocaleString()}`, color: todaysPnl >= 0 ? '#22c55e' : '#ef4444' },
-                              { label: 'Win Rate', value: `${stats.winrate}%`, color: stats.winrate >= 50 ? '#22c55e' : '#ef4444' },
-                              { label: 'Profit Factor', value: stats.profitFactor, color: stats.profitFactor === '-' ? '#666' : stats.profitFactor === '∞' ? '#22c55e' : parseFloat(stats.profitFactor) >= 1 ? '#22c55e' : '#ef4444' },
-                              { label: 'Trades', value: stats.totalTrades, color: '#fff' },
-                              { label: 'W / L', value: `${stats.wins} / ${stats.losses}`, color: '#fff' },
-                              { label: 'Best Day', value: `+$${bestDay.toLocaleString()}`, color: '#22c55e' },
-                              { label: 'Worst Day', value: `${worstDay >= 0 ? '+' : '-'}$${Math.abs(worstDay).toLocaleString()}`, color: worstDay >= 0 ? '#22c55e' : '#ef4444' },
-                              { label: 'Trading Days', value: uniqueDays, color: '#3b82f6' },
-                            ].map((stat, i) => (
-                              <div key={i} style={{ padding: '8px 10px', background: '#0d0d12', borderRadius: '6px', border: '1px solid #1a1a22', display: 'flex', justifyContent: 'space-between', alignItems: 'center', minWidth: '90px' }}>
-                                <span style={{ fontSize: '11px', color: '#888', fontWeight: 500 }}>{stat.label}</span>
-                                <span style={{ fontSize: '13px', fontWeight: 700, color: stat.color }}>{stat.value}</span>
-                              </div>
-                            ))}
-                          </div>
+                        {/* Stats Grid */}
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '6px', alignContent: 'start', flex: '0 0 auto' }}>
+                          {[
+                            { label: 'Total P&L', value: `${cumPnl >= 0 ? '+' : ''}$${Math.abs(Math.round(cumPnl)).toLocaleString()}`, color: cumPnl >= 0 ? '#22c55e' : '#ef4444' },
+                            { label: 'Balance', value: `$${Math.round(stats.currentBalance).toLocaleString()}`, color: stats.currentBalance >= stats.totalStartingBalance ? '#22c55e' : '#ef4444' },
+                            { label: 'Today', value: `${todaysPnl >= 0 ? '+' : ''}$${Math.abs(Math.round(todaysPnl)).toLocaleString()}`, color: todaysPnl >= 0 ? '#22c55e' : '#ef4444' },
+                            { label: 'Win Rate', value: `${stats.winrate}%`, color: stats.winrate >= 50 ? '#22c55e' : '#ef4444' },
+                            { label: 'Profit Factor', value: stats.profitFactor, color: stats.profitFactor === '-' ? '#666' : stats.profitFactor === '∞' ? '#22c55e' : parseFloat(stats.profitFactor) >= 1 ? '#22c55e' : '#ef4444' },
+                            { label: 'Trades', value: stats.totalTrades, color: '#fff' },
+                            { label: 'W / L', value: `${stats.wins} / ${stats.losses}`, color: '#fff' },
+                            { label: 'Best Day', value: `+$${Math.round(bestDay).toLocaleString()}`, color: '#22c55e' },
+                            { label: 'Worst Day', value: `${worstDay >= 0 ? '+' : '-'}$${Math.abs(Math.round(worstDay)).toLocaleString()}`, color: worstDay >= 0 ? '#22c55e' : '#ef4444' },
+                            { label: 'Days', value: uniqueDays, color: '#3b82f6' },
+                          ].map((s, i) => (
+                            <div key={i} style={{ padding: '6px 10px', background: '#0d0d12', borderRadius: '6px', border: '1px solid #1a1a22', display: 'flex', justifyContent: 'space-between', alignItems: 'center', minWidth: '100px' }}>
+                              <span style={{ fontSize: '10px', color: '#666', fontWeight: 500 }}>{s.label}</span>
+                              <span style={{ fontSize: '12px', fontWeight: 700, color: s.color }}>{s.value}</span>
+                            </div>
+                          ))}
+                        </div>
 
-                          {/* Recent Trades Widget */}
-                          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: '180px', maxHeight: '220px' }}>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                              <span style={{ fontSize: '11px', fontWeight: 700, color: '#888', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Recent Trades</span>
-                              {accounts.length > 0 && (
-                                <a href={`/account/${accounts[0]?.id}?tab=statistics&cumulative=true`} style={{ fontSize: '10px', color: '#22c55e', textDecoration: 'none', fontWeight: 600 }}>View All →</a>
-                              )}
-                            </div>
-                            <div style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                              {(() => {
-                                const recentTrades = allTrades.slice().sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, 20)
-                                if (recentTrades.length === 0) {
-                                  return <div style={{ padding: '20px', textAlign: 'center', color: '#444', fontSize: '11px' }}>No trades yet</div>
-                                }
-                                return recentTrades.map((trade, i) => {
-                                  const tradeDate = new Date(trade.date)
-                                  const today = new Date()
-                                  const diffTime = today - tradeDate
-                                  const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24))
-                                  const daysAgo = diffDays === 0 ? 'Today' : diffDays === 1 ? '1d ago' : `${diffDays}d ago`
-                                  const pnl = parseFloat(trade.pnl) || 0
-                                  const isWin = trade.outcome === 'win'
-                                  return (
-                                    <div key={i} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 10px', background: '#0d0d12', borderRadius: '6px', border: '1px solid #1a1a22' }}>
-                                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                                        <span style={{ fontSize: '12px', fontWeight: 600, color: '#fff' }}>{trade.symbol || '-'}</span>
-                                        <span style={{ fontSize: '9px', padding: '2px 6px', borderRadius: '4px', fontWeight: 600, background: isWin ? 'rgba(34,197,94,0.15)' : 'rgba(239,68,68,0.15)', color: isWin ? '#22c55e' : '#ef4444' }}>{isWin ? 'WIN' : 'LOSS'}</span>
-                                      </div>
-                                      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                                        <span style={{ fontSize: '13px', fontWeight: 700, color: pnl >= 0 ? '#22c55e' : '#ef4444' }}>{pnl >= 0 ? '+' : ''}${pnl.toLocaleString()}</span>
-                                        <span style={{ fontSize: '10px', color: '#666', minWidth: '45px', textAlign: 'right' }}>{daysAgo}</span>
-                                      </div>
+                        {/* Recent Trades */}
+                        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: '160px' }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+                            <span style={{ fontSize: '11px', fontWeight: 700, color: '#666', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Recent Trades</span>
+                          </div>
+                          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '4px', maxHeight: '154px', overflowY: 'auto' }}>
+                            {(() => {
+                              const recent = allTrades.slice().sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, 8)
+                              if (recent.length === 0) return <div style={{ padding: '20px', textAlign: 'center', color: '#444', fontSize: '11px' }}>No trades yet</div>
+                              return recent.map((t, i) => {
+                                const pnl = parseFloat(t.pnl) || 0
+                                const isWin = t.outcome === 'win'
+                                return (
+                                  <div key={i} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '6px 10px', background: '#0d0d12', borderRadius: '5px', border: '1px solid #1a1a22' }}>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                      <span style={{ fontSize: '11px', fontWeight: 600, color: '#fff' }}>{t.symbol || '-'}</span>
+                                      <span style={{ fontSize: '8px', padding: '2px 5px', borderRadius: '3px', fontWeight: 700, background: isWin ? 'rgba(34,197,94,0.2)' : 'rgba(239,68,68,0.2)', color: isWin ? '#22c55e' : '#ef4444' }}>{isWin ? 'WIN' : 'LOSS'}</span>
                                     </div>
-                                  )
-                                })
-                              })()}
-                            </div>
+                                    <span style={{ fontSize: '11px', fontWeight: 700, color: pnl >= 0 ? '#22c55e' : '#ef4444' }}>{pnl >= 0 ? '+' : ''}${Math.round(pnl).toLocaleString()}</span>
+                                  </div>
+                                )
+                              })
+                            })()}
                           </div>
                         </div>
                       </div>
