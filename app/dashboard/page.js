@@ -88,6 +88,7 @@ export default function DashboardPage() {
   const [deleteConfirm, setDeleteConfirm] = useState('')
   const [name, setName] = useState('')
   const [balance, setBalance] = useState('')
+  const [journalType, setJournalType] = useState('overall')
   const [profitTarget, setProfitTarget] = useState('')
   const [maxDrawdown, setMaxDrawdown] = useState('')
   const [consistencyEnabled, setConsistencyEnabled] = useState(false)
