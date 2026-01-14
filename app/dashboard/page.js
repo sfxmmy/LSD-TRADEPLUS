@@ -1980,8 +1980,8 @@ export default function DashboardPage() {
                           })()}
                         </div>
 
-                        {/* Stats - 2 columns */}
-                        <div style={{ width: '280px', flexShrink: 0, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2px 16px', alignContent: 'start' }}>
+                        {/* Stats - Vertical column 200px (like old journal widgets) */}
+                        <div style={{ width: '200px', flexShrink: 0, display: 'flex', flexDirection: 'column', gap: '2px' }}>
                           {[
                             { label: 'Total PnL', value: `${cumPnl >= 0 ? '+' : ''}$${Math.round(cumPnl).toLocaleString()}`, color: cumPnl >= 0 ? '#22c55e' : '#ef4444' },
                             { label: 'Total Trades', value: stats.totalTrades, color: '#fff' },
@@ -2002,30 +2002,47 @@ export default function DashboardPage() {
                             </div>
                           ))}
                         </div>
+                      </div>
 
-                        {/* Recent Trades - in same row */}
-                        <div style={{ width: '220px', flexShrink: 0, display: 'flex', flexDirection: 'column', background: '#0d0d12', borderRadius: '8px', border: '1px solid #1a1a22', overflow: 'hidden' }}>
-                          <div style={{ padding: '8px 10px', borderBottom: '1px solid #1a1a22', background: '#0a0a0f' }}>
-                            <span style={{ fontSize: '10px', fontWeight: 700, color: '#666', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Recent Trades</span>
+                      {/* Recent Trades - Full width table below (like old journal widgets) */}
+                      <div style={{ padding: '0 12px' }}>
+                        <div style={{ background: '#0d0d12', borderRadius: '8px', border: '1px solid #1a1a22', overflow: 'hidden' }}>
+                          <div style={{ padding: '10px 12px', borderBottom: '1px solid #1a1a22', background: '#0a0a0f' }}>
+                            <span style={{ fontSize: '11px', fontWeight: 700, color: '#666', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Recent Trades</span>
                           </div>
-                          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflowY: 'auto', maxHeight: '200px' }}>
-                            {(() => {
-                              const recent = allTrades.slice().sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, 8)
-                              if (recent.length === 0) return <div style={{ padding: '16px', textAlign: 'center', color: '#444', fontSize: '10px' }}>No trades</div>
-                              return recent.map((t, i) => {
-                                const pnl = parseFloat(t.pnl) || 0
-                                const isWin = t.outcome === 'win'
-                                return (
-                                  <div key={i} style={{ padding: '6px 10px', borderBottom: i < recent.length - 1 ? '1px solid #1a1a22' : 'none', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                    <div>
-                                      <div style={{ fontSize: '10px', color: '#666', marginBottom: '1px' }}>{t.symbol || '-'}</div>
-                                      <div style={{ fontSize: '11px', fontWeight: 700, color: pnl >= 0 ? '#22c55e' : '#ef4444' }}>{pnl >= 0 ? '+' : ''}${Math.round(pnl)}</div>
-                                    </div>
-                                    <span style={{ fontSize: '8px', padding: '2px 5px', borderRadius: '3px', fontWeight: 700, background: isWin ? 'rgba(34,197,94,0.15)' : 'rgba(239,68,68,0.15)', color: isWin ? '#22c55e' : '#ef4444' }}>{isWin ? 'WIN' : 'LOSS'}</span>
-                                  </div>
-                                )
-                              })
-                            })()}
+                          <div style={{ maxHeight: '180px', overflowY: 'auto' }}>
+                            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                              <thead>
+                                <tr style={{ background: '#0a0a0f' }}>
+                                  <th style={{ padding: '8px 12px', textAlign: 'left', fontSize: '10px', color: '#666', fontWeight: 600, textTransform: 'uppercase', borderBottom: '1px solid #1a1a22' }}>Symbol</th>
+                                  <th style={{ padding: '8px 12px', textAlign: 'left', fontSize: '10px', color: '#666', fontWeight: 600, textTransform: 'uppercase', borderBottom: '1px solid #1a1a22' }}>Date</th>
+                                  <th style={{ padding: '8px 12px', textAlign: 'left', fontSize: '10px', color: '#666', fontWeight: 600, textTransform: 'uppercase', borderBottom: '1px solid #1a1a22' }}>Direction</th>
+                                  <th style={{ padding: '8px 12px', textAlign: 'right', fontSize: '10px', color: '#666', fontWeight: 600, textTransform: 'uppercase', borderBottom: '1px solid #1a1a22' }}>PnL</th>
+                                  <th style={{ padding: '8px 12px', textAlign: 'center', fontSize: '10px', color: '#666', fontWeight: 600, textTransform: 'uppercase', borderBottom: '1px solid #1a1a22' }}>Result</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {(() => {
+                                  const recent = allTrades.slice().sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, 8)
+                                  if (recent.length === 0) return <tr><td colSpan="5" style={{ padding: '20px', textAlign: 'center', color: '#444', fontSize: '12px' }}>No trades yet</td></tr>
+                                  return recent.map((t, i) => {
+                                    const pnl = parseFloat(t.pnl) || 0
+                                    const isWin = t.outcome === 'win'
+                                    return (
+                                      <tr key={i} style={{ borderBottom: i < recent.length - 1 ? '1px solid #1a1a22' : 'none' }}>
+                                        <td style={{ padding: '8px 12px', fontSize: '12px', color: '#fff', fontWeight: 600 }}>{t.symbol || '-'}</td>
+                                        <td style={{ padding: '8px 12px', fontSize: '11px', color: '#888' }}>{t.date ? new Date(t.date).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' }) : '-'}</td>
+                                        <td style={{ padding: '8px 12px', fontSize: '11px', color: t.direction === 'long' || t.direction === 'Long' ? '#22c55e' : '#ef4444', textTransform: 'uppercase' }}>{t.direction || '-'}</td>
+                                        <td style={{ padding: '8px 12px', fontSize: '12px', fontWeight: 700, color: pnl >= 0 ? '#22c55e' : '#ef4444', textAlign: 'right' }}>{pnl >= 0 ? '+' : ''}${Math.round(pnl).toLocaleString()}</td>
+                                        <td style={{ padding: '8px 12px', textAlign: 'center' }}>
+                                          <span style={{ fontSize: '9px', padding: '3px 8px', borderRadius: '4px', fontWeight: 700, background: isWin ? 'rgba(34,197,94,0.15)' : 'rgba(239,68,68,0.15)', color: isWin ? '#22c55e' : '#ef4444' }}>{isWin ? 'WIN' : 'LOSS'}</span>
+                                        </td>
+                                      </tr>
+                                    )
+                                  })
+                                })()}
+                              </tbody>
+                            </table>
                           </div>
                         </div>
                       </div>
