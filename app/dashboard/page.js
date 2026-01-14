@@ -2130,8 +2130,7 @@ export default function DashboardPage() {
                         </div>
 
                         {/* Mini Graph - Same quality as Overall Stats graph */}
-                        <div style={{ padding: '0 12px' }}>
-                          <div style={{ background: 'rgba(0,0,0,0.3)', border: '1px solid #1a1a22', borderRadius: '10px', padding: '12px' }}>
+                        <div style={{ padding: '0 12px 12px 12px' }}>
                           {(() => {
                             if (balancePoints.length < 2) {
                               return <div style={{ height: '140px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#444', fontSize: '12px' }}>No trades yet</div>
@@ -2313,7 +2312,6 @@ export default function DashboardPage() {
                               </div>
                             )
                           })()}
-                          </div>
                         </div>
 
                         {/* Stats - 2 columns like stats area format */}
