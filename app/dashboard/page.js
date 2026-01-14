@@ -175,6 +175,9 @@ export default function DashboardPage() {
   const [showMobileTradeModal, setShowMobileTradeModal] = useState(false)
   // Journal dropdown state
   const [journalDropdownOpen, setJournalDropdownOpen] = useState(false)
+  // Journal widget zoom modal state
+  const [zoomedJournal, setZoomedJournal] = useState(null)
+  const [journalHover, setJournalHover] = useState(null)
 
   useEffect(() => {
     const checkMobile = () => setIsMobile(window.innerWidth < 768)
@@ -2094,11 +2097,10 @@ export default function DashboardPage() {
                           </div>
                         </div>
 
-                        {/* Mini Graph with objective lines */}
+                        {/* Mini Graph with Y-axis labels, grid lines, and zoom button */}
                         <div style={{ padding: '12px 18px' }}>
-                          <div style={{ height: '100px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                          <div style={{ height: '120px', display: 'flex', position: 'relative' }}>
                             {balancePoints.length > 1 ? (() => {
-                              const svgW = 250, svgH = 100
                               // Add padding to range
                               const dataRange = maxBal - minBal || 1000
                               const paddingAmount = dataRange / 8
@@ -2106,13 +2108,22 @@ export default function DashboardPage() {
                               const yMin = minBal - paddingAmount
                               const yRange = yMax - yMin || 1
 
+                              // Calculate nice Y-axis labels (3 labels)
+                              const yLabels = [yMax, (yMax + yMin) / 2, yMin].map(v => {
+                                if (Math.abs(v) >= 1000) return `$${(v / 1000).toFixed(1)}k`
+                                return `$${Math.round(v)}`
+                              })
+
                               // Calculate starting balance Y position
-                              const startY = svgH - ((startingBalance - yMin) / yRange) * svgH
                               const startLineYPct = ((yMax - startingBalance) / yRange) * 100
 
                               // Calculate objective line positions
                               const profitTargetYPct = profitTarget ? ((yMax - profitTarget) / yRange) * 100 : null
                               const maxDdFloorYPct = maxDdFloor ? ((yMax - maxDdFloor) / yRange) * 100 : null
+
+                              // Normalized SVG coordinates
+                              const svgW = 100, svgH = 100
+                              const startY = svgH - ((startingBalance - yMin) / yRange) * svgH
 
                               const chartPts = balancePoints.map((p, i) => ({
                                 x: (i / (balancePoints.length - 1)) * svgW,
@@ -2148,54 +2159,139 @@ export default function DashboardPage() {
                               const redAreaPath = buildAreaPath(redSegments)
 
                               return (
-                                <div style={{ width: '100%', height: '100%', position: 'relative' }}>
-                                  {/* Starting balance dashed line */}
-                                  {startLineYPct >= 0 && startLineYPct <= 100 && (
-                                    <div style={{ position: 'absolute', left: 0, right: 0, top: `${startLineYPct}%`, borderTop: '1px dashed #555', zIndex: 1 }} />
-                                  )}
-                                  {/* Profit target line - green */}
-                                  {profitTargetYPct !== null && profitTargetYPct >= 0 && profitTargetYPct <= 100 && (
-                                    <div style={{ position: 'absolute', left: 0, right: 0, top: `${profitTargetYPct}%`, borderTop: '1px solid #22c55e', zIndex: 1 }} />
-                                  )}
-                                  {/* Max DD floor line - red */}
-                                  {maxDdFloorYPct !== null && maxDdFloorYPct >= 0 && maxDdFloorYPct <= 100 && (
-                                    <div style={{ position: 'absolute', left: 0, right: 0, top: `${maxDdFloorYPct}%`, borderTop: '1px solid #ef4444', zIndex: 1 }} />
-                                  )}
-                                  <svg width="100%" height="100%" viewBox={`0 0 ${svgW} ${svgH}`} preserveAspectRatio="none" style={{ position: 'relative', zIndex: 2 }}>
-                                    <defs>
-                                      <linearGradient id={`eqGreenMini${account.id}`} x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stopColor="#22c55e" stopOpacity="0.3" /><stop offset="100%" stopColor="#22c55e" stopOpacity="0" /></linearGradient>
-                                      <linearGradient id={`eqRedMini${account.id}`} x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stopColor="#ef4444" stopOpacity="0.3" /><stop offset="100%" stopColor="#ef4444" stopOpacity="0" /></linearGradient>
-                                    </defs>
-                                    {greenAreaPath && <path d={greenAreaPath} fill={`url(#eqGreenMini${account.id})`} />}
-                                    {redAreaPath && <path d={redAreaPath} fill={`url(#eqRedMini${account.id})`} />}
-                                    {greenPath && <path d={greenPath} fill="none" stroke="#22c55e" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />}
-                                    {redPath && <path d={redPath} fill="none" stroke="#ef4444" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />}
-                                  </svg>
-                                </div>
+                                <>
+                                  {/* Y-Axis Labels */}
+                                  <div style={{ width: '45px', flexShrink: 0, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', paddingRight: '6px' }}>
+                                    {yLabels.map((label, i) => (
+                                      <span key={i} style={{ fontSize: '9px', color: '#666', textAlign: 'right' }}>{label}</span>
+                                    ))}
+                                  </div>
+                                  {/* Graph Area */}
+                                  <div style={{ flex: 1, position: 'relative', borderLeft: '1px solid #2a2a35' }}>
+                                    {/* Horizontal Grid Lines */}
+                                    <div style={{ position: 'absolute', left: 0, right: 0, top: '0%', borderTop: '1px solid #1a1a22' }} />
+                                    <div style={{ position: 'absolute', left: 0, right: 0, top: '50%', borderTop: '1px solid #1a1a22' }} />
+                                    <div style={{ position: 'absolute', left: 0, right: 0, top: '100%', borderTop: '1px solid #1a1a22' }} />
+                                    {/* Starting balance dashed line */}
+                                    {startLineYPct >= 0 && startLineYPct <= 100 && (
+                                      <div style={{ position: 'absolute', left: 0, right: 0, top: `${startLineYPct}%`, borderTop: '1px dashed #555', zIndex: 1 }} />
+                                    )}
+                                    {/* Profit target line - green */}
+                                    {profitTargetYPct !== null && profitTargetYPct >= 0 && profitTargetYPct <= 100 && (
+                                      <div style={{ position: 'absolute', left: 0, right: 0, top: `${profitTargetYPct}%`, borderTop: '1px solid #22c55e', zIndex: 1 }} />
+                                    )}
+                                    {/* Max DD floor line - red */}
+                                    {maxDdFloorYPct !== null && maxDdFloorYPct >= 0 && maxDdFloorYPct <= 100 && (
+                                      <div style={{ position: 'absolute', left: 0, right: 0, top: `${maxDdFloorYPct}%`, borderTop: '1px solid #ef4444', zIndex: 1 }} />
+                                    )}
+                                    <svg width="100%" height="100%" viewBox={`0 0 ${svgW} ${svgH}`} preserveAspectRatio="none" style={{ position: 'relative', zIndex: 2 }}>
+                                      <defs>
+                                        <linearGradient id={`eqGreenMini${account.id}`} x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stopColor="#22c55e" stopOpacity="0.3" /><stop offset="100%" stopColor="#22c55e" stopOpacity="0" /></linearGradient>
+                                        <linearGradient id={`eqRedMini${account.id}`} x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stopColor="#ef4444" stopOpacity="0.3" /><stop offset="100%" stopColor="#ef4444" stopOpacity="0" /></linearGradient>
+                                      </defs>
+                                      {greenAreaPath && <path d={greenAreaPath} fill={`url(#eqGreenMini${account.id})`} />}
+                                      {redAreaPath && <path d={redAreaPath} fill={`url(#eqRedMini${account.id})`} />}
+                                      {greenPath && <path d={greenPath} fill="none" stroke="#22c55e" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />}
+                                      {redPath && <path d={redPath} fill="none" stroke="#ef4444" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />}
+                                    </svg>
+                                    {/* Zoom Button */}
+                                    <button onClick={(e) => { e.stopPropagation(); setZoomedJournal(account.id) }} style={{ position: 'absolute', top: '4px', right: '4px', padding: '4px', background: 'rgba(0,0,0,0.6)', border: '1px solid #2a2a35', borderRadius: '4px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 3 }} title="Expand graph">
+                                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#888" strokeWidth="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/><path d="M11 8v6M8 11h6"/></svg>
+                                    </button>
+                                  </div>
+                                </>
                               )
                             })() : (
-                              <span style={{ color: '#444', fontSize: '12px' }}>No trades yet</span>
+                              <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                <span style={{ color: '#444', fontSize: '12px' }}>No trades yet</span>
+                              </div>
                             )}
                           </div>
                         </div>
 
-                        {/* 6 Stats in 2 Columns - horizontal format like account page */}
+                        {/* Stats - 9 items in grid */}
                         <div style={{ padding: '0 18px 14px' }}>
-                          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '6px' }}>
-                            {[
-                              { label: 'Win Rate', value: `${winrate}%`, color: winrate >= 50 ? '#22c55e' : '#ef4444' },
-                              { label: 'Profit Factor', value: profitFactor, color: profitFactor === '-' ? '#666' : profitFactor === '∞' ? '#22c55e' : parseFloat(profitFactor) >= 1 ? '#22c55e' : '#ef4444' },
-                              { label: 'Avg RR', value: `${avgRR}R`, color: '#fff' },
+                          {(() => {
+                            // Calculate additional stats
+                            const uniquePairs = new Set(accTrades.map(t => t.symbol)).size
+                            // Current streak calculation
+                            let currentStreak = 0, streakType = null
+                            for (let i = sortedTrades.length - 1; i >= 0; i--) {
+                              const outcome = sortedTrades[i].outcome
+                              if (streakType === null) {
+                                streakType = outcome
+                                currentStreak = 1
+                              } else if (outcome === streakType) {
+                                currentStreak++
+                              } else {
+                                break
+                              }
+                            }
+                            const streakDisplay = currentStreak > 0 ? `${currentStreak}${streakType === 'win' ? 'W' : 'L'}` : '-'
+                            const streakColor = streakType === 'win' ? '#22c55e' : streakType === 'loss' ? '#ef4444' : '#666'
+
+                            // Check if funded account (has profit_target or daily_dd_enabled or max_dd_enabled)
+                            const isFundedAccount = account.profit_target || account.daily_dd_enabled || account.max_dd_enabled
+
+                            // Calculate % from passing and % from daily DD for funded accounts
+                            let pctFromPassing = '-', pctFromPassingColor = '#666'
+                            let pctFromDailyDD = '-', pctFromDailyDDColor = '#666'
+                            if (isFundedAccount) {
+                              const profitTargetPctVal = parseFloat(account.profit_target)
+                              if (!isNaN(profitTargetPctVal) && profitTargetPctVal > 0) {
+                                const targetAmount = startingBalance * (profitTargetPctVal / 100)
+                                const currentProfit = currentBalance - startingBalance
+                                const pctToTarget = ((targetAmount - currentProfit) / startingBalance) * 100
+                                pctFromPassing = pctToTarget <= 0 ? 'PASSED' : `${pctToTarget.toFixed(1)}%`
+                                pctFromPassingColor = pctToTarget <= 0 ? '#22c55e' : '#f59e0b'
+                              }
+                              const dailyDdPctVal = parseFloat(account.daily_dd_pct)
+                              if (!isNaN(dailyDdPctVal) && dailyDdPctVal > 0) {
+                                // Calculate how much of daily DD is used
+                                const today = new Date().toISOString().split('T')[0]
+                                const todaysTrades = accTrades.filter(t => t.date === today)
+                                const todaysPnl = todaysTrades.reduce((sum, t) => sum + (parseFloat(t.pnl) || 0), 0)
+                                const dailyDdAmount = startingBalance * (dailyDdPctVal / 100)
+                                const usedDdPct = todaysPnl < 0 ? ((Math.abs(todaysPnl) / dailyDdAmount) * 100) : 0
+                                pctFromDailyDD = `${usedDdPct.toFixed(0)}%`
+                                pctFromDailyDDColor = usedDdPct >= 80 ? '#ef4444' : usedDdPct >= 50 ? '#f59e0b' : '#22c55e'
+                              }
+                            }
+
+                            // Build stats array based on account type
+                            const stats = isFundedAccount ? [
                               { label: 'Trades', value: accTrades.length, color: '#8b5cf6' },
-                              { label: 'W / L', value: `${wins} / ${losses}`, color: '#fff' },
+                              { label: 'Pairs', value: uniquePairs, color: '#3b82f6' },
+                              { label: 'Winrate', value: `${winrate}%`, color: winrate >= 50 ? '#22c55e' : '#ef4444' },
+                              { label: 'Wins', value: wins, color: '#22c55e' },
+                              { label: 'Losses', value: losses, color: '#ef4444' },
+                              { label: 'Profit Factor', value: profitFactor, color: profitFactor === '-' ? '#666' : profitFactor === '∞' ? '#22c55e' : parseFloat(profitFactor) >= 1 ? '#22c55e' : '#ef4444' },
                               { label: 'Consistency', value: `${consistency}%`, color: consistency >= 50 ? '#3b82f6' : '#666' },
-                            ].map((stat, i) => (
-                              <div key={i} style={{ padding: '6px 10px', background: '#0d0d12', borderRadius: '6px', border: '1px solid #1a1a22', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                <span style={{ fontSize: '11px', color: '#888', fontWeight: 500 }}>{stat.label}</span>
-                                <span style={{ fontSize: '13px', fontWeight: 700, color: stat.color }}>{stat.value}</span>
+                              { label: '% to Pass', value: pctFromPassing, color: pctFromPassingColor },
+                              { label: 'Daily DD Used', value: pctFromDailyDD, color: pctFromDailyDDColor },
+                            ] : [
+                              { label: 'Trades', value: accTrades.length, color: '#8b5cf6' },
+                              { label: 'Pairs', value: uniquePairs, color: '#3b82f6' },
+                              { label: 'Winrate', value: `${winrate}%`, color: winrate >= 50 ? '#22c55e' : '#ef4444' },
+                              { label: 'Avg RR', value: `${avgRR}R`, color: '#fff' },
+                              { label: 'Wins', value: wins, color: '#22c55e' },
+                              { label: 'Losses', value: losses, color: '#ef4444' },
+                              { label: 'Streak', value: streakDisplay, color: streakColor },
+                              { label: 'Profit Factor', value: profitFactor, color: profitFactor === '-' ? '#666' : profitFactor === '∞' ? '#22c55e' : parseFloat(profitFactor) >= 1 ? '#22c55e' : '#ef4444' },
+                              { label: 'Consistency', value: `${consistency}%`, color: consistency >= 50 ? '#3b82f6' : '#666' },
+                            ]
+
+                            return (
+                              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '4px' }}>
+                                {stats.map((stat, i) => (
+                                  <div key={i} style={{ padding: '5px 8px', background: '#0d0d12', borderRadius: '4px', border: '1px solid #1a1a22', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                                    <span style={{ fontSize: '9px', color: '#666', fontWeight: 500, marginBottom: '2px' }}>{stat.label}</span>
+                                    <span style={{ fontSize: '12px', fontWeight: 700, color: stat.color }}>{stat.value}</span>
+                                  </div>
+                                ))}
                               </div>
-                            ))}
-                          </div>
+                            )
+                          })()}
                         </div>
 
                         {/* Buttons */}
@@ -3399,6 +3495,235 @@ export default function DashboardPage() {
             </div>
           </div>
         )}
+
+        {/* Zoomed Journal Graph Modal */}
+        {zoomedJournal && (() => {
+          const account = accounts.find(a => a.id === zoomedJournal)
+          if (!account) return null
+          const accTrades = trades[account.id] || []
+          const startingBalance = parseFloat(account.starting_balance) || 0
+          let cumBalance = startingBalance
+          const sortedTrades = accTrades.slice().sort((a, b) => new Date(a.date) - new Date(b.date))
+          const balancePoints = [{ value: startingBalance, date: null, symbol: null, pnl: 0 }]
+          sortedTrades.forEach(t => {
+            cumBalance += parseFloat(t.pnl) || 0
+            balancePoints.push({ value: cumBalance, date: t.date, symbol: t.symbol, pnl: parseFloat(t.pnl) || 0 })
+          })
+
+          // Get objective lines
+          const profitTargetPct = parseFloat(account.profit_target)
+          const profitTarget = !isNaN(profitTargetPct) && profitTargetPct > 0 ? startingBalance * (1 + profitTargetPct / 100) : null
+          const maxDdPct = parseFloat(account.max_dd_enabled ? account.max_dd_pct : account.max_drawdown)
+          const maxDdFloor = !isNaN(maxDdPct) && maxDdPct > 0 ? startingBalance * (1 - maxDdPct / 100) : null
+
+          // Calculate range including objective lines
+          let maxBal = balancePoints.length > 0 ? Math.max(...balancePoints.map(p => p.value)) : startingBalance
+          let minBal = balancePoints.length > 0 ? Math.min(...balancePoints.map(p => p.value)) : startingBalance
+          if (profitTarget) maxBal = Math.max(maxBal, profitTarget)
+          if (maxDdFloor) minBal = Math.min(minBal, maxDdFloor)
+
+          const dataRange = maxBal - minBal || 1000
+          const paddingAmount = dataRange / 8
+          const yMax = maxBal + paddingAmount
+          const yMin = minBal - paddingAmount
+          const yRange = yMax - yMin || 1
+
+          // Nice step for Y-axis
+          const niceStep = (range, targetSteps = 5) => {
+            const rough = range / targetSteps
+            const mag = Math.pow(10, Math.floor(Math.log10(rough)))
+            const residual = rough / mag
+            let nice
+            if (residual <= 1) nice = 1
+            else if (residual <= 2) nice = 2
+            else if (residual <= 5) nice = 5
+            else nice = 10
+            return nice * mag
+          }
+          const step = niceStep(yRange)
+          const yStart = Math.floor(yMin / step) * step
+          const yEnd = Math.ceil(yMax / step) * step
+          const yLabels = []
+          for (let v = yEnd; v >= yStart; v -= step) yLabels.push(v)
+
+          // Calculate starting balance Y position
+          const startLineYPct = ((yMax - startingBalance) / yRange) * 100
+          const profitTargetYPct = profitTarget ? ((yMax - profitTarget) / yRange) * 100 : null
+          const maxDdFloorYPct = maxDdFloor ? ((yMax - maxDdFloor) / yRange) * 100 : null
+
+          // Normalized SVG coordinates
+          const svgW = 100, svgH = 100
+          const startY = svgH - ((startingBalance - yMin) / yRange) * svgH
+
+          const chartPts = balancePoints.map((p, i) => ({
+            x: (i / (balancePoints.length - 1 || 1)) * svgW,
+            y: svgH - ((p.value - yMin) / yRange) * svgH,
+            balance: p.value,
+            date: p.date,
+            symbol: p.symbol,
+            pnl: p.pnl
+          }))
+
+          // Build split paths
+          const greenSegments = [], redSegments = []
+          for (let i = 0; i < chartPts.length - 1; i++) {
+            const p1 = chartPts[i], p2 = chartPts[i + 1]
+            const above1 = p1.balance >= startingBalance, above2 = p2.balance >= startingBalance
+            if (above1 === above2) {
+              const arr = above1 ? greenSegments : redSegments
+              arr.push({ x1: p1.x, y1: p1.y, x2: p2.x, y2: p2.y })
+            } else {
+              const t = (startingBalance - p1.balance) / (p2.balance - p1.balance)
+              const ix = p1.x + t * (p2.x - p1.x), iy = startY
+              if (above1) {
+                greenSegments.push({ x1: p1.x, y1: p1.y, x2: ix, y2: iy })
+                redSegments.push({ x1: ix, y1: iy, x2: p2.x, y2: p2.y })
+              } else {
+                redSegments.push({ x1: p1.x, y1: p1.y, x2: ix, y2: iy })
+                greenSegments.push({ x1: ix, y1: iy, x2: p2.x, y2: p2.y })
+              }
+            }
+          }
+          const buildPath = (segs) => segs.map((s) => `M ${s.x1} ${s.y1} L ${s.x2} ${s.y2}`).join(' ')
+          const buildAreaPath = (segs) => segs.map(s => `M ${s.x1} ${s.y1} L ${s.x2} ${s.y2} L ${s.x2} ${startY} L ${s.x1} ${startY} Z`).join(' ')
+          const greenPath = buildPath(greenSegments)
+          const redPath = buildPath(redSegments)
+          const greenAreaPath = buildAreaPath(greenSegments)
+          const redAreaPath = buildAreaPath(redSegments)
+
+          // X-axis labels (dates)
+          const xLabels = []
+          if (balancePoints.length > 1) {
+            const step = Math.max(1, Math.floor(balancePoints.length / 5))
+            for (let i = 0; i < balancePoints.length; i += step) {
+              if (balancePoints[i].date) {
+                const d = new Date(balancePoints[i].date)
+                xLabels.push({ pos: (i / (balancePoints.length - 1)) * 100, label: `${d.getDate()}/${d.getMonth() + 1}` })
+              }
+            }
+          }
+
+          return (
+            <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.95)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100 }} onClick={() => setZoomedJournal(null)}>
+              <div style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '16px', padding: '24px', width: '90%', maxWidth: '800px' }} onClick={e => e.stopPropagation()}>
+                {/* Header */}
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
+                  <div>
+                    <h2 style={{ fontSize: '20px', fontWeight: 700, color: '#fff', margin: 0 }}>{account.name}</h2>
+                    <span style={{ fontSize: '13px', color: '#666' }}>Equity Curve</span>
+                  </div>
+                  <button onClick={() => setZoomedJournal(null)} style={{ background: 'transparent', border: 'none', color: '#666', cursor: 'pointer', padding: '8px' }}>
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                  </button>
+                </div>
+
+                {/* Graph */}
+                <div style={{ display: 'flex', height: '350px' }}>
+                  {/* Y-Axis Labels */}
+                  <div style={{ width: '60px', flexShrink: 0, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', paddingRight: '8px', paddingBottom: '24px' }}>
+                    {yLabels.map((v, i) => (
+                      <div key={i} style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '4px' }}>
+                        <span style={{ fontSize: '10px', color: '#666' }}>
+                          {Math.abs(v) >= 1000 ? `$${(v / 1000).toFixed(1)}k` : `$${Math.round(v)}`}
+                        </span>
+                        <div style={{ width: '4px', height: '1px', background: '#444' }} />
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Graph Area */}
+                  <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+                    <div style={{ flex: 1, position: 'relative', borderLeft: '1px solid #2a2a35', borderBottom: '1px solid #2a2a35' }}
+                      onMouseMove={(e) => {
+                        if (chartPts.length < 2) return
+                        const rect = e.currentTarget.getBoundingClientRect()
+                        const x = e.clientX - rect.left
+                        const pct = x / rect.width
+                        const idx = Math.round(pct * (chartPts.length - 1))
+                        if (idx >= 0 && idx < chartPts.length) {
+                          setJournalHover({ ...chartPts[idx], mouseX: e.clientX, mouseY: e.clientY })
+                        }
+                      }}
+                      onMouseLeave={() => setJournalHover(null)}
+                    >
+                      {/* Horizontal Grid Lines */}
+                      {yLabels.map((_, i) => (
+                        <div key={i} style={{ position: 'absolute', left: 0, right: 0, top: `${(i / (yLabels.length - 1)) * 100}%`, borderTop: '1px solid #1a1a22' }} />
+                      ))}
+                      {/* Starting balance line */}
+                      {startLineYPct >= 0 && startLineYPct <= 100 && (
+                        <div style={{ position: 'absolute', left: 0, right: 0, top: `${startLineYPct}%`, borderTop: '1px dashed #555', zIndex: 1 }} />
+                      )}
+                      {/* Profit target line */}
+                      {profitTargetYPct !== null && profitTargetYPct >= 0 && profitTargetYPct <= 100 && (
+                        <div style={{ position: 'absolute', left: 0, right: 0, top: `${profitTargetYPct}%`, borderTop: '2px solid #22c55e', zIndex: 1 }} />
+                      )}
+                      {/* Max DD line */}
+                      {maxDdFloorYPct !== null && maxDdFloorYPct >= 0 && maxDdFloorYPct <= 100 && (
+                        <div style={{ position: 'absolute', left: 0, right: 0, top: `${maxDdFloorYPct}%`, borderTop: '2px solid #ef4444', zIndex: 1 }} />
+                      )}
+                      {/* SVG Graph */}
+                      <svg width="100%" height="100%" viewBox={`0 0 ${svgW} ${svgH}`} preserveAspectRatio="none" style={{ position: 'relative', zIndex: 2 }}>
+                        <defs>
+                          <linearGradient id="zoomGreenGrad" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stopColor="#22c55e" stopOpacity="0.3" /><stop offset="100%" stopColor="#22c55e" stopOpacity="0" /></linearGradient>
+                          <linearGradient id="zoomRedGrad" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stopColor="#ef4444" stopOpacity="0.3" /><stop offset="100%" stopColor="#ef4444" stopOpacity="0" /></linearGradient>
+                        </defs>
+                        {greenAreaPath && <path d={greenAreaPath} fill="url(#zoomGreenGrad)" />}
+                        {redAreaPath && <path d={redAreaPath} fill="url(#zoomRedGrad)" />}
+                        {greenPath && <path d={greenPath} fill="none" stroke="#22c55e" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />}
+                        {redPath && <path d={redPath} fill="none" stroke="#ef4444" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />}
+                      </svg>
+                      {/* Hover tooltip */}
+                      {journalHover && (
+                        <div style={{ position: 'fixed', left: journalHover.mouseX + 12, top: journalHover.mouseY - 60, background: '#0d0d12', border: '1px solid #2a2a35', borderRadius: '8px', padding: '10px 14px', zIndex: 1000, pointerEvents: 'none', boxShadow: '0 4px 20px rgba(0,0,0,0.5)' }}>
+                          <div style={{ fontSize: '12px', color: '#888', marginBottom: '4px' }}>{journalHover.date || 'Start'}</div>
+                          {journalHover.symbol && <div style={{ fontSize: '11px', color: '#666', marginBottom: '4px' }}>{journalHover.symbol}</div>}
+                          <div style={{ fontSize: '16px', fontWeight: 700, color: journalHover.balance >= startingBalance ? '#22c55e' : '#ef4444' }}>
+                            ${Math.round(journalHover.balance).toLocaleString()}
+                          </div>
+                          {journalHover.pnl !== 0 && (
+                            <div style={{ fontSize: '12px', color: journalHover.pnl >= 0 ? '#22c55e' : '#ef4444', marginTop: '2px' }}>
+                              {journalHover.pnl >= 0 ? '+' : ''}${Math.round(journalHover.pnl).toLocaleString()}
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                    {/* X-Axis Labels */}
+                    <div style={{ height: '24px', position: 'relative', marginLeft: '0' }}>
+                      {xLabels.map((l, i) => (
+                        <div key={i} style={{ position: 'absolute', left: `${l.pos}%`, transform: 'translateX(-50%)', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                          <div style={{ width: '1px', height: '4px', background: '#444' }} />
+                          <span style={{ fontSize: '9px', color: '#666', marginTop: '2px' }}>{l.label}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Legend */}
+                <div style={{ display: 'flex', gap: '16px', marginTop: '16px', justifyContent: 'center' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <div style={{ width: '12px', height: '2px', background: '#555', borderStyle: 'dashed' }} />
+                    <span style={{ fontSize: '10px', color: '#666' }}>Starting Balance</span>
+                  </div>
+                  {profitTarget && (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <div style={{ width: '12px', height: '2px', background: '#22c55e' }} />
+                      <span style={{ fontSize: '10px', color: '#666' }}>Profit Target</span>
+                    </div>
+                  )}
+                  {maxDdFloor && (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <div style={{ width: '12px', height: '2px', background: '#ef4444' }} />
+                      <span style={{ fontSize: '10px', color: '#666' }}>Max Drawdown</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          )
+        })()}
 
         {/* Mobile Floating Action Button */}
         {isMobile && accounts.length > 0 && !showMobileTradeModal && (
