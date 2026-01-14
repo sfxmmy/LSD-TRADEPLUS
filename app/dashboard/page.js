@@ -2016,17 +2016,17 @@ export default function DashboardPage() {
                               <table style={{ width: '100%', borderCollapse: 'collapse', tableLayout: 'fixed' }}>
                                 <thead>
                                   <tr style={{ background: '#0a0a0f' }}>
-                                    <th style={{ width: '12%', padding: '6px 6px', textAlign: 'left', fontSize: '9px', color: '#555', fontWeight: 600, textTransform: 'uppercase', borderBottom: '1px solid #1a1a22' }}>Symbol</th>
-                                    <th style={{ width: '6%', padding: '6px 4px', textAlign: 'center', fontSize: '9px', color: '#555', fontWeight: 600, textTransform: 'uppercase', borderBottom: '1px solid #1a1a22' }}>W/L</th>
-                                    <th style={{ width: '10%', padding: '6px 4px', textAlign: 'right', fontSize: '9px', color: '#555', fontWeight: 600, textTransform: 'uppercase', borderBottom: '1px solid #1a1a22' }}>PnL</th>
-                                    <th style={{ width: '7%', padding: '6px 4px', textAlign: 'center', fontSize: '9px', color: '#555', fontWeight: 600, textTransform: 'uppercase', borderBottom: '1px solid #1a1a22' }}>RR</th>
-                                    <th style={{ width: '6%', padding: '6px 4px', textAlign: 'center', fontSize: '9px', color: '#555', fontWeight: 600, textTransform: 'uppercase', borderBottom: '1px solid #1a1a22' }}>%</th>
-                                    <th style={{ width: '6%', padding: '6px 4px', textAlign: 'center', fontSize: '9px', color: '#555', fontWeight: 600, textTransform: 'uppercase', borderBottom: '1px solid #1a1a22' }}>Dir</th>
-                                    <th style={{ width: '10%', padding: '6px 4px', textAlign: 'center', fontSize: '9px', color: '#555', fontWeight: 600, textTransform: 'uppercase', borderBottom: '1px solid #1a1a22' }}>Conf</th>
-                                    <th style={{ width: '10%', padding: '6px 4px', textAlign: 'center', fontSize: '9px', color: '#555', fontWeight: 600, textTransform: 'uppercase', borderBottom: '1px solid #1a1a22' }}>Session</th>
-                                    <th style={{ width: '7%', padding: '6px 4px', textAlign: 'center', fontSize: '9px', color: '#555', fontWeight: 600, textTransform: 'uppercase', borderBottom: '1px solid #1a1a22' }}>TF</th>
-                                    <th style={{ width: '14%', padding: '6px 4px', textAlign: 'center', fontSize: '9px', color: '#555', fontWeight: 600, textTransform: 'uppercase', borderBottom: '1px solid #1a1a22' }}>Rating</th>
-                                    <th style={{ width: '12%', padding: '6px 6px', textAlign: 'right', fontSize: '9px', color: '#555', fontWeight: 600, textTransform: 'uppercase', borderBottom: '1px solid #1a1a22' }}>Placed</th>
+                                    <th style={{ width: '10%', padding: '6px 6px', textAlign: 'left', fontSize: '10px', color: '#555', fontWeight: 600, textTransform: 'uppercase', borderBottom: '1px solid #1a1a22' }}>Symbol</th>
+                                    <th style={{ width: '8%', padding: '6px 4px', textAlign: 'center', fontSize: '10px', color: '#555', fontWeight: 600, textTransform: 'uppercase', borderBottom: '1px solid #1a1a22' }}>Result</th>
+                                    <th style={{ width: '10%', padding: '6px 4px', textAlign: 'right', fontSize: '10px', color: '#555', fontWeight: 600, textTransform: 'uppercase', borderBottom: '1px solid #1a1a22' }}>PnL</th>
+                                    <th style={{ width: '6%', padding: '6px 4px', textAlign: 'center', fontSize: '10px', color: '#555', fontWeight: 600, textTransform: 'uppercase', borderBottom: '1px solid #1a1a22' }}>RR</th>
+                                    <th style={{ width: '6%', padding: '6px 4px', textAlign: 'center', fontSize: '10px', color: '#555', fontWeight: 600, textTransform: 'uppercase', borderBottom: '1px solid #1a1a22' }}>%</th>
+                                    <th style={{ width: '8%', padding: '6px 4px', textAlign: 'center', fontSize: '10px', color: '#555', fontWeight: 600, textTransform: 'uppercase', borderBottom: '1px solid #1a1a22' }}>Dir</th>
+                                    <th style={{ width: '10%', padding: '6px 4px', textAlign: 'center', fontSize: '10px', color: '#555', fontWeight: 600, textTransform: 'uppercase', borderBottom: '1px solid #1a1a22' }}>Conf</th>
+                                    <th style={{ width: '10%', padding: '6px 4px', textAlign: 'center', fontSize: '10px', color: '#555', fontWeight: 600, textTransform: 'uppercase', borderBottom: '1px solid #1a1a22' }}>Session</th>
+                                    <th style={{ width: '8%', padding: '6px 4px', textAlign: 'center', fontSize: '10px', color: '#555', fontWeight: 600, textTransform: 'uppercase', borderBottom: '1px solid #1a1a22' }}>TF</th>
+                                    <th style={{ width: '12%', padding: '6px 4px', textAlign: 'center', fontSize: '10px', color: '#555', fontWeight: 600, textTransform: 'uppercase', borderBottom: '1px solid #1a1a22' }}>Rating</th>
+                                    <th style={{ width: '12%', padding: '6px 6px', textAlign: 'right', fontSize: '10px', color: '#555', fontWeight: 600, textTransform: 'uppercase', borderBottom: '1px solid #1a1a22' }}>Placed</th>
                                   </tr>
                                 </thead>
                                 <tbody>
@@ -2054,25 +2054,21 @@ export default function DashboardPage() {
                                       const daysAgoText = daysAgo === 0 ? 'Today' : daysAgo === 1 ? '1d' : `${daysAgo}d`
                                       return (
                                         <tr key={i} style={{ borderBottom: i < recent.length - 1 ? '1px solid #1a1a22' : 'none' }}>
-                                          <td style={{ padding: '6px 6px', fontSize: '11px', color: '#fff', fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{t.symbol || '-'}</td>
-                                          <td style={{ padding: '6px 4px', textAlign: 'center' }}>
-                                            <span style={{ fontSize: '9px', padding: '2px 5px', borderRadius: '3px', fontWeight: 700, background: isWin ? 'rgba(34,197,94,0.15)' : 'rgba(239,68,68,0.15)', color: isWin ? '#22c55e' : '#ef4444' }}>{isWin ? 'W' : 'L'}</span>
-                                          </td>
-                                          <td style={{ padding: '6px 4px', fontSize: '10px', fontWeight: 700, color: pnl >= 0 ? '#22c55e' : '#ef4444', textAlign: 'right' }}>{pnl >= 0 ? '+' : ''}${Math.round(pnl)}</td>
-                                          <td style={{ padding: '6px 4px', fontSize: '10px', color: rr >= 1 ? '#22c55e' : rr > 0 ? '#888' : '#ef4444', textAlign: 'center' }}>{rr > 0 ? rr.toFixed(1) : '-'}</td>
+                                          <td style={{ padding: '6px 6px', fontSize: '10px', color: '#fff', fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{t.symbol || '-'}</td>
+                                          <td style={{ padding: '6px 4px', fontSize: '10px', textAlign: 'center', color: isWin ? '#22c55e' : '#ef4444', fontWeight: 600 }}>{isWin ? 'Win' : 'Loss'}</td>
+                                          <td style={{ padding: '6px 4px', fontSize: '10px', fontWeight: 600, color: pnl >= 0 ? '#22c55e' : '#ef4444', textAlign: 'right' }}>{pnl >= 0 ? '+' : ''}${Math.round(pnl)}</td>
+                                          <td style={{ padding: '6px 4px', fontSize: '10px', color: '#888', textAlign: 'center' }}>{rr > 0 ? rr.toFixed(1) : '-'}</td>
                                           <td style={{ padding: '6px 4px', fontSize: '10px', color: '#888', textAlign: 'center' }}>{riskPct}%</td>
-                                          <td style={{ padding: '6px 4px', fontSize: '9px', textAlign: 'center' }}>
-                                            <span style={{ color: direction === 'Long' || direction === 'long' ? '#22c55e' : direction === 'Short' || direction === 'short' ? '#ef4444' : '#666' }}>{direction === 'Long' || direction === 'long' ? '▲' : direction === 'Short' || direction === 'short' ? '▼' : '-'}</span>
-                                          </td>
-                                          <td style={{ padding: '6px 4px', fontSize: '9px', color: '#888', textAlign: 'center' }}>{confidence !== '-' ? confidence : '-'}</td>
-                                          <td style={{ padding: '6px 4px', fontSize: '9px', color: '#888', textAlign: 'center' }}>{session !== '-' ? session.substring(0, 3) : '-'}</td>
-                                          <td style={{ padding: '6px 4px', fontSize: '9px', color: '#888', textAlign: 'center' }}>{timeframe}</td>
+                                          <td style={{ padding: '6px 4px', fontSize: '10px', textAlign: 'center', color: direction === 'Long' || direction === 'long' ? '#22c55e' : direction === 'Short' || direction === 'short' ? '#ef4444' : '#888' }}>{direction === 'Long' || direction === 'long' ? 'Long' : direction === 'Short' || direction === 'short' ? 'Short' : '-'}</td>
+                                          <td style={{ padding: '6px 4px', fontSize: '10px', color: '#888', textAlign: 'center' }}>{confidence !== '-' ? confidence : '-'}</td>
+                                          <td style={{ padding: '6px 4px', fontSize: '10px', color: '#888', textAlign: 'center' }}>{session !== '-' ? session : '-'}</td>
+                                          <td style={{ padding: '6px 4px', fontSize: '10px', color: '#888', textAlign: 'center' }}>{timeframe}</td>
                                           <td style={{ padding: '6px 4px', textAlign: 'center' }}>
                                             <div style={{ display: 'inline-flex', gap: '1px' }}>
-                                              {[1,2,3,4,5].map(star => <span key={star} style={{ color: rating >= star ? '#22c55e' : rating >= star - 0.5 ? '#22c55e' : '#2a2a35', fontSize: '8px' }}>★</span>)}
+                                              {[1,2,3,4,5].map(star => <span key={star} style={{ color: rating >= star ? '#22c55e' : rating >= star - 0.5 ? '#22c55e' : '#2a2a35', fontSize: '10px' }}>★</span>)}
                                             </div>
                                           </td>
-                                          <td style={{ padding: '6px 6px', fontSize: '10px', color: '#666', textAlign: 'right' }}>{daysAgoText}</td>
+                                          <td style={{ padding: '6px 6px', fontSize: '10px', color: '#888', textAlign: 'right' }}>{daysAgoText}</td>
                                         </tr>
                                       )
                                     })
