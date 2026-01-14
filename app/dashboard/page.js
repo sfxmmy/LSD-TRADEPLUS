@@ -1821,7 +1821,7 @@ export default function DashboardPage() {
                       </div>
 
                       {/* Chart + Stats Row (like old journal widgets) */}
-                      <div style={{ display: 'flex', gap: '12px', padding: '12px' }}>
+                      <div style={{ display: 'flex', gap: '12px', padding: '12px 12px 4px 12px' }}>
                         {/* Chart - flex: 1 */}
                         <div style={{ flex: 1 }}>
                           {(() => {
@@ -2067,9 +2067,10 @@ export default function DashboardPage() {
                         </div>
 
                         {/* Buttons - 280px to match stats width */}
-                        <div style={{ width: '280px', flexShrink: 0, display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                          <a href="/statistics" style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'transparent', border: '1px solid rgba(34,197,94,0.5)', borderRadius: '10px', color: '#22c55e', fontWeight: 600, fontSize: '12px', textAlign: 'center', textDecoration: 'none' }}>VIEW FULL STATISTICS</a>
-                          <a href="/journal" style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)', borderRadius: '10px', color: '#fff', fontWeight: 700, fontSize: '12px', textAlign: 'center', textDecoration: 'none', boxShadow: '0 4px 16px rgba(34,197,94,0.3)' }}>VIEW FULL JOURNAL</a>
+                        <div style={{ width: '280px', flexShrink: 0, display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                          <a href="/journal" style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)', borderRadius: '8px', color: '#fff', fontWeight: 700, fontSize: '11px', textAlign: 'center', textDecoration: 'none', boxShadow: '0 4px 16px rgba(34,197,94,0.3)' }}>VIEW FULL JOURNAL</a>
+                          <a href="/statistics" style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'transparent', border: '1px solid rgba(34,197,94,0.5)', borderRadius: '8px', color: '#22c55e', fontWeight: 600, fontSize: '11px', textAlign: 'center', textDecoration: 'none' }}>VIEW FULL STATISTICS</a>
+                          <a href="/notes" style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'transparent', border: '1px solid rgba(34,197,94,0.5)', borderRadius: '8px', color: '#22c55e', fontWeight: 600, fontSize: '11px', textAlign: 'center', textDecoration: 'none' }}>VIEW FULL NOTES</a>
                         </div>
                       </div>
                     </div>
