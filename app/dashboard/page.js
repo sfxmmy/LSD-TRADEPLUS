@@ -1987,9 +1987,9 @@ export default function DashboardPage() {
                         </div>
 
                         {/* Right Panel: Stats (2 cols top-to-bottom) + Buttons bottom right */}
-                        <div style={{ flex: 1, display: 'flex', gap: '12px' }}>
-                          {/* Stats - 2 columns, flows top to bottom */}
-                          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gridTemplateRows: 'repeat(6, auto)', gridAutoFlow: 'column', gap: '4px 20px', alignContent: 'end' }}>
+                        <div style={{ flex: 1, display: 'flex', gap: '12px', paddingTop: '12px' }}>
+                          {/* Stats - 2 columns, flows top to bottom, wider */}
+                          <div style={{ flex: 2, display: 'grid', gridTemplateColumns: '1fr 1fr', gridTemplateRows: 'repeat(6, auto)', gridAutoFlow: 'column', gap: '6px 24px', alignContent: 'start' }}>
                             {[
                               { label: 'Trades', value: stats.totalTrades, color: '#fff' },
                               { label: 'Winrate', value: `${stats.winrate}%`, color: stats.winrate >= 50 ? '#22c55e' : '#ef4444' },
@@ -2004,7 +2004,7 @@ export default function DashboardPage() {
                               { label: 'Loss Streak', value: lossStreak, color: '#ef4444' },
                               { label: 'Expectancy', value: `${expectancy >= 0 ? '+' : ''}$${expectancy}`, color: expectancy >= 0 ? '#22c55e' : '#ef4444' },
                             ].map((s, i) => (
-                              <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '5px 0', borderBottom: '1px solid #1a1a22' }}>
+                              <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '6px 0', borderBottom: '1px solid #1a1a22' }}>
                                 <span style={{ fontSize: '12px', color: '#888' }}>{s.label}</span>
                                 <span style={{ fontSize: '13px', fontWeight: 700, color: s.color }}>{s.value}</span>
                               </div>
@@ -2013,7 +2013,7 @@ export default function DashboardPage() {
 
                           {/* Right side: empty space top, buttons bottom */}
                           <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'flex-end' }}>
-                            {/* Buttons - stacked vertically at bottom, wider */}
+                            {/* Buttons - stacked vertically at bottom */}
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                               <a href="/journal" style={{ padding: '10px', background: 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)', borderRadius: '6px', color: '#fff', fontWeight: 700, fontSize: '11px', textAlign: 'center', textDecoration: 'none' }}>JOURNAL</a>
                               <a href="/statistics" style={{ padding: '10px', background: 'transparent', border: '1px solid rgba(34,197,94,0.5)', borderRadius: '6px', color: '#22c55e', fontWeight: 600, fontSize: '11px', textAlign: 'center', textDecoration: 'none' }}>STATISTICS</a>
