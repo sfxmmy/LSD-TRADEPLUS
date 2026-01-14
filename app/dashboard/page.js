@@ -1649,13 +1649,15 @@ export default function DashboardPage() {
                     <div>
                       <label style={{ display: 'block', fontSize: '9px', color: '#555', marginBottom: '5px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Direction</label>
                       <select value={quickTradeDirection} onChange={e => setQuickTradeDirection(e.target.value)} style={{ width: '100%', padding: '10px 12px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '8px', color: quickTradeDirection === 'long' ? '#22c55e' : quickTradeDirection === 'short' ? '#ef4444' : '#fff', fontSize: '13px', boxSizing: 'border-box', cursor: 'pointer' }}>
+                        <option value="">-</option>
                         <option value="long">Long</option>
                         <option value="short">Short</option>
                       </select>
                     </div>
                     <div>
                       <label style={{ display: 'block', fontSize: '9px', color: '#555', marginBottom: '5px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Outcome</label>
-                      <select value={quickTradeOutcome} onChange={e => setQuickTradeOutcome(e.target.value)} style={{ width: '100%', padding: '10px 12px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '8px', color: quickTradeOutcome === 'win' ? '#22c55e' : quickTradeOutcome === 'loss' ? '#ef4444' : '#f59e0b', fontSize: '13px', boxSizing: 'border-box', cursor: 'pointer' }}>
+                      <select value={quickTradeOutcome} onChange={e => setQuickTradeOutcome(e.target.value)} style={{ width: '100%', padding: '10px 12px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '8px', color: quickTradeOutcome === 'win' ? '#22c55e' : quickTradeOutcome === 'loss' ? '#ef4444' : quickTradeOutcome === 'be' ? '#f59e0b' : '#fff', fontSize: '13px', boxSizing: 'border-box', cursor: 'pointer' }}>
+                        <option value="">-</option>
                         <option value="win">Win</option>
                         <option value="loss">Loss</option>
                         <option value="be">Breakeven</option>
@@ -1740,9 +1742,9 @@ export default function DashboardPage() {
                   </div>
 
                   {/* Custom Inputs */}
-                  {getSelectedAccountCustomInputs().length > 0 && (
+                  {getSelectedAccountCustomInputs().filter(input => !['confidence', 'timeframe', 'session'].includes(input.id)).length > 0 && (
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '12px', marginBottom: '12px' }}>
-                      {getSelectedAccountCustomInputs().map(input => (
+                      {getSelectedAccountCustomInputs().filter(input => !['confidence', 'timeframe', 'session'].includes(input.id)).map(input => (
                         <div key={input.id}>
                           <label style={{ display: 'block', fontSize: '9px', color: '#666', marginBottom: '4px', textTransform: 'uppercase' }}>{(input.label || input.id).slice(0, 10)}</label>
                           <select value={quickTradeExtraData[input.id] || ''} onChange={e => setQuickTradeExtraData(prev => ({ ...prev, [input.id]: e.target.value }))} style={{ width: '100%', padding: '8px 10px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '12px' }}>
