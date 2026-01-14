@@ -1809,18 +1809,14 @@ export default function DashboardPage() {
 
                   return (
                     <div style={{ background: 'linear-gradient(135deg, #0f0f14 0%, #0a0a0f 100%)', border: '1px solid #1a1a22', borderRadius: '16px', overflow: 'hidden', display: 'flex', flexDirection: 'column', boxShadow: '0 4px 24px rgba(0,0,0,0.3)' }}>
-                      {/* Header - Title + PnL + Balance */}
-                      <div style={{ padding: '12px' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                          <span style={{ fontSize: '20px', fontWeight: 700, color: '#fff' }}>Overall Stats</span>
-                          <div style={{ display: 'flex', gap: '10px' }}>
-                            <div style={{ padding: '6px 12px', border: `1px solid ${cumPnl >= 0 ? 'rgba(34,197,94,0.4)' : 'rgba(239,68,68,0.4)'}`, borderRadius: '8px', background: cumPnl >= 0 ? 'rgba(34,197,94,0.1)' : 'rgba(239,68,68,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                              <span style={{ fontSize: '11px', color: '#888', marginRight: '6px' }}>PnL:</span>
-                              <span style={{ fontSize: '14px', fontWeight: 700, color: cumPnl >= 0 ? '#22c55e' : '#ef4444' }}>{cumPnl >= 0 ? '+' : ''}${Math.round(cumPnl).toLocaleString()}</span>
-                            </div>
-                            <div style={{ padding: '6px 12px', border: `1px solid ${isProfitable ? 'rgba(34,197,94,0.4)' : 'rgba(239,68,68,0.4)'}`, borderRadius: '8px', background: isProfitable ? 'rgba(34,197,94,0.1)' : 'rgba(239,68,68,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                              <span style={{ fontSize: '11px', color: '#888', marginRight: '6px' }}>Balance:</span>
-                              <span style={{ fontSize: '14px', fontWeight: 700, color: isProfitable ? '#22c55e' : '#ef4444' }}>${Math.round(totalBalance).toLocaleString()}</span>
+                      {/* Header - Clean layout like journal widgets */}
+                      <div style={{ padding: '16px 16px 12px' }}>
+                        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
+                          <div>
+                            <div style={{ fontSize: '13px', color: '#666', marginBottom: '2px' }}>Overall Stats</div>
+                            <div style={{ display: 'flex', alignItems: 'baseline', gap: '12px' }}>
+                              <span style={{ fontSize: '24px', fontWeight: 700, color: isProfitable ? '#22c55e' : '#ef4444' }}>${Math.round(totalBalance).toLocaleString()}</span>
+                              <span style={{ fontSize: '14px', fontWeight: 600, color: cumPnl >= 0 ? '#22c55e' : '#ef4444' }}>{cumPnl >= 0 ? '+' : ''}${Math.round(cumPnl).toLocaleString()}</span>
                             </div>
                           </div>
                         </div>
