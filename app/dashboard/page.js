@@ -1980,36 +1980,39 @@ export default function DashboardPage() {
                           })()}
                         </div>
 
-                        {/* Right Panel: Stats (2 cols) + Buttons */}
-                        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                          {/* Stats - 2 columns grid, label left / value right */}
-                          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '4px 24px', flex: 1 }}>
+                        {/* Right Panel: Stats (2 cols top-to-bottom) + Buttons bottom right */}
+                        <div style={{ flex: 1, display: 'flex', gap: '12px' }}>
+                          {/* Stats - 2 columns, flows top to bottom */}
+                          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gridTemplateRows: 'repeat(6, auto)', gridAutoFlow: 'column', gap: '4px 20px' }}>
                             {[
                               { label: 'Total PnL', value: `${cumPnl >= 0 ? '+' : ''}$${Math.round(cumPnl).toLocaleString()}`, color: cumPnl >= 0 ? '#22c55e' : '#ef4444' },
-                              { label: 'Trades', value: stats.totalTrades, color: '#fff' },
                               { label: 'Winrate', value: `${stats.winrate}%`, color: stats.winrate >= 50 ? '#22c55e' : '#ef4444' },
-                              { label: 'Profit Factor', value: stats.profitFactor, color: stats.profitFactor === '-' ? '#666' : stats.profitFactor === '∞' ? '#22c55e' : parseFloat(stats.profitFactor) >= 1 ? '#22c55e' : '#ef4444' },
                               { label: 'W / L', value: `${stats.totalWins} / ${stats.totalLosses}`, color: '#fff' },
-                              { label: 'Consistency', value: `${consistency}%`, color: consistency >= 50 ? '#22c55e' : '#ef4444' },
                               { label: 'Avg Win', value: `+$${avgWin}`, color: '#22c55e' },
-                              { label: 'Avg Loss', value: `$${avgLoss}`, color: avgLoss >= 0 ? '#22c55e' : '#ef4444' },
                               { label: 'Win Streak', value: winStreak, color: '#22c55e' },
-                              { label: 'Loss Streak', value: lossStreak, color: '#ef4444' },
                               { label: 'Day WR', value: `${dayWR}%`, color: dayWR >= 50 ? '#22c55e' : '#ef4444' },
+                              { label: 'Trades', value: stats.totalTrades, color: '#fff' },
+                              { label: 'Profit Factor', value: stats.profitFactor, color: stats.profitFactor === '-' ? '#666' : stats.profitFactor === '∞' ? '#22c55e' : parseFloat(stats.profitFactor) >= 1 ? '#22c55e' : '#ef4444' },
+                              { label: 'Consistency', value: `${consistency}%`, color: consistency >= 50 ? '#22c55e' : '#ef4444' },
+                              { label: 'Avg Loss', value: `$${avgLoss}`, color: avgLoss >= 0 ? '#22c55e' : '#ef4444' },
+                              { label: 'Loss Streak', value: lossStreak, color: '#ef4444' },
                               { label: 'Expectancy', value: `${expectancy >= 0 ? '+' : ''}$${expectancy}`, color: expectancy >= 0 ? '#22c55e' : '#ef4444' },
                             ].map((s, i) => (
-                              <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '6px 0', borderBottom: '1px solid #1a1a22' }}>
-                                <span style={{ fontSize: '13px', color: '#888' }}>{s.label}</span>
-                                <span style={{ fontSize: '14px', fontWeight: 700, color: s.color }}>{s.value}</span>
+                              <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '5px 0', borderBottom: '1px solid #1a1a22' }}>
+                                <span style={{ fontSize: '12px', color: '#888' }}>{s.label}</span>
+                                <span style={{ fontSize: '13px', fontWeight: 700, color: s.color }}>{s.value}</span>
                               </div>
                             ))}
                           </div>
 
-                          {/* Buttons - stacked vertically */}
-                          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                            <a href="/journal" style={{ padding: '14px', background: 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)', borderRadius: '8px', color: '#fff', fontWeight: 700, fontSize: '14px', textAlign: 'center', textDecoration: 'none' }}>JOURNAL</a>
-                            <a href="/statistics" style={{ padding: '14px', background: 'transparent', border: '1px solid rgba(34,197,94,0.5)', borderRadius: '8px', color: '#22c55e', fontWeight: 600, fontSize: '14px', textAlign: 'center', textDecoration: 'none' }}>STATISTICS</a>
-                            <a href="/notes" style={{ padding: '14px', background: 'transparent', border: '1px solid rgba(34,197,94,0.5)', borderRadius: '8px', color: '#22c55e', fontWeight: 600, fontSize: '14px', textAlign: 'center', textDecoration: 'none' }}>NOTES</a>
+                          {/* Right side: empty space top, buttons bottom */}
+                          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'flex-end' }}>
+                            {/* Buttons - stacked vertically at bottom */}
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', width: '120px' }}>
+                              <a href="/journal" style={{ padding: '10px', background: 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)', borderRadius: '6px', color: '#fff', fontWeight: 700, fontSize: '11px', textAlign: 'center', textDecoration: 'none' }}>JOURNAL</a>
+                              <a href="/statistics" style={{ padding: '10px', background: 'transparent', border: '1px solid rgba(34,197,94,0.5)', borderRadius: '6px', color: '#22c55e', fontWeight: 600, fontSize: '11px', textAlign: 'center', textDecoration: 'none' }}>STATISTICS</a>
+                              <a href="/notes" style={{ padding: '10px', background: 'transparent', border: '1px solid rgba(34,197,94,0.5)', borderRadius: '6px', color: '#22c55e', fontWeight: 600, fontSize: '11px', textAlign: 'center', textDecoration: 'none' }}>NOTES</a>
+                            </div>
                           </div>
                         </div>
                       </div>
