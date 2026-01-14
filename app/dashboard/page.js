@@ -2013,13 +2013,13 @@ export default function DashboardPage() {
                               <table style={{ width: '100%', borderCollapse: 'collapse', tableLayout: 'fixed' }}>
                                 <thead>
                                   <tr style={{ background: '#0a0a0f' }}>
-                                    <th style={{ width: '16%', padding: '6px 8px', textAlign: 'left', fontSize: '10px', color: '#555', fontWeight: 600, textTransform: 'uppercase', borderBottom: '1px solid #1a1a22' }}>Symbol</th>
-                                    <th style={{ width: '12%', padding: '6px 6px', textAlign: 'center', fontSize: '10px', color: '#555', fontWeight: 600, textTransform: 'uppercase', borderBottom: '1px solid #1a1a22' }}>Result</th>
-                                    <th style={{ width: '14%', padding: '6px 6px', textAlign: 'right', fontSize: '10px', color: '#555', fontWeight: 600, textTransform: 'uppercase', borderBottom: '1px solid #1a1a22' }}>PnL</th>
-                                    <th style={{ width: '10%', padding: '6px 6px', textAlign: 'center', fontSize: '10px', color: '#555', fontWeight: 600, textTransform: 'uppercase', borderBottom: '1px solid #1a1a22' }}>RR</th>
-                                    <th style={{ width: '18%', padding: '6px 6px', textAlign: 'center', fontSize: '10px', color: '#555', fontWeight: 600, textTransform: 'uppercase', borderBottom: '1px solid #1a1a22' }}>Rating</th>
-                                    <th style={{ width: '14%', padding: '6px 6px', textAlign: 'center', fontSize: '10px', color: '#555', fontWeight: 600, textTransform: 'uppercase', borderBottom: '1px solid #1a1a22' }}>Placed</th>
-                                    <th style={{ width: '16%', padding: '6px 8px', textAlign: 'right', fontSize: '10px', color: '#555', fontWeight: 600, textTransform: 'uppercase', borderBottom: '1px solid #1a1a22' }}>Date</th>
+                                    <th style={{ padding: '6px 8px', textAlign: 'left', fontSize: '10px', color: '#888', fontWeight: 600, textTransform: 'uppercase', borderBottom: '1px solid #1a1a22' }}>Symbol</th>
+                                    <th style={{ padding: '6px 8px', textAlign: 'center', fontSize: '10px', color: '#888', fontWeight: 600, textTransform: 'uppercase', borderBottom: '1px solid #1a1a22' }}>Result</th>
+                                    <th style={{ padding: '6px 8px', textAlign: 'center', fontSize: '10px', color: '#888', fontWeight: 600, textTransform: 'uppercase', borderBottom: '1px solid #1a1a22' }}>PnL</th>
+                                    <th style={{ padding: '6px 8px', textAlign: 'center', fontSize: '10px', color: '#888', fontWeight: 600, textTransform: 'uppercase', borderBottom: '1px solid #1a1a22' }}>RR</th>
+                                    <th style={{ padding: '6px 8px', textAlign: 'center', fontSize: '10px', color: '#888', fontWeight: 600, textTransform: 'uppercase', borderBottom: '1px solid #1a1a22' }}>Rating</th>
+                                    <th style={{ padding: '6px 8px', textAlign: 'center', fontSize: '10px', color: '#888', fontWeight: 600, textTransform: 'uppercase', borderBottom: '1px solid #1a1a22' }}>Placed</th>
+                                    <th style={{ padding: '6px 8px', textAlign: 'right', fontSize: '10px', color: '#888', fontWeight: 600, textTransform: 'uppercase', borderBottom: '1px solid #1a1a22' }}>Date</th>
                                   </tr>
                                 </thead>
                                 <tbody>
@@ -2046,15 +2046,15 @@ export default function DashboardPage() {
                                       return (
                                         <tr key={i} style={{ borderBottom: i < recent.length - 1 ? '1px solid #1a1a22' : 'none' }}>
                                           <td style={{ padding: '6px 8px', fontSize: '10px', color: '#fff', fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{t.symbol || '-'}</td>
-                                          <td style={{ padding: '6px 6px', fontSize: '10px', textAlign: 'center', color: isWin ? '#22c55e' : '#ef4444', fontWeight: 600 }}>{isWin ? 'Win' : 'Loss'}</td>
-                                          <td style={{ padding: '6px 6px', fontSize: '10px', fontWeight: 600, color: pnl >= 0 ? '#22c55e' : '#ef4444', textAlign: 'right' }}>{pnl >= 0 ? '+' : ''}${Math.round(pnl)}</td>
-                                          <td style={{ padding: '6px 6px', fontSize: '10px', color: '#888', textAlign: 'center' }}>{rr > 0 ? rr.toFixed(1) : '-'}</td>
-                                          <td style={{ padding: '6px 6px', textAlign: 'center' }}>
+                                          <td style={{ padding: '6px 8px', fontSize: '10px', textAlign: 'center', color: isWin ? '#22c55e' : '#ef4444', fontWeight: 600 }}>{isWin ? 'Win' : 'Loss'}</td>
+                                          <td style={{ padding: '6px 8px', fontSize: '10px', fontWeight: 600, color: pnl >= 0 ? '#22c55e' : '#ef4444', textAlign: 'center' }}>{pnl >= 0 ? '+' : ''}${Math.round(pnl)}</td>
+                                          <td style={{ padding: '6px 8px', fontSize: '10px', color: '#888', textAlign: 'center' }}>{rr > 0 ? rr.toFixed(1) : '-'}</td>
+                                          <td style={{ padding: '6px 8px', textAlign: 'center' }}>
                                             <div style={{ display: 'inline-flex', gap: '1px' }}>
                                               {[1,2,3,4,5].map(star => <span key={star} style={{ color: rating >= star ? '#22c55e' : rating >= star - 0.5 ? '#22c55e' : '#2a2a35', fontSize: '10px' }}>★</span>)}
                                             </div>
                                           </td>
-                                          <td style={{ padding: '6px 6px', fontSize: '10px', color: '#888', textAlign: 'center' }}>{daysAgoText}</td>
+                                          <td style={{ padding: '6px 8px', fontSize: '10px', color: '#888', textAlign: 'center' }}>{daysAgoText}</td>
                                           <td style={{ padding: '6px 8px', fontSize: '10px', color: '#888', textAlign: 'right' }}>{dateStr}</td>
                                         </tr>
                                       )
