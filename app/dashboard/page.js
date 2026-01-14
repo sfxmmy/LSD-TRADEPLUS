@@ -2405,6 +2405,41 @@ export default function DashboardPage() {
                       </div>
                     )
                   })}
+
+                  {/* Add New Journal Card */}
+                  <div
+                    onClick={() => setShowModal(true)}
+                    style={{
+                      background: 'linear-gradient(135deg, #0f0f14 0%, #0a0a0f 100%)',
+                      border: '2px dashed #3b82f6',
+                      borderRadius: '16px',
+                      overflow: 'hidden',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      cursor: 'pointer',
+                      minHeight: '400px',
+                      transition: 'all 0.2s',
+                    }}
+                    onMouseEnter={e => { e.currentTarget.style.borderColor = '#60a5fa'; e.currentTarget.style.background = 'rgba(59, 130, 246, 0.05)' }}
+                    onMouseLeave={e => { e.currentTarget.style.borderColor = '#3b82f6'; e.currentTarget.style.background = 'linear-gradient(135deg, #0f0f14 0%, #0a0a0f 100%)' }}
+                  >
+                    <div style={{
+                      width: '80px',
+                      height: '80px',
+                      borderRadius: '50%',
+                      background: 'rgba(59, 130, 246, 0.15)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      marginBottom: '16px'
+                    }}>
+                      <span style={{ fontSize: '40px', color: '#3b82f6', fontWeight: 300 }}>+</span>
+                    </div>
+                    <span style={{ fontSize: '16px', fontWeight: 600, color: '#3b82f6' }}>Add Journal</span>
+                    <span style={{ fontSize: '12px', color: '#666', marginTop: '4px' }}>Create a new trading account</span>
+                  </div>
                 </div>
               </div>
             </div>
