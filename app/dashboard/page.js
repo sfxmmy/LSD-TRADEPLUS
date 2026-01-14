@@ -178,6 +178,8 @@ export default function DashboardPage() {
   // Journal widget zoom modal state
   const [zoomedJournal, setZoomedJournal] = useState(null)
   const [journalHover, setJournalHover] = useState(null)
+  // Track which journals show objective lines (default: hidden)
+  const [showObjectiveLines, setShowObjectiveLines] = useState({})
 
   useEffect(() => {
     const checkMobile = () => setIsMobile(window.innerWidth < 768)
@@ -2084,9 +2086,21 @@ export default function DashboardPage() {
                                 <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#666" strokeWidth="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" /><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" /></svg>
                               </button>
                             </div>
-                            <div style={{ padding: '6px 12px', border: `1px solid ${isProfitable ? 'rgba(34,197,94,0.4)' : 'rgba(239,68,68,0.4)'}`, borderRadius: '8px', background: isProfitable ? 'rgba(34,197,94,0.1)' : 'rgba(239,68,68,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                              <span style={{ fontSize: '11px', color: '#888', marginRight: '6px' }}>Balance:</span>
-                              <span style={{ fontSize: '14px', fontWeight: 700, color: isProfitable ? '#22c55e' : '#ef4444' }}>${Math.round(currentBalance).toLocaleString()}</span>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                              {/* Show objective lines toggle - only if account has objectives */}
+                              {(profitTarget || maxDdFloor) && (
+                                <button
+                                  onClick={(e) => { e.stopPropagation(); setShowObjectiveLines(prev => ({ ...prev, [account.id]: !prev[account.id] })) }}
+                                  style={{ padding: '6px', background: showObjectiveLines[account.id] ? 'rgba(147,51,234,0.2)' : 'rgba(255,255,255,0.05)', border: `1px solid ${showObjectiveLines[account.id] ? 'rgba(147,51,234,0.5)' : '#2a2a35'}`, borderRadius: '6px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                                  title={showObjectiveLines[account.id] ? 'Hide objective lines' : 'Show objective lines'}
+                                >
+                                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={showObjectiveLines[account.id] ? '#9333ea' : '#666'} strokeWidth="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/>{showObjectiveLines[account.id] && <><path d="M8 11h6"/></>}</svg>
+                                </button>
+                              )}
+                              <div style={{ padding: '6px 12px', border: `1px solid ${isProfitable ? 'rgba(34,197,94,0.4)' : 'rgba(239,68,68,0.4)'}`, borderRadius: '8px', background: isProfitable ? 'rgba(34,197,94,0.1)' : 'rgba(239,68,68,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                <span style={{ fontSize: '11px', color: '#888', marginRight: '6px' }}>Balance:</span>
+                                <span style={{ fontSize: '14px', fontWeight: 700, color: isProfitable ? '#22c55e' : '#ef4444' }}>${Math.round(currentBalance).toLocaleString()}</span>
+                              </div>
                             </div>
                           </div>
                         </div>
@@ -2102,9 +2116,10 @@ export default function DashboardPage() {
                             const allValues = balancePoints.map(p => p.value)
                             const dataMin = Math.min(...allValues, startingBalance)
                             const dataMax = Math.max(...allValues, startingBalance)
-                            // Include objective lines in range
-                            const rangeMin = profitTarget ? Math.min(dataMin, maxDdFloor || dataMin) : dataMin
-                            const rangeMax = profitTarget ? Math.max(dataMax, profitTarget) : dataMax
+                            // Only include objective lines in range if toggled on
+                            const showObjLines = showObjectiveLines[account.id]
+                            const rangeMin = showObjLines && maxDdFloor ? Math.min(dataMin, maxDdFloor) : dataMin
+                            const rangeMax = showObjLines && profitTarget ? Math.max(dataMax, profitTarget) : dataMax
                             const dataRange = rangeMax - rangeMin || 1000
                             const paddingAmt = dataRange / 8  // 1/8 padding mechanism
 
@@ -2225,10 +2240,10 @@ export default function DashboardPage() {
                                     </div>
                                     {/* Starting balance line */}
                                     {startLineY >= 0 && startLineY <= 100 && <div style={{ position: 'absolute', left: 0, right: 0, top: `${startLineY}%`, borderTop: '1px dashed #555', zIndex: 1 }} />}
-                                    {/* Profit target line */}
-                                    {profitTargetLineY !== null && profitTargetLineY >= 0 && profitTargetLineY <= 100 && <div style={{ position: 'absolute', left: 0, right: 0, top: `${profitTargetLineY}%`, borderTop: '1px solid #22c55e', zIndex: 1 }} />}
-                                    {/* Max DD line */}
-                                    {maxDdFloorLineY !== null && maxDdFloorLineY >= 0 && maxDdFloorLineY <= 100 && <div style={{ position: 'absolute', left: 0, right: 0, top: `${maxDdFloorLineY}%`, borderTop: '1px solid #ef4444', zIndex: 1 }} />}
+                                    {/* Profit target line - only when objectives toggled on */}
+                                    {showObjLines && profitTargetLineY !== null && profitTargetLineY >= 0 && profitTargetLineY <= 100 && <div style={{ position: 'absolute', left: 0, right: 0, top: `${profitTargetLineY}%`, borderTop: '2px solid #22c55e', zIndex: 1 }} />}
+                                    {/* Max DD line - only when objectives toggled on */}
+                                    {showObjLines && maxDdFloorLineY !== null && maxDdFloorLineY >= 0 && maxDdFloorLineY <= 100 && <div style={{ position: 'absolute', left: 0, right: 0, top: `${maxDdFloorLineY}%`, borderTop: '2px solid #ef4444', zIndex: 1 }} />}
                                     {/* SVG Graph */}
                                     <svg style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', overflow: 'visible', zIndex: 2 }} viewBox={`0 0 ${svgW} ${svgH}`} preserveAspectRatio="none"
                                       onMouseMove={e => { const rect = e.currentTarget.getBoundingClientRect(); const mouseX = ((e.clientX - rect.left) / rect.width) * svgW; let closest = chartPts[0], minDist = Math.abs(mouseX - chartPts[0].x); chartPts.forEach(p => { const d = Math.abs(mouseX - p.x); if (d < minDist) { minDist = d; closest = p } }); setJournalHover({ ...closest, accountId: account.id, xPct: (closest.x / svgW) * 100, yPct: (closest.y / svgH) * 100 }) }}
