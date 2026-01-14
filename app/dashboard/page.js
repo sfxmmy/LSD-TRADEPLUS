@@ -1988,8 +1988,13 @@ export default function DashboardPage() {
 
                         {/* Right Panel: Stats (2 cols top-to-bottom) + Buttons bottom right */}
                         <div style={{ flex: 1, display: 'flex', gap: '12px' }}>
-                          {/* Stats - 2 columns, flows top to bottom, full height */}
-                          <div style={{ flex: 2, display: 'grid', gridTemplateColumns: '1fr 1fr', gridTemplateRows: 'repeat(6, 1fr)', gridAutoFlow: 'column', gap: '0 24px', alignContent: 'stretch' }}>
+                          {/* Stats - 2 columns, flows top to bottom, full height with 2 grey lines at top */}
+                          <div style={{ flex: 2, display: 'flex', flexDirection: 'column' }}>
+                            {/* Two grey lines at top to align with graph */}
+                            <div style={{ flex: 1, borderBottom: '1px solid #1a1a22' }} />
+                            <div style={{ flex: 1, borderBottom: '1px solid #1a1a22' }} />
+                            {/* Stats grid - 6 rows */}
+                            <div style={{ flex: 6, display: 'grid', gridTemplateColumns: '1fr 1fr', gridTemplateRows: 'repeat(6, 1fr)', gridAutoFlow: 'column', gap: '0 24px', alignContent: 'stretch' }}>
                             {[
                               { label: 'Trades', value: stats.totalTrades, color: '#fff' },
                               { label: 'Winrate', value: `${stats.winrate}%`, color: stats.winrate >= 50 ? '#22c55e' : '#ef4444' },
@@ -2009,6 +2014,7 @@ export default function DashboardPage() {
                                 <span style={{ fontSize: '13px', fontWeight: 700, color: s.color }}>{s.value}</span>
                               </div>
                             ))}
+                            </div>
                           </div>
 
                           {/* Right side: empty space top, buttons bottom */}
