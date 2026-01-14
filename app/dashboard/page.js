@@ -2062,28 +2062,30 @@ export default function DashboardPage() {
 
                     return (
                       <div key={account.id} style={{ background: 'linear-gradient(135deg, #0f0f14 0%, #0a0a0f 100%)', border: '1px solid #1a1a22', borderRadius: '16px', overflow: 'hidden', display: 'flex', flexDirection: 'column', boxShadow: '0 4px 24px rgba(0,0,0,0.3)' }}>
-                        {/* Header - Title + Balance */}
-                        <div style={{ padding: '12px' }}>
-                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                            <span style={{ fontSize: '20px', fontWeight: 700, color: '#fff' }}>{account.name}</span>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                              {/* Edit button */}
-                              <button onClick={(e) => { e.stopPropagation(); setEditName(account.name); setEditProfitTarget(account.profit_target || ''); setEditMaxDrawdown(account.max_drawdown || ''); setEditConsistencyEnabled(account.consistency_enabled || false); setEditConsistencyPct(account.consistency_pct || '30'); setEditDailyDdEnabled(account.daily_dd_enabled || false); setEditDailyDdPct(account.daily_dd_pct || ''); setEditDailyDdType(account.daily_dd_type || 'static'); setEditDailyDdLocksAt(account.daily_dd_locks_at || 'start_balance'); setEditDailyDdLocksAtPct(account.daily_dd_locks_at_pct || ''); setEditDailyDdResetTime(account.daily_dd_reset_time || '00:00'); setEditDailyDdResetTimezone(account.daily_dd_reset_timezone || 'Europe/London'); setEditMaxDdEnabled(account.max_dd_enabled || false); setEditMaxDdPct(account.max_dd_pct || ''); setEditMaxDdType(account.max_dd_type || 'static'); setEditMaxDdTrailingStopsAt(account.max_dd_trailing_stops_at || 'never'); setEditMaxDdLocksAtPct(account.max_dd_locks_at_pct || ''); setShowEditModal(account.id) }} style={{ padding: '6px', background: 'rgba(255,255,255,0.05)', border: '1px solid #2a2a35', borderRadius: '6px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }} title="Edit journal">
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#666" strokeWidth="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" /><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" /></svg>
-                              </button>
+                        {/* Header - Clean layout */}
+                        <div style={{ padding: '16px 16px 12px' }}>
+                          <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
+                            <div>
+                              <div style={{ fontSize: '13px', color: '#666', marginBottom: '2px' }}>{account.name}</div>
+                              <div style={{ fontSize: '24px', fontWeight: 700, color: isProfitable ? '#22c55e' : '#ef4444' }}>${Math.round(currentBalance).toLocaleString()}</div>
+                            </div>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                               {/* Show objective lines toggle - only if account has objectives */}
                               {(profitTarget || maxDdFloor) && (
                                 <button
                                   onClick={(e) => { e.stopPropagation(); setShowObjectiveLines(prev => ({ ...prev, [account.id]: !prev[account.id] })) }}
-                                  style={{ padding: '6px', background: showObjectiveLines[account.id] ? 'rgba(147,51,234,0.2)' : 'rgba(255,255,255,0.05)', border: `1px solid ${showObjectiveLines[account.id] ? 'rgba(147,51,234,0.5)' : '#2a2a35'}`, borderRadius: '6px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                                  style={{ padding: '5px', background: showObjectiveLines[account.id] ? 'rgba(147,51,234,0.2)' : 'transparent', border: 'none', borderRadius: '4px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: 0.6, transition: 'opacity 0.2s' }}
                                   title={showObjectiveLines[account.id] ? 'Hide objective lines' : 'Show objective lines'}
+                                  onMouseEnter={e => e.currentTarget.style.opacity = '1'}
+                                  onMouseLeave={e => e.currentTarget.style.opacity = '0.6'}
                                 >
-                                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={showObjectiveLines[account.id] ? '#9333ea' : '#666'} strokeWidth="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/>{showObjectiveLines[account.id] && <><path d="M8 11h6"/></>}</svg>
+                                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={showObjectiveLines[account.id] ? '#9333ea' : '#666'} strokeWidth="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
                                 </button>
                               )}
-                              <div style={{ padding: '6px 12px', border: `1px solid ${isProfitable ? 'rgba(34,197,94,0.4)' : 'rgba(239,68,68,0.4)'}`, borderRadius: '8px', background: isProfitable ? 'rgba(34,197,94,0.1)' : 'rgba(239,68,68,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                <span style={{ fontSize: '14px', fontWeight: 700, color: isProfitable ? '#22c55e' : '#ef4444' }}>${Math.round(currentBalance).toLocaleString()}</span>
-                              </div>
+                              {/* Edit button */}
+                              <button onClick={(e) => { e.stopPropagation(); setEditName(account.name); setEditProfitTarget(account.profit_target || ''); setEditMaxDrawdown(account.max_drawdown || ''); setEditConsistencyEnabled(account.consistency_enabled || false); setEditConsistencyPct(account.consistency_pct || '30'); setEditDailyDdEnabled(account.daily_dd_enabled || false); setEditDailyDdPct(account.daily_dd_pct || ''); setEditDailyDdType(account.daily_dd_type || 'static'); setEditDailyDdLocksAt(account.daily_dd_locks_at || 'start_balance'); setEditDailyDdLocksAtPct(account.daily_dd_locks_at_pct || ''); setEditDailyDdResetTime(account.daily_dd_reset_time || '00:00'); setEditDailyDdResetTimezone(account.daily_dd_reset_timezone || 'Europe/London'); setEditMaxDdEnabled(account.max_dd_enabled || false); setEditMaxDdPct(account.max_dd_pct || ''); setEditMaxDdType(account.max_dd_type || 'static'); setEditMaxDdTrailingStopsAt(account.max_dd_trailing_stops_at || 'never'); setEditMaxDdLocksAtPct(account.max_dd_locks_at_pct || ''); setShowEditModal(account.id) }} style={{ padding: '5px', background: 'transparent', border: 'none', borderRadius: '4px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: 0.6, transition: 'opacity 0.2s' }} title="Edit journal" onMouseEnter={e => e.currentTarget.style.opacity = '1'} onMouseLeave={e => e.currentTarget.style.opacity = '0.6'}>
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#666" strokeWidth="2"><circle cx="12" cy="12" r="1"/><circle cx="12" cy="5" r="1"/><circle cx="12" cy="19" r="1"/></svg>
+                              </button>
                             </div>
                           </div>
                         </div>
@@ -2092,7 +2094,7 @@ export default function DashboardPage() {
                         <div style={{ padding: '0 12px 12px 12px' }}>
                           {(() => {
                             if (balancePoints.length < 2) {
-                              return <div style={{ height: '140px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#444', fontSize: '12px' }}>No trades yet</div>
+                              return <div style={{ height: '160px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#444', fontSize: '12px' }}>No trades yet</div>
                             }
 
                             const svgW = 100, svgH = 100
@@ -2191,7 +2193,7 @@ export default function DashboardPage() {
 
                             return (
                               <div style={{ display: 'flex', flexDirection: 'column', marginLeft: '-12px' }}>
-                                <div style={{ display: 'flex', height: '120px' }}>
+                                <div style={{ display: 'flex', height: '160px' }}>
                                   {/* Y-Axis with tick marks */}
                                   <div style={{ width: '42px', flexShrink: 0, position: 'relative', borderRight: '1px solid #2a2a35', overflow: 'visible' }}>
                                     {yLabels.map((v, i) => {
@@ -2318,33 +2320,20 @@ export default function DashboardPage() {
                               }
                             }
 
-                            // Build stats array based on account type
-                            const stats = isFundedAccount ? [
-                              { label: 'Total PnL', value: `${totalPnl >= 0 ? '+' : ''}$${Math.round(totalPnl).toLocaleString()}`, color: totalPnl >= 0 ? '#22c55e' : '#ef4444' },
+                            // Simplified 4 key stats
+                            const stats = [
+                              { label: 'PnL', value: `${totalPnl >= 0 ? '+' : ''}$${Math.round(totalPnl).toLocaleString()}`, color: totalPnl >= 0 ? '#22c55e' : '#ef4444' },
                               { label: 'Trades', value: accTrades.length, color: '#fff' },
                               { label: 'Winrate', value: `${winrate}%`, color: winrate >= 50 ? '#22c55e' : '#ef4444' },
-                              { label: 'Profit Factor', value: profitFactor, color: profitFactor === '-' ? '#666' : profitFactor === '∞' ? '#22c55e' : parseFloat(profitFactor) >= 1 ? '#22c55e' : '#ef4444' },
-                              { label: 'W / L', value: `${wins} / ${losses}`, color: '#fff' },
-                              { label: 'Consistency', value: `${consistency}%`, color: consistency >= 50 ? '#3b82f6' : '#666' },
-                              { label: '% to Pass', value: pctFromPassing, color: pctFromPassingColor },
-                              { label: 'Daily DD Used', value: pctFromDailyDD, color: pctFromDailyDDColor },
-                            ] : [
-                              { label: 'Total PnL', value: `${totalPnl >= 0 ? '+' : ''}$${Math.round(totalPnl).toLocaleString()}`, color: totalPnl >= 0 ? '#22c55e' : '#ef4444' },
-                              { label: 'Trades', value: accTrades.length, color: '#fff' },
-                              { label: 'Winrate', value: `${winrate}%`, color: winrate >= 50 ? '#22c55e' : '#ef4444' },
-                              { label: 'Profit Factor', value: profitFactor, color: profitFactor === '-' ? '#666' : profitFactor === '∞' ? '#22c55e' : parseFloat(profitFactor) >= 1 ? '#22c55e' : '#ef4444' },
-                              { label: 'Avg RR', value: `${avgRR}R`, color: '#fff' },
-                              { label: 'W / L', value: `${wins} / ${losses}`, color: '#fff' },
-                              { label: 'Streak', value: streakDisplay, color: streakColor },
-                              { label: 'Consistency', value: `${consistency}%`, color: consistency >= 50 ? '#3b82f6' : '#666' },
+                              { label: 'W/L', value: `${wins}/${losses}`, color: '#fff' },
                             ]
 
                             return (
-                              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2px 16px' }}>
+                              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0 24px' }}>
                                 {stats.map((stat, i) => (
-                                  <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '4px 0', borderBottom: '1px solid #1a1a22' }}>
-                                    <span style={{ fontSize: '11px', color: '#888' }}>{stat.label}</span>
-                                    <span style={{ fontSize: '12px', fontWeight: 700, color: stat.color }}>{stat.value}</span>
+                                  <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '6px 0', borderBottom: i < 2 ? '1px solid rgba(255,255,255,0.05)' : 'none' }}>
+                                    <span style={{ fontSize: '12px', color: '#555' }}>{stat.label}</span>
+                                    <span style={{ fontSize: '13px', fontWeight: 600, color: stat.color }}>{stat.value}</span>
                                   </div>
                                 ))}
                               </div>
@@ -2352,10 +2341,13 @@ export default function DashboardPage() {
                           })()}
                         </div>
 
-                        {/* Buttons */}
-                        <div onClick={e => e.stopPropagation()} style={{ padding: '14px 18px', display: 'flex', gap: '10px' }}>
-                          <a href={`/account/${account.id}`} style={{ flex: 1, padding: '12px', background: 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)', borderRadius: '10px', color: '#fff', fontWeight: 700, fontSize: '12px', textAlign: 'center', textDecoration: 'none', boxShadow: '0 4px 16px rgba(34,197,94,0.3)' }}>ENTER JOURNAL</a>
-                          <a href={`/account/${account.id}?tab=statistics`} style={{ flex: 1, padding: '12px', background: 'transparent', border: '1px solid rgba(34,197,94,0.5)', borderRadius: '10px', color: '#22c55e', fontWeight: 600, fontSize: '12px', textAlign: 'center', textDecoration: 'none' }}>SEE STATISTICS</a>
+                        {/* Buttons - Compact */}
+                        <div onClick={e => e.stopPropagation()} style={{ padding: '12px 16px 16px', display: 'flex', gap: '8px' }}>
+                          <a href={`/account/${account.id}`} style={{ flex: 1, padding: '10px', background: '#22c55e', borderRadius: '8px', color: '#fff', fontWeight: 600, fontSize: '11px', textAlign: 'center', textDecoration: 'none' }}>OPEN</a>
+                          <a href={`/account/${account.id}?tab=statistics`} style={{ padding: '10px 14px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '8px', color: '#888', fontWeight: 500, fontSize: '11px', textAlign: 'center', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 20V10M12 20V4M6 20v-6"/></svg>
+                            Stats
+                          </a>
                         </div>
                       </div>
                     )
