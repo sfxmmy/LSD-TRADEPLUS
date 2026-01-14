@@ -2005,12 +2005,9 @@ export default function DashboardPage() {
                       </div>
 
                       {/* Recent Trades + Buttons Row */}
-                      <div style={{ display: 'flex', gap: '12px', padding: '0 12px 12px', marginTop: '-4px' }}>
+                      <div style={{ display: 'flex', gap: '12px', padding: '0 12px 12px', marginTop: '12px' }}>
                         {/* Recent Trades - flex:1 to align with graph */}
                         <div style={{ flex: 1 }}>
-                          <div style={{ marginBottom: '8px' }}>
-                            <span style={{ fontSize: '11px', fontWeight: 700, color: '#666', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Recent Trades</span>
-                          </div>
                           <div style={{ background: '#0d0d12', borderRadius: '8px', border: '1px solid #1a1a22', overflow: 'hidden' }}>
                             <div style={{ maxHeight: '120px', overflowY: 'auto' }}>
                               <table style={{ width: '100%', borderCollapse: 'collapse', tableLayout: 'fixed' }}>
@@ -2080,9 +2077,9 @@ export default function DashboardPage() {
                         </div>
 
                         {/* Buttons - 280px to match stats width */}
-                        <div style={{ width: '280px', flexShrink: 0, display: 'flex', flexDirection: 'column', gap: '8px', justifyContent: 'center' }}>
-                          <a href="/statistics" style={{ display: 'block', padding: '12px', background: 'transparent', border: '1px solid rgba(34,197,94,0.5)', borderRadius: '10px', color: '#22c55e', fontWeight: 600, fontSize: '12px', textAlign: 'center', textDecoration: 'none' }}>VIEW FULL STATISTICS</a>
-                          <a href="/journal" style={{ display: 'block', padding: '12px', background: 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)', borderRadius: '10px', color: '#fff', fontWeight: 700, fontSize: '12px', textAlign: 'center', textDecoration: 'none', boxShadow: '0 4px 16px rgba(34,197,94,0.3)' }}>VIEW FULL JOURNAL</a>
+                        <div style={{ width: '280px', flexShrink: 0, display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                          <a href="/statistics" style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'transparent', border: '1px solid rgba(34,197,94,0.5)', borderRadius: '10px', color: '#22c55e', fontWeight: 600, fontSize: '12px', textAlign: 'center', textDecoration: 'none' }}>VIEW FULL STATISTICS</a>
+                          <a href="/journal" style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)', borderRadius: '10px', color: '#fff', fontWeight: 700, fontSize: '12px', textAlign: 'center', textDecoration: 'none', boxShadow: '0 4px 16px rgba(34,197,94,0.3)' }}>VIEW FULL JOURNAL</a>
                         </div>
                       </div>
                     </div>
