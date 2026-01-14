@@ -5050,11 +5050,11 @@ export default function AccountPage() {
                 }
 
                 const svgW = 100, svgH = 100
-                const startYEnl = svgH - ((startingBalance - yMin) / yRange) * svgH
+                const startYEnl = svgH - ((startingBalance - yMin) / yRangeFinal) * svgH
                 const lineData = visibleLines.map(line => {
                   const chartPoints = line.points.map((p, i) => ({
                     x: line.points.length > 1 ? (i / (line.points.length - 1)) * svgW : svgW / 2,
-                    y: svgH - ((p.balance - yMin) / yRange) * svgH,
+                    y: svgH - ((p.balance - yMin) / yRangeFinal) * svgH,
                     ...p
                   }))
                   const pathD = chartPoints.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`).join(' ')
@@ -5091,7 +5091,7 @@ export default function AccountPage() {
                 })
 
                 const mainLine = lineData[0]
-                const areaBottom = hasNegative ? svgH - ((0 - yMin) / yRange) * svgH : svgH
+                const areaBottom = hasNegative ? svgH - ((0 - yMin) / yRangeFinal) * svgH : svgH
                 const areaD = equityCurveGroupBy === 'total' && mainLine ? mainLine.pathD + ` L ${mainLine.chartPoints[mainLine.chartPoints.length - 1].x} ${areaBottom} L ${mainLine.chartPoints[0].x} ${areaBottom} Z` : null
 
                 return (
@@ -5102,20 +5102,14 @@ export default function AccountPage() {
                       <div style={{ width: '44px', flexShrink: 0, position: 'relative', borderRight: '1px solid #2a2a35', borderBottom: '1px solid transparent', overflow: 'visible' }}>
                         {yLabels.map((v, i) => {
                           const topPct = yLabels.length > 1 ? (i / (yLabels.length - 1)) * 100 : 0
+                          const isStart = v === startingBalance
                           return (
                             <Fragment key={i}>
-                              <span style={{ position: 'absolute', right: '5px', top: `${topPct}%`, transform: 'translateY(-50%)', fontSize: '10px', color: '#999', textAlign: 'right' }}>{formatYLabelEnl(v)}</span>
-                              <div style={{ position: 'absolute', right: 0, top: `${topPct}%`, width: '4px', borderTop: '1px solid #2a2a35' }} />
+                              <span style={{ position: 'absolute', right: '5px', top: `${topPct}%`, transform: 'translateY(-50%)', fontSize: '10px', color: isStart ? '#888' : '#999', textAlign: 'right', fontWeight: isStart ? 600 : 400 }}>{isStart ? 'Start' : formatYLabelEnl(v)}</span>
+                              <div style={{ position: 'absolute', right: 0, top: `${topPct}%`, width: '4px', borderTop: `1px solid ${isStart ? '#888' : '#2a2a35'}` }} />
                             </Fragment>
                           )
                         })}
-                        {/* Start value on Y-axis - grey */}
-                        {equityCurveGroupBy === 'total' && startYEnl >= 0 && startYEnl <= svgH && (
-                          <Fragment>
-                            <span style={{ position: 'absolute', right: '5px', top: `${(startYEnl / svgH) * 100}%`, transform: 'translateY(-50%)', fontSize: '10px', color: '#888', textAlign: 'right', fontWeight: 600 }}>{formatYLabelEnl(startingBalance)}</span>
-                            <div style={{ position: 'absolute', right: 0, top: `${(startYEnl / svgH) * 100}%`, width: '4px', borderTop: '1px solid #888' }} />
-                          </Fragment>
-                        )}
                         {/* DD Floor value on Y-axis */}
                         {ddFloorYEnl !== null && (
                           <Fragment>
@@ -5135,21 +5129,15 @@ export default function AccountPage() {
                       <div style={{ flex: 1, position: 'relative', overflow: 'visible', borderBottom: '1px solid #2a2a35' }}>
                           {/* Horizontal grid lines - bottom line is x-axis border */}
                           <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}>
-                            {yLabels.map((_, i) => {
+                            {yLabels.map((v, i) => {
                               const topPct = yLabels.length > 1 ? (i / (yLabels.length - 1)) * 100 : 0
                               const isLast = i === yLabels.length - 1
                               if (isLast) return null
-                              return <div key={i} style={{ position: 'absolute', left: 0, right: 0, top: `${topPct}%`, borderTop: '1px solid rgba(51,51,51,0.5)' }} />
+                              const isStart = v === startingBalance
+                              return <div key={i} style={{ position: 'absolute', left: 0, right: 0, top: `${topPct}%`, borderTop: isStart ? '1px dashed #666' : '1px solid rgba(51,51,51,0.5)', zIndex: isStart ? 1 : 0 }} />
                             })}
                           </div>
                           {zeroY !== null && <div style={{ position: 'absolute', left: 0, right: 0, top: `${zeroY}%`, borderTop: '1px solid rgba(51,51,51,0.5)', zIndex: 1 }}><span style={{ position: 'absolute', left: '-60px', top: '-6px', fontSize: '11px', color: '#666' }}>$0</span></div>}
-                          {/* Start line - dashed horizontal line at starting balance, ends before label */}
-                          {equityCurveGroupBy === 'total' && startYEnl >= 0 && startYEnl <= svgH && (
-                            <>
-                              <div style={{ position: 'absolute', left: 0, right: '38px', top: `${(startYEnl / svgH) * 100}%`, borderTop: '1px dashed #666', transform: 'translateY(-50%)', zIndex: 1 }} />
-                              <span style={{ position: 'absolute', right: '4px', top: `${(startYEnl / svgH) * 100}%`, transform: 'translateY(-50%)', fontSize: '10px', color: '#666', fontWeight: 500 }}>Start</span>
-                            </>
-                          )}
                           {/* DD Floor line - dashed orange/red horizontal line */}
                           {ddFloorYEnl !== null && (
                             <>

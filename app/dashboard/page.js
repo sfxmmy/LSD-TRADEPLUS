@@ -1406,10 +1406,11 @@ export default function DashboardPage() {
             )}
             {/* Horizontal grid lines - skip last one since borderBottom is X-axis */}
             <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}>
-              {yLabels.map((_, i) => {
+              {yLabels.map((v, i) => {
                 if (i === yLabels.length - 1) return null
                 const topPct = yLabels.length > 1 ? (i / (yLabels.length - 1)) * 100 : 0
-                return <div key={i} style={{ position: 'absolute', left: 0, right: 0, top: `${topPct}%`, borderTop: '1px solid rgba(51,51,51,0.5)' }} />
+                const isStart = v === start
+                return <div key={i} style={{ position: 'absolute', left: 0, right: 0, top: `${topPct}%`, borderTop: isStart ? '1px dashed #555' : '1px solid rgba(51,51,51,0.5)', zIndex: isStart ? 1 : 0 }} />
               })}
             </div>
             <svg ref={svgRef} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', overflow: 'visible' }} viewBox={`0 0 ${svgW} ${svgH}`} preserveAspectRatio="none" onMouseMove={handleMouseMove} onMouseLeave={() => setHoverPoint(null)}>
