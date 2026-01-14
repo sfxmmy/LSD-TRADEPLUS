@@ -1980,10 +1980,10 @@ export default function DashboardPage() {
                           })()}
                         </div>
 
-                        {/* Right Panel: Stats (2 cols) + Recent Trades + Buttons */}
+                        {/* Right Panel: Stats (3 cols) + Recent Trades + Buttons */}
                         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                          {/* Stats - 2 columns grid, label left / value right */}
-                          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2px 16px' }}>
+                          {/* Stats - 3 columns grid, label left / value right */}
+                          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '2px 12px' }}>
                             {[
                               { label: 'Total PnL', value: `${cumPnl >= 0 ? '+' : ''}$${Math.round(cumPnl).toLocaleString()}`, color: cumPnl >= 0 ? '#22c55e' : '#ef4444' },
                               { label: 'Trades', value: stats.totalTrades, color: '#fff' },
@@ -2005,9 +2005,9 @@ export default function DashboardPage() {
                             ))}
                           </div>
 
-                          {/* Recent Trades - Show 2.5 trades visible */}
+                          {/* Recent Trades - Increased height */}
                           <div style={{ flex: 1, background: '#0d0d12', borderRadius: '6px', border: '1px solid #1a1a22', overflow: 'hidden' }}>
-                            <div style={{ maxHeight: '72px', overflowY: 'auto' }}>
+                            <div style={{ maxHeight: '120px', overflowY: 'auto' }}>
                               <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                                 <thead style={{ position: 'sticky', top: 0 }}>
                                   <tr style={{ background: '#0d0d12' }}>
@@ -2020,7 +2020,7 @@ export default function DashboardPage() {
                                 </thead>
                                 <tbody>
                                   {(() => {
-                                    const recent = allTrades.slice().sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, 3)
+                                    const recent = allTrades.slice().sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, 5)
                                     if (recent.length === 0) return <tr><td colSpan="5" style={{ padding: '10px', textAlign: 'center', color: '#444', fontSize: '9px' }}>No trades</td></tr>
                                     return recent.map((t, i) => {
                                       const pnl = parseFloat(t.pnl) || 0
@@ -2045,11 +2045,11 @@ export default function DashboardPage() {
                             </div>
                           </div>
 
-                          {/* Buttons - slightly smaller */}
-                          <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                            <a href="/journal" style={{ padding: '8px', background: 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)', borderRadius: '6px', color: '#fff', fontWeight: 700, fontSize: '10px', textAlign: 'center', textDecoration: 'none' }}>VIEW FULL JOURNAL</a>
-                            <a href="/statistics" style={{ padding: '8px', background: 'transparent', border: '1px solid rgba(34,197,94,0.5)', borderRadius: '6px', color: '#22c55e', fontWeight: 600, fontSize: '10px', textAlign: 'center', textDecoration: 'none' }}>VIEW FULL STATISTICS</a>
-                            <a href="/notes" style={{ padding: '8px', background: 'transparent', border: '1px solid rgba(34,197,94,0.5)', borderRadius: '6px', color: '#22c55e', fontWeight: 600, fontSize: '10px', textAlign: 'center', textDecoration: 'none' }}>VIEW FULL NOTES</a>
+                          {/* Buttons - horizontal row */}
+                          <div style={{ display: 'flex', flexDirection: 'row', gap: '8px' }}>
+                            <a href="/journal" style={{ flex: 1, padding: '8px', background: 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)', borderRadius: '6px', color: '#fff', fontWeight: 700, fontSize: '9px', textAlign: 'center', textDecoration: 'none' }}>JOURNAL</a>
+                            <a href="/statistics" style={{ flex: 1, padding: '8px', background: 'transparent', border: '1px solid rgba(34,197,94,0.5)', borderRadius: '6px', color: '#22c55e', fontWeight: 600, fontSize: '9px', textAlign: 'center', textDecoration: 'none' }}>STATISTICS</a>
+                            <a href="/notes" style={{ flex: 1, padding: '8px', background: 'transparent', border: '1px solid rgba(34,197,94,0.5)', borderRadius: '6px', color: '#22c55e', fontWeight: 600, fontSize: '9px', textAlign: 'center', textDecoration: 'none' }}>NOTES</a>
                           </div>
                         </div>
                       </div>
