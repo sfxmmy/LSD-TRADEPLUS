@@ -1980,34 +1980,34 @@ export default function DashboardPage() {
                           })()}
                         </div>
 
-                        {/* Right Panel: Stats (3 cols) + Recent Trades + Buttons */}
+                        {/* Right Panel: Stats (2 cols) + Recent Trades + Buttons */}
                         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                          {/* Stats - 3 columns grid */}
-                          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '4px 16px' }}>
+                          {/* Stats - 2 columns grid, label left / value right */}
+                          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2px 16px' }}>
                             {[
                               { label: 'Total PnL', value: `${cumPnl >= 0 ? '+' : ''}$${Math.round(cumPnl).toLocaleString()}`, color: cumPnl >= 0 ? '#22c55e' : '#ef4444' },
                               { label: 'Trades', value: stats.totalTrades, color: '#fff' },
                               { label: 'Winrate', value: `${stats.winrate}%`, color: stats.winrate >= 50 ? '#22c55e' : '#ef4444' },
-                              { label: 'PF', value: stats.profitFactor, color: stats.profitFactor === '-' ? '#666' : stats.profitFactor === '∞' ? '#22c55e' : parseFloat(stats.profitFactor) >= 1 ? '#22c55e' : '#ef4444' },
-                              { label: 'Avg RR', value: avgRR, color: '#fff' },
-                              { label: 'Expect', value: `${expectancy >= 0 ? '+' : ''}$${expectancy}`, color: expectancy >= 0 ? '#22c55e' : '#ef4444' },
+                              { label: 'Profit Factor', value: stats.profitFactor, color: stats.profitFactor === '-' ? '#666' : stats.profitFactor === '∞' ? '#22c55e' : parseFloat(stats.profitFactor) >= 1 ? '#22c55e' : '#ef4444' },
+                              { label: 'W / L', value: `${stats.totalWins} / ${stats.totalLosses}`, color: '#fff' },
+                              { label: 'Consistency', value: `${consistency}%`, color: consistency >= 50 ? '#22c55e' : '#ef4444' },
                               { label: 'Avg Win', value: `+$${avgWin}`, color: '#22c55e' },
                               { label: 'Avg Loss', value: `$${avgLoss}`, color: avgLoss >= 0 ? '#22c55e' : '#ef4444' },
-                              { label: 'Win Str', value: winStreak, color: '#22c55e' },
-                              { label: 'Loss Str', value: lossStreak, color: '#ef4444' },
+                              { label: 'Win Streak', value: winStreak, color: '#22c55e' },
+                              { label: 'Loss Streak', value: lossStreak, color: '#ef4444' },
                               { label: 'Day WR', value: `${dayWR}%`, color: dayWR >= 50 ? '#22c55e' : '#ef4444' },
-                              { label: 'Consist', value: `${consistency}%`, color: consistency >= 50 ? '#22c55e' : '#ef4444' },
+                              { label: 'Expectancy', value: `${expectancy >= 0 ? '+' : ''}$${expectancy}`, color: expectancy >= 0 ? '#22c55e' : '#ef4444' },
                             ].map((s, i) => (
-                              <div key={i} style={{ display: 'flex', flexDirection: 'column', padding: '4px 0', borderBottom: '1px solid #1a1a22' }}>
-                                <span style={{ fontSize: '9px', color: '#666', textTransform: 'uppercase' }}>{s.label}</span>
+                              <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '4px 0', borderBottom: '1px solid #1a1a22' }}>
+                                <span style={{ fontSize: '11px', color: '#888' }}>{s.label}</span>
                                 <span style={{ fontSize: '12px', fontWeight: 700, color: s.color }}>{s.value}</span>
                               </div>
                             ))}
                           </div>
 
-                          {/* Recent Trades - Compact (Symbol, Outcome, PnL, Date, Days ago) */}
+                          {/* Recent Trades - Show 2.5 trades visible */}
                           <div style={{ flex: 1, background: '#0d0d12', borderRadius: '6px', border: '1px solid #1a1a22', overflow: 'hidden' }}>
-                            <div style={{ maxHeight: '90px', overflowY: 'auto' }}>
+                            <div style={{ maxHeight: '72px', overflowY: 'auto' }}>
                               <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                                 <thead style={{ position: 'sticky', top: 0 }}>
                                   <tr style={{ background: '#0d0d12' }}>
@@ -2020,7 +2020,7 @@ export default function DashboardPage() {
                                 </thead>
                                 <tbody>
                                   {(() => {
-                                    const recent = allTrades.slice().sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, 5)
+                                    const recent = allTrades.slice().sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, 3)
                                     if (recent.length === 0) return <tr><td colSpan="5" style={{ padding: '10px', textAlign: 'center', color: '#444', fontSize: '9px' }}>No trades</td></tr>
                                     return recent.map((t, i) => {
                                       const pnl = parseFloat(t.pnl) || 0
