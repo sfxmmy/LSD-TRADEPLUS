@@ -90,6 +90,7 @@ export default function DashboardPage() {
   const [balance, setBalance] = useState('')
   const [journalType, setJournalType] = useState('overall')
   const [profitTarget, setProfitTarget] = useState('')
+  const [profitTargetEnabled, setProfitTargetEnabled] = useState(false)
   const [maxDrawdown, setMaxDrawdown] = useState('')
   const [consistencyEnabled, setConsistencyEnabled] = useState(false)
   const [consistencyPct, setConsistencyPct] = useState('30')
@@ -1358,7 +1359,7 @@ export default function DashboardPage() {
               const isStart = v === start
               return (
                 <Fragment key={i}>
-                  <span style={{ position: 'absolute', right: '5px', top: `${topPct}%`, transform: 'translateY(-50%)', fontSize: '10px', color: '#999', lineHeight: isStart ? 1.2 : 1, textAlign: 'right', fontWeight: 400 }}>{isStart ? <><span style={{ display: 'block' }}>Start</span><span style={{ display: 'block' }}>{formatYLabel(v)}</span></> : formatYLabel(v)}</span>
+                  <span style={{ position: 'absolute', right: '5px', top: `${topPct}%`, transform: 'translateY(-50%)', fontSize: '10px', color: '#999', lineHeight: 1, textAlign: 'right', fontWeight: 400 }}>{formatYLabel(v)}</span>
                   <div style={{ position: 'absolute', right: 0, top: `${topPct}%`, width: '4px', borderTop: `1px solid ${isStart ? '#888' : '#333'}` }} />
                 </Fragment>
               )
@@ -1411,7 +1412,12 @@ export default function DashboardPage() {
                 if (i === yLabels.length - 1) return null
                 const topPct = yLabels.length > 1 ? (i / (yLabels.length - 1)) * 100 : 0
                 const isStart = v === start
-                return <div key={i} style={{ position: 'absolute', left: 0, right: 0, top: `${topPct}%`, borderTop: isStart ? '1px dashed #555' : '1px solid rgba(51,51,51,0.5)', zIndex: isStart ? 1 : 0 }} />
+                return (
+                  <Fragment key={i}>
+                    <div style={{ position: 'absolute', left: 0, right: isStart ? '40px' : 0, top: `${topPct}%`, borderTop: isStart ? '1px dashed #555' : '1px solid rgba(51,51,51,0.5)', zIndex: isStart ? 1 : 0 }} />
+                    {isStart && <span style={{ position: 'absolute', right: '4px', top: `${topPct}%`, transform: 'translateY(-50%)', fontSize: '9px', color: '#666', fontWeight: 500 }}>Start</span>}
+                  </Fragment>
+                )
               })}
             </div>
             <svg ref={svgRef} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', overflow: 'visible' }} viewBox={`0 0 ${svgW} ${svgH}`} preserveAspectRatio="none" onMouseMove={handleMouseMove} onMouseLeave={() => setHoverPoint(null)}>
@@ -1938,7 +1944,7 @@ export default function DashboardPage() {
                                       const isStart = v === startBal
                                       return (
                                         <Fragment key={i}>
-                                          <span style={{ position: 'absolute', right: '6px', top: `${topPct}%`, transform: 'translateY(-50%)', fontSize: '8px', color: '#888', lineHeight: isStart ? 1.2 : 1, whiteSpace: 'nowrap', fontWeight: 400 }}>{isStart ? <><span style={{ display: 'block' }}>Start</span><span style={{ display: 'block' }}>{formatY(v)}</span></> : formatY(v)}</span>
+                                          <span style={{ position: 'absolute', right: '6px', top: `${topPct}%`, transform: 'translateY(-50%)', fontSize: '8px', color: '#888', lineHeight: 1, whiteSpace: 'nowrap', fontWeight: 400 }}>{formatY(v)}</span>
                                           <div style={{ position: 'absolute', right: 0, top: `${topPct}%`, width: '4px', borderTop: `1px solid ${isStart ? '#666' : '#2a2a35'}` }} />
                                         </Fragment>
                                       )
@@ -1950,7 +1956,12 @@ export default function DashboardPage() {
                                         const topPct = yLabels.length > 1 ? (i / (yLabels.length - 1)) * 100 : 0
                                         if (i === yLabels.length - 1) return null
                                         const isStart = v === startBal
-                                        return <div key={i} style={{ position: 'absolute', left: 0, right: 0, top: `${topPct}%`, borderTop: isStart ? '1px dashed #555' : '1px solid rgba(51,51,51,0.5)', zIndex: isStart ? 1 : 0 }} />
+                                        return (
+                                          <Fragment key={i}>
+                                            <div style={{ position: 'absolute', left: 0, right: isStart ? '40px' : 0, top: `${topPct}%`, borderTop: isStart ? '1px dashed #555' : '1px solid rgba(51,51,51,0.5)', zIndex: isStart ? 1 : 0 }} />
+                                            {isStart && <span style={{ position: 'absolute', right: '4px', top: `${topPct}%`, transform: 'translateY(-50%)', fontSize: '8px', color: '#666', fontWeight: 500 }}>Start</span>}
+                                          </Fragment>
+                                        )
                                       })}
                                     </div>
                                     <svg style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', overflow: 'visible', zIndex: 2 }} viewBox={`0 0 ${svgW} ${svgH}`} preserveAspectRatio="none"
@@ -2028,16 +2039,16 @@ export default function DashboardPage() {
                           <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
                             {/* Buttons - stacked vertically, each spans 2 stat rows */}
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', flex: 1 }}>
-                              <a href="/journal" style={{ flex: 1, background: 'rgba(34,197,94,0.08)', border: '1px solid rgba(34,197,94,0.3)', borderRadius: '10px', color: '#22c55e', fontWeight: 600, fontSize: '11px', textDecoration: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
-                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+                              <a href="/journal" style={{ flex: 1, background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '10px', color: '#22c55e', fontWeight: 600, fontSize: '14px', textDecoration: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
                                 Journal
                               </a>
-                              <a href="/statistics" style={{ flex: 1, background: 'rgba(34,197,94,0.08)', border: '1px solid rgba(34,197,94,0.3)', borderRadius: '10px', color: '#22c55e', fontWeight: 600, fontSize: '11px', textDecoration: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
-                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 20V10M12 20V4M6 20v-6"/></svg>
+                              <a href="/statistics" style={{ flex: 1, background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '10px', color: '#22c55e', fontWeight: 600, fontSize: '14px', textDecoration: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 20V10M12 20V4M6 20v-6"/></svg>
                                 Stats
                               </a>
-                              <a href="/notes" style={{ flex: 1, background: 'rgba(34,197,94,0.08)', border: '1px solid rgba(34,197,94,0.3)', borderRadius: '10px', color: '#22c55e', fontWeight: 600, fontSize: '11px', textDecoration: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
-                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                              <a href="/notes" style={{ flex: 1, background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '10px', color: '#22c55e', fontWeight: 600, fontSize: '14px', textDecoration: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
                                 Notes
                               </a>
                             </div>
@@ -2239,7 +2250,7 @@ export default function DashboardPage() {
                                       const isStart = v === startingBalance
                                       return (
                                         <Fragment key={i}>
-                                          <span style={{ position: 'absolute', right: '6px', top: `${topPct}%`, transform: 'translateY(-50%)', fontSize: '8px', color: '#888', lineHeight: isStart ? 1.2 : 1, whiteSpace: 'nowrap', fontWeight: 400 }}>{isStart ? <><span style={{ display: 'block' }}>Start</span><span style={{ display: 'block' }}>{formatY(v)}</span></> : formatY(v)}</span>
+                                          <span style={{ position: 'absolute', right: '6px', top: `${topPct}%`, transform: 'translateY(-50%)', fontSize: '8px', color: '#888', lineHeight: 1, whiteSpace: 'nowrap', fontWeight: 400 }}>{formatY(v)}</span>
                                           <div style={{ position: 'absolute', right: 0, top: `${topPct}%`, width: '4px', borderTop: `1px solid ${isStart ? '#666' : '#2a2a35'}` }} />
                                         </Fragment>
                                       )
@@ -2253,7 +2264,12 @@ export default function DashboardPage() {
                                         const topPct = yLabels.length > 1 ? (i / (yLabels.length - 1)) * 100 : 0
                                         if (i === yLabels.length - 1) return null
                                         const isStart = v === startingBalance
-                                        return <div key={i} style={{ position: 'absolute', left: 0, right: 0, top: `${topPct}%`, borderTop: isStart ? '1px dashed #555' : '1px solid rgba(51,51,51,0.5)', zIndex: isStart ? 1 : 0 }} />
+                                        return (
+                                          <Fragment key={i}>
+                                            <div style={{ position: 'absolute', left: 0, right: isStart ? '40px' : 0, top: `${topPct}%`, borderTop: isStart ? '1px dashed #555' : '1px solid rgba(51,51,51,0.5)', zIndex: isStart ? 1 : 0 }} />
+                                            {isStart && <span style={{ position: 'absolute', right: '4px', top: `${topPct}%`, transform: 'translateY(-50%)', fontSize: '8px', color: '#666', fontWeight: 500 }}>Start</span>}
+                                          </Fragment>
+                                        )
                                       })}
                                     </div>
                                     {/* Profit target line - only when objectives toggled on */}
@@ -2444,7 +2460,7 @@ export default function DashboardPage() {
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
                   <button type="button" onClick={() => setJournalType('overall')} style={{ padding: '14px 12px', background: journalType === 'overall' ? 'rgba(34,197,94,0.15)' : '#0a0a0f', border: journalType === 'overall' ? '2px solid #22c55e' : '1px solid #1a1a22', borderRadius: '8px', cursor: 'pointer', transition: 'all 0.2s' }}>
                     <div style={{ fontSize: '13px', fontWeight: 600, color: journalType === 'overall' ? '#22c55e' : '#fff', marginBottom: '4px' }}>Overall Journal</div>
-                    <div style={{ fontSize: '10px', color: '#666' }}>Simple tracking</div>
+                    <div style={{ fontSize: '10px', color: '#666' }}>General tracking and backtesting</div>
                   </button>
                   <button type="button" onClick={() => setJournalType('propfirm')} style={{ padding: '14px 12px', background: journalType === 'propfirm' ? 'rgba(34,197,94,0.15)' : '#0a0a0f', border: journalType === 'propfirm' ? '2px solid #22c55e' : '1px solid #1a1a22', borderRadius: '8px', cursor: 'pointer', transition: 'all 0.2s' }}>
                     <div style={{ fontSize: '13px', fontWeight: 600, color: journalType === 'propfirm' ? '#22c55e' : '#fff', marginBottom: '4px' }}>Prop Firm Journal</div>
@@ -3752,8 +3768,8 @@ export default function DashboardPage() {
                       const isStart = v === startingBalance
                       return (
                         <div key={i} style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '4px' }}>
-                          <span style={{ fontSize: '10px', color: '#666', lineHeight: isStart ? 1.2 : 1, fontWeight: 400, textAlign: 'right' }}>
-                            {isStart ? <><span style={{ display: 'block' }}>Start</span><span style={{ display: 'block' }}>{Math.abs(v) >= 1000 ? `$${(v / 1000).toFixed(1)}k` : `$${Math.round(v)}`}</span></> : (Math.abs(v) >= 1000 ? `$${(v / 1000).toFixed(1)}k` : `$${Math.round(v)}`)}
+                          <span style={{ fontSize: '10px', color: '#666', lineHeight: 1, fontWeight: 400, textAlign: 'right' }}>
+                            {Math.abs(v) >= 1000 ? `$${(v / 1000).toFixed(1)}k` : `$${Math.round(v)}`}
                           </span>
                           <div style={{ width: '4px', height: '1px', background: isStart ? '#666' : '#444' }} />
                         </div>
