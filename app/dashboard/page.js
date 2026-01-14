@@ -1118,13 +1118,13 @@ export default function DashboardPage() {
 
     // Generate labels anchored to starting balance (start is always a label)
     const yLabels = [start]
-    // Add labels above start until we cover yMax
-    for (let v = start + yStep; v <= yMax + yStep * 0.1; v += yStep) {
+    // Add labels above start - extend beyond yMax to ensure padding
+    for (let v = start + yStep; v < yMax + yStep; v += yStep) {
       yLabels.push(v)
     }
-    // Add labels below start until we cover yMin
-    for (let v = start - yStep; v >= yMin - yStep * 0.1; v -= yStep) {
-      if (v >= 0 || hasNegative || showObjectiveLines) yLabels.push(v) // Only add negative if needed
+    // Add labels below start - extend beyond yMin to ensure padding
+    for (let v = start - yStep; v > yMin - yStep; v -= yStep) {
+      if (v >= 0 || hasNegative || showObjectiveLines) yLabels.push(v)
     }
     // Sort from highest to lowest
     yLabels.sort((a, b) => b - a)
@@ -1866,12 +1866,12 @@ export default function DashboardPage() {
 
                             // Generate labels anchored to starting balance (start is always a label)
                             const yLabels = [startBal]
-                            // Add labels above start until we cover yMax
-                            for (let v = startBal + niceStep; v <= yMax + niceStep * 0.1; v += niceStep) {
+                            // Add labels above start - extend beyond yMax to ensure padding
+                            for (let v = startBal + niceStep; v < yMax + niceStep; v += niceStep) {
                               yLabels.push(v)
                             }
-                            // Add labels below start until we cover yMin
-                            for (let v = startBal - niceStep; v >= yMin - niceStep * 0.1; v -= niceStep) {
+                            // Add labels below start - extend beyond yMin to ensure padding
+                            for (let v = startBal - niceStep; v > yMin - niceStep; v -= niceStep) {
                               if (v >= 0 || dataMin < 0) yLabels.push(v)
                             }
                             // Sort from highest to lowest
@@ -2153,12 +2153,12 @@ export default function DashboardPage() {
 
                             // Generate labels anchored to starting balance (start is always a label)
                             const yLabels = [startingBalance]
-                            // Add labels above start until we cover yMax
-                            for (let v = startingBalance + niceStep; v <= yMax + niceStep * 0.1; v += niceStep) {
+                            // Add labels above start - extend beyond yMax to ensure padding
+                            for (let v = startingBalance + niceStep; v < yMax + niceStep; v += niceStep) {
                               yLabels.push(v)
                             }
-                            // Add labels below start until we cover yMin
-                            for (let v = startingBalance - niceStep; v >= yMin - niceStep * 0.1; v -= niceStep) {
+                            // Add labels below start - extend beyond yMin to ensure padding
+                            for (let v = startingBalance - niceStep; v > yMin - niceStep; v -= niceStep) {
                               if (v >= 0 || dataMin < 0) yLabels.push(v)
                             }
                             // Sort from highest to lowest
@@ -3661,12 +3661,12 @@ export default function DashboardPage() {
 
           // Generate labels anchored to starting balance (start is always a label)
           const yLabels = [startingBalance]
-          // Add labels above start until we cover yMax
-          for (let v = startingBalance + step; v <= yMax + step * 0.1; v += step) {
+          // Add labels above start - extend beyond yMax to ensure padding
+          for (let v = startingBalance + step; v < yMax + step; v += step) {
             yLabels.push(v)
           }
-          // Add labels below start until we cover yMin
-          for (let v = startingBalance - step; v >= yMin - step * 0.1; v -= step) {
+          // Add labels below start - extend beyond yMin to ensure padding
+          for (let v = startingBalance - step; v > yMin - step; v -= step) {
             if (v >= 0 || minBal < 0) yLabels.push(v)
           }
           // Sort from highest to lowest
