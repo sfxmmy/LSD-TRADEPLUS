@@ -1983,7 +1983,7 @@ export default function DashboardPage() {
                         </div>
 
                         {/* Right Panel: Stats (2 cols top-to-bottom) + Buttons bottom right */}
-                        <div style={{ flex: 1, display: 'flex', gap: '12px' }}>
+                        <div style={{ flex: 1, display: 'flex', gap: '12px', paddingBottom: '20px' }}>
                           {/* Stats - 2 columns, flows top to bottom, full height with 2 grey lines at top */}
                           <div style={{ flex: 2, display: 'flex', flexDirection: 'column' }}>
                             {/* Two grey lines side by side at top (matching column gap) */}
