@@ -1970,9 +1970,9 @@ export default function DashboardPage() {
                                     )}
                                   </div>
                                 </div>
-                                <div style={{ display: 'flex', paddingBottom: '12px' }}>
+                                <div style={{ display: 'flex', paddingBottom: '16px' }}>
                                   <div style={{ width: '42px', flexShrink: 0 }} />
-                                  <div style={{ flex: 1, height: '20px', position: 'relative' }}>
+                                  <div style={{ flex: 1, height: '14px', position: 'relative' }}>
                                     {xLabels.map((l, i) => (
                                       <div key={i} style={{ position: 'absolute', left: `${l.pct}%`, transform: 'translateX(-50%)', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                                         <div style={{ width: '1px', height: '4px', background: '#2a2a35' }} />
