@@ -2097,116 +2097,188 @@ export default function DashboardPage() {
                           </div>
                         </div>
 
-                        {/* Mini Graph with Y-axis labels, grid lines, and zoom button */}
+                        {/* Mini Graph - Same quality as Overall Stats graph */}
                         <div style={{ padding: '12px 18px' }}>
-                          <div style={{ height: '120px', display: 'flex', position: 'relative' }}>
-                            {balancePoints.length > 1 ? (() => {
-                              // Add padding to range
-                              const dataRange = maxBal - minBal || 1000
-                              const paddingAmount = dataRange / 8
-                              const yMax = maxBal + paddingAmount
-                              const yMin = minBal - paddingAmount
-                              const yRange = yMax - yMin || 1
+                          {(() => {
+                            if (balancePoints.length < 2) {
+                              return <div style={{ height: '140px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#444', fontSize: '12px' }}>No trades yet</div>
+                            }
 
-                              // Calculate nice Y-axis labels (3 labels)
-                              const yLabels = [yMax, (yMax + yMin) / 2, yMin].map(v => {
-                                if (Math.abs(v) >= 1000) return `$${(v / 1000).toFixed(1)}k`
-                                return `$${Math.round(v)}`
-                              })
+                            const svgW = 100, svgH = 100
+                            const allValues = balancePoints.map(p => p.value)
+                            const dataMin = Math.min(...allValues, startingBalance)
+                            const dataMax = Math.max(...allValues, startingBalance)
+                            // Include objective lines in range
+                            const rangeMin = profitTarget ? Math.min(dataMin, maxDdFloor || dataMin) : dataMin
+                            const rangeMax = profitTarget ? Math.max(dataMax, profitTarget) : dataMax
+                            const dataRange = rangeMax - rangeMin || 1000
+                            const paddingAmt = dataRange / 6
 
-                              // Calculate starting balance Y position
-                              const startLineYPct = ((yMax - startingBalance) / yRange) * 100
+                            let yMin = rangeMin - paddingAmt
+                            let yMax = rangeMax + paddingAmt
+                            if (yMin < 0 && dataMin >= 0) yMin = 0
 
-                              // Calculate objective line positions
-                              const profitTargetYPct = profitTarget ? ((yMax - profitTarget) / yRange) * 100 : null
-                              const maxDdFloorYPct = maxDdFloor ? ((yMax - maxDdFloor) / yRange) * 100 : null
+                            // Nice step calculation
+                            const displayRange = yMax - yMin || 1000
+                            const rawStep = displayRange / 4
+                            const magnitude = Math.pow(10, Math.floor(Math.log10(rawStep)))
+                            const normalized = rawStep / magnitude
+                            let niceStep
+                            if (normalized <= 1) niceStep = magnitude
+                            else if (normalized <= 2) niceStep = 2 * magnitude
+                            else if (normalized <= 2.5) niceStep = 2.5 * magnitude
+                            else if (normalized <= 5) niceStep = 5 * magnitude
+                            else niceStep = 10 * magnitude
 
-                              // Normalized SVG coordinates
-                              const svgW = 100, svgH = 100
-                              const startY = svgH - ((startingBalance - yMin) / yRange) * svgH
+                            yMax = Math.ceil(yMax / niceStep) * niceStep
+                            yMin = Math.floor(yMin / niceStep) * niceStep
+                            if (yMin < 0 && dataMin >= 0) yMin = 0
+                            const yRange = yMax - yMin || niceStep
 
-                              const chartPts = balancePoints.map((p, i) => ({
+                            const yLabels = []
+                            for (let v = yMax; v >= yMin; v -= niceStep) yLabels.push(v)
+
+                            const formatY = (v) => {
+                              if (Math.abs(v) >= 1000000) return `$${(v/1000000).toFixed(1)}M`
+                              if (Math.abs(v) >= 1000) return `$${(v/1000).toFixed(niceStep < 1000 ? 1 : 0)}k`
+                              return `$${v}`
+                            }
+
+                            // X-axis labels
+                            const xLabels = []
+                            if (sortedTrades.length > 0) {
+                              const firstDate = new Date(sortedTrades[0].date)
+                              const lastDate = new Date(sortedTrades[sortedTrades.length - 1].date)
+                              const totalDays = Math.max(1, Math.ceil((lastDate - firstDate) / (1000 * 60 * 60 * 24)))
+                              const numLabels = Math.min(4, sortedTrades.length + 1)
+                              for (let i = 0; i < numLabels; i++) {
+                                const pct = numLabels > 1 ? 5 + (i / (numLabels - 1)) * 90 : 50
+                                const dateOffset = numLabels > 1 ? Math.round((i / (numLabels - 1)) * totalDays) : 0
+                                const labelDate = new Date(firstDate.getTime() + dateOffset * 24 * 60 * 60 * 1000)
+                                xLabels.push({ label: `${String(labelDate.getDate()).padStart(2, '0')}/${String(labelDate.getMonth() + 1).padStart(2, '0')}`, pct })
+                              }
+                            }
+
+                            // Add date/symbol/pnl to balance points for hover
+                            const chartPts = balancePoints.map((p, i) => {
+                              const trade = i > 0 ? sortedTrades[i - 1] : null
+                              return {
                                 x: (i / (balancePoints.length - 1)) * svgW,
                                 y: svgH - ((p.value - yMin) / yRange) * svgH,
-                                balance: p.value
-                              }))
-
-                              // Build split paths (green above start, red below)
-                              const greenSegments = [], redSegments = []
-                              for (let i = 0; i < chartPts.length - 1; i++) {
-                                const p1 = chartPts[i], p2 = chartPts[i + 1]
-                                const above1 = p1.balance >= startingBalance, above2 = p2.balance >= startingBalance
-                                if (above1 === above2) {
-                                  const arr = above1 ? greenSegments : redSegments
-                                  arr.push({ x1: p1.x, y1: p1.y, x2: p2.x, y2: p2.y })
-                                } else {
-                                  const t = (startingBalance - p1.balance) / (p2.balance - p1.balance)
-                                  const ix = p1.x + t * (p2.x - p1.x), iy = startY
-                                  if (above1) {
-                                    greenSegments.push({ x1: p1.x, y1: p1.y, x2: ix, y2: iy })
-                                    redSegments.push({ x1: ix, y1: iy, x2: p2.x, y2: p2.y })
-                                  } else {
-                                    redSegments.push({ x1: p1.x, y1: p1.y, x2: ix, y2: iy })
-                                    greenSegments.push({ x1: ix, y1: iy, x2: p2.x, y2: p2.y })
-                                  }
-                                }
+                                balance: p.value,
+                                date: trade?.date || null,
+                                symbol: trade?.symbol || null,
+                                pnl: trade ? (parseFloat(trade.pnl) || 0) : 0
                               }
-                              const buildPath = (segs) => segs.map((s) => `M ${s.x1} ${s.y1} L ${s.x2} ${s.y2}`).join(' ')
-                              const buildAreaPath = (segs) => segs.map(s => `M ${s.x1} ${s.y1} L ${s.x2} ${s.y2} L ${s.x2} ${startY} L ${s.x1} ${startY} Z`).join(' ')
-                              const greenPath = buildPath(greenSegments)
-                              const redPath = buildPath(redSegments)
-                              const greenAreaPath = buildAreaPath(greenSegments)
-                              const redAreaPath = buildAreaPath(redSegments)
+                            })
 
-                              return (
-                                <>
-                                  {/* Y-Axis Labels */}
-                                  <div style={{ width: '45px', flexShrink: 0, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', paddingRight: '6px' }}>
-                                    {yLabels.map((label, i) => (
-                                      <span key={i} style={{ fontSize: '9px', color: '#666', textAlign: 'right' }}>{label}</span>
-                                    ))}
+                            const startLineY = ((yMax - startingBalance) / yRange) * 100
+                            const startSvgY = svgH - ((startingBalance - yMin) / yRange) * svgH
+                            const profitTargetLineY = profitTarget ? ((yMax - profitTarget) / yRange) * 100 : null
+                            const maxDdFloorLineY = maxDdFloor ? ((yMax - maxDdFloor) / yRange) * 100 : null
+
+                            // Build split paths
+                            const greenSegs = [], redSegs = []
+                            for (let i = 0; i < chartPts.length - 1; i++) {
+                              const p1 = chartPts[i], p2 = chartPts[i + 1]
+                              const above1 = p1.balance >= startingBalance, above2 = p2.balance >= startingBalance
+                              if (above1 === above2) {
+                                (above1 ? greenSegs : redSegs).push({ x1: p1.x, y1: p1.y, x2: p2.x, y2: p2.y })
+                              } else {
+                                const t = (startingBalance - p1.balance) / (p2.balance - p1.balance)
+                                const ix = p1.x + t * (p2.x - p1.x)
+                                if (above1) { greenSegs.push({ x1: p1.x, y1: p1.y, x2: ix, y2: startSvgY }); redSegs.push({ x1: ix, y1: startSvgY, x2: p2.x, y2: p2.y }) }
+                                else { redSegs.push({ x1: p1.x, y1: p1.y, x2: ix, y2: startSvgY }); greenSegs.push({ x1: ix, y1: startSvgY, x2: p2.x, y2: p2.y }) }
+                              }
+                            }
+
+                            const mkPath = segs => segs.map(s => `M${s.x1},${s.y1}L${s.x2},${s.y2}`).join('')
+                            const mkArea = segs => segs.map(s => `M${s.x1},${s.y1}L${s.x2},${s.y2}L${s.x2},${startSvgY}L${s.x1},${startSvgY}Z`).join('')
+
+                            const isHovered = journalHover?.accountId === account.id
+
+                            return (
+                              <div style={{ display: 'flex', flexDirection: 'column' }}>
+                                <div style={{ display: 'flex', height: '120px' }}>
+                                  {/* Y-Axis with tick marks */}
+                                  <div style={{ width: '40px', flexShrink: 0, position: 'relative', borderRight: '1px solid #2a2a35', overflow: 'visible' }}>
+                                    {yLabels.map((v, i) => {
+                                      const topPct = yLabels.length > 1 ? (i / (yLabels.length - 1)) * 100 : 0
+                                      return (
+                                        <Fragment key={i}>
+                                          <span style={{ position: 'absolute', right: '6px', top: `${topPct}%`, transform: 'translateY(-50%)', fontSize: '8px', color: '#888', lineHeight: 1, whiteSpace: 'nowrap' }}>{formatY(v)}</span>
+                                          <div style={{ position: 'absolute', right: 0, top: `${topPct}%`, width: '4px', borderTop: '1px solid #2a2a35' }} />
+                                        </Fragment>
+                                      )
+                                    })}
+                                    {/* Starting balance label */}
+                                    {startLineY >= 5 && startLineY <= 95 && (
+                                      <Fragment>
+                                        <span style={{ position: 'absolute', right: '6px', top: `${startLineY}%`, transform: 'translateY(-50%)', fontSize: '7px', color: '#666', lineHeight: 1, whiteSpace: 'nowrap', fontWeight: 600 }}>{formatY(startingBalance)}</span>
+                                        <div style={{ position: 'absolute', right: 0, top: `${startLineY}%`, width: '4px', borderTop: '1px solid #666' }} />
+                                      </Fragment>
+                                    )}
                                   </div>
-                                  {/* Graph Area */}
-                                  <div style={{ flex: 1, position: 'relative', borderLeft: '1px solid #2a2a35' }}>
+                                  {/* Graph Area with hover */}
+                                  <div style={{ flex: 1, position: 'relative', borderBottom: '1px solid #2a2a35', overflow: 'visible' }}>
                                     {/* Horizontal Grid Lines */}
-                                    <div style={{ position: 'absolute', left: 0, right: 0, top: '0%', borderTop: '1px solid #1a1a22' }} />
-                                    <div style={{ position: 'absolute', left: 0, right: 0, top: '50%', borderTop: '1px solid #1a1a22' }} />
-                                    <div style={{ position: 'absolute', left: 0, right: 0, top: '100%', borderTop: '1px solid #1a1a22' }} />
-                                    {/* Starting balance dashed line */}
-                                    {startLineYPct >= 0 && startLineYPct <= 100 && (
-                                      <div style={{ position: 'absolute', left: 0, right: 0, top: `${startLineYPct}%`, borderTop: '1px dashed #555', zIndex: 1 }} />
-                                    )}
-                                    {/* Profit target line - green */}
-                                    {profitTargetYPct !== null && profitTargetYPct >= 0 && profitTargetYPct <= 100 && (
-                                      <div style={{ position: 'absolute', left: 0, right: 0, top: `${profitTargetYPct}%`, borderTop: '1px solid #22c55e', zIndex: 1 }} />
-                                    )}
-                                    {/* Max DD floor line - red */}
-                                    {maxDdFloorYPct !== null && maxDdFloorYPct >= 0 && maxDdFloorYPct <= 100 && (
-                                      <div style={{ position: 'absolute', left: 0, right: 0, top: `${maxDdFloorYPct}%`, borderTop: '1px solid #ef4444', zIndex: 1 }} />
-                                    )}
-                                    <svg width="100%" height="100%" viewBox={`0 0 ${svgW} ${svgH}`} preserveAspectRatio="none" style={{ position: 'relative', zIndex: 2 }}>
+                                    <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}>
+                                      {yLabels.map((_, i) => {
+                                        const topPct = yLabels.length > 1 ? (i / (yLabels.length - 1)) * 100 : 0
+                                        if (i === yLabels.length - 1) return null
+                                        return <div key={i} style={{ position: 'absolute', left: 0, right: 0, top: `${topPct}%`, borderTop: '1px solid rgba(51,51,51,0.5)' }} />
+                                      })}
+                                    </div>
+                                    {/* Starting balance line */}
+                                    {startLineY >= 0 && startLineY <= 100 && <div style={{ position: 'absolute', left: 0, right: 0, top: `${startLineY}%`, borderTop: '1px dashed #555', zIndex: 1 }} />}
+                                    {/* Profit target line */}
+                                    {profitTargetLineY !== null && profitTargetLineY >= 0 && profitTargetLineY <= 100 && <div style={{ position: 'absolute', left: 0, right: 0, top: `${profitTargetLineY}%`, borderTop: '1px solid #22c55e', zIndex: 1 }} />}
+                                    {/* Max DD line */}
+                                    {maxDdFloorLineY !== null && maxDdFloorLineY >= 0 && maxDdFloorLineY <= 100 && <div style={{ position: 'absolute', left: 0, right: 0, top: `${maxDdFloorLineY}%`, borderTop: '1px solid #ef4444', zIndex: 1 }} />}
+                                    {/* SVG Graph */}
+                                    <svg style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', overflow: 'visible', zIndex: 2 }} viewBox={`0 0 ${svgW} ${svgH}`} preserveAspectRatio="none"
+                                      onMouseMove={e => { const rect = e.currentTarget.getBoundingClientRect(); const mouseX = ((e.clientX - rect.left) / rect.width) * svgW; let closest = chartPts[0], minDist = Math.abs(mouseX - chartPts[0].x); chartPts.forEach(p => { const d = Math.abs(mouseX - p.x); if (d < minDist) { minDist = d; closest = p } }); setJournalHover({ ...closest, accountId: account.id, xPct: (closest.x / svgW) * 100, yPct: (closest.y / svgH) * 100 }) }}
+                                      onMouseLeave={() => setJournalHover(null)}>
                                       <defs>
                                         <linearGradient id={`eqGreenMini${account.id}`} x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stopColor="#22c55e" stopOpacity="0.3" /><stop offset="100%" stopColor="#22c55e" stopOpacity="0" /></linearGradient>
-                                        <linearGradient id={`eqRedMini${account.id}`} x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stopColor="#ef4444" stopOpacity="0.3" /><stop offset="100%" stopColor="#ef4444" stopOpacity="0" /></linearGradient>
+                                        <linearGradient id={`eqRedMini${account.id}`} x1="0%" y1="100%" x2="0%" y2="0%"><stop offset="0%" stopColor="#ef4444" stopOpacity="0.3" /><stop offset="100%" stopColor="#ef4444" stopOpacity="0" /></linearGradient>
                                       </defs>
-                                      {greenAreaPath && <path d={greenAreaPath} fill={`url(#eqGreenMini${account.id})`} />}
-                                      {redAreaPath && <path d={redAreaPath} fill={`url(#eqRedMini${account.id})`} />}
-                                      {greenPath && <path d={greenPath} fill="none" stroke="#22c55e" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />}
-                                      {redPath && <path d={redPath} fill="none" stroke="#ef4444" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />}
+                                      <path d={mkArea(greenSegs)} fill={`url(#eqGreenMini${account.id})`} />
+                                      <path d={mkArea(redSegs)} fill={`url(#eqRedMini${account.id})`} />
+                                      <path d={mkPath(greenSegs)} fill="none" stroke="#22c55e" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />
+                                      <path d={mkPath(redSegs)} fill="none" stroke="#ef4444" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />
                                     </svg>
+                                    {/* Hover dot indicator */}
+                                    {isHovered && <div style={{ position: 'absolute', left: `${journalHover.xPct}%`, top: `${journalHover.yPct}%`, transform: 'translate(-50%, -50%)', width: '8px', height: '8px', borderRadius: '50%', background: journalHover.balance >= startingBalance ? '#22c55e' : '#ef4444', border: '2px solid #fff', pointerEvents: 'none', zIndex: 10 }} />}
+                                    {/* Hover tooltip */}
+                                    {isHovered && (
+                                      <div style={{ position: 'absolute', left: `${journalHover.xPct}%`, top: `${journalHover.yPct}%`, transform: `translate(${journalHover.xPct > 70 ? 'calc(-100% - 10px)' : '10px'}, ${journalHover.yPct < 25 ? '0%' : journalHover.yPct > 75 ? '-100%' : '-50%'})`, background: '#1a1a22', border: '1px solid #2a2a35', borderRadius: '6px', padding: '6px 10px', fontSize: '10px', whiteSpace: 'nowrap', zIndex: 10, pointerEvents: 'none' }}>
+                                        <div style={{ color: '#888', fontSize: '9px' }}>{journalHover.date ? new Date(journalHover.date).toLocaleDateString() : 'Start'}</div>
+                                        <div style={{ fontWeight: 700, fontSize: '12px', color: '#fff' }}>${journalHover.balance?.toLocaleString()}</div>
+                                        {journalHover.symbol && <div style={{ color: journalHover.pnl >= 0 ? '#22c55e' : '#ef4444', marginTop: '2px' }}>{journalHover.symbol}: {journalHover.pnl >= 0 ? '+' : ''}${journalHover.pnl?.toFixed(0)}</div>}
+                                      </div>
+                                    )}
                                     {/* Zoom Button */}
-                                    <button onClick={(e) => { e.stopPropagation(); setZoomedJournal(account.id) }} style={{ position: 'absolute', top: '4px', right: '4px', padding: '4px', background: 'rgba(0,0,0,0.6)', border: '1px solid #2a2a35', borderRadius: '4px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 3 }} title="Expand graph">
+                                    <button onClick={(e) => { e.stopPropagation(); setZoomedJournal(account.id) }} style={{ position: 'absolute', top: '4px', right: '4px', padding: '4px', background: 'rgba(0,0,0,0.7)', border: '1px solid #2a2a35', borderRadius: '4px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 3 }} title="Expand graph">
                                       <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#888" strokeWidth="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/><path d="M11 8v6M8 11h6"/></svg>
                                     </button>
                                   </div>
-                                </>
-                              )
-                            })() : (
-                              <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                <span style={{ color: '#444', fontSize: '12px' }}>No trades yet</span>
+                                </div>
+                                {/* X-Axis labels */}
+                                <div style={{ display: 'flex' }}>
+                                  <div style={{ width: '40px', flexShrink: 0 }} />
+                                  <div style={{ flex: 1, height: '18px', position: 'relative' }}>
+                                    {xLabels.map((l, i) => (
+                                      <div key={i} style={{ position: 'absolute', left: `${l.pct}%`, transform: 'translateX(-50%)', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                                        <div style={{ width: '1px', height: '3px', background: '#2a2a35' }} />
+                                        <span style={{ fontSize: '7px', color: '#888', marginTop: '1px', whiteSpace: 'nowrap' }}>{l.label}</span>
+                                      </div>
+                                    ))}
+                                  </div>
+                                </div>
                               </div>
-                            )}
-                          </div>
+                            )
+                          })()}
                         </div>
 
                         {/* Stats - 9 items in grid */}
