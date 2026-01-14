@@ -156,6 +156,7 @@ export default function DashboardPage() {
   const [quickTradeNotes, setQuickTradeNotes] = useState('')
   const [submittingTrade, setSubmittingTrade] = useState(false)
   const [quickTradeExtraData, setQuickTradeExtraData] = useState({})
+  const [dashHover, setDashHover] = useState(null) // Hover state for dashboard graph
   const [showAddInputModal, setShowAddInputModal] = useState(false)
   const [showEditInputsModal, setShowEditInputsModal] = useState(false)
   const [deleteInputConfirm, setDeleteInputConfirm] = useState(null)
@@ -1795,85 +1796,100 @@ export default function DashboardPage() {
                       </div>
 
                       {/* Graph + Stats + Recent Trades Row */}
-                      <div style={{ display: 'flex', gap: '20px', alignItems: 'stretch' }}>
-                        {/* Equity Curve Graph */}
-                        <div style={{ flex: '0 0 auto', width: '420px' }}>
+                      <div style={{ display: 'flex', gap: '16px', alignItems: 'stretch' }}>
+                        {/* Equity Curve Graph - Full Structure */}
+                        <div style={{ flex: '1 1 auto', minWidth: '380px' }}>
                           {(() => {
                             // Build balance points (starting balance + cumulative pnl)
                             const startBal = stats.totalStartingBalance || 0
                             let runningBal = startBal
-                            const balancePoints = [{ value: startBal, date: null }]
+                            const balancePoints = [{ value: startBal, date: null, symbol: null, pnl: 0 }]
                             sortedTrades.forEach(t => {
                               runningBal += parseFloat(t.pnl) || 0
                               balancePoints.push({ value: runningBal, date: t.date, symbol: t.symbol, pnl: parseFloat(t.pnl) || 0 })
                             })
 
                             if (balancePoints.length < 2) {
-                              return <div style={{ height: '160px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#444', fontSize: '12px' }}>No data yet</div>
+                              return <div style={{ height: '180px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#444', fontSize: '12px' }}>No data yet</div>
                             }
 
                             const svgW = 100, svgH = 100
                             const allValues = balancePoints.map(p => p.value)
-                            const dataMin = Math.min(...allValues)
-                            const dataMax = Math.max(...allValues)
+                            const dataMin = Math.min(...allValues, startBal)
+                            const dataMax = Math.max(...allValues, startBal)
                             const dataRange = dataMax - dataMin || 1000
-                            const padding = dataRange * 0.1
+                            const paddingAmt = dataRange / 6
 
-                            let yMin = dataMin - padding
-                            let yMax = dataMax + padding
+                            let yMin = dataMin - paddingAmt
+                            let yMax = dataMax + paddingAmt
                             if (yMin < 0 && dataMin >= 0) yMin = 0
 
-                            const yRange = yMax - yMin || 1
+                            // Nice step calculation for Y-axis
+                            const displayRange = yMax - yMin || 1000
+                            const targetLabels = 6
+                            const rawStep = displayRange / (targetLabels - 1)
+                            const magnitude = Math.pow(10, Math.floor(Math.log10(rawStep)))
+                            const normalized = rawStep / magnitude
+                            let niceStep
+                            if (normalized <= 1) niceStep = magnitude
+                            else if (normalized <= 2) niceStep = 2 * magnitude
+                            else if (normalized <= 2.5) niceStep = 2.5 * magnitude
+                            else if (normalized <= 5) niceStep = 5 * magnitude
+                            else niceStep = 10 * magnitude
 
-                            // Y-axis labels (5 labels)
+                            yMax = Math.ceil(yMax / niceStep) * niceStep
+                            yMin = Math.floor(yMin / niceStep) * niceStep
+                            if (yMin < 0 && dataMin >= 0) yMin = 0
+                            const yRange = yMax - yMin || niceStep
+
+                            // Generate Y-axis labels
                             const yLabels = []
-                            for (let i = 0; i < 5; i++) {
-                              yLabels.push(yMax - (i / 4) * (yMax - yMin))
-                            }
+                            for (let v = yMax; v >= yMin; v -= niceStep) yLabels.push(v)
 
                             const formatY = (v) => {
-                              const abs = Math.abs(v)
-                              if (abs >= 1000000) return (v < 0 ? '-' : '') + '$' + (abs / 1000000).toFixed(1) + 'M'
-                              if (abs >= 1000) return (v < 0 ? '-' : '') + '$' + (abs / 1000).toFixed(0) + 'k'
-                              return (v < 0 ? '-' : '') + '$' + Math.round(abs)
+                              if (Math.abs(v) >= 1000000) return `$${(v/1000000).toFixed(1)}M`
+                              if (Math.abs(v) >= 1000) return `$${(v/1000).toFixed(niceStep < 1000 ? 1 : 0)}k`
+                              return `$${v}`
                             }
 
                             // X-axis labels
                             const xLabels = []
                             if (sortedTrades.length > 0) {
-                              const dates = sortedTrades.map(t => new Date(t.date))
-                              const firstDate = dates[0]
-                              const lastDate = dates[dates.length - 1]
-                              const numLabels = Math.min(5, sortedTrades.length)
+                              const firstDate = new Date(sortedTrades[0].date)
+                              const lastDate = new Date(sortedTrades[sortedTrades.length - 1].date)
+                              const totalDays = Math.max(1, Math.ceil((lastDate - firstDate) / (1000 * 60 * 60 * 24)))
+                              const numLabels = Math.min(6, sortedTrades.length + 1)
                               for (let i = 0; i < numLabels; i++) {
                                 const pct = numLabels > 1 ? 5 + (i / (numLabels - 1)) * 90 : 50
-                                const dateIdx = Math.round((i / (numLabels - 1)) * (dates.length - 1))
-                                const d = dates[dateIdx] || firstDate
-                                xLabels.push({ label: `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}`, pct })
+                                const dateOffset = numLabels > 1 ? Math.round((i / (numLabels - 1)) * totalDays) : 0
+                                const labelDate = new Date(firstDate.getTime() + dateOffset * 24 * 60 * 60 * 1000)
+                                xLabels.push({ label: `${String(labelDate.getDate()).padStart(2, '0')}/${String(labelDate.getMonth() + 1).padStart(2, '0')}`, pct })
                               }
                             }
 
-                            // Chart points
-                            const pts = balancePoints.map((p, i) => ({
+                            // Chart points with full data for hover
+                            const chartPts = balancePoints.map((p, i) => ({
                               x: (i / (balancePoints.length - 1)) * svgW,
                               y: svgH - ((p.value - yMin) / yRange) * svgH,
-                              value: p.value
+                              balance: p.value,
+                              date: p.date,
+                              symbol: p.symbol,
+                              pnl: p.pnl
                             }))
 
                             // Starting balance line position
                             const startLineY = ((yMax - startBal) / yRange) * 100
                             const startSvgY = svgH - ((startBal - yMin) / yRange) * svgH
 
-                            // Split into green (above start) and red (below start) segments
+                            // Split into green/red segments
                             const greenSegs = [], redSegs = []
-                            for (let i = 0; i < pts.length - 1; i++) {
-                              const p1 = pts[i], p2 = pts[i + 1]
-                              const v1 = balancePoints[i].value, v2 = balancePoints[i + 1].value
-                              const above1 = v1 >= startBal, above2 = v2 >= startBal
+                            for (let i = 0; i < chartPts.length - 1; i++) {
+                              const p1 = chartPts[i], p2 = chartPts[i + 1]
+                              const above1 = p1.balance >= startBal, above2 = p2.balance >= startBal
                               if (above1 === above2) {
                                 (above1 ? greenSegs : redSegs).push({ x1: p1.x, y1: p1.y, x2: p2.x, y2: p2.y })
                               } else {
-                                const t = (startBal - v1) / (v2 - v1)
+                                const t = (startBal - p1.balance) / (p2.balance - p1.balance)
                                 const ix = p1.x + t * (p2.x - p1.x)
                                 if (above1) {
                                   greenSegs.push({ x1: p1.x, y1: p1.y, x2: ix, y2: startSvgY })
@@ -1890,36 +1906,87 @@ export default function DashboardPage() {
 
                             return (
                               <div style={{ display: 'flex', flexDirection: 'column' }}>
-                                <div style={{ display: 'flex', height: '140px' }}>
-                                  {/* Y-axis */}
-                                  <div style={{ width: '40px', flexShrink: 0, position: 'relative', borderRight: '1px solid #2a2a35' }}>
-                                    {yLabels.map((v, i) => (
-                                      <span key={i} style={{ position: 'absolute', right: '6px', top: `${(i / 4) * 100}%`, transform: 'translateY(-50%)', fontSize: '9px', color: '#666', whiteSpace: 'nowrap' }}>{formatY(v)}</span>
-                                    ))}
+                                <div style={{ display: 'flex', height: '160px' }}>
+                                  {/* Y-axis with labels and tick marks */}
+                                  <div style={{ width: '36px', flexShrink: 0, position: 'relative', borderRight: '1px solid #2a2a35', overflow: 'visible' }}>
+                                    {yLabels.map((v, i) => {
+                                      const topPct = yLabels.length > 1 ? (i / (yLabels.length - 1)) * 100 : 0
+                                      return (
+                                        <Fragment key={i}>
+                                          <span style={{ position: 'absolute', right: '6px', top: `${topPct}%`, transform: 'translateY(-50%)', fontSize: '8px', color: '#888', lineHeight: 1, whiteSpace: 'nowrap' }}>{formatY(v)}</span>
+                                          <div style={{ position: 'absolute', right: 0, top: `${topPct}%`, width: '4px', borderTop: '1px solid #2a2a35' }} />
+                                        </Fragment>
+                                      )
+                                    })}
+                                    {/* Starting balance on Y-axis */}
+                                    {startLineY >= 0 && startLineY <= 100 && (
+                                      <Fragment>
+                                        <span style={{ position: 'absolute', right: '6px', top: `${startLineY}%`, transform: 'translateY(-50%)', fontSize: '8px', color: '#666', lineHeight: 1, whiteSpace: 'nowrap', fontWeight: 600 }}>{formatY(startBal)}</span>
+                                        <div style={{ position: 'absolute', right: 0, top: `${startLineY}%`, width: '4px', borderTop: '1px solid #666' }} />
+                                      </Fragment>
+                                    )}
                                   </div>
-                                  {/* Chart */}
-                                  <div style={{ flex: 1, position: 'relative', borderBottom: '1px solid #2a2a35' }}>
+                                  {/* Chart area */}
+                                  <div style={{ flex: 1, position: 'relative', borderBottom: '1px solid #2a2a35', overflow: 'visible' }}>
+                                    {/* Horizontal grid lines */}
+                                    <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}>
+                                      {yLabels.map((_, i) => {
+                                        const topPct = yLabels.length > 1 ? (i / (yLabels.length - 1)) * 100 : 0
+                                        if (i === yLabels.length - 1) return null
+                                        return <div key={i} style={{ position: 'absolute', left: 0, right: 0, top: `${topPct}%`, borderTop: '1px solid rgba(51,51,51,0.5)' }} />
+                                      })}
+                                    </div>
+                                    {/* Starting balance dashed line */}
                                     {startLineY >= 0 && startLineY <= 100 && (
                                       <div style={{ position: 'absolute', left: 0, right: 0, top: `${startLineY}%`, borderTop: '1px dashed #555', zIndex: 1 }} />
                                     )}
-                                    <svg style={{ position: 'absolute', inset: 0, width: '100%', height: '100%' }} viewBox={`0 0 ${svgW} ${svgH}`} preserveAspectRatio="none">
+                                    {/* SVG Chart */}
+                                    <svg
+                                      style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', overflow: 'visible', zIndex: 2 }}
+                                      viewBox={`0 0 ${svgW} ${svgH}`}
+                                      preserveAspectRatio="none"
+                                      onMouseMove={e => {
+                                        const rect = e.currentTarget.getBoundingClientRect()
+                                        const mouseX = ((e.clientX - rect.left) / rect.width) * svgW
+                                        let closest = chartPts[0], minDist = Math.abs(mouseX - chartPts[0].x)
+                                        chartPts.forEach(p => {
+                                          const d = Math.abs(mouseX - p.x)
+                                          if (d < minDist) { minDist = d; closest = p }
+                                        })
+                                        setDashHover({ ...closest, xPct: (closest.x / svgW) * 100, yPct: (closest.y / svgH) * 100 })
+                                      }}
+                                      onMouseLeave={() => setDashHover(null)}
+                                    >
                                       <defs>
-                                        <linearGradient id="dashGr" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stopColor="#22c55e" stopOpacity="0.25" /><stop offset="100%" stopColor="#22c55e" stopOpacity="0" /></linearGradient>
-                                        <linearGradient id="dashRd" x1="0%" y1="100%" x2="0%" y2="0%"><stop offset="0%" stopColor="#ef4444" stopOpacity="0.25" /><stop offset="100%" stopColor="#ef4444" stopOpacity="0" /></linearGradient>
+                                        <linearGradient id="dashGr" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stopColor="#22c55e" stopOpacity="0.3" /><stop offset="100%" stopColor="#22c55e" stopOpacity="0" /></linearGradient>
+                                        <linearGradient id="dashRd" x1="0%" y1="100%" x2="0%" y2="0%"><stop offset="0%" stopColor="#ef4444" stopOpacity="0.3" /><stop offset="100%" stopColor="#ef4444" stopOpacity="0" /></linearGradient>
                                       </defs>
                                       <path d={mkArea(greenSegs)} fill="url(#dashGr)" />
                                       <path d={mkArea(redSegs)} fill="url(#dashRd)" />
-                                      <path d={mkPath(greenSegs)} fill="none" stroke="#22c55e" strokeWidth="2" vectorEffect="non-scaling-stroke" />
-                                      <path d={mkPath(redSegs)} fill="none" stroke="#ef4444" strokeWidth="2" vectorEffect="non-scaling-stroke" />
+                                      <path d={mkPath(greenSegs)} fill="none" stroke="#22c55e" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />
+                                      <path d={mkPath(redSegs)} fill="none" stroke="#ef4444" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />
                                     </svg>
+                                    {/* Hover dot */}
+                                    {dashHover && <div style={{ position: 'absolute', left: `${dashHover.xPct}%`, top: `${dashHover.yPct}%`, transform: 'translate(-50%, -50%)', width: '10px', height: '10px', borderRadius: '50%', background: dashHover.balance >= startBal ? '#22c55e' : '#ef4444', border: '2px solid #fff', pointerEvents: 'none', zIndex: 10 }} />}
+                                    {/* Hover tooltip */}
+                                    {dashHover && (
+                                      <div style={{ position: 'absolute', left: `${dashHover.xPct}%`, top: `${dashHover.yPct}%`, transform: `translate(${dashHover.xPct > 70 ? 'calc(-100% - 12px)' : '12px'}, ${dashHover.yPct < 25 ? '0%' : dashHover.yPct > 75 ? '-100%' : '-50%'})`, background: '#1a1a22', border: '1px solid #2a2a35', borderRadius: '6px', padding: '8px 12px', fontSize: '11px', whiteSpace: 'nowrap', zIndex: 10, pointerEvents: 'none' }}>
+                                        <div style={{ color: '#888', fontSize: '10px' }}>{dashHover.date ? new Date(dashHover.date).toLocaleDateString() : 'Start'}</div>
+                                        <div style={{ fontWeight: 700, fontSize: '14px', color: '#fff' }}>${dashHover.balance?.toLocaleString()}</div>
+                                        {dashHover.symbol && <div style={{ color: dashHover.pnl >= 0 ? '#22c55e' : '#ef4444', marginTop: '2px' }}>{dashHover.symbol}: {dashHover.pnl >= 0 ? '+' : ''}${dashHover.pnl?.toFixed(0)}</div>}
+                                      </div>
+                                    )}
                                   </div>
                                 </div>
-                                {/* X-axis */}
+                                {/* X-axis with labels and ticks */}
                                 <div style={{ display: 'flex' }}>
-                                  <div style={{ width: '40px', flexShrink: 0 }} />
-                                  <div style={{ flex: 1, height: '20px', position: 'relative' }}>
+                                  <div style={{ width: '36px', flexShrink: 0 }} />
+                                  <div style={{ flex: 1, height: '22px', position: 'relative' }}>
                                     {xLabels.map((l, i) => (
-                                      <span key={i} style={{ position: 'absolute', left: `${l.pct}%`, transform: 'translateX(-50%)', fontSize: '9px', color: '#666', marginTop: '4px' }}>{l.label}</span>
+                                      <div key={i} style={{ position: 'absolute', left: `${l.pct}%`, transform: 'translateX(-50%)', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                                        <div style={{ width: '1px', height: '4px', background: '#2a2a35' }} />
+                                        <span style={{ fontSize: '8px', color: '#888', marginTop: '2px', whiteSpace: 'nowrap' }}>{l.label}</span>
+                                      </div>
                                     ))}
                                   </div>
                                 </div>
@@ -1928,46 +1995,46 @@ export default function DashboardPage() {
                           })()}
                         </div>
 
-                        {/* Stats Grid */}
-                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '6px', alignContent: 'start', flex: '0 0 auto' }}>
+                        {/* Stats Grid - 5 columns spread */}
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '6px', alignContent: 'start', flex: '0 0 auto' }}>
                           {[
-                            { label: 'Total P&L', value: `${cumPnl >= 0 ? '+' : ''}$${Math.abs(Math.round(cumPnl)).toLocaleString()}`, color: cumPnl >= 0 ? '#22c55e' : '#ef4444' },
+                            { label: 'Total P&L', value: `${cumPnl >= 0 ? '+' : '-'}$${Math.abs(Math.round(cumPnl)).toLocaleString()}`, color: cumPnl >= 0 ? '#22c55e' : '#ef4444' },
                             { label: 'Balance', value: `$${Math.round(stats.currentBalance).toLocaleString()}`, color: stats.currentBalance >= stats.totalStartingBalance ? '#22c55e' : '#ef4444' },
-                            { label: 'Today', value: `${todaysPnl >= 0 ? '+' : ''}$${Math.abs(Math.round(todaysPnl)).toLocaleString()}`, color: todaysPnl >= 0 ? '#22c55e' : '#ef4444' },
+                            { label: 'Today', value: `${todaysPnl >= 0 ? '+' : '-'}$${Math.abs(Math.round(todaysPnl)).toLocaleString()}`, color: todaysPnl >= 0 ? '#22c55e' : '#ef4444' },
                             { label: 'Win Rate', value: `${stats.winrate}%`, color: stats.winrate >= 50 ? '#22c55e' : '#ef4444' },
-                            { label: 'Profit Factor', value: stats.profitFactor, color: stats.profitFactor === '-' ? '#666' : stats.profitFactor === '∞' ? '#22c55e' : parseFloat(stats.profitFactor) >= 1 ? '#22c55e' : '#ef4444' },
+                            { label: 'P. Factor', value: stats.profitFactor, color: stats.profitFactor === '-' ? '#666' : stats.profitFactor === '∞' ? '#22c55e' : parseFloat(stats.profitFactor) >= 1 ? '#22c55e' : '#ef4444' },
                             { label: 'Trades', value: stats.totalTrades, color: '#fff' },
                             { label: 'W / L', value: `${stats.wins} / ${stats.losses}`, color: '#fff' },
-                            { label: 'Best Day', value: `+$${Math.round(bestDay).toLocaleString()}`, color: '#22c55e' },
-                            { label: 'Worst Day', value: `${worstDay >= 0 ? '+' : '-'}$${Math.abs(Math.round(worstDay)).toLocaleString()}`, color: worstDay >= 0 ? '#22c55e' : '#ef4444' },
+                            { label: 'Best', value: `+$${Math.round(bestDay).toLocaleString()}`, color: '#22c55e' },
+                            { label: 'Worst', value: `${worstDay >= 0 ? '+' : '-'}$${Math.abs(Math.round(worstDay)).toLocaleString()}`, color: worstDay >= 0 ? '#22c55e' : '#ef4444' },
                             { label: 'Days', value: uniqueDays, color: '#3b82f6' },
                           ].map((s, i) => (
-                            <div key={i} style={{ padding: '6px 10px', background: '#0d0d12', borderRadius: '6px', border: '1px solid #1a1a22', display: 'flex', justifyContent: 'space-between', alignItems: 'center', minWidth: '100px' }}>
-                              <span style={{ fontSize: '10px', color: '#666', fontWeight: 500 }}>{s.label}</span>
-                              <span style={{ fontSize: '12px', fontWeight: 700, color: s.color }}>{s.value}</span>
+                            <div key={i} style={{ padding: '8px', background: '#0d0d12', borderRadius: '6px', border: '1px solid #1a1a22', textAlign: 'center', minWidth: '60px' }}>
+                              <div style={{ fontSize: '9px', color: '#666', fontWeight: 500, marginBottom: '4px', textTransform: 'uppercase' }}>{s.label}</div>
+                              <div style={{ fontSize: '13px', fontWeight: 700, color: s.color }}>{s.value}</div>
                             </div>
                           ))}
                         </div>
 
-                        {/* Recent Trades */}
-                        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: '160px' }}>
-                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
-                            <span style={{ fontSize: '11px', fontWeight: 700, color: '#666', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Recent Trades</span>
+                        {/* Recent Trades - Bordered with subtitles */}
+                        <div style={{ width: '140px', flexShrink: 0, display: 'flex', flexDirection: 'column', background: '#0d0d12', borderRadius: '8px', border: '1px solid #1a1a22', overflow: 'hidden' }}>
+                          <div style={{ padding: '8px 10px', borderBottom: '1px solid #1a1a22', background: '#0a0a0f' }}>
+                            <span style={{ fontSize: '10px', fontWeight: 700, color: '#666', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Recent Trades</span>
                           </div>
-                          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '4px', maxHeight: '154px', overflowY: 'auto' }}>
+                          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflowY: 'auto', maxHeight: '154px' }}>
                             {(() => {
-                              const recent = allTrades.slice().sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, 8)
-                              if (recent.length === 0) return <div style={{ padding: '20px', textAlign: 'center', color: '#444', fontSize: '11px' }}>No trades yet</div>
+                              const recent = allTrades.slice().sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, 6)
+                              if (recent.length === 0) return <div style={{ padding: '16px', textAlign: 'center', color: '#444', fontSize: '10px' }}>No trades</div>
                               return recent.map((t, i) => {
                                 const pnl = parseFloat(t.pnl) || 0
                                 const isWin = t.outcome === 'win'
                                 return (
-                                  <div key={i} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '6px 10px', background: '#0d0d12', borderRadius: '5px', border: '1px solid #1a1a22' }}>
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                      <span style={{ fontSize: '11px', fontWeight: 600, color: '#fff' }}>{t.symbol || '-'}</span>
-                                      <span style={{ fontSize: '8px', padding: '2px 5px', borderRadius: '3px', fontWeight: 700, background: isWin ? 'rgba(34,197,94,0.2)' : 'rgba(239,68,68,0.2)', color: isWin ? '#22c55e' : '#ef4444' }}>{isWin ? 'WIN' : 'LOSS'}</span>
+                                  <div key={i} style={{ padding: '6px 10px', borderBottom: i < recent.length - 1 ? '1px solid #1a1a22' : 'none', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                    <div>
+                                      <div style={{ fontSize: '10px', color: '#666', marginBottom: '1px' }}>{t.symbol || '-'}</div>
+                                      <div style={{ fontSize: '11px', fontWeight: 700, color: pnl >= 0 ? '#22c55e' : '#ef4444' }}>{pnl >= 0 ? '+' : ''}${Math.round(pnl)}</div>
                                     </div>
-                                    <span style={{ fontSize: '11px', fontWeight: 700, color: pnl >= 0 ? '#22c55e' : '#ef4444' }}>{pnl >= 0 ? '+' : ''}${Math.round(pnl).toLocaleString()}</span>
+                                    <span style={{ fontSize: '8px', padding: '2px 5px', borderRadius: '3px', fontWeight: 700, background: isWin ? 'rgba(34,197,94,0.15)' : 'rgba(239,68,68,0.15)', color: isWin ? '#22c55e' : '#ef4444' }}>{isWin ? 'WIN' : 'LOSS'}</span>
                                   </div>
                                 )
                               })
