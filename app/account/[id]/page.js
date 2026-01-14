@@ -2357,25 +2357,39 @@ export default function AccountPage() {
                               return `$${v}`
                             }
 
-                            // Generate y-axis labels
-                            const yLabels = []
-                            for (let v = yMax; v >= yMin; v -= yStep) yLabels.push(v)
-                            
+                            // Generate y-axis labels anchored to starting balance (start is always a label)
+                            const yLabels = [displayStartingBalance]
+                            // Add labels above start until we cover yMax
+                            for (let v = displayStartingBalance + yStep; v <= yMax + yStep * 0.1; v += yStep) {
+                              yLabels.push(v)
+                            }
+                            // Add labels below start until we cover yMin
+                            for (let v = displayStartingBalance - yStep; v >= yMin - yStep * 0.1; v -= yStep) {
+                              if (v >= 0 || minBal < 0 || showObjectiveLines) yLabels.push(v)
+                            }
+                            // Sort from highest to lowest
+                            yLabels.sort((a, b) => b - a)
+
+                            // Update yMax/yMin to match label bounds
+                            yMax = yLabels[0]
+                            yMin = yLabels[yLabels.length - 1]
+                            const yRangeFinal = yMax - yMin || yStep
+
                             const hasNegative = minBal < 0
                             const belowStart = equityCurveGroupBy === 'total' && minBal < displayStartingBalance
-                            const zeroY = hasNegative ? ((yMax - 0) / yRange) * 100 : null
-                            // Starting balance line - always show in total mode
-                            const startLineY = equityCurveGroupBy === 'total' && !hasNegative ? ((yMax - displayStartingBalance) / yRange) * 100 : null
+                            const zeroY = hasNegative ? ((yMax - 0) / yRangeFinal) * 100 : null
+                            // Starting balance line - will now always be at a label position
+                            const startLineY = equityCurveGroupBy === 'total' && !hasNegative ? (yLabels.indexOf(displayStartingBalance) / (yLabels.length - 1)) * 100 : null
                             // Drawdown floor line - calculate directly from account settings (legacy) - clamp to valid range
                             const maxDDParsed = parseFloat(account?.max_drawdown)
                             const maxDDClamped = !isNaN(maxDDParsed) ? Math.min(99, Math.max(0, maxDDParsed)) : 0
                             const ddFloor = maxDDClamped > 0 && !account?.max_dd_enabled ? displayStartingBalance * (1 - maxDDClamped / 100) : null
-                            const ddFloorY = equityCurveGroupBy === 'total' && ddFloor ? ((yMax - ddFloor) / yRange) * 100 : null
+                            const ddFloorY = equityCurveGroupBy === 'total' && ddFloor ? ((yMax - ddFloor) / yRangeFinal) * 100 : null
                             // Profit target line - calculate directly from account settings - clamp to valid range
                             const profitTargetParsed = parseFloat(account?.profit_target)
                             const ptClamped = !isNaN(profitTargetParsed) ? Math.min(500, Math.max(0, profitTargetParsed)) : 0
                             const profitTarget = ptClamped > 0 ? displayStartingBalance * (1 + ptClamped / 100) : null
-                            const profitTargetY = equityCurveGroupBy === 'total' && profitTarget ? ((yMax - profitTarget) / yRange) * 100 : null
+                            const profitTargetY = equityCurveGroupBy === 'total' && profitTarget ? ((yMax - profitTarget) / yRangeFinal) * 100 : null
 
                             // New Daily Drawdown calculation (orange line - resets each day at configured time) - clamp to valid range
                             const dailyDdEnabled = account?.daily_dd_enabled
@@ -2499,17 +2513,17 @@ export default function AccountPage() {
                             }
 
                             // Static max DD floor Y position
-                            const maxDdStaticFloorY = equityCurveGroupBy === 'total' && maxDdStaticFloor ? ((yMax - maxDdStaticFloor) / yRange) * 100 : null
+                            const maxDdStaticFloorY = equityCurveGroupBy === 'total' && maxDdStaticFloor ? ((yMax - maxDdStaticFloor) / yRangeFinal) * 100 : null
 
                             const svgW = 100, svgH = 100
 
                             // Calculate starting balance Y position in SVG coordinates
-                            const startY = svgH - ((displayStartingBalance - yMin) / yRange) * svgH
+                            const startY = svgH - ((displayStartingBalance - yMin) / yRangeFinal) * svgH
 
                             const lineData = visibleLines.map(line => {
                               const chartPoints = line.points.map((p, i) => ({
                                 x: line.points.length > 1 ? (i / (line.points.length - 1)) * svgW : svgW / 2,
-                                y: svgH - ((p.balance - yMin) / yRange) * svgH,
+                                y: svgH - ((p.balance - yMin) / yRangeFinal) * svgH,
                                 ...p,
                                 lineName: line.name,
                                 lineColor: line.color
@@ -2565,7 +2579,7 @@ export default function AccountPage() {
                             
                             const mainLine = lineData[0]
                             // Area should fill to zero line if negative values exist, otherwise to bottom
-                            const areaBottom = hasNegative ? svgH - ((0 - yMin) / yRange) * svgH : svgH
+                            const areaBottom = hasNegative ? svgH - ((0 - yMin) / yRangeFinal) * svgH : svgH
                             const areaD = equityCurveGroupBy === 'total' && mainLine ? mainLine.pathD + ` L ${mainLine.chartPoints[mainLine.chartPoints.length - 1].x} ${areaBottom} L ${mainLine.chartPoints[0].x} ${areaBottom} Z` : null
                             
                             // Generate X-axis labels based on date range
@@ -2616,7 +2630,7 @@ export default function AccountPage() {
                               const ddChartPoints = dailyDdFloorPoints.map((p, i) => {
                                 const totalLen = dailyDdFloorPoints.length
                                 const x = totalLen > 1 ? (p.idx / (totalLen - 1)) * svgW : svgW / 2
-                                const y = svgH - ((p.floor - yMin) / yRange) * svgH
+                                const y = svgH - ((p.floor - yMin) / yRangeFinal) * svgH
                                 // Track if floor is at or above profit target (should skip drawing)
                                 const aboveProfitTarget = profitTarget && p.floor >= profitTarget
                                 return { x, y, isNewDay: p.isNewDay, floor: p.floor, aboveProfitTarget }
@@ -2655,7 +2669,7 @@ export default function AccountPage() {
                               const maxDdChartPoints = maxDdFloorPoints.map(p => {
                                 const totalLen = maxDdFloorPoints.length
                                 const x = totalLen > 1 ? (p.idx / (totalLen - 1)) * svgW : svgW / 2
-                                const y = svgH - ((p.floor - yMin) / yRange) * svgH
+                                const y = svgH - ((p.floor - yMin) / yRangeFinal) * svgH
                                 return { x, y }
                               })
                               trailingMaxDdPath = maxDdChartPoints.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`).join(' ')
@@ -2669,20 +2683,14 @@ export default function AccountPage() {
                                   <div style={{ width: '28px', flexShrink: 0, position: 'relative', borderRight: '1px solid #2a2a35', borderBottom: '1px solid transparent', overflow: 'visible' }}>
                                     {yLabels.map((v, i) => {
                                       const topPct = yLabels.length > 1 ? (i / (yLabels.length - 1)) * 100 : 0
+                                      const isStart = v === displayStartingBalance
                                       return (
                                         <Fragment key={i}>
-                                          <span style={{ position: 'absolute', right: '5px', top: `${topPct}%`, transform: 'translateY(-50%)', fontSize: '8px', color: '#999', lineHeight: 1, textAlign: 'right' }}>{formatYLabel(v)}</span>
-                                          <div style={{ position: 'absolute', right: 0, top: `${topPct}%`, width: '4px', borderTop: '1px solid #2a2a35' }} />
+                                          <span style={{ position: 'absolute', right: '5px', top: `${topPct}%`, transform: 'translateY(-50%)', fontSize: '8px', color: isStart ? '#888' : '#999', lineHeight: 1, textAlign: 'right', fontWeight: isStart ? 600 : 400 }}>{isStart ? 'Start' : formatYLabel(v)}</span>
+                                          <div style={{ position: 'absolute', right: 0, top: `${topPct}%`, width: '4px', borderTop: `1px solid ${isStart ? '#888' : '#2a2a35'}` }} />
                                         </Fragment>
                                       )
                                     })}
-                                    {/* Start value on Y-axis - grey */}
-                                    {startLineY !== null && (
-                                      <Fragment>
-                                        <span style={{ position: 'absolute', right: '5px', top: `${startLineY}%`, transform: 'translateY(-50%)', fontSize: '8px', color: '#888', lineHeight: 1, textAlign: 'right', fontWeight: 600 }}>{formatYLabel(displayStartingBalance)}</span>
-                                        <div style={{ position: 'absolute', right: 0, top: `${startLineY}%`, width: '4px', borderTop: '1px solid #888' }} />
-                                      </Fragment>
-                                    )}
                                     {/* Red DD floor value on Y-axis */}
                                     {showObjectiveLines && ddFloorY !== null && (
                                       <Fragment>
@@ -2709,20 +2717,17 @@ export default function AccountPage() {
                                   <div style={{ flex: 1, position: 'relative', overflow: 'visible', borderBottom: '1px solid #2a2a35' }}>
                                     {/* Horizontal grid lines - bottom line is x-axis border */}
                                     <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}>
-                                      {yLabels.map((_, i) => {
+                                      {yLabels.map((v, i) => {
                                         const topPct = yLabels.length > 1 ? (i / (yLabels.length - 1)) * 100 : 0
                                         const isLast = i === yLabels.length - 1
                                         if (isLast) return null
-                                        return <div key={i} style={{ position: 'absolute', left: 0, right: 0, top: `${topPct}%`, borderTop: '1px solid rgba(51,51,51,0.5)' }} />
+                                        const isStart = v === displayStartingBalance
+                                        return <div key={i} style={{ position: 'absolute', left: 0, right: 0, top: `${topPct}%`, borderTop: isStart ? '1px dashed #666' : '1px solid rgba(51,51,51,0.5)', zIndex: isStart ? 1 : 0 }} />
                                       })}
                                     </div>
                                     {/* Zero line if negative */}
                                     {zeroY !== null && (
                                       <div style={{ position: 'absolute', left: 0, right: 0, top: `${zeroY}%`, borderTop: '1px solid rgba(51,51,51,0.5)', zIndex: 1 }} />
-                                    )}
-                                    {/* Starting balance dotted line */}
-                                    {startLineY !== null && (
-                                      <div style={{ position: 'absolute', left: 0, right: 0, top: `${startLineY}%`, borderTop: '1px dashed #666', zIndex: 1 }} />
                                     )}
                                     {/* Legend - shows when objective lines are visible */}
                                     {showObjectiveLines && (
@@ -4964,8 +4969,6 @@ export default function AccountPage() {
                 }
                 if (yMin < 0 && actualMinEnl >= 0 && !showObjectiveLines) yMin = 0
 
-                const yRange = yMax - yMin || yStep
-
                 // Format y-axis label with appropriate precision based on step size
                 const formatYLabelEnl = (v) => {
                   if (Math.abs(v) >= 1000000) return `$${(v/1000000).toFixed(1)}M`
@@ -4975,18 +4978,34 @@ export default function AccountPage() {
                   }
                   return `$${v}`
                 }
+
+                // Generate y-axis labels anchored to starting balance (start is always a label)
+                const yLabels = [startingBalance]
+                // Add labels above start until we cover yMax
+                for (let v = startingBalance + yStep; v <= yMax + yStep * 0.1; v += yStep) {
+                  yLabels.push(v)
+                }
+                // Add labels below start until we cover yMin
+                for (let v = startingBalance - yStep; v >= yMin - yStep * 0.1; v -= yStep) {
+                  if (v >= 0 || minBal < 0 || showObjectiveLines) yLabels.push(v)
+                }
+                // Sort from highest to lowest
+                yLabels.sort((a, b) => b - a)
+
+                // Update yMax/yMin to match label bounds
+                yMax = yLabels[0]
+                yMin = yLabels[yLabels.length - 1]
+                const yRangeFinal = yMax - yMin || yStep
+
                 const hasNegative = minBal < 0
                 const belowStartEnl = equityCurveGroupBy === 'total' && minBal < startingBalance
-                const zeroY = hasNegative ? ((yMax - 0) / yRange) * 100 : null
+                const zeroY = hasNegative ? ((yMax - 0) / yRangeFinal) * 100 : null
                 // Drawdown floor for enlarged chart - use clamped values
                 const ddFloorEnl = ddClampedEnl > 0 ? startingBalance * (1 - ddClampedEnl / 100) : null
-                const ddFloorYEnl = equityCurveGroupBy === 'total' && ddFloorEnl ? ((yMax - ddFloorEnl) / yRange) * 100 : null
+                const ddFloorYEnl = equityCurveGroupBy === 'total' && ddFloorEnl ? ((yMax - ddFloorEnl) / yRangeFinal) * 100 : null
                 // Profit target for enlarged chart - use clamped values
                 const profitTargetEnl = ptClampedEnl > 0 ? startingBalance * (1 + ptClampedEnl / 100) : null
-                const profitTargetYEnl = equityCurveGroupBy === 'total' && profitTargetEnl ? ((yMax - profitTargetEnl) / yRange) * 100 : null
-
-                const yLabels = []
-                for (let v = yMax; v >= yMin; v -= yStep) yLabels.push(v)
+                const profitTargetYEnl = equityCurveGroupBy === 'total' && profitTargetEnl ? ((yMax - profitTargetEnl) / yRangeFinal) * 100 : null
 
                 // X-axis labels - adaptive based on date range
                 const xLabels = []

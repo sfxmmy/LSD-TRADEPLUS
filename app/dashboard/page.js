@@ -2374,7 +2374,7 @@ export default function DashboardPage() {
 
                         {/* Buttons - Compact */}
                         <div onClick={e => e.stopPropagation()} style={{ padding: '12px 16px 16px', display: 'flex', gap: '8px' }}>
-                          <a href={`/account/${account.id}`} style={{ flex: 1, padding: '10px', background: '#22c55e', borderRadius: '8px', color: '#fff', fontWeight: 600, fontSize: '11px', textAlign: 'center', textDecoration: 'none' }}>OPEN</a>
+                          <a href={`/account/${account.id}`} style={{ flex: 1, padding: '10px', background: '#22c55e', borderRadius: '8px', color: '#fff', fontWeight: 600, fontSize: '11px', textAlign: 'center', textDecoration: 'none' }}>Enter Journal</a>
                           <a href={`/account/${account.id}?tab=statistics`} style={{ padding: '10px 14px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '8px', color: '#888', fontWeight: 500, fontSize: '11px', textAlign: 'center', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '6px' }}>
                             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 20V10M12 20V4M6 20v-6"/></svg>
                             Stats
