@@ -2686,7 +2686,7 @@ export default function AccountPage() {
                                       const isStart = v === displayStartingBalance
                                       return (
                                         <Fragment key={i}>
-                                          <span style={{ position: 'absolute', right: '5px', top: `${topPct}%`, transform: 'translateY(-50%)', fontSize: '8px', color: isStart ? '#888' : '#999', lineHeight: 1, textAlign: 'right', fontWeight: isStart ? 600 : 400 }}>{isStart ? 'Start' : formatYLabel(v)}</span>
+                                          <span style={{ position: 'absolute', right: '5px', top: `${topPct}%`, transform: 'translateY(-50%)', fontSize: '8px', color: '#999', lineHeight: isStart ? 1.2 : 1, textAlign: 'right', fontWeight: 400 }}>{isStart ? <><span style={{ display: 'block' }}>Start</span><span style={{ display: 'block' }}>{formatYLabel(v)}</span></> : formatYLabel(v)}</span>
                                           <div style={{ position: 'absolute', right: 0, top: `${topPct}%`, width: '4px', borderTop: `1px solid ${isStart ? '#888' : '#2a2a35'}` }} />
                                         </Fragment>
                                       )
@@ -5105,7 +5105,7 @@ export default function AccountPage() {
                           const isStart = v === startingBalance
                           return (
                             <Fragment key={i}>
-                              <span style={{ position: 'absolute', right: '5px', top: `${topPct}%`, transform: 'translateY(-50%)', fontSize: '10px', color: isStart ? '#888' : '#999', textAlign: 'right', fontWeight: isStart ? 600 : 400 }}>{isStart ? 'Start' : formatYLabelEnl(v)}</span>
+                              <span style={{ position: 'absolute', right: '5px', top: `${topPct}%`, transform: 'translateY(-50%)', fontSize: '10px', color: '#999', lineHeight: isStart ? 1.2 : 1, textAlign: 'right', fontWeight: 400 }}>{isStart ? <><span style={{ display: 'block' }}>Start</span><span style={{ display: 'block' }}>{formatYLabelEnl(v)}</span></> : formatYLabelEnl(v)}</span>
                               <div style={{ position: 'absolute', right: 0, top: `${topPct}%`, width: '4px', borderTop: `1px solid ${isStart ? '#888' : '#2a2a35'}` }} />
                             </Fragment>
                           )
