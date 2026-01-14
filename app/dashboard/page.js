@@ -2015,9 +2015,18 @@ export default function DashboardPage() {
                           <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'flex-end' }}>
                             {/* Buttons - stacked vertically at bottom */}
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                              <a href="/journal" style={{ padding: '10px', background: 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)', borderRadius: '6px', color: '#fff', fontWeight: 700, fontSize: '11px', textAlign: 'center', textDecoration: 'none' }}>JOURNAL</a>
-                              <a href="/statistics" style={{ padding: '10px', background: 'transparent', border: '1px solid rgba(34,197,94,0.5)', borderRadius: '6px', color: '#22c55e', fontWeight: 600, fontSize: '11px', textAlign: 'center', textDecoration: 'none' }}>STATISTICS</a>
-                              <a href="/notes" style={{ padding: '10px', background: 'transparent', border: '1px solid rgba(34,197,94,0.5)', borderRadius: '6px', color: '#22c55e', fontWeight: 600, fontSize: '11px', textAlign: 'center', textDecoration: 'none' }}>NOTES</a>
+                              <a href="/journal" style={{ padding: '10px', background: '#22c55e', borderRadius: '8px', color: '#fff', fontWeight: 600, fontSize: '11px', textAlign: 'center', textDecoration: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+                                Journal
+                              </a>
+                              <a href="/statistics" style={{ padding: '10px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '8px', color: '#888', fontWeight: 500, fontSize: '11px', textAlign: 'center', textDecoration: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 20V10M12 20V4M6 20v-6"/></svg>
+                                Stats
+                              </a>
+                              <a href="/notes" style={{ padding: '10px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '8px', color: '#888', fontWeight: 500, fontSize: '11px', textAlign: 'center', textDecoration: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                                Notes
+                              </a>
                             </div>
                           </div>
                         </div>
@@ -2326,18 +2335,20 @@ export default function DashboardPage() {
                               }
                             }
 
-                            // Simplified 4 key stats
+                            // 6 key stats
                             const stats = [
                               { label: 'PnL', value: `${totalPnl >= 0 ? '+' : ''}$${Math.round(totalPnl).toLocaleString()}`, color: totalPnl >= 0 ? '#22c55e' : '#ef4444' },
                               { label: 'Trades', value: accTrades.length, color: '#fff' },
                               { label: 'Winrate', value: `${winrate}%`, color: winrate >= 50 ? '#22c55e' : '#ef4444' },
                               { label: 'W/L', value: `${wins}/${losses}`, color: '#fff' },
+                              { label: 'Profit Factor', value: profitFactor, color: profitFactor === '-' ? '#666' : profitFactor === '∞' ? '#22c55e' : parseFloat(profitFactor) >= 1 ? '#22c55e' : '#ef4444' },
+                              { label: 'Consistency', value: `${consistency}%`, color: consistency >= 50 ? '#3b82f6' : '#666' },
                             ]
 
                             return (
                               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0 24px' }}>
                                 {stats.map((stat, i) => (
-                                  <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '6px 0', borderBottom: i < 2 ? '1px solid rgba(255,255,255,0.05)' : 'none' }}>
+                                  <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '6px 0', borderBottom: i < 4 ? '1px solid rgba(255,255,255,0.05)' : 'none' }}>
                                     <span style={{ fontSize: '12px', color: '#555' }}>{stat.label}</span>
                                     <span style={{ fontSize: '13px', fontWeight: 600, color: stat.color }}>{stat.value}</span>
                                   </div>
