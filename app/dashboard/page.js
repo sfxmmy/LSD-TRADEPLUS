@@ -1980,8 +1980,8 @@ export default function DashboardPage() {
                           })()}
                         </div>
 
-                        {/* Stats - Vertical column 200px (like old journal widgets) */}
-                        <div style={{ width: '200px', flexShrink: 0, display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                        {/* Stats - 2 columns grid */}
+                        <div style={{ width: '280px', flexShrink: 0, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2px 16px', alignContent: 'start' }}>
                           {[
                             { label: 'Total PnL', value: `${cumPnl >= 0 ? '+' : ''}$${Math.round(cumPnl).toLocaleString()}`, color: cumPnl >= 0 ? '#22c55e' : '#ef4444' },
                             { label: 'Total Trades', value: stats.totalTrades, color: '#fff' },
