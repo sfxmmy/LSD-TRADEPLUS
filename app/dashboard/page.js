@@ -1804,26 +1804,26 @@ export default function DashboardPage() {
                     else if (t.outcome === 'loss') { currentLoss++; currentWin = 0; if (currentLoss > lossStreak) lossStreak = currentLoss }
                   })
 
+                  const totalBalance = stats.totalStartingBalance + cumPnl
+                  const isProfitable = cumPnl >= 0
+
                   return (
-                    <div style={{ background: 'linear-gradient(135deg, #0f0f14 0%, #0a0a0f 100%)', border: '1px solid #1a1a22', borderRadius: '16px', padding: '12px', boxShadow: '0 4px 24px rgba(0,0,0,0.3)' }}>
-                      {/* Title + PnL + % Change */}
-                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
-                        <span style={{ fontSize: '24px', fontWeight: 700, color: '#fff' }}>Overall Stats</span>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                          <div style={{ fontSize: '18px', fontWeight: 800, color: cumPnl >= 0 ? '#22c55e' : '#ef4444' }}>{cumPnl >= 0 ? '+' : ''}${Math.round(cumPnl).toLocaleString()}</div>
-                          <div style={{ padding: '4px 8px', background: cumPnl >= 0 ? 'rgba(34,197,94,0.15)' : 'rgba(239,68,68,0.15)', borderRadius: '6px', fontSize: '12px', fontWeight: 700, color: cumPnl >= 0 ? '#22c55e' : '#ef4444' }}>
-                            {(() => {
-                              const pctChange = stats.totalStartingBalance > 0 ? ((cumPnl / stats.totalStartingBalance) * 100).toFixed(1) : '0.0'
-                              return `${parseFloat(pctChange) >= 0 ? '+' : ''}${pctChange}%`
-                            })()}
+                    <div style={{ background: 'linear-gradient(135deg, #0f0f14 0%, #0a0a0f 100%)', border: '1px solid #1a1a22', borderRadius: '16px', overflow: 'hidden', display: 'flex', flexDirection: 'column', boxShadow: '0 4px 24px rgba(0,0,0,0.3)' }}>
+                      {/* Header - Title + Balance in border (like journal widgets) */}
+                      <div style={{ padding: '12px', borderBottom: '1px solid #1a1a22' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                          <span style={{ fontSize: '20px', fontWeight: 700, color: '#fff' }}>Overall Stats</span>
+                          <div style={{ padding: '6px 12px', border: `1px solid ${isProfitable ? 'rgba(34,197,94,0.4)' : 'rgba(239,68,68,0.4)'}`, borderRadius: '8px', background: isProfitable ? 'rgba(34,197,94,0.1)' : 'rgba(239,68,68,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                            <span style={{ fontSize: '11px', color: '#888', marginRight: '6px' }}>Balance:</span>
+                            <span style={{ fontSize: '14px', fontWeight: 700, color: isProfitable ? '#22c55e' : '#ef4444' }}>${Math.round(totalBalance).toLocaleString()}</span>
                           </div>
                         </div>
                       </div>
 
-                      {/* One Row: Graph | Stats | Recent Trades */}
-                      <div style={{ display: 'flex', gap: '12px', alignItems: 'stretch' }}>
-                        {/* Graph - Square/Rectangle on left */}
-                        <div style={{ width: '320px', flexShrink: 0 }}>
+                      {/* Chart + Stats Row (like old journal widgets) */}
+                      <div style={{ display: 'flex', gap: '12px', padding: '12px' }}>
+                        {/* Chart - flex: 1 */}
+                        <div style={{ flex: 1 }}>
                           {(() => {
                             const startBal = stats.totalStartingBalance || 0
                             let runningBal = startBal
@@ -1980,8 +1980,8 @@ export default function DashboardPage() {
                           })()}
                         </div>
 
-                        {/* Stats - 2 columns in middle */}
-                        <div style={{ flex: 1, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2px 20px', alignContent: 'start' }}>
+                        {/* Stats - Vertical column 200px (like old journal widgets) */}
+                        <div style={{ width: '200px', flexShrink: 0, display: 'flex', flexDirection: 'column', gap: '2px' }}>
                           {[
                             { label: 'Total PnL', value: `${cumPnl >= 0 ? '+' : ''}$${Math.round(cumPnl).toLocaleString()}`, color: cumPnl >= 0 ? '#22c55e' : '#ef4444' },
                             { label: 'Total Trades', value: stats.totalTrades, color: '#fff' },
@@ -1991,12 +1991,10 @@ export default function DashboardPage() {
                             { label: 'Expectancy', value: `${expectancy >= 0 ? '+' : ''}$${expectancy}`, color: expectancy >= 0 ? '#22c55e' : '#ef4444' },
                             { label: 'Avg Win', value: `+$${avgWin}`, color: '#22c55e' },
                             { label: 'Avg Loss', value: `${avgLoss >= 0 ? '+' : ''}$${avgLoss}`, color: avgLoss >= 0 ? '#22c55e' : '#ef4444' },
-                            { label: 'Long WR', value: `${longWR}%`, color: longWR >= 50 ? '#22c55e' : '#ef4444' },
-                            { label: 'Short WR', value: `${shortWR}%`, color: shortWR >= 50 ? '#22c55e' : '#ef4444' },
-                            { label: 'Day WR', value: `${dayWR}%`, color: dayWR >= 50 ? '#22c55e' : '#ef4444' },
-                            { label: 'Consistency', value: `${consistency}%`, color: consistency >= 50 ? '#22c55e' : '#ef4444' },
                             { label: 'Win Streak', value: winStreak, color: '#22c55e' },
                             { label: 'Loss Streak', value: lossStreak, color: '#ef4444' },
+                            { label: 'Day WR', value: `${dayWR}%`, color: dayWR >= 50 ? '#22c55e' : '#ef4444' },
+                            { label: 'Consistency', value: `${consistency}%`, color: consistency >= 50 ? '#22c55e' : '#ef4444' },
                           ].map((s, i) => (
                             <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '5px 0', borderBottom: '1px solid #1a1a22' }}>
                               <span style={{ fontSize: '11px', color: '#888' }}>{s.label}</span>
@@ -2004,32 +2002,54 @@ export default function DashboardPage() {
                             </div>
                           ))}
                         </div>
+                      </div>
 
-                        {/* Recent Trades - Scrollable column on right */}
-                        <div style={{ width: '140px', flexShrink: 0, display: 'flex', flexDirection: 'column', background: '#0d0d12', borderRadius: '8px', border: '1px solid #1a1a22', overflow: 'hidden' }}>
-                          <div style={{ padding: '8px 10px', borderBottom: '1px solid #1a1a22', background: '#0a0a0f' }}>
-                            <span style={{ fontSize: '10px', fontWeight: 700, color: '#666', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Recent Trades</span>
+                      {/* Recent Trades - Full width table below (like old journal widgets) */}
+                      <div style={{ padding: '0 12px' }}>
+                        <div style={{ background: '#0d0d12', borderRadius: '8px', border: '1px solid #1a1a22', overflow: 'hidden' }}>
+                          <div style={{ padding: '10px 12px', borderBottom: '1px solid #1a1a22', background: '#0a0a0f' }}>
+                            <span style={{ fontSize: '11px', fontWeight: 700, color: '#666', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Recent Trades</span>
                           </div>
-                          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflowY: 'auto', maxHeight: '192px' }}>
-                            {(() => {
-                              const recent = allTrades.slice().sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, 10)
-                              if (recent.length === 0) return <div style={{ padding: '16px', textAlign: 'center', color: '#444', fontSize: '10px' }}>No trades</div>
-                              return recent.map((t, i) => {
-                                const pnl = parseFloat(t.pnl) || 0
-                                const isWin = t.outcome === 'win'
-                                return (
-                                  <div key={i} style={{ padding: '6px 10px', borderBottom: i < recent.length - 1 ? '1px solid #1a1a22' : 'none', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                    <div>
-                                      <div style={{ fontSize: '10px', color: '#666', marginBottom: '1px' }}>{t.symbol || '-'}</div>
-                                      <div style={{ fontSize: '11px', fontWeight: 700, color: pnl >= 0 ? '#22c55e' : '#ef4444' }}>{pnl >= 0 ? '+' : ''}${Math.round(pnl)}</div>
-                                    </div>
-                                    <span style={{ fontSize: '8px', padding: '2px 5px', borderRadius: '3px', fontWeight: 700, background: isWin ? 'rgba(34,197,94,0.15)' : 'rgba(239,68,68,0.15)', color: isWin ? '#22c55e' : '#ef4444' }}>{isWin ? 'WIN' : 'LOSS'}</span>
-                                  </div>
-                                )
-                              })
-                            })()}
+                          <div style={{ maxHeight: '180px', overflowY: 'auto' }}>
+                            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                              <thead>
+                                <tr style={{ background: '#0a0a0f' }}>
+                                  <th style={{ padding: '8px 12px', textAlign: 'left', fontSize: '10px', color: '#666', fontWeight: 600, textTransform: 'uppercase', borderBottom: '1px solid #1a1a22' }}>Symbol</th>
+                                  <th style={{ padding: '8px 12px', textAlign: 'left', fontSize: '10px', color: '#666', fontWeight: 600, textTransform: 'uppercase', borderBottom: '1px solid #1a1a22' }}>Date</th>
+                                  <th style={{ padding: '8px 12px', textAlign: 'left', fontSize: '10px', color: '#666', fontWeight: 600, textTransform: 'uppercase', borderBottom: '1px solid #1a1a22' }}>Direction</th>
+                                  <th style={{ padding: '8px 12px', textAlign: 'right', fontSize: '10px', color: '#666', fontWeight: 600, textTransform: 'uppercase', borderBottom: '1px solid #1a1a22' }}>PnL</th>
+                                  <th style={{ padding: '8px 12px', textAlign: 'center', fontSize: '10px', color: '#666', fontWeight: 600, textTransform: 'uppercase', borderBottom: '1px solid #1a1a22' }}>Result</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {(() => {
+                                  const recent = allTrades.slice().sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, 8)
+                                  if (recent.length === 0) return <tr><td colSpan="5" style={{ padding: '20px', textAlign: 'center', color: '#444', fontSize: '12px' }}>No trades yet</td></tr>
+                                  return recent.map((t, i) => {
+                                    const pnl = parseFloat(t.pnl) || 0
+                                    const isWin = t.outcome === 'win'
+                                    return (
+                                      <tr key={i} style={{ borderBottom: i < recent.length - 1 ? '1px solid #1a1a22' : 'none' }}>
+                                        <td style={{ padding: '8px 12px', fontSize: '12px', color: '#fff', fontWeight: 600 }}>{t.symbol || '-'}</td>
+                                        <td style={{ padding: '8px 12px', fontSize: '11px', color: '#888' }}>{t.date ? new Date(t.date).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' }) : '-'}</td>
+                                        <td style={{ padding: '8px 12px', fontSize: '11px', color: t.direction === 'long' || t.direction === 'Long' ? '#22c55e' : '#ef4444', textTransform: 'uppercase' }}>{t.direction || '-'}</td>
+                                        <td style={{ padding: '8px 12px', fontSize: '12px', fontWeight: 700, color: pnl >= 0 ? '#22c55e' : '#ef4444', textAlign: 'right' }}>{pnl >= 0 ? '+' : ''}${Math.round(pnl).toLocaleString()}</td>
+                                        <td style={{ padding: '8px 12px', textAlign: 'center' }}>
+                                          <span style={{ fontSize: '9px', padding: '3px 8px', borderRadius: '4px', fontWeight: 700, background: isWin ? 'rgba(34,197,94,0.15)' : 'rgba(239,68,68,0.15)', color: isWin ? '#22c55e' : '#ef4444' }}>{isWin ? 'WIN' : 'LOSS'}</span>
+                                        </td>
+                                      </tr>
+                                    )
+                                  })
+                                })()}
+                              </tbody>
+                            </table>
                           </div>
                         </div>
+                      </div>
+
+                      {/* Button at bottom (like old journal widgets) */}
+                      <div style={{ padding: '12px', borderTop: '1px solid #1a1a22', background: 'rgba(0,0,0,0.2)' }}>
+                        <a href="/statistics" style={{ display: 'block', padding: '12px', background: 'transparent', border: '1px solid rgba(34,197,94,0.5)', borderRadius: '10px', color: '#22c55e', fontWeight: 600, fontSize: '12px', textAlign: 'center', textDecoration: 'none' }}>VIEW FULL STATISTICS</a>
                       </div>
                     </div>
                   )
