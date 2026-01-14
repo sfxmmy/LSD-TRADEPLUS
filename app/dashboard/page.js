@@ -2005,7 +2005,7 @@ export default function DashboardPage() {
                       </div>
 
                       {/* Recent Trades + Buttons Row */}
-                      <div style={{ display: 'flex', gap: '12px', padding: '0 12px 12px', marginTop: '12px' }}>
+                      <div style={{ display: 'flex', gap: '12px', padding: '0 12px 12px' }}>
                         {/* Recent Trades - flex:1 to align with graph */}
                         <div style={{ flex: 1 }}>
                           <div style={{ background: '#0d0d12', borderRadius: '8px', border: '1px solid #1a1a22', overflow: 'hidden' }}>
@@ -2013,23 +2013,19 @@ export default function DashboardPage() {
                               <table style={{ width: '100%', borderCollapse: 'collapse', tableLayout: 'fixed' }}>
                                 <thead>
                                   <tr style={{ background: '#0a0a0f' }}>
-                                    <th style={{ width: '10%', padding: '6px 6px', textAlign: 'left', fontSize: '10px', color: '#555', fontWeight: 600, textTransform: 'uppercase', borderBottom: '1px solid #1a1a22' }}>Symbol</th>
-                                    <th style={{ width: '8%', padding: '6px 4px', textAlign: 'center', fontSize: '10px', color: '#555', fontWeight: 600, textTransform: 'uppercase', borderBottom: '1px solid #1a1a22' }}>Result</th>
-                                    <th style={{ width: '10%', padding: '6px 4px', textAlign: 'right', fontSize: '10px', color: '#555', fontWeight: 600, textTransform: 'uppercase', borderBottom: '1px solid #1a1a22' }}>PnL</th>
-                                    <th style={{ width: '6%', padding: '6px 4px', textAlign: 'center', fontSize: '10px', color: '#555', fontWeight: 600, textTransform: 'uppercase', borderBottom: '1px solid #1a1a22' }}>RR</th>
-                                    <th style={{ width: '6%', padding: '6px 4px', textAlign: 'center', fontSize: '10px', color: '#555', fontWeight: 600, textTransform: 'uppercase', borderBottom: '1px solid #1a1a22' }}>%</th>
-                                    <th style={{ width: '8%', padding: '6px 4px', textAlign: 'center', fontSize: '10px', color: '#555', fontWeight: 600, textTransform: 'uppercase', borderBottom: '1px solid #1a1a22' }}>Dir</th>
-                                    <th style={{ width: '10%', padding: '6px 4px', textAlign: 'center', fontSize: '10px', color: '#555', fontWeight: 600, textTransform: 'uppercase', borderBottom: '1px solid #1a1a22' }}>Conf</th>
-                                    <th style={{ width: '10%', padding: '6px 4px', textAlign: 'center', fontSize: '10px', color: '#555', fontWeight: 600, textTransform: 'uppercase', borderBottom: '1px solid #1a1a22' }}>Session</th>
-                                    <th style={{ width: '8%', padding: '6px 4px', textAlign: 'center', fontSize: '10px', color: '#555', fontWeight: 600, textTransform: 'uppercase', borderBottom: '1px solid #1a1a22' }}>TF</th>
-                                    <th style={{ width: '12%', padding: '6px 4px', textAlign: 'center', fontSize: '10px', color: '#555', fontWeight: 600, textTransform: 'uppercase', borderBottom: '1px solid #1a1a22' }}>Rating</th>
-                                    <th style={{ width: '12%', padding: '6px 6px', textAlign: 'right', fontSize: '10px', color: '#555', fontWeight: 600, textTransform: 'uppercase', borderBottom: '1px solid #1a1a22' }}>Placed</th>
+                                    <th style={{ width: '16%', padding: '6px 8px', textAlign: 'left', fontSize: '10px', color: '#555', fontWeight: 600, textTransform: 'uppercase', borderBottom: '1px solid #1a1a22' }}>Symbol</th>
+                                    <th style={{ width: '12%', padding: '6px 6px', textAlign: 'center', fontSize: '10px', color: '#555', fontWeight: 600, textTransform: 'uppercase', borderBottom: '1px solid #1a1a22' }}>Result</th>
+                                    <th style={{ width: '14%', padding: '6px 6px', textAlign: 'right', fontSize: '10px', color: '#555', fontWeight: 600, textTransform: 'uppercase', borderBottom: '1px solid #1a1a22' }}>PnL</th>
+                                    <th style={{ width: '10%', padding: '6px 6px', textAlign: 'center', fontSize: '10px', color: '#555', fontWeight: 600, textTransform: 'uppercase', borderBottom: '1px solid #1a1a22' }}>RR</th>
+                                    <th style={{ width: '18%', padding: '6px 6px', textAlign: 'center', fontSize: '10px', color: '#555', fontWeight: 600, textTransform: 'uppercase', borderBottom: '1px solid #1a1a22' }}>Rating</th>
+                                    <th style={{ width: '14%', padding: '6px 6px', textAlign: 'center', fontSize: '10px', color: '#555', fontWeight: 600, textTransform: 'uppercase', borderBottom: '1px solid #1a1a22' }}>Placed</th>
+                                    <th style={{ width: '16%', padding: '6px 8px', textAlign: 'right', fontSize: '10px', color: '#555', fontWeight: 600, textTransform: 'uppercase', borderBottom: '1px solid #1a1a22' }}>Date</th>
                                   </tr>
                                 </thead>
                                 <tbody>
                                   {(() => {
                                     const recent = allTrades.slice().sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, 10)
-                                    if (recent.length === 0) return <tr><td colSpan="11" style={{ padding: '16px', textAlign: 'center', color: '#444', fontSize: '11px' }}>No trades yet</td></tr>
+                                    if (recent.length === 0) return <tr><td colSpan="7" style={{ padding: '16px', textAlign: 'center', color: '#444', fontSize: '11px' }}>No trades yet</td></tr>
                                     return recent.map((t, i) => {
                                       const pnl = parseFloat(t.pnl) || 0
                                       const isWin = t.outcome === 'win'
@@ -2040,32 +2036,26 @@ export default function DashboardPage() {
                                         else try { extra = JSON.parse(t.extra_data) } catch {}
                                       }
                                       const rating = parseFloat(extra.rating || t.rating || 0)
-                                      const riskPct = extra.riskPercent || t.risk || '1'
                                       const rr = parseFloat(t.rr) || 0
-                                      const direction = extra.direction || t.direction || '-'
-                                      const confidence = extra.confidence || '-'
-                                      const session = extra.session || '-'
-                                      const timeframe = extra.timeframe || t.timeframe || '-'
                                       // Days ago calculation
                                       const daysAgo = Math.floor((new Date() - new Date(t.date)) / 86400000)
-                                      const daysAgoText = daysAgo === 0 ? 'Today' : daysAgo === 1 ? '1d' : `${daysAgo}d`
+                                      const daysAgoText = daysAgo === 0 ? 'Today' : daysAgo === 1 ? '1d ago' : `${daysAgo}d ago`
+                                      // Date formatting
+                                      const tradeDate = new Date(t.date)
+                                      const dateStr = `${String(tradeDate.getDate()).padStart(2, '0')}/${String(tradeDate.getMonth() + 1).padStart(2, '0')}/${tradeDate.getFullYear().toString().slice(-2)}`
                                       return (
                                         <tr key={i} style={{ borderBottom: i < recent.length - 1 ? '1px solid #1a1a22' : 'none' }}>
-                                          <td style={{ padding: '6px 6px', fontSize: '10px', color: '#fff', fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{t.symbol || '-'}</td>
-                                          <td style={{ padding: '6px 4px', fontSize: '10px', textAlign: 'center', color: isWin ? '#22c55e' : '#ef4444', fontWeight: 600 }}>{isWin ? 'Win' : 'Loss'}</td>
-                                          <td style={{ padding: '6px 4px', fontSize: '10px', fontWeight: 600, color: pnl >= 0 ? '#22c55e' : '#ef4444', textAlign: 'right' }}>{pnl >= 0 ? '+' : ''}${Math.round(pnl)}</td>
-                                          <td style={{ padding: '6px 4px', fontSize: '10px', color: '#888', textAlign: 'center' }}>{rr > 0 ? rr.toFixed(1) : '-'}</td>
-                                          <td style={{ padding: '6px 4px', fontSize: '10px', color: '#888', textAlign: 'center' }}>{riskPct}%</td>
-                                          <td style={{ padding: '6px 4px', fontSize: '10px', textAlign: 'center', color: direction === 'Long' || direction === 'long' ? '#22c55e' : direction === 'Short' || direction === 'short' ? '#ef4444' : '#888' }}>{direction === 'Long' || direction === 'long' ? 'Long' : direction === 'Short' || direction === 'short' ? 'Short' : '-'}</td>
-                                          <td style={{ padding: '6px 4px', fontSize: '10px', color: '#888', textAlign: 'center' }}>{confidence !== '-' ? confidence : '-'}</td>
-                                          <td style={{ padding: '6px 4px', fontSize: '10px', color: '#888', textAlign: 'center' }}>{session !== '-' ? session : '-'}</td>
-                                          <td style={{ padding: '6px 4px', fontSize: '10px', color: '#888', textAlign: 'center' }}>{timeframe}</td>
-                                          <td style={{ padding: '6px 4px', textAlign: 'center' }}>
+                                          <td style={{ padding: '6px 8px', fontSize: '10px', color: '#fff', fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{t.symbol || '-'}</td>
+                                          <td style={{ padding: '6px 6px', fontSize: '10px', textAlign: 'center', color: isWin ? '#22c55e' : '#ef4444', fontWeight: 600 }}>{isWin ? 'Win' : 'Loss'}</td>
+                                          <td style={{ padding: '6px 6px', fontSize: '10px', fontWeight: 600, color: pnl >= 0 ? '#22c55e' : '#ef4444', textAlign: 'right' }}>{pnl >= 0 ? '+' : ''}${Math.round(pnl)}</td>
+                                          <td style={{ padding: '6px 6px', fontSize: '10px', color: '#888', textAlign: 'center' }}>{rr > 0 ? rr.toFixed(1) : '-'}</td>
+                                          <td style={{ padding: '6px 6px', textAlign: 'center' }}>
                                             <div style={{ display: 'inline-flex', gap: '1px' }}>
                                               {[1,2,3,4,5].map(star => <span key={star} style={{ color: rating >= star ? '#22c55e' : rating >= star - 0.5 ? '#22c55e' : '#2a2a35', fontSize: '10px' }}>★</span>)}
                                             </div>
                                           </td>
-                                          <td style={{ padding: '6px 6px', fontSize: '10px', color: '#888', textAlign: 'right' }}>{daysAgoText}</td>
+                                          <td style={{ padding: '6px 6px', fontSize: '10px', color: '#888', textAlign: 'center' }}>{daysAgoText}</td>
+                                          <td style={{ padding: '6px 8px', fontSize: '10px', color: '#888', textAlign: 'right' }}>{dateStr}</td>
                                         </tr>
                                       )
                                     })
