@@ -1818,7 +1818,7 @@ export default function DashboardPage() {
                             <div style={{ fontSize: '13px', color: '#666', marginBottom: '2px' }}>Overall Stats</div>
                             <div style={{ display: 'flex', alignItems: 'baseline', gap: '12px' }}>
                               <span style={{ fontSize: '24px', fontWeight: 700, color: isProfitable ? '#22c55e' : '#ef4444' }}>${Math.round(totalBalance).toLocaleString()}</span>
-                              <span style={{ fontSize: '14px', fontWeight: 600, color: '#666' }}>${Math.round(stats.totalStartingBalance).toLocaleString()}</span>
+                              <span style={{ fontSize: '12px', color: '#555' }}>INITIAL BALANCE <span style={{ fontWeight: 600, color: '#888' }}>${Math.round(stats.totalStartingBalance).toLocaleString()}</span></span>
                             </div>
                           </div>
                         </div>
@@ -2234,33 +2234,26 @@ export default function DashboardPage() {
                                   <div style={{ width: '42px', flexShrink: 0, position: 'relative', borderRight: '1px solid #2a2a35', overflow: 'visible' }}>
                                     {yLabels.map((v, i) => {
                                       const topPct = yLabels.length > 1 ? (i / (yLabels.length - 1)) * 100 : 0
+                                      const isStart = v === startingBalance
                                       return (
                                         <Fragment key={i}>
-                                          <span style={{ position: 'absolute', right: '6px', top: `${topPct}%`, transform: 'translateY(-50%)', fontSize: '8px', color: '#888', lineHeight: 1, whiteSpace: 'nowrap' }}>{formatY(v)}</span>
-                                          <div style={{ position: 'absolute', right: 0, top: `${topPct}%`, width: '4px', borderTop: '1px solid #2a2a35' }} />
+                                          <span style={{ position: 'absolute', right: '6px', top: `${topPct}%`, transform: 'translateY(-50%)', fontSize: isStart ? '7px' : '8px', color: isStart ? '#666' : '#888', lineHeight: 1, whiteSpace: 'nowrap', fontWeight: isStart ? 600 : 400 }}>{isStart ? 'Start' : formatY(v)}</span>
+                                          <div style={{ position: 'absolute', right: 0, top: `${topPct}%`, width: '4px', borderTop: `1px solid ${isStart ? '#666' : '#2a2a35'}` }} />
                                         </Fragment>
                                       )
                                     })}
-                                    {/* Starting balance label */}
-                                    {startLineY >= 5 && startLineY <= 95 && (
-                                      <Fragment>
-                                        <span style={{ position: 'absolute', right: '6px', top: `${startLineY}%`, transform: 'translateY(-50%)', fontSize: '7px', color: '#666', lineHeight: 1, whiteSpace: 'nowrap', fontWeight: 600 }}>{formatY(startingBalance)}</span>
-                                        <div style={{ position: 'absolute', right: 0, top: `${startLineY}%`, width: '4px', borderTop: '1px solid #666' }} />
-                                      </Fragment>
-                                    )}
                                   </div>
                                   {/* Graph Area with hover */}
                                   <div style={{ flex: 1, position: 'relative', borderBottom: '1px solid #2a2a35', overflow: 'visible' }}>
                                     {/* Horizontal Grid Lines */}
                                     <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}>
-                                      {yLabels.map((_, i) => {
+                                      {yLabels.map((v, i) => {
                                         const topPct = yLabels.length > 1 ? (i / (yLabels.length - 1)) * 100 : 0
                                         if (i === yLabels.length - 1) return null
-                                        return <div key={i} style={{ position: 'absolute', left: 0, right: 0, top: `${topPct}%`, borderTop: '1px solid rgba(51,51,51,0.5)' }} />
+                                        const isStart = v === startingBalance
+                                        return <div key={i} style={{ position: 'absolute', left: 0, right: 0, top: `${topPct}%`, borderTop: isStart ? '1px dashed #555' : '1px solid rgba(51,51,51,0.5)', zIndex: isStart ? 1 : 0 }} />
                                       })}
                                     </div>
-                                    {/* Starting balance line */}
-                                    {startLineY >= 0 && startLineY <= 100 && <div style={{ position: 'absolute', left: 0, right: 0, top: `${startLineY}%`, borderTop: '1px dashed #555', zIndex: 1 }} />}
                                     {/* Profit target line - only when objectives toggled on */}
                                     {showObjLines && profitTargetLineY !== null && profitTargetLineY >= 0 && profitTargetLineY <= 100 && <div style={{ position: 'absolute', left: 0, right: 0, top: `${profitTargetLineY}%`, borderTop: '1px dashed #22c55e', zIndex: 1 }} />}
                                     {/* Max DD line - only when objectives toggled on */}
@@ -3652,7 +3645,7 @@ export default function DashboardPage() {
           const yRange = yMax - yMin || 1
 
           // Nice step for Y-axis
-          const niceStep = (range, targetSteps = 5) => {
+          const niceStepFn = (range, targetSteps = 5) => {
             const rough = range / targetSteps
             const mag = Math.pow(10, Math.floor(Math.log10(rough)))
             const residual = rough / mag
@@ -3663,14 +3656,23 @@ export default function DashboardPage() {
             else nice = 10
             return nice * mag
           }
-          const step = niceStep(yRange)
-          const yStart = Math.floor(yMin / step) * step
-          const yEnd = Math.ceil(yMax / step) * step
-          const yLabels = []
-          for (let v = yEnd; v >= yStart; v -= step) yLabels.push(v)
+          const step = niceStepFn(yRange)
 
-          // Calculate starting balance Y position
-          const startLineYPct = ((yMax - startingBalance) / yRange) * 100
+          // Generate labels anchored to starting balance (start is always a label)
+          const yLabels = [startingBalance]
+          // Add labels above start until we cover yMax
+          for (let v = startingBalance + step; v <= yMax + step * 0.1; v += step) {
+            yLabels.push(v)
+          }
+          // Add labels below start until we cover yMin
+          for (let v = startingBalance - step; v >= yMin - step * 0.1; v -= step) {
+            if (v >= 0 || minBal < 0) yLabels.push(v)
+          }
+          // Sort from highest to lowest
+          yLabels.sort((a, b) => b - a)
+
+          // Calculate starting balance Y position (will now always be at a label position)
+          const startLineYPct = yLabels.length > 1 ? (yLabels.indexOf(startingBalance) / (yLabels.length - 1)) * 100 : 0
           const profitTargetYPct = profitTarget ? ((yMax - profitTarget) / yRange) * 100 : null
           const maxDdFloorYPct = maxDdFloor ? ((yMax - maxDdFloor) / yRange) * 100 : null
 
@@ -3744,14 +3746,17 @@ export default function DashboardPage() {
                 <div style={{ display: 'flex', height: '350px' }}>
                   {/* Y-Axis Labels */}
                   <div style={{ width: '60px', flexShrink: 0, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', paddingRight: '8px', paddingBottom: '24px' }}>
-                    {yLabels.map((v, i) => (
-                      <div key={i} style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '4px' }}>
-                        <span style={{ fontSize: '10px', color: '#666' }}>
-                          {Math.abs(v) >= 1000 ? `$${(v / 1000).toFixed(1)}k` : `$${Math.round(v)}`}
-                        </span>
-                        <div style={{ width: '4px', height: '1px', background: '#444' }} />
-                      </div>
-                    ))}
+                    {yLabels.map((v, i) => {
+                      const isStart = v === startingBalance
+                      return (
+                        <div key={i} style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '4px' }}>
+                          <span style={{ fontSize: '10px', color: isStart ? '#888' : '#666', fontWeight: isStart ? 600 : 400 }}>
+                            {isStart ? 'Start' : (Math.abs(v) >= 1000 ? `$${(v / 1000).toFixed(1)}k` : `$${Math.round(v)}`)}
+                          </span>
+                          <div style={{ width: '4px', height: '1px', background: isStart ? '#666' : '#444' }} />
+                        </div>
+                      )
+                    })}
                   </div>
 
                   {/* Graph Area */}
@@ -3770,13 +3775,10 @@ export default function DashboardPage() {
                       onMouseLeave={() => setJournalHover(null)}
                     >
                       {/* Horizontal Grid Lines */}
-                      {yLabels.map((_, i) => (
-                        <div key={i} style={{ position: 'absolute', left: 0, right: 0, top: `${(i / (yLabels.length - 1)) * 100}%`, borderTop: '1px solid #1a1a22' }} />
-                      ))}
-                      {/* Starting balance line */}
-                      {startLineYPct >= 0 && startLineYPct <= 100 && (
-                        <div style={{ position: 'absolute', left: 0, right: 0, top: `${startLineYPct}%`, borderTop: '1px dashed #555', zIndex: 1 }} />
-                      )}
+                      {yLabels.map((v, i) => {
+                        const isStart = v === startingBalance
+                        return <div key={i} style={{ position: 'absolute', left: 0, right: 0, top: `${(i / (yLabels.length - 1)) * 100}%`, borderTop: isStart ? '1px dashed #555' : '1px solid #1a1a22', zIndex: isStart ? 1 : 0 }} />
+                      })}
                       {/* Profit target line */}
                       {profitTargetYPct !== null && profitTargetYPct >= 0 && profitTargetYPct <= 100 && (
                         <div style={{ position: 'absolute', left: 0, right: 0, top: `${profitTargetYPct}%`, borderTop: '1px dashed #22c55e', zIndex: 1 }} />
