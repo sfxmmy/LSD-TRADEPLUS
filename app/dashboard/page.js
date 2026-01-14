@@ -2098,7 +2098,7 @@ export default function DashboardPage() {
                         </div>
 
                         {/* Mini Graph - Same quality as Overall Stats graph */}
-                        <div style={{ padding: '12px 18px' }}>
+                        <div style={{ padding: '12px' }}>
                           {(() => {
                             if (balancePoints.length < 2) {
                               return <div style={{ height: '140px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#444', fontSize: '12px' }}>No trades yet</div>
@@ -2112,15 +2112,15 @@ export default function DashboardPage() {
                             const rangeMin = profitTarget ? Math.min(dataMin, maxDdFloor || dataMin) : dataMin
                             const rangeMax = profitTarget ? Math.max(dataMax, profitTarget) : dataMax
                             const dataRange = rangeMax - rangeMin || 1000
-                            const paddingAmt = dataRange / 6
+                            const paddingAmt = dataRange / 8  // 1/8 padding mechanism
 
                             let yMin = rangeMin - paddingAmt
                             let yMax = rangeMax + paddingAmt
                             if (yMin < 0 && dataMin >= 0) yMin = 0
 
-                            // Nice step calculation
+                            // Nice step calculation - target 5 labels (divide by 4)
                             const displayRange = yMax - yMin || 1000
-                            const rawStep = displayRange / 4
+                            const rawStep = displayRange / 4  // 5 labels
                             const magnitude = Math.pow(10, Math.floor(Math.log10(rawStep)))
                             const normalized = rawStep / magnitude
                             let niceStep
