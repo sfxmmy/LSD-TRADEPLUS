@@ -2075,24 +2075,18 @@ export default function DashboardPage() {
 
                     return (
                       <div key={account.id} style={{ background: 'linear-gradient(135deg, #0f0f14 0%, #0a0a0f 100%)', border: '1px solid #1a1a22', borderRadius: '16px', overflow: 'hidden', display: 'flex', flexDirection: 'column', boxShadow: '0 4px 24px rgba(0,0,0,0.3)' }}>
-                        {/* Header - Title + PnL + % Change */}
-                        <div style={{ padding: '16px 18px', borderBottom: `1px solid ${isProfitable ? 'rgba(34,197,94,0.2)' : 'rgba(239,68,68,0.2)'}`, background: isProfitable ? 'linear-gradient(135deg, rgba(34,197,94,0.05) 0%, transparent 100%)' : 'linear-gradient(135deg, rgba(239,68,68,0.05) 0%, transparent 100%)' }}>
+                        {/* Header - Title + Balance in border */}
+                        <div style={{ padding: '12px', borderBottom: '1px solid #1a1a22' }}>
                           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                              <span style={{ fontSize: '24px', fontWeight: 700, color: '#fff' }}>{account.name}</span>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                              <span style={{ fontSize: '20px', fontWeight: 700, color: '#fff' }}>{account.name}</span>
                               <button onClick={(e) => { e.stopPropagation(); setEditName(account.name); setEditProfitTarget(account.profit_target || ''); setEditMaxDrawdown(account.max_drawdown || ''); setEditConsistencyEnabled(account.consistency_enabled || false); setEditConsistencyPct(account.consistency_pct || '30'); setEditDailyDdEnabled(account.daily_dd_enabled || false); setEditDailyDdPct(account.daily_dd_pct || ''); setEditDailyDdType(account.daily_dd_type || 'static'); setEditDailyDdLocksAt(account.daily_dd_locks_at || 'start_balance'); setEditDailyDdLocksAtPct(account.daily_dd_locks_at_pct || ''); setEditDailyDdResetTime(account.daily_dd_reset_time || '00:00'); setEditDailyDdResetTimezone(account.daily_dd_reset_timezone || 'Europe/London'); setEditMaxDdEnabled(account.max_dd_enabled || false); setEditMaxDdPct(account.max_dd_pct || ''); setEditMaxDdType(account.max_dd_type || 'static'); setEditMaxDdTrailingStopsAt(account.max_dd_trailing_stops_at || 'never'); setEditMaxDdLocksAtPct(account.max_dd_locks_at_pct || ''); setShowEditModal(account.id) }} style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid #2a2a35', borderRadius: '6px', cursor: 'pointer', padding: '4px 6px', display: 'flex', alignItems: 'center' }}>
                                 <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#666" strokeWidth="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" /><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" /></svg>
                               </button>
                             </div>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                              <div style={{ fontSize: '18px', fontWeight: 800, color: isProfitable ? '#22c55e' : '#ef4444' }}>{totalPnl >= 0 ? '+' : ''}${totalPnl.toLocaleString()}</div>
-                              <div style={{ padding: '4px 8px', background: isProfitable ? 'rgba(34,197,94,0.15)' : 'rgba(239,68,68,0.15)', borderRadius: '6px', fontSize: '12px', fontWeight: 700, color: isProfitable ? '#22c55e' : '#ef4444' }}>
-                                {(() => {
-                                  const startBal = parseFloat(account.starting_balance) || 0
-                                  const pctChange = startBal > 0 ? ((totalPnl / startBal) * 100).toFixed(1) : '0.0'
-                                  return `${parseFloat(pctChange) >= 0 ? '+' : ''}${pctChange}%`
-                                })()}
-                              </div>
+                            <div style={{ padding: '6px 12px', border: `1px solid ${isProfitable ? 'rgba(34,197,94,0.4)' : 'rgba(239,68,68,0.4)'}`, borderRadius: '8px', background: isProfitable ? 'rgba(34,197,94,0.1)' : 'rgba(239,68,68,0.1)' }}>
+                              <span style={{ fontSize: '11px', color: '#888', marginRight: '6px' }}>Balance:</span>
+                              <span style={{ fontSize: '14px', fontWeight: 700, color: isProfitable ? '#22c55e' : '#ef4444' }}>${Math.round(currentBalance).toLocaleString()}</span>
                             </div>
                           </div>
                         </div>
@@ -2281,8 +2275,8 @@ export default function DashboardPage() {
                           })()}
                         </div>
 
-                        {/* Stats - 9 items in grid */}
-                        <div style={{ padding: '0 18px 14px' }}>
+                        {/* Stats - 2 columns like stats area format */}
+                        <div style={{ padding: '0 12px 12px' }}>
                           {(() => {
                             // Calculate additional stats
                             const uniquePairs = new Set(accTrades.map(t => t.symbol)).size
@@ -2332,32 +2326,30 @@ export default function DashboardPage() {
 
                             // Build stats array based on account type
                             const stats = isFundedAccount ? [
-                              { label: 'Trades', value: accTrades.length, color: '#8b5cf6' },
-                              { label: 'Pairs', value: uniquePairs, color: '#3b82f6' },
+                              { label: 'Total PnL', value: `${totalPnl >= 0 ? '+' : ''}$${Math.round(totalPnl).toLocaleString()}`, color: totalPnl >= 0 ? '#22c55e' : '#ef4444' },
+                              { label: 'Trades', value: accTrades.length, color: '#fff' },
                               { label: 'Winrate', value: `${winrate}%`, color: winrate >= 50 ? '#22c55e' : '#ef4444' },
-                              { label: 'Wins', value: wins, color: '#22c55e' },
-                              { label: 'Losses', value: losses, color: '#ef4444' },
                               { label: 'Profit Factor', value: profitFactor, color: profitFactor === '-' ? '#666' : profitFactor === '∞' ? '#22c55e' : parseFloat(profitFactor) >= 1 ? '#22c55e' : '#ef4444' },
+                              { label: 'W / L', value: `${wins} / ${losses}`, color: '#fff' },
                               { label: 'Consistency', value: `${consistency}%`, color: consistency >= 50 ? '#3b82f6' : '#666' },
                               { label: '% to Pass', value: pctFromPassing, color: pctFromPassingColor },
                               { label: 'Daily DD Used', value: pctFromDailyDD, color: pctFromDailyDDColor },
                             ] : [
-                              { label: 'Trades', value: accTrades.length, color: '#8b5cf6' },
-                              { label: 'Pairs', value: uniquePairs, color: '#3b82f6' },
+                              { label: 'Total PnL', value: `${totalPnl >= 0 ? '+' : ''}$${Math.round(totalPnl).toLocaleString()}`, color: totalPnl >= 0 ? '#22c55e' : '#ef4444' },
+                              { label: 'Trades', value: accTrades.length, color: '#fff' },
                               { label: 'Winrate', value: `${winrate}%`, color: winrate >= 50 ? '#22c55e' : '#ef4444' },
-                              { label: 'Avg RR', value: `${avgRR}R`, color: '#fff' },
-                              { label: 'Wins', value: wins, color: '#22c55e' },
-                              { label: 'Losses', value: losses, color: '#ef4444' },
-                              { label: 'Streak', value: streakDisplay, color: streakColor },
                               { label: 'Profit Factor', value: profitFactor, color: profitFactor === '-' ? '#666' : profitFactor === '∞' ? '#22c55e' : parseFloat(profitFactor) >= 1 ? '#22c55e' : '#ef4444' },
+                              { label: 'Avg RR', value: `${avgRR}R`, color: '#fff' },
+                              { label: 'W / L', value: `${wins} / ${losses}`, color: '#fff' },
+                              { label: 'Streak', value: streakDisplay, color: streakColor },
                               { label: 'Consistency', value: `${consistency}%`, color: consistency >= 50 ? '#3b82f6' : '#666' },
                             ]
 
                             return (
-                              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '4px' }}>
+                              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2px 16px' }}>
                                 {stats.map((stat, i) => (
-                                  <div key={i} style={{ padding: '5px 8px', background: '#0d0d12', borderRadius: '4px', border: '1px solid #1a1a22', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                                    <span style={{ fontSize: '9px', color: '#666', fontWeight: 500, marginBottom: '2px' }}>{stat.label}</span>
+                                  <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '4px 0', borderBottom: '1px solid #1a1a22' }}>
+                                    <span style={{ fontSize: '11px', color: '#888' }}>{stat.label}</span>
                                     <span style={{ fontSize: '12px', fontWeight: 700, color: stat.color }}>{stat.value}</span>
                                   </div>
                                 ))}
