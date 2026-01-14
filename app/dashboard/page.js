@@ -1808,22 +1808,22 @@ export default function DashboardPage() {
                   const isProfitable = cumPnl >= 0
 
                   return (
-                    <div style={{ background: 'linear-gradient(135deg, #0f0f14 0%, #0a0a0f 100%)', border: '1px solid #1a1a22', borderRadius: '16px', overflow: 'hidden', display: 'flex', flexDirection: 'column', boxShadow: '0 4px 24px rgba(0,0,0,0.3)', width: 'calc(50% - 6px)' }}>
+                    <div style={{ background: 'linear-gradient(135deg, #0f0f14 0%, #0a0a0f 100%)', border: '1px solid #1a1a22', borderRadius: '16px', overflow: 'hidden', display: 'flex', flexDirection: 'column', boxShadow: '0 4px 24px rgba(0,0,0,0.3)' }}>
                       {/* Header - Title + Balance */}
                       <div style={{ padding: '12px' }}>
                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                          <span style={{ fontSize: '18px', fontWeight: 700, color: '#fff' }}>Overall Stats</span>
-                          <div style={{ padding: '5px 10px', border: `1px solid ${isProfitable ? 'rgba(34,197,94,0.4)' : 'rgba(239,68,68,0.4)'}`, borderRadius: '8px', background: isProfitable ? 'rgba(34,197,94,0.1)' : 'rgba(239,68,68,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                            <span style={{ fontSize: '10px', color: '#888', marginRight: '5px' }}>Balance:</span>
-                            <span style={{ fontSize: '13px', fontWeight: 700, color: isProfitable ? '#22c55e' : '#ef4444' }}>${Math.round(totalBalance).toLocaleString()}</span>
+                          <span style={{ fontSize: '20px', fontWeight: 700, color: '#fff' }}>Overall Stats</span>
+                          <div style={{ padding: '6px 12px', border: `1px solid ${isProfitable ? 'rgba(34,197,94,0.4)' : 'rgba(239,68,68,0.4)'}`, borderRadius: '8px', background: isProfitable ? 'rgba(34,197,94,0.1)' : 'rgba(239,68,68,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                            <span style={{ fontSize: '11px', color: '#888', marginRight: '6px' }}>Balance:</span>
+                            <span style={{ fontSize: '14px', fontWeight: 700, color: isProfitable ? '#22c55e' : '#ef4444' }}>${Math.round(totalBalance).toLocaleString()}</span>
                           </div>
                         </div>
                       </div>
 
-                      {/* Main content: Graph (left, full height) + Right panel (stats, trades, buttons) */}
-                      <div style={{ display: 'flex', flex: 1, padding: '0 12px 12px 12px', gap: '10px' }}>
-                        {/* Chart - flex: 1, full height with border */}
-                        <div style={{ flex: 1, background: 'rgba(0,0,0,0.3)', border: '1px solid #1a1a22', borderRadius: '10px', padding: '10px', display: 'flex', flexDirection: 'column' }}>
+                      {/* Main content: Graph (1.5 journal card width) + Right panel (stats, trades, buttons) */}
+                      <div style={{ display: 'flex', flex: 1, padding: '0 12px 12px 12px', gap: '12px' }}>
+                        {/* Chart - 50% width (1.5 journal cards), full height with border */}
+                        <div style={{ width: '50%', flexShrink: 0, background: 'rgba(0,0,0,0.3)', border: '1px solid #1a1a22', borderRadius: '10px', padding: '10px', display: 'flex', flexDirection: 'column' }}>
                           {(() => {
                             const startBal = stats.totalStartingBalance || 0
                             let runningBal = startBal
@@ -1981,9 +1981,9 @@ export default function DashboardPage() {
                         </div>
 
                         {/* Right Panel: Stats (3 cols) + Recent Trades + Buttons */}
-                        <div style={{ width: '220px', flexShrink: 0, display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '8px' }}>
                           {/* Stats - 3 columns grid */}
-                          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '2px 8px' }}>
+                          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '4px 16px' }}>
                             {[
                               { label: 'Total PnL', value: `${cumPnl >= 0 ? '+' : ''}$${Math.round(cumPnl).toLocaleString()}`, color: cumPnl >= 0 ? '#22c55e' : '#ef4444' },
                               { label: 'Trades', value: stats.totalTrades, color: '#fff' },
@@ -1998,9 +1998,9 @@ export default function DashboardPage() {
                               { label: 'Day WR', value: `${dayWR}%`, color: dayWR >= 50 ? '#22c55e' : '#ef4444' },
                               { label: 'Consist', value: `${consistency}%`, color: consistency >= 50 ? '#22c55e' : '#ef4444' },
                             ].map((s, i) => (
-                              <div key={i} style={{ display: 'flex', flexDirection: 'column', padding: '3px 0', borderBottom: '1px solid #1a1a22' }}>
-                                <span style={{ fontSize: '8px', color: '#666', textTransform: 'uppercase' }}>{s.label}</span>
-                                <span style={{ fontSize: '10px', fontWeight: 700, color: s.color }}>{s.value}</span>
+                              <div key={i} style={{ display: 'flex', flexDirection: 'column', padding: '4px 0', borderBottom: '1px solid #1a1a22' }}>
+                                <span style={{ fontSize: '9px', color: '#666', textTransform: 'uppercase' }}>{s.label}</span>
+                                <span style={{ fontSize: '12px', fontWeight: 700, color: s.color }}>{s.value}</span>
                               </div>
                             ))}
                           </div>
