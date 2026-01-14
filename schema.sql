@@ -280,6 +280,8 @@ DROP FUNCTION IF EXISTS is_admin();
 -- Profiles policies
 DROP POLICY IF EXISTS "profiles_all" ON profiles;
 DROP POLICY IF EXISTS "admin_profiles" ON profiles;
+DROP POLICY IF EXISTS "admin_profiles_select" ON profiles;
+DROP POLICY IF EXISTS "admin_profiles_update" ON profiles;
 DROP POLICY IF EXISTS "Users can read own profile" ON profiles;
 DROP POLICY IF EXISTS "Users can update own profile" ON profiles;
 DROP POLICY IF EXISTS "Users can insert own profile" ON profiles;
@@ -366,8 +368,11 @@ $$;
 -- Uses is_admin() function to prevent recursive RLS check
 -- =====================================================
 
-CREATE POLICY "admin_profiles" ON profiles
+CREATE POLICY "admin_profiles_select" ON profiles
   FOR SELECT USING (is_admin());
+
+CREATE POLICY "admin_profiles_update" ON profiles
+  FOR UPDATE USING (is_admin());
 
 CREATE POLICY "admin_accounts" ON accounts
   FOR SELECT USING (is_admin());
