@@ -1914,9 +1914,9 @@ export default function DashboardPage() {
                             const mkArea = segs => segs.map(s => `M${s.x1},${s.y1}L${s.x2},${s.y2}L${s.x2},${startSvgY}L${s.x1},${startSvgY}Z`).join('')
 
                             return (
-                              <div style={{ display: 'flex', flexDirection: 'column', marginLeft: '-8px' }}>
+                              <div style={{ display: 'flex', flexDirection: 'column', marginLeft: '-12px' }}>
                                 <div style={{ display: 'flex', height: '200px' }}>
-                                  <div style={{ width: '44px', flexShrink: 0, position: 'relative', borderRight: '1px solid #2a2a35', overflow: 'visible' }}>
+                                  <div style={{ width: '48px', flexShrink: 0, position: 'relative', borderRight: '1px solid #2a2a35', overflow: 'visible' }}>
                                     {yLabels.map((v, i) => {
                                       const topPct = yLabels.length > 1 ? (i / (yLabels.length - 1)) * 100 : 0
                                       return (
@@ -1965,7 +1965,7 @@ export default function DashboardPage() {
                                   </div>
                                 </div>
                                 <div style={{ display: 'flex' }}>
-                                  <div style={{ width: '44px', flexShrink: 0 }} />
+                                  <div style={{ width: '48px', flexShrink: 0 }} />
                                   <div style={{ flex: 1, height: '20px', position: 'relative' }}>
                                     {xLabels.map((l, i) => (
                                       <div key={i} style={{ position: 'absolute', left: `${l.pct}%`, transform: 'translateX(-50%)', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
@@ -2207,10 +2207,10 @@ export default function DashboardPage() {
                             const isHovered = journalHover?.accountId === account.id
 
                             return (
-                              <div style={{ display: 'flex', flexDirection: 'column', marginLeft: '-8px' }}>
+                              <div style={{ display: 'flex', flexDirection: 'column', marginLeft: '-12px' }}>
                                 <div style={{ display: 'flex', height: '120px' }}>
                                   {/* Y-Axis with tick marks */}
-                                  <div style={{ width: '42px', flexShrink: 0, position: 'relative', borderRight: '1px solid #2a2a35', overflow: 'visible' }}>
+                                  <div style={{ width: '46px', flexShrink: 0, position: 'relative', borderRight: '1px solid #2a2a35', overflow: 'visible' }}>
                                     {yLabels.map((v, i) => {
                                       const topPct = yLabels.length > 1 ? (i / (yLabels.length - 1)) * 100 : 0
                                       return (
@@ -2275,7 +2275,7 @@ export default function DashboardPage() {
                                 </div>
                                 {/* X-Axis labels */}
                                 <div style={{ display: 'flex' }}>
-                                  <div style={{ width: '42px', flexShrink: 0 }} />
+                                  <div style={{ width: '46px', flexShrink: 0 }} />
                                   <div style={{ flex: 1, height: '18px', position: 'relative' }}>
                                     {xLabels.map((l, i) => (
                                       <div key={i} style={{ position: 'absolute', left: `${l.pct}%`, transform: 'translateX(-50%)', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
