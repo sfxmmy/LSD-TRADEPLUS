@@ -1813,7 +1813,7 @@ export default function DashboardPage() {
                       <div style={{ padding: '12px' }}>
                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                           <span style={{ fontSize: '20px', fontWeight: 700, color: '#fff' }}>Overall Stats</span>
-                          <div style={{ padding: '6px 12px', border: `1px solid ${isProfitable ? 'rgba(34,197,94,0.4)' : 'rgba(239,68,68,0.4)'}`, borderRadius: '8px', background: isProfitable ? 'rgba(34,197,94,0.1)' : 'rgba(239,68,68,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                          <div style={{ width: '280px', padding: '6px 12px', border: `1px solid ${isProfitable ? 'rgba(34,197,94,0.4)' : 'rgba(239,68,68,0.4)'}`, borderRadius: '8px', background: isProfitable ? 'rgba(34,197,94,0.1)' : 'rgba(239,68,68,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                             <span style={{ fontSize: '11px', color: '#888', marginRight: '6px' }}>Balance:</span>
                             <span style={{ fontSize: '14px', fontWeight: 700, color: isProfitable ? '#22c55e' : '#ef4444' }}>${Math.round(totalBalance).toLocaleString()}</span>
                           </div>
