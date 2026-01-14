@@ -3085,7 +3085,7 @@ export default function AccountPage() {
                               {/* Bars */}
                               <div style={{ position: 'absolute', inset: '0', display: 'flex', alignItems: 'flex-end', gap: '6px', padding: '0 4px' }}>
                                 {entries.map((item, i) => {
-                                  const hPct = Math.max((Math.abs(item.val) / niceMax) * 100, 5)
+                                  const hPct = item.val === 0 ? 1 : Math.max((Math.abs(item.val) / niceMax) * 100, 5)
                                   const isGreen = barGraphMetric === 'winrate' || barGraphMetric === 'count' ? true : item.val >= 0
                                   const isHovered = barHover === i
                                   return (
@@ -5429,7 +5429,7 @@ export default function AccountPage() {
                         {/* Bars */}
                         <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'flex-end', gap: '12px', padding: '0 20px' }}>
                           {entries.map((item, i) => {
-                            const hPct = Math.max((Math.abs(item.val) / niceMax) * 100, 5)
+                            const hPct = item.val === 0 ? 1 : Math.max((Math.abs(item.val) / niceMax) * 100, 5)
                             const isGreen = barGraphMetric === 'winrate' || barGraphMetric === 'count' ? true : item.val >= 0
                             const isHovered = barHover === i
                             return (
@@ -5437,7 +5437,7 @@ export default function AccountPage() {
                                 onMouseEnter={() => setBarHover(i)}
                                 onMouseLeave={() => setBarHover(null)}
                               >
-                                <div style={{ width: '100%', maxWidth: '80px', height: `${hPct}%`, background: `linear-gradient(to bottom, ${isGreen ? `rgba(34, 197, 94, ${0.15 + (hPct / 100) * 0.2})` : `rgba(239, 68, 68, ${0.15 + (hPct / 100) * 0.2})`} 0%, transparent 100%)`, border: `1px solid ${isGreen ? '#22c55e' : '#ef4444'}`, borderBottom: 'none', borderRadius: '6px 6px 0 0', minHeight: '20px', position: 'relative', cursor: 'pointer' }}>
+                                <div style={{ width: '100%', maxWidth: '80px', height: `${hPct}%`, background: `linear-gradient(to bottom, ${isGreen ? `rgba(34, 197, 94, ${0.15 + (hPct / 100) * 0.2})` : `rgba(239, 68, 68, ${0.15 + (hPct / 100) * 0.2})`} 0%, transparent 100%)`, border: `1px solid ${isGreen ? '#22c55e' : '#ef4444'}`, borderBottom: 'none', borderRadius: '6px 6px 0 0', minHeight: item.val === 0 ? '2px' : '20px', position: 'relative', cursor: 'pointer' }}>
                                   <div style={{ position: 'absolute', top: '-20px', left: '50%', transform: 'translateX(-50%)', fontSize: '14px', color: isGreen ? '#22c55e' : '#ef4444', fontWeight: 600, whiteSpace: 'nowrap' }}>{item.disp}</div>
                                   {isHovered && (
                                     <>

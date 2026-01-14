@@ -1914,7 +1914,7 @@ export default function DashboardPage() {
                             const mkArea = segs => segs.map(s => `M${s.x1},${s.y1}L${s.x2},${s.y2}L${s.x2},${startSvgY}L${s.x1},${startSvgY}Z`).join('')
 
                             return (
-                              <div style={{ display: 'flex', flexDirection: 'column', marginLeft: '-6px' }}>
+                              <div style={{ display: 'flex', flexDirection: 'column', marginLeft: '-12px' }}>
                                 <div style={{ display: 'flex', height: '200px' }}>
                                   <div style={{ width: '42px', flexShrink: 0, position: 'relative', borderRight: '1px solid #2a2a35', overflow: 'visible' }}>
                                     {yLabels.map((v, i) => {
@@ -2258,7 +2258,7 @@ export default function DashboardPage() {
                             const isHovered = journalHover?.accountId === account.id
 
                             return (
-                              <div style={{ display: 'flex', flexDirection: 'column', marginLeft: '-6px' }}>
+                              <div style={{ display: 'flex', flexDirection: 'column', marginLeft: '-12px' }}>
                                 <div style={{ display: 'flex', height: '120px' }}>
                                   {/* Y-Axis with tick marks */}
                                   <div style={{ width: '42px', flexShrink: 0, position: 'relative', borderRight: '1px solid #2a2a35', overflow: 'visible' }}>
