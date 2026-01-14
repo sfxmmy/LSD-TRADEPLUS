@@ -1863,13 +1863,23 @@ export default function DashboardPage() {
                             else if (normalized <= 5) niceStep = 5 * magnitude
                             else niceStep = 10 * magnitude
 
-                            yMax = Math.ceil(yMax / niceStep) * niceStep
-                            yMin = Math.floor(yMin / niceStep) * niceStep
-                            if (yMin < 0 && dataMin >= 0) yMin = 0
-                            const yRange = yMax - yMin || niceStep
+                            // Generate labels anchored to starting balance (start is always a label)
+                            const yLabels = [startBal]
+                            // Add labels above start until we cover yMax
+                            for (let v = startBal + niceStep; v <= yMax + niceStep * 0.1; v += niceStep) {
+                              yLabels.push(v)
+                            }
+                            // Add labels below start until we cover yMin
+                            for (let v = startBal - niceStep; v >= yMin - niceStep * 0.1; v -= niceStep) {
+                              if (v >= 0 || dataMin < 0) yLabels.push(v)
+                            }
+                            // Sort from highest to lowest
+                            yLabels.sort((a, b) => b - a)
 
-                            const yLabels = []
-                            for (let v = yMax; v >= yMin; v -= niceStep) yLabels.push(v)
+                            // Update yMax/yMin to match label bounds
+                            yMax = yLabels[0]
+                            yMin = yLabels[yLabels.length - 1]
+                            const yRange = yMax - yMin || niceStep
 
                             const formatY = (v) => {
                               if (Math.abs(v) >= 1000000) return `$${(v/1000000).toFixed(1)}M`
@@ -1923,29 +1933,24 @@ export default function DashboardPage() {
                                   <div style={{ width: '42px', flexShrink: 0, position: 'relative', borderRight: '1px solid #2a2a35', overflow: 'visible' }}>
                                     {yLabels.map((v, i) => {
                                       const topPct = yLabels.length > 1 ? (i / (yLabels.length - 1)) * 100 : 0
+                                      const isStart = v === startBal
                                       return (
                                         <Fragment key={i}>
-                                          <span style={{ position: 'absolute', right: '6px', top: `${topPct}%`, transform: 'translateY(-50%)', fontSize: '8px', color: '#888', lineHeight: 1, whiteSpace: 'nowrap' }}>{formatY(v)}</span>
-                                          <div style={{ position: 'absolute', right: 0, top: `${topPct}%`, width: '4px', borderTop: '1px solid #2a2a35' }} />
+                                          <span style={{ position: 'absolute', right: '6px', top: `${topPct}%`, transform: 'translateY(-50%)', fontSize: '8px', color: isStart ? '#666' : '#888', lineHeight: 1, whiteSpace: 'nowrap', fontWeight: isStart ? 600 : 400 }}>{isStart ? 'Start' : formatY(v)}</span>
+                                          <div style={{ position: 'absolute', right: 0, top: `${topPct}%`, width: '4px', borderTop: `1px solid ${isStart ? '#666' : '#2a2a35'}` }} />
                                         </Fragment>
                                       )
                                     })}
-                                    {startLineY >= 0 && startLineY <= 100 && (
-                                      <Fragment>
-                                        <span style={{ position: 'absolute', right: '6px', top: `${startLineY}%`, transform: 'translateY(-50%)', fontSize: '8px', color: '#666', lineHeight: 1, whiteSpace: 'nowrap', fontWeight: 600 }}>{formatY(startBal)}</span>
-                                        <div style={{ position: 'absolute', right: 0, top: `${startLineY}%`, width: '4px', borderTop: '1px solid #666' }} />
-                                      </Fragment>
-                                    )}
                                   </div>
                                   <div style={{ flex: 1, position: 'relative', borderBottom: '1px solid #2a2a35', overflow: 'visible' }}>
                                     <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}>
-                                      {yLabels.map((_, i) => {
+                                      {yLabels.map((v, i) => {
                                         const topPct = yLabels.length > 1 ? (i / (yLabels.length - 1)) * 100 : 0
                                         if (i === yLabels.length - 1) return null
-                                        return <div key={i} style={{ position: 'absolute', left: 0, right: 0, top: `${topPct}%`, borderTop: '1px solid rgba(51,51,51,0.5)' }} />
+                                        const isStart = v === startBal
+                                        return <div key={i} style={{ position: 'absolute', left: 0, right: 0, top: `${topPct}%`, borderTop: isStart ? '1px dashed #555' : '1px solid rgba(51,51,51,0.5)', zIndex: isStart ? 1 : 0 }} />
                                       })}
                                     </div>
-                                    {startLineY >= 0 && startLineY <= 100 && <div style={{ position: 'absolute', left: 0, right: 0, top: `${startLineY}%`, borderTop: '1px dashed #555', zIndex: 1 }} />}
                                     <svg style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', overflow: 'visible', zIndex: 2 }} viewBox={`0 0 ${svgW} ${svgH}`} preserveAspectRatio="none"
                                       onMouseMove={e => { const rect = e.currentTarget.getBoundingClientRect(); const mouseX = ((e.clientX - rect.left) / rect.width) * svgW; let closest = chartPts[0], minDist = Math.abs(mouseX - chartPts[0].x); chartPts.forEach(p => { const d = Math.abs(mouseX - p.x); if (d < minDist) { minDist = d; closest = p } }); setDashHover({ ...closest, xPct: (closest.x / svgW) * 100, yPct: (closest.y / svgH) * 100 }) }}
                                       onMouseLeave={() => setDashHover(null)}>
@@ -1985,7 +1990,7 @@ export default function DashboardPage() {
                         </div>
 
                         {/* Right Panel: Stats (2 cols top-to-bottom) + Buttons bottom right */}
-                        <div style={{ flex: 1, display: 'flex', gap: '12px', paddingBottom: '31px' }}>
+                        <div style={{ flex: 1, display: 'flex', gap: '12px', paddingBottom: '30px' }}>
                           {/* Stats - 2 columns, flows top to bottom, full height with 2 grey lines at top */}
                           <div style={{ flex: 2, display: 'flex', flexDirection: 'column' }}>
                             {/* Two grey lines side by side at top (matching column gap) */}
@@ -2145,13 +2150,23 @@ export default function DashboardPage() {
                             else if (normalized <= 5) niceStep = 5 * magnitude
                             else niceStep = 10 * magnitude
 
-                            yMax = Math.ceil(yMax / niceStep) * niceStep
-                            yMin = Math.floor(yMin / niceStep) * niceStep
-                            if (yMin < 0 && dataMin >= 0) yMin = 0
-                            const yRange = yMax - yMin || niceStep
+                            // Generate labels anchored to starting balance (start is always a label)
+                            const yLabels = [startingBalance]
+                            // Add labels above start until we cover yMax
+                            for (let v = startingBalance + niceStep; v <= yMax + niceStep * 0.1; v += niceStep) {
+                              yLabels.push(v)
+                            }
+                            // Add labels below start until we cover yMin
+                            for (let v = startingBalance - niceStep; v >= yMin - niceStep * 0.1; v -= niceStep) {
+                              if (v >= 0 || dataMin < 0) yLabels.push(v)
+                            }
+                            // Sort from highest to lowest
+                            yLabels.sort((a, b) => b - a)
 
-                            const yLabels = []
-                            for (let v = yMax; v >= yMin; v -= niceStep) yLabels.push(v)
+                            // Update yMax/yMin to match label bounds
+                            yMax = yLabels[0]
+                            yMin = yLabels[yLabels.length - 1]
+                            const yRange = yMax - yMin || niceStep
 
                             const formatY = (v) => {
                               if (Math.abs(v) >= 1000000) return `$${(v/1000000).toFixed(1)}M`
