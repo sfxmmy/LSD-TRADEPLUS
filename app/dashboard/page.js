@@ -2012,14 +2012,14 @@ export default function DashboardPage() {
                             <div style={{ maxHeight: '120px', overflowY: 'auto' }}>
                               <table style={{ width: '100%', borderCollapse: 'collapse', tableLayout: 'fixed' }}>
                                 <thead>
-                                  <tr style={{ background: '#0a0a0f' }}>
-                                    <th style={{ padding: '6px 8px', textAlign: 'left', fontSize: '10px', color: '#888', fontWeight: 600, textTransform: 'uppercase', borderBottom: '1px solid #1a1a22' }}>Symbol</th>
-                                    <th style={{ padding: '6px 8px', textAlign: 'center', fontSize: '10px', color: '#888', fontWeight: 600, textTransform: 'uppercase', borderBottom: '1px solid #1a1a22' }}>Result</th>
-                                    <th style={{ padding: '6px 8px', textAlign: 'center', fontSize: '10px', color: '#888', fontWeight: 600, textTransform: 'uppercase', borderBottom: '1px solid #1a1a22' }}>PnL</th>
-                                    <th style={{ padding: '6px 8px', textAlign: 'center', fontSize: '10px', color: '#888', fontWeight: 600, textTransform: 'uppercase', borderBottom: '1px solid #1a1a22' }}>RR</th>
-                                    <th style={{ padding: '6px 8px', textAlign: 'center', fontSize: '10px', color: '#888', fontWeight: 600, textTransform: 'uppercase', borderBottom: '1px solid #1a1a22' }}>Rating</th>
-                                    <th style={{ padding: '6px 8px', textAlign: 'center', fontSize: '10px', color: '#888', fontWeight: 600, textTransform: 'uppercase', borderBottom: '1px solid #1a1a22' }}>Placed</th>
-                                    <th style={{ padding: '6px 8px', textAlign: 'right', fontSize: '10px', color: '#888', fontWeight: 600, textTransform: 'uppercase', borderBottom: '1px solid #1a1a22' }}>Date</th>
+                                  <tr style={{ background: '#0d0d12' }}>
+                                    <th style={{ padding: '6px 12px', textAlign: 'center', fontSize: '10px', color: '#888', fontWeight: 600, textTransform: 'uppercase', borderBottom: '1px solid #1a1a22' }}>Symbol</th>
+                                    <th style={{ padding: '6px 12px', textAlign: 'center', fontSize: '10px', color: '#888', fontWeight: 600, textTransform: 'uppercase', borderBottom: '1px solid #1a1a22' }}>Result</th>
+                                    <th style={{ padding: '6px 12px', textAlign: 'center', fontSize: '10px', color: '#888', fontWeight: 600, textTransform: 'uppercase', borderBottom: '1px solid #1a1a22' }}>PnL</th>
+                                    <th style={{ padding: '6px 12px', textAlign: 'center', fontSize: '10px', color: '#888', fontWeight: 600, textTransform: 'uppercase', borderBottom: '1px solid #1a1a22' }}>RR</th>
+                                    <th style={{ padding: '6px 12px', textAlign: 'center', fontSize: '10px', color: '#888', fontWeight: 600, textTransform: 'uppercase', borderBottom: '1px solid #1a1a22' }}>Rating</th>
+                                    <th style={{ padding: '6px 12px', textAlign: 'center', fontSize: '10px', color: '#888', fontWeight: 600, textTransform: 'uppercase', borderBottom: '1px solid #1a1a22' }}>Placed</th>
+                                    <th style={{ padding: '6px 12px', textAlign: 'center', fontSize: '10px', color: '#888', fontWeight: 600, textTransform: 'uppercase', borderBottom: '1px solid #1a1a22' }}>Date</th>
                                   </tr>
                                 </thead>
                                 <tbody>
@@ -2045,17 +2045,17 @@ export default function DashboardPage() {
                                       const dateStr = `${String(tradeDate.getDate()).padStart(2, '0')}/${String(tradeDate.getMonth() + 1).padStart(2, '0')}/${tradeDate.getFullYear().toString().slice(-2)}`
                                       return (
                                         <tr key={i} style={{ borderBottom: i < recent.length - 1 ? '1px solid #1a1a22' : 'none' }}>
-                                          <td style={{ padding: '6px 8px', fontSize: '10px', color: '#fff', fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{t.symbol || '-'}</td>
-                                          <td style={{ padding: '6px 8px', fontSize: '10px', textAlign: 'center', color: isWin ? '#22c55e' : '#ef4444', fontWeight: 600 }}>{isWin ? 'Win' : 'Loss'}</td>
-                                          <td style={{ padding: '6px 8px', fontSize: '10px', fontWeight: 600, color: pnl >= 0 ? '#22c55e' : '#ef4444', textAlign: 'center' }}>{pnl >= 0 ? '+' : ''}${Math.round(pnl)}</td>
-                                          <td style={{ padding: '6px 8px', fontSize: '10px', color: '#888', textAlign: 'center' }}>{rr > 0 ? rr.toFixed(1) : '-'}</td>
-                                          <td style={{ padding: '6px 8px', textAlign: 'center' }}>
+                                          <td style={{ padding: '6px 12px', fontSize: '10px', color: '#fff', fontWeight: 600, textAlign: 'center', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{t.symbol || '-'}</td>
+                                          <td style={{ padding: '6px 12px', fontSize: '10px', textAlign: 'center', color: isWin ? '#22c55e' : '#ef4444', fontWeight: 600 }}>{isWin ? 'Win' : 'Loss'}</td>
+                                          <td style={{ padding: '6px 12px', fontSize: '10px', fontWeight: 600, color: pnl >= 0 ? '#22c55e' : '#ef4444', textAlign: 'center' }}>{pnl >= 0 ? '+' : ''}${Math.round(pnl)}</td>
+                                          <td style={{ padding: '6px 12px', fontSize: '10px', color: '#888', textAlign: 'center' }}>{rr > 0 ? rr.toFixed(1) : '-'}</td>
+                                          <td style={{ padding: '6px 12px', textAlign: 'center' }}>
                                             <div style={{ display: 'inline-flex', gap: '1px' }}>
                                               {[1,2,3,4,5].map(star => <span key={star} style={{ color: rating >= star ? '#22c55e' : rating >= star - 0.5 ? '#22c55e' : '#2a2a35', fontSize: '10px' }}>★</span>)}
                                             </div>
                                           </td>
-                                          <td style={{ padding: '6px 8px', fontSize: '10px', color: '#888', textAlign: 'center' }}>{daysAgoText}</td>
-                                          <td style={{ padding: '6px 8px', fontSize: '10px', color: '#888', textAlign: 'right' }}>{dateStr}</td>
+                                          <td style={{ padding: '6px 12px', fontSize: '10px', color: '#888', textAlign: 'center' }}>{daysAgoText}</td>
+                                          <td style={{ padding: '6px 12px', fontSize: '10px', color: '#888', textAlign: 'center' }}>{dateStr}</td>
                                         </tr>
                                       )
                                     })
@@ -2066,8 +2066,8 @@ export default function DashboardPage() {
                           </div>
                         </div>
 
-                        {/* Buttons - 280px to match stats width */}
-                        <div style={{ width: '280px', flexShrink: 0, display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                        {/* Buttons - 280px to match stats width, extends up to stats */}
+                        <div style={{ width: '280px', flexShrink: 0, display: 'flex', flexDirection: 'column', gap: '6px', marginTop: '-24px' }}>
                           <a href="/journal" style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)', borderRadius: '8px', color: '#fff', fontWeight: 700, fontSize: '11px', textAlign: 'center', textDecoration: 'none', boxShadow: '0 4px 16px rgba(34,197,94,0.3)' }}>VIEW FULL JOURNAL</a>
                           <a href="/statistics" style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'transparent', border: '1px solid rgba(34,197,94,0.5)', borderRadius: '8px', color: '#22c55e', fontWeight: 600, fontSize: '11px', textAlign: 'center', textDecoration: 'none' }}>VIEW FULL STATISTICS</a>
                           <a href="/notes" style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'transparent', border: '1px solid rgba(34,197,94,0.5)', borderRadius: '8px', color: '#22c55e', fontWeight: 600, fontSize: '11px', textAlign: 'center', textDecoration: 'none' }}>VIEW FULL NOTES</a>
