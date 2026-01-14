@@ -1796,17 +1796,18 @@ export default function DashboardPage() {
 
                       {/* Graph + Stats Row */}
                       <div style={{ display: 'flex', gap: '24px', alignItems: 'flex-start' }}>
-                        {/* Graph with Y-axis and X-axis */}
-                        <div style={{ flex: '1 1 auto', minWidth: '400px', maxWidth: '550px' }}>
+                        {/* Graph with Y-axis and X-axis - matching account page structure */}
+                        <div style={{ flex: '1 1 auto', minWidth: '400px', maxWidth: '600px' }}>
                           {pnlPoints.length > 1 ? (() => {
-                            const svgW = 500, svgH = 160
+                            // Use normalized SVG coordinates like account page
+                            const svgW = 100, svgH = 100
                             const displayStartingBalance = stats.totalStartingBalance
 
-                            // Calculate tight Y-axis range like account page
+                            // Calculate tight Y-axis range
                             const actualMin = Math.min(minPnl, displayStartingBalance)
                             const actualMax = Math.max(maxPnl, displayStartingBalance)
                             const dataRange = actualMax - actualMin || 1000
-                            const paddingAmount = dataRange / 6
+                            const paddingAmount = dataRange * 0.15
 
                             let yMax = actualMax + paddingAmount
                             let yMin = actualMin - paddingAmount
@@ -1839,14 +1840,11 @@ export default function DashboardPage() {
                             const formatYLabel = (v) => {
                               const abs = Math.abs(v)
                               if (abs >= 1000000) return (v < 0 ? '-' : '') + '$' + (abs / 1000000).toFixed(1) + 'M'
-                              if (abs >= 1000) {
-                                const needsDecimal = yStep < 1000
-                                return (v < 0 ? '-' : '') + '$' + (needsDecimal ? (abs / 1000).toFixed(1) : (abs / 1000).toFixed(0)) + 'k'
-                              }
+                              if (abs >= 1000) return (v < 0 ? '-' : '') + '$' + (abs / 1000).toFixed(0) + 'k'
                               return (v < 0 ? '-' : '') + '$' + Math.round(abs)
                             }
 
-                            // Generate X-axis labels - matching account page structure
+                            // Generate X-axis labels
                             const xLabels = []
                             if (sortedTrades.length > 0) {
                               const firstDate = new Date(sortedTrades[0].date)
@@ -1861,10 +1859,11 @@ export default function DashboardPage() {
                               }
                             }
 
-                            // Calculate starting balance Y position in SVG
+                            // Calculate starting balance Y position
                             const startY = svgH - ((displayStartingBalance - yMin) / yRange) * svgH
-                            const startLineYPct = ((yMax - displayStartingBalance) / yRange) * 100
+                            const startLineY = ((yMax - displayStartingBalance) / yRange) * 100
 
+                            // Build chart points
                             const chartPts = pnlPoints.map((p, i) => ({
                               x: pnlPoints.length > 1 ? (i / (pnlPoints.length - 1)) * svgW : svgW / 2,
                               y: svgH - ((p.value - yMin) / yRange) * svgH,
@@ -1878,8 +1877,7 @@ export default function DashboardPage() {
                               const p1 = chartPts[i], p2 = chartPts[i + 1]
                               const above1 = p1.balance >= displayStartingBalance, above2 = p2.balance >= displayStartingBalance
                               if (above1 === above2) {
-                                const arr = above1 ? greenSegments : redSegments
-                                arr.push({ x1: p1.x, y1: p1.y, x2: p2.x, y2: p2.y })
+                                (above1 ? greenSegments : redSegments).push({ x1: p1.x, y1: p1.y, x2: p2.x, y2: p2.y })
                               } else {
                                 const t = (displayStartingBalance - p1.balance) / (p2.balance - p1.balance)
                                 const ix = p1.x + t * (p2.x - p1.x), iy = startY
@@ -1892,7 +1890,7 @@ export default function DashboardPage() {
                                 }
                               }
                             }
-                            const buildPath = (segs) => segs.map((s) => `M ${s.x1} ${s.y1} L ${s.x2} ${s.y2}`).join(' ')
+                            const buildPath = (segs) => segs.map(s => `M ${s.x1} ${s.y1} L ${s.x2} ${s.y2}`).join(' ')
                             const buildAreaPath = (segs) => segs.map(s => `M ${s.x1} ${s.y1} L ${s.x2} ${s.y2} L ${s.x2} ${startY} L ${s.x1} ${startY} Z`).join(' ')
                             const greenPath = buildPath(greenSegments)
                             const redPath = buildPath(redSegments)
@@ -1901,63 +1899,62 @@ export default function DashboardPage() {
 
                             return (
                               <div style={{ display: 'flex', flexDirection: 'column' }}>
-                                {/* Chart row - Y-axis and chart area aligned */}
-                                <div style={{ flex: 1, display: 'flex', height: '160px' }}>
-                                  {/* Y-axis labels - same height as chart */}
-                                  <div style={{ width: '28px', flexShrink: 0, position: 'relative', borderRight: '1px solid #2a2a35', borderBottom: '1px solid transparent', overflow: 'visible' }}>
+                                {/* Chart row - Y-axis and chart area */}
+                                <div style={{ flex: 1, display: 'flex', height: '140px' }}>
+                                  {/* Y-axis labels */}
+                                  <div style={{ width: '44px', flexShrink: 0, position: 'relative', borderRight: '1px solid #2a2a35', overflow: 'visible' }}>
                                     {yLabels.map((v, i) => {
                                       const topPct = yLabels.length > 1 ? (i / (yLabels.length - 1)) * 100 : 0
                                       return (
                                         <Fragment key={i}>
-                                          <span style={{ position: 'absolute', right: '5px', top: `${topPct}%`, transform: 'translateY(-50%)', fontSize: '8px', color: '#999', lineHeight: 1, textAlign: 'right' }}>{formatYLabel(v)}</span>
+                                          <span style={{ position: 'absolute', right: '6px', top: `${topPct}%`, transform: 'translateY(-50%)', fontSize: '9px', color: '#888', lineHeight: 1, textAlign: 'right' }}>{formatYLabel(v)}</span>
                                           <div style={{ position: 'absolute', right: 0, top: `${topPct}%`, width: '4px', borderTop: '1px solid #2a2a35' }} />
                                         </Fragment>
                                       )
                                     })}
-                                    {/* Starting balance on Y-axis - grey */}
-                                    {startLineYPct >= 0 && startLineYPct <= 100 && (
+                                    {/* Starting balance on Y-axis */}
+                                    {startLineY >= 0 && startLineY <= 100 && (
                                       <Fragment>
-                                        <span style={{ position: 'absolute', right: '5px', top: `${startLineYPct}%`, transform: 'translateY(-50%)', fontSize: '8px', color: '#888', lineHeight: 1, textAlign: 'right', fontWeight: 600 }}>{formatYLabel(displayStartingBalance)}</span>
-                                        <div style={{ position: 'absolute', right: 0, top: `${startLineYPct}%`, width: '4px', borderTop: '1px solid #888' }} />
+                                        <span style={{ position: 'absolute', right: '6px', top: `${startLineY}%`, transform: 'translateY(-50%)', fontSize: '9px', color: '#666', lineHeight: 1, textAlign: 'right', fontWeight: 600 }}>{formatYLabel(displayStartingBalance)}</span>
+                                        <div style={{ position: 'absolute', right: 0, top: `${startLineY}%`, width: '4px', borderTop: '1px solid #666' }} />
                                       </Fragment>
                                     )}
                                   </div>
                                   {/* Chart area */}
                                   <div style={{ flex: 1, position: 'relative', overflow: 'visible', borderBottom: '1px solid #2a2a35' }}>
-                                    {/* Horizontal grid lines - bottom line is x-axis border */}
+                                    {/* Horizontal grid lines */}
                                     <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}>
                                       {yLabels.map((_, i) => {
                                         const topPct = yLabels.length > 1 ? (i / (yLabels.length - 1)) * 100 : 0
-                                        const isLast = i === yLabels.length - 1
-                                        if (isLast) return null
+                                        if (i === yLabels.length - 1) return null
                                         return <div key={i} style={{ position: 'absolute', left: 0, right: 0, top: `${topPct}%`, borderTop: '1px solid rgba(51,51,51,0.5)' }} />
                                       })}
                                     </div>
                                     {/* Starting balance dashed line */}
-                                    {startLineYPct >= 0 && startLineYPct <= 100 && (
-                                      <div style={{ position: 'absolute', left: 0, right: 0, top: `${startLineYPct}%`, borderTop: '1px dashed #666', zIndex: 1 }} />
+                                    {startLineY >= 0 && startLineY <= 100 && (
+                                      <div style={{ position: 'absolute', left: 0, right: 0, top: `${startLineY}%`, borderTop: '1px dashed #666', zIndex: 1 }} />
                                     )}
-                                    {/* SVG Chart with split colors */}
+                                    {/* SVG Chart */}
                                     <svg style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', overflow: 'visible', zIndex: 2 }} viewBox={`0 0 ${svgW} ${svgH}`} preserveAspectRatio="none">
                                       <defs>
-                                        <linearGradient id="eqGreenDash" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stopColor="#22c55e" stopOpacity="0.3" /><stop offset="100%" stopColor="#22c55e" stopOpacity="0" /></linearGradient>
-                                        <linearGradient id="eqRedDash" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stopColor="#ef4444" stopOpacity="0.3" /><stop offset="100%" stopColor="#ef4444" stopOpacity="0" /></linearGradient>
+                                        <linearGradient id="dashGreen" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stopColor="#22c55e" stopOpacity="0.3" /><stop offset="100%" stopColor="#22c55e" stopOpacity="0" /></linearGradient>
+                                        <linearGradient id="dashRed" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stopColor="#ef4444" stopOpacity="0.3" /><stop offset="100%" stopColor="#ef4444" stopOpacity="0" /></linearGradient>
                                       </defs>
-                                      {greenAreaPath && <path d={greenAreaPath} fill="url(#eqGreenDash)" />}
-                                      {redAreaPath && <path d={redAreaPath} fill="url(#eqRedDash)" />}
+                                      {greenAreaPath && <path d={greenAreaPath} fill="url(#dashGreen)" />}
+                                      {redAreaPath && <path d={redAreaPath} fill="url(#dashRed)" />}
                                       {greenPath && <path d={greenPath} fill="none" stroke="#22c55e" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />}
                                       {redPath && <path d={redPath} fill="none" stroke="#ef4444" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />}
                                     </svg>
                                   </div>
                                 </div>
-                                {/* X-axis row - spacer + labels */}
+                                {/* X-axis labels */}
                                 <div style={{ display: 'flex' }}>
-                                  <div style={{ width: '28px', flexShrink: 0 }} />
-                                  <div style={{ flex: 1, height: '24px', position: 'relative' }}>
+                                  <div style={{ width: '44px', flexShrink: 0 }} />
+                                  <div style={{ flex: 1, height: '22px', position: 'relative' }}>
                                     {xLabels.map((l, i) => (
                                       <div key={i} style={{ position: 'absolute', left: `${l.pct}%`, transform: 'translateX(-50%)', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                                         <div style={{ width: '1px', height: '4px', background: '#2a2a35' }} />
-                                        <span style={{ fontSize: '9px', color: '#999', marginTop: '4px', whiteSpace: 'nowrap' }}>{l.label}</span>
+                                        <span style={{ fontSize: '9px', color: '#888', marginTop: '2px', whiteSpace: 'nowrap' }}>{l.label}</span>
                                       </div>
                                     ))}
                                   </div>
@@ -1965,7 +1962,7 @@ export default function DashboardPage() {
                               </div>
                             )
                           })() : (
-                            <div style={{ height: '180px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#444', fontSize: '12px' }}>No data yet</div>
+                            <div style={{ height: '160px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#444', fontSize: '12px' }}>No data yet</div>
                           )}
                         </div>
 
