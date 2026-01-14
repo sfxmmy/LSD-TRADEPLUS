@@ -1822,8 +1822,8 @@ export default function DashboardPage() {
 
                       {/* Main content: Graph (1.5 journal card width) + Right panel (stats, trades, buttons) */}
                       <div style={{ display: 'flex', flex: 1, padding: '0 12px 12px 12px', gap: '12px' }}>
-                        {/* Chart - 50% width (1.5 journal cards), full height with border */}
-                        <div style={{ width: '50%', flexShrink: 0, background: 'rgba(0,0,0,0.3)', border: '1px solid #1a1a22', borderRadius: '10px', padding: '10px', display: 'flex', flexDirection: 'column' }}>
+                        {/* Chart - 50% width (1.5 journal cards), full height */}
+                        <div style={{ width: '50%', flexShrink: 0, display: 'flex', flexDirection: 'column' }}>
                           {(() => {
                             const startBal = stats.totalStartingBalance || 0
                             let runningBal = startBal
@@ -1914,8 +1914,8 @@ export default function DashboardPage() {
                             const mkArea = segs => segs.map(s => `M${s.x1},${s.y1}L${s.x2},${s.y2}L${s.x2},${startSvgY}L${s.x1},${startSvgY}Z`).join('')
 
                             return (
-                              <div style={{ display: 'flex', flexDirection: 'column', marginLeft: '-12px' }}>
-                                <div style={{ display: 'flex', height: '200px' }}>
+                              <div style={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
+                                <div style={{ display: 'flex', flex: 1, minHeight: '250px' }}>
                                   <div style={{ width: '42px', flexShrink: 0, position: 'relative', borderRight: '1px solid #2a2a35', overflow: 'visible' }}>
                                     {yLabels.map((v, i) => {
                                       const topPct = yLabels.length > 1 ? (i / (yLabels.length - 1)) * 100 : 0
@@ -2011,11 +2011,11 @@ export default function DashboardPage() {
                               <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                                 <thead style={{ position: 'sticky', top: 0 }}>
                                   <tr style={{ background: '#0d0d12' }}>
-                                    <th style={{ padding: '4px 6px', textAlign: 'left', fontSize: '8px', color: '#666', fontWeight: 600, borderBottom: '1px solid #1a1a22' }}>SYM</th>
-                                    <th style={{ padding: '4px 4px', textAlign: 'center', fontSize: '8px', color: '#666', fontWeight: 600, borderBottom: '1px solid #1a1a22' }}>W/L</th>
-                                    <th style={{ padding: '4px 4px', textAlign: 'right', fontSize: '8px', color: '#666', fontWeight: 600, borderBottom: '1px solid #1a1a22' }}>PNL</th>
-                                    <th style={{ padding: '4px 4px', textAlign: 'center', fontSize: '8px', color: '#666', fontWeight: 600, borderBottom: '1px solid #1a1a22' }}>DATE</th>
-                                    <th style={{ padding: '4px 6px', textAlign: 'right', fontSize: '8px', color: '#666', fontWeight: 600, borderBottom: '1px solid #1a1a22' }}>AGO</th>
+                                    <th style={{ padding: '4px 12px', textAlign: 'center', fontSize: '8px', color: '#666', fontWeight: 600, borderBottom: '1px solid #1a1a22' }}>SYM</th>
+                                    <th style={{ padding: '4px 12px', textAlign: 'center', fontSize: '8px', color: '#666', fontWeight: 600, borderBottom: '1px solid #1a1a22' }}>W/L</th>
+                                    <th style={{ padding: '4px 12px', textAlign: 'center', fontSize: '8px', color: '#666', fontWeight: 600, borderBottom: '1px solid #1a1a22' }}>PNL</th>
+                                    <th style={{ padding: '4px 12px', textAlign: 'center', fontSize: '8px', color: '#666', fontWeight: 600, borderBottom: '1px solid #1a1a22' }}>DATE</th>
+                                    <th style={{ padding: '4px 12px', textAlign: 'center', fontSize: '8px', color: '#666', fontWeight: 600, borderBottom: '1px solid #1a1a22' }}>AGO</th>
                                   </tr>
                                 </thead>
                                 <tbody>
@@ -2031,11 +2031,11 @@ export default function DashboardPage() {
                                       const dateStr = `${String(tradeDate.getDate()).padStart(2, '0')}/${String(tradeDate.getMonth() + 1).padStart(2, '0')}`
                                       return (
                                         <tr key={i} style={{ borderBottom: i < recent.length - 1 ? '1px solid #1a1a22' : 'none' }}>
-                                          <td style={{ padding: '3px 6px', fontSize: '9px', color: '#fff', fontWeight: 600 }}>{t.symbol?.slice(0,6) || '-'}</td>
-                                          <td style={{ padding: '3px 4px', fontSize: '9px', textAlign: 'center', color: isWin ? '#22c55e' : '#ef4444', fontWeight: 600 }}>{isWin ? 'W' : 'L'}</td>
-                                          <td style={{ padding: '3px 4px', fontSize: '9px', fontWeight: 600, color: pnl >= 0 ? '#22c55e' : '#ef4444', textAlign: 'right' }}>{pnl >= 0 ? '+' : ''}{Math.round(pnl)}</td>
-                                          <td style={{ padding: '3px 4px', fontSize: '8px', color: '#888', textAlign: 'center' }}>{dateStr}</td>
-                                          <td style={{ padding: '3px 6px', fontSize: '8px', color: '#666', textAlign: 'right' }}>{daysAgoText}</td>
+                                          <td style={{ padding: '3px 12px', fontSize: '9px', color: '#fff', fontWeight: 600, textAlign: 'center' }}>{t.symbol?.slice(0,6) || '-'}</td>
+                                          <td style={{ padding: '3px 12px', fontSize: '9px', textAlign: 'center', color: isWin ? '#22c55e' : '#ef4444', fontWeight: 600 }}>{isWin ? 'W' : 'L'}</td>
+                                          <td style={{ padding: '3px 12px', fontSize: '9px', fontWeight: 600, color: pnl >= 0 ? '#22c55e' : '#ef4444', textAlign: 'center' }}>{pnl >= 0 ? '+' : ''}{Math.round(pnl)}</td>
+                                          <td style={{ padding: '3px 12px', fontSize: '8px', color: '#888', textAlign: 'center' }}>{dateStr}</td>
+                                          <td style={{ padding: '3px 12px', fontSize: '8px', color: '#666', textAlign: 'center' }}>{daysAgoText}</td>
                                         </tr>
                                       )
                                     })
