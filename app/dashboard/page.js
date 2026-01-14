@@ -1809,19 +1809,25 @@ export default function DashboardPage() {
 
                   return (
                     <div style={{ background: 'linear-gradient(135deg, #0f0f14 0%, #0a0a0f 100%)', border: '1px solid #1a1a22', borderRadius: '16px', overflow: 'hidden', display: 'flex', flexDirection: 'column', boxShadow: '0 4px 24px rgba(0,0,0,0.3)' }}>
-                      {/* Header - Title + Balance */}
+                      {/* Header - Title + PnL + Balance */}
                       <div style={{ padding: '12px' }}>
                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                           <span style={{ fontSize: '20px', fontWeight: 700, color: '#fff' }}>Overall Stats</span>
-                          <div style={{ width: '280px', padding: '6px 12px', border: `1px solid ${isProfitable ? 'rgba(34,197,94,0.4)' : 'rgba(239,68,68,0.4)'}`, borderRadius: '8px', background: isProfitable ? 'rgba(34,197,94,0.1)' : 'rgba(239,68,68,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                            <span style={{ fontSize: '11px', color: '#888', marginRight: '6px' }}>Balance:</span>
-                            <span style={{ fontSize: '14px', fontWeight: 700, color: isProfitable ? '#22c55e' : '#ef4444' }}>${Math.round(totalBalance).toLocaleString()}</span>
+                          <div style={{ display: 'flex', gap: '10px' }}>
+                            <div style={{ padding: '6px 12px', border: `1px solid ${cumPnl >= 0 ? 'rgba(34,197,94,0.4)' : 'rgba(239,68,68,0.4)'}`, borderRadius: '8px', background: cumPnl >= 0 ? 'rgba(34,197,94,0.1)' : 'rgba(239,68,68,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                              <span style={{ fontSize: '11px', color: '#888', marginRight: '6px' }}>PnL:</span>
+                              <span style={{ fontSize: '14px', fontWeight: 700, color: cumPnl >= 0 ? '#22c55e' : '#ef4444' }}>{cumPnl >= 0 ? '+' : ''}${Math.round(cumPnl).toLocaleString()}</span>
+                            </div>
+                            <div style={{ padding: '6px 12px', border: `1px solid ${isProfitable ? 'rgba(34,197,94,0.4)' : 'rgba(239,68,68,0.4)'}`, borderRadius: '8px', background: isProfitable ? 'rgba(34,197,94,0.1)' : 'rgba(239,68,68,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                              <span style={{ fontSize: '11px', color: '#888', marginRight: '6px' }}>Balance:</span>
+                              <span style={{ fontSize: '14px', fontWeight: 700, color: isProfitable ? '#22c55e' : '#ef4444' }}>${Math.round(totalBalance).toLocaleString()}</span>
+                            </div>
                           </div>
                         </div>
                       </div>
 
-                      {/* Main content: Graph (1.5 journal card width) + Right panel (stats, trades, buttons) */}
-                      <div style={{ display: 'flex', flex: 1, padding: '0 12px 0 0', gap: '12px' }}>
+                      {/* Main content: Graph (1.5 journal card width) + Right panel (stats, buttons) */}
+                      <div style={{ display: 'flex', flex: 1, padding: '0 12px 12px 0', gap: '12px' }}>
                         {/* Chart - 50% width (1.5 journal cards), full height */}
                         <div style={{ width: '50%', flexShrink: 0, display: 'flex', flexDirection: 'column' }}>
                           {(() => {
@@ -1983,17 +1989,17 @@ export default function DashboardPage() {
                         {/* Right Panel: Stats (2 cols top-to-bottom) + Buttons bottom right */}
                         <div style={{ flex: 1, display: 'flex', gap: '12px' }}>
                           {/* Stats - 2 columns, flows top to bottom */}
-                          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gridTemplateRows: 'repeat(6, auto)', gridAutoFlow: 'column', gap: '4px 20px' }}>
+                          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gridTemplateRows: 'repeat(6, auto)', gridAutoFlow: 'column', gap: '4px 20px', alignContent: 'end' }}>
                             {[
-                              { label: 'Total PnL', value: `${cumPnl >= 0 ? '+' : ''}$${Math.round(cumPnl).toLocaleString()}`, color: cumPnl >= 0 ? '#22c55e' : '#ef4444' },
+                              { label: 'Trades', value: stats.totalTrades, color: '#fff' },
                               { label: 'Winrate', value: `${stats.winrate}%`, color: stats.winrate >= 50 ? '#22c55e' : '#ef4444' },
-                              { label: 'W / L', value: `${stats.totalWins} / ${stats.totalLosses}`, color: '#fff' },
+                              { label: 'Wins', value: stats.totalWins, color: '#22c55e' },
                               { label: 'Avg Win', value: `+$${avgWin}`, color: '#22c55e' },
                               { label: 'Win Streak', value: winStreak, color: '#22c55e' },
                               { label: 'Day WR', value: `${dayWR}%`, color: dayWR >= 50 ? '#22c55e' : '#ef4444' },
-                              { label: 'Trades', value: stats.totalTrades, color: '#fff' },
                               { label: 'Profit Factor', value: stats.profitFactor, color: stats.profitFactor === '-' ? '#666' : stats.profitFactor === '∞' ? '#22c55e' : parseFloat(stats.profitFactor) >= 1 ? '#22c55e' : '#ef4444' },
                               { label: 'Consistency', value: `${consistency}%`, color: consistency >= 50 ? '#22c55e' : '#ef4444' },
+                              { label: 'Losses', value: stats.totalLosses, color: '#ef4444' },
                               { label: 'Avg Loss', value: `$${avgLoss}`, color: avgLoss >= 0 ? '#22c55e' : '#ef4444' },
                               { label: 'Loss Streak', value: lossStreak, color: '#ef4444' },
                               { label: 'Expectancy', value: `${expectancy >= 0 ? '+' : ''}$${expectancy}`, color: expectancy >= 0 ? '#22c55e' : '#ef4444' },
@@ -2007,8 +2013,8 @@ export default function DashboardPage() {
 
                           {/* Right side: empty space top, buttons bottom */}
                           <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'flex-end' }}>
-                            {/* Buttons - stacked vertically at bottom */}
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', width: '120px' }}>
+                            {/* Buttons - stacked vertically at bottom, wider */}
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                               <a href="/journal" style={{ padding: '10px', background: 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)', borderRadius: '6px', color: '#fff', fontWeight: 700, fontSize: '11px', textAlign: 'center', textDecoration: 'none' }}>JOURNAL</a>
                               <a href="/statistics" style={{ padding: '10px', background: 'transparent', border: '1px solid rgba(34,197,94,0.5)', borderRadius: '6px', color: '#22c55e', fontWeight: 600, fontSize: '11px', textAlign: 'center', textDecoration: 'none' }}>STATISTICS</a>
                               <a href="/notes" style={{ padding: '10px', background: 'transparent', border: '1px solid rgba(34,197,94,0.5)', borderRadius: '6px', color: '#22c55e', fontWeight: 600, fontSize: '11px', textAlign: 'center', textDecoration: 'none' }}>NOTES</a>
