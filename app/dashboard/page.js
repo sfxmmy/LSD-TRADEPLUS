@@ -1819,7 +1819,7 @@ export default function DashboardPage() {
                             <div style={{ fontSize: '13px', color: '#666', marginBottom: '2px' }}>Overall Stats</div>
                             <div style={{ display: 'flex', alignItems: 'baseline', gap: '12px' }}>
                               <span style={{ fontSize: '24px', fontWeight: 700, color: isProfitable ? '#22c55e' : '#ef4444' }}>${Math.round(totalBalance).toLocaleString()}</span>
-                              <span style={{ fontSize: '12px', color: '#555' }}>INITIAL BALANCE <span style={{ fontWeight: 600, color: '#888' }}>${Math.round(stats.totalStartingBalance).toLocaleString()}</span></span>
+                              <span style={{ fontSize: '12px', color: '#555' }}><span style={{ fontWeight: 600, color: '#888' }}>${Math.round(stats.totalStartingBalance).toLocaleString()}</span> INITIAL BALANCE</span>
                             </div>
                           </div>
                         </div>
