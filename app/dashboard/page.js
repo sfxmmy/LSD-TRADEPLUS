@@ -1115,10 +1115,23 @@ export default function DashboardPage() {
     else niceStep = 10 * magnitude
 
     const yStep = niceStep
-    yMax = Math.ceil(yMax / yStep) * yStep
-    yMin = Math.floor(yMin / yStep) * yStep
-    // Don't go negative if data is all positive
-    if (yMin < 0 && actualMin >= 0 && !showObjectiveLines) yMin = 0
+
+    // Generate labels anchored to starting balance (start is always a label)
+    const yLabels = [start]
+    // Add labels above start until we cover yMax
+    for (let v = start + yStep; v <= yMax + yStep * 0.1; v += yStep) {
+      yLabels.push(v)
+    }
+    // Add labels below start until we cover yMin
+    for (let v = start - yStep; v >= yMin - yStep * 0.1; v -= yStep) {
+      if (v >= 0 || hasNegative || showObjectiveLines) yLabels.push(v) // Only add negative if needed
+    }
+    // Sort from highest to lowest
+    yLabels.sort((a, b) => b - a)
+
+    // Update yMax/yMin to match label bounds
+    yMax = yLabels[0]
+    yMin = yLabels[yLabels.length - 1]
 
     const yRange = yMax - yMin || yStep
 
@@ -1129,11 +1142,6 @@ export default function DashboardPage() {
     // Calculate prop firm lines - always show if they exist
     const ddFloorY = ddFloor ? ((yMax - ddFloor) / yRange) * 100 : null
     const profitTargetY = profitTarget ? ((yMax - profitTarget) / yRange) * 100 : null
-
-    const yLabels = []
-    for (let v = yMax; v >= yMin; v -= yStep) {
-      yLabels.push(v)
-    }
 
     // Format y-axis label with appropriate precision based on step size
     const formatYLabel = (v) => {
@@ -1346,20 +1354,14 @@ export default function DashboardPage() {
           <div style={{ width: '30px', flexShrink: 0, position: 'relative', borderRight: '1px solid #2a2a35', borderBottom: '1px solid transparent', overflow: 'visible' }}>
             {yLabels.map((v, i) => {
               const topPct = yLabels.length > 1 ? (i / (yLabels.length - 1)) * 100 : 0
+              const isStart = v === start
               return (
-                <>
-                  <span key={`label-${i}`} style={{ position: 'absolute', right: '5px', top: `${topPct}%`, transform: 'translateY(-50%)', fontSize: '10px', color: '#999', lineHeight: 1, textAlign: 'right' }}>{formatYLabel(v)}</span>
-                  <div key={`tick-${i}`} style={{ position: 'absolute', right: 0, top: `${topPct}%`, width: '4px', borderTop: '1px solid #333' }} />
-                </>
+                <Fragment key={i}>
+                  <span style={{ position: 'absolute', right: '5px', top: `${topPct}%`, transform: 'translateY(-50%)', fontSize: '10px', color: isStart ? '#888' : '#999', lineHeight: 1, textAlign: 'right', fontWeight: isStart ? 600 : 400 }}>{isStart ? 'Start' : formatYLabel(v)}</span>
+                  <div style={{ position: 'absolute', right: 0, top: `${topPct}%`, width: '4px', borderTop: `1px solid ${isStart ? '#888' : '#333'}` }} />
+                </Fragment>
               )
             })}
-            {/* Grey start value on Y-axis */}
-            {startLineY !== null && (
-              <>
-                <span style={{ position: 'absolute', right: '5px', top: `${startLineY}%`, transform: 'translateY(-50%)', fontSize: '10px', color: '#888', lineHeight: 1, fontWeight: 600, textAlign: 'right' }}>{formatYLabel(start)}</span>
-                <div style={{ position: 'absolute', right: 0, top: `${startLineY}%`, width: '4px', borderTop: '1px solid #888' }} />
-              </>
-            )}
           </div>
           {/* Chart area */}
           <div style={{ flex: 1, position: 'relative', overflow: 'visible', borderBottom: '1px solid #2a2a35' }}>
@@ -1983,7 +1985,7 @@ export default function DashboardPage() {
                         </div>
 
                         {/* Right Panel: Stats (2 cols top-to-bottom) + Buttons bottom right */}
-                        <div style={{ flex: 1, display: 'flex', gap: '12px', paddingBottom: '28px' }}>
+                        <div style={{ flex: 1, display: 'flex', gap: '12px', paddingBottom: '31px' }}>
                           {/* Stats - 2 columns, flows top to bottom, full height with 2 grey lines at top */}
                           <div style={{ flex: 2, display: 'flex', flexDirection: 'column' }}>
                             {/* Two grey lines side by side at top (matching column gap) */}
