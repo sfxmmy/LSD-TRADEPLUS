@@ -2686,7 +2686,7 @@ export default function AccountPage() {
                                       const isStart = v === displayStartingBalance
                                       return (
                                         <Fragment key={i}>
-                                          <span style={{ position: 'absolute', right: '5px', top: `${topPct}%`, transform: 'translateY(-50%)', fontSize: '8px', color: '#999', lineHeight: isStart ? 1.2 : 1, textAlign: 'right', fontWeight: 400 }}>{isStart ? <><span style={{ display: 'block' }}>Start</span><span style={{ display: 'block' }}>{formatYLabel(v)}</span></> : formatYLabel(v)}</span>
+                                          <span style={{ position: 'absolute', right: '5px', top: `${topPct}%`, transform: 'translateY(-50%)', fontSize: '8px', color: '#999', lineHeight: 1, textAlign: 'right', fontWeight: 400 }}>{formatYLabel(v)}</span>
                                           <div style={{ position: 'absolute', right: 0, top: `${topPct}%`, width: '4px', borderTop: `1px solid ${isStart ? '#888' : '#2a2a35'}` }} />
                                         </Fragment>
                                       )
@@ -2722,7 +2722,12 @@ export default function AccountPage() {
                                         const isLast = i === yLabels.length - 1
                                         if (isLast) return null
                                         const isStart = v === displayStartingBalance
-                                        return <div key={i} style={{ position: 'absolute', left: 0, right: 0, top: `${topPct}%`, borderTop: isStart ? '1px dashed #666' : '1px solid rgba(51,51,51,0.5)', zIndex: isStart ? 1 : 0 }} />
+                                        return (
+                                          <Fragment key={i}>
+                                            <div style={{ position: 'absolute', left: 0, right: isStart ? '40px' : 0, top: `${topPct}%`, borderTop: isStart ? '1px dashed #666' : '1px solid rgba(51,51,51,0.5)', zIndex: isStart ? 1 : 0 }} />
+                                            {isStart && <span style={{ position: 'absolute', right: '4px', top: `${topPct}%`, transform: 'translateY(-50%)', fontSize: '8px', color: '#666', fontWeight: 500 }}>Start</span>}
+                                          </Fragment>
+                                        )
                                       })}
                                     </div>
                                     {/* Zero line if negative */}
@@ -5105,7 +5110,7 @@ export default function AccountPage() {
                           const isStart = v === startingBalance
                           return (
                             <Fragment key={i}>
-                              <span style={{ position: 'absolute', right: '5px', top: `${topPct}%`, transform: 'translateY(-50%)', fontSize: '10px', color: '#999', lineHeight: isStart ? 1.2 : 1, textAlign: 'right', fontWeight: 400 }}>{isStart ? <><span style={{ display: 'block' }}>Start</span><span style={{ display: 'block' }}>{formatYLabelEnl(v)}</span></> : formatYLabelEnl(v)}</span>
+                              <span style={{ position: 'absolute', right: '5px', top: `${topPct}%`, transform: 'translateY(-50%)', fontSize: '10px', color: '#999', lineHeight: 1, textAlign: 'right', fontWeight: 400 }}>{formatYLabelEnl(v)}</span>
                               <div style={{ position: 'absolute', right: 0, top: `${topPct}%`, width: '4px', borderTop: `1px solid ${isStart ? '#888' : '#2a2a35'}` }} />
                             </Fragment>
                           )
@@ -5134,7 +5139,12 @@ export default function AccountPage() {
                               const isLast = i === yLabels.length - 1
                               if (isLast) return null
                               const isStart = v === startingBalance
-                              return <div key={i} style={{ position: 'absolute', left: 0, right: 0, top: `${topPct}%`, borderTop: isStart ? '1px dashed #666' : '1px solid rgba(51,51,51,0.5)', zIndex: isStart ? 1 : 0 }} />
+                              return (
+                                <Fragment key={i}>
+                                  <div style={{ position: 'absolute', left: 0, right: isStart ? '40px' : 0, top: `${topPct}%`, borderTop: isStart ? '1px dashed #666' : '1px solid rgba(51,51,51,0.5)', zIndex: isStart ? 1 : 0 }} />
+                                  {isStart && <span style={{ position: 'absolute', right: '4px', top: `${topPct}%`, transform: 'translateY(-50%)', fontSize: '10px', color: '#666', fontWeight: 500 }}>Start</span>}
+                                </Fragment>
+                              )
                             })}
                           </div>
                           {zeroY !== null && <div style={{ position: 'absolute', left: 0, right: 0, top: `${zeroY}%`, borderTop: '1px solid rgba(51,51,51,0.5)', zIndex: 1 }}><span style={{ position: 'absolute', left: '-60px', top: '-6px', fontSize: '11px', color: '#666' }}>$0</span></div>}
