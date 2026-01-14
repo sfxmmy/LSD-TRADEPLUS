@@ -2005,23 +2005,23 @@ export default function DashboardPage() {
                             ))}
                           </div>
 
-                          {/* Recent Trades - Increased height */}
+                          {/* Recent Trades - Show 2.5 trades */}
                           <div style={{ flex: 1, background: '#0d0d12', borderRadius: '6px', border: '1px solid #1a1a22', overflow: 'hidden' }}>
-                            <div style={{ maxHeight: '120px', overflowY: 'auto' }}>
+                            <div style={{ maxHeight: '95px', overflowY: 'auto' }}>
                               <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                                 <thead style={{ position: 'sticky', top: 0 }}>
                                   <tr style={{ background: '#0d0d12' }}>
-                                    <th style={{ padding: '4px 12px', textAlign: 'center', fontSize: '8px', color: '#666', fontWeight: 600, borderBottom: '1px solid #1a1a22' }}>SYM</th>
-                                    <th style={{ padding: '4px 12px', textAlign: 'center', fontSize: '8px', color: '#666', fontWeight: 600, borderBottom: '1px solid #1a1a22' }}>W/L</th>
-                                    <th style={{ padding: '4px 12px', textAlign: 'center', fontSize: '8px', color: '#666', fontWeight: 600, borderBottom: '1px solid #1a1a22' }}>PNL</th>
-                                    <th style={{ padding: '4px 12px', textAlign: 'center', fontSize: '8px', color: '#666', fontWeight: 600, borderBottom: '1px solid #1a1a22' }}>DATE</th>
-                                    <th style={{ padding: '4px 12px', textAlign: 'center', fontSize: '8px', color: '#666', fontWeight: 600, borderBottom: '1px solid #1a1a22' }}>AGO</th>
+                                    <th style={{ padding: '6px 12px', textAlign: 'center', fontSize: '11px', color: '#666', fontWeight: 600, borderBottom: '1px solid #1a1a22' }}>SYM</th>
+                                    <th style={{ padding: '6px 12px', textAlign: 'center', fontSize: '11px', color: '#666', fontWeight: 600, borderBottom: '1px solid #1a1a22' }}>W/L</th>
+                                    <th style={{ padding: '6px 12px', textAlign: 'center', fontSize: '11px', color: '#666', fontWeight: 600, borderBottom: '1px solid #1a1a22' }}>PNL</th>
+                                    <th style={{ padding: '6px 12px', textAlign: 'center', fontSize: '11px', color: '#666', fontWeight: 600, borderBottom: '1px solid #1a1a22' }}>DATE</th>
+                                    <th style={{ padding: '6px 12px', textAlign: 'center', fontSize: '11px', color: '#666', fontWeight: 600, borderBottom: '1px solid #1a1a22' }}>AGO</th>
                                   </tr>
                                 </thead>
                                 <tbody>
                                   {(() => {
-                                    const recent = allTrades.slice().sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, 5)
-                                    if (recent.length === 0) return <tr><td colSpan="5" style={{ padding: '10px', textAlign: 'center', color: '#444', fontSize: '9px' }}>No trades</td></tr>
+                                    const recent = allTrades.slice().sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, 3)
+                                    if (recent.length === 0) return <tr><td colSpan="5" style={{ padding: '10px', textAlign: 'center', color: '#444', fontSize: '11px' }}>No trades</td></tr>
                                     return recent.map((t, i) => {
                                       const pnl = parseFloat(t.pnl) || 0
                                       const isWin = t.outcome === 'win'
@@ -2031,11 +2031,13 @@ export default function DashboardPage() {
                                       const dateStr = `${String(tradeDate.getDate()).padStart(2, '0')}/${String(tradeDate.getMonth() + 1).padStart(2, '0')}`
                                       return (
                                         <tr key={i} style={{ borderBottom: i < recent.length - 1 ? '1px solid #1a1a22' : 'none' }}>
-                                          <td style={{ padding: '3px 12px', fontSize: '9px', color: '#fff', fontWeight: 600, textAlign: 'center' }}>{t.symbol?.slice(0,6) || '-'}</td>
-                                          <td style={{ padding: '3px 12px', fontSize: '9px', textAlign: 'center', color: isWin ? '#22c55e' : '#ef4444', fontWeight: 600 }}>{isWin ? 'W' : 'L'}</td>
-                                          <td style={{ padding: '3px 12px', fontSize: '9px', fontWeight: 600, color: pnl >= 0 ? '#22c55e' : '#ef4444', textAlign: 'center' }}>{pnl >= 0 ? '+' : ''}{Math.round(pnl)}</td>
-                                          <td style={{ padding: '3px 12px', fontSize: '8px', color: '#888', textAlign: 'center' }}>{dateStr}</td>
-                                          <td style={{ padding: '3px 12px', fontSize: '8px', color: '#666', textAlign: 'center' }}>{daysAgoText}</td>
+                                          <td style={{ padding: '6px 12px', fontSize: '11px', color: '#fff', fontWeight: 600, textAlign: 'center' }}>{t.symbol?.slice(0,6) || '-'}</td>
+                                          <td style={{ padding: '6px 12px', textAlign: 'center' }}>
+                                            <span style={{ padding: '2px 8px', borderRadius: '4px', fontSize: '11px', fontWeight: 600, color: isWin ? '#22c55e' : '#ef4444', background: isWin ? 'rgba(34,197,94,0.15)' : 'rgba(239,68,68,0.15)' }}>{isWin ? 'W' : 'L'}</span>
+                                          </td>
+                                          <td style={{ padding: '6px 12px', fontSize: '11px', fontWeight: 600, color: pnl >= 0 ? '#22c55e' : '#ef4444', textAlign: 'center' }}>{pnl >= 0 ? '+' : ''}{Math.round(pnl)}</td>
+                                          <td style={{ padding: '6px 12px', fontSize: '11px', color: '#888', textAlign: 'center' }}>{dateStr}</td>
+                                          <td style={{ padding: '6px 12px', fontSize: '11px', color: '#666', textAlign: 'center' }}>{daysAgoText}</td>
                                         </tr>
                                       )
                                     })
@@ -2045,11 +2047,11 @@ export default function DashboardPage() {
                             </div>
                           </div>
 
-                          {/* Buttons - horizontal row */}
+                          {/* Buttons - horizontal row, doubled height */}
                           <div style={{ display: 'flex', flexDirection: 'row', gap: '8px' }}>
-                            <a href="/journal" style={{ flex: 1, padding: '8px', background: 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)', borderRadius: '6px', color: '#fff', fontWeight: 700, fontSize: '9px', textAlign: 'center', textDecoration: 'none' }}>JOURNAL</a>
-                            <a href="/statistics" style={{ flex: 1, padding: '8px', background: 'transparent', border: '1px solid rgba(34,197,94,0.5)', borderRadius: '6px', color: '#22c55e', fontWeight: 600, fontSize: '9px', textAlign: 'center', textDecoration: 'none' }}>STATISTICS</a>
-                            <a href="/notes" style={{ flex: 1, padding: '8px', background: 'transparent', border: '1px solid rgba(34,197,94,0.5)', borderRadius: '6px', color: '#22c55e', fontWeight: 600, fontSize: '9px', textAlign: 'center', textDecoration: 'none' }}>NOTES</a>
+                            <a href="/journal" style={{ flex: 1, padding: '16px', background: 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)', borderRadius: '6px', color: '#fff', fontWeight: 700, fontSize: '11px', textAlign: 'center', textDecoration: 'none' }}>JOURNAL</a>
+                            <a href="/statistics" style={{ flex: 1, padding: '16px', background: 'transparent', border: '1px solid rgba(34,197,94,0.5)', borderRadius: '6px', color: '#22c55e', fontWeight: 600, fontSize: '11px', textAlign: 'center', textDecoration: 'none' }}>STATISTICS</a>
+                            <a href="/notes" style={{ flex: 1, padding: '16px', background: 'transparent', border: '1px solid rgba(34,197,94,0.5)', borderRadius: '6px', color: '#22c55e', fontWeight: 600, fontSize: '11px', textAlign: 'center', textDecoration: 'none' }}>NOTES</a>
                           </div>
                         </div>
                       </div>
