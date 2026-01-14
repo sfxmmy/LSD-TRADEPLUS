@@ -75,6 +75,12 @@ function getAccountOptionStyles(account, field, value) {
   return { textColor: '#fff', bgColor: null, borderColor: null }
 }
 
+// Format currency with 2 decimal places
+function formatCurrency(num) {
+  const val = parseFloat(num) || 0
+  return val.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+}
+
 export default function DashboardPage() {
   const router = useRouter()
   const [user, setUser] = useState(null)
@@ -716,7 +722,18 @@ export default function DashboardPage() {
     if (!quickTradeAccount) { alert('Please select a journal'); return }
     if (!quickTradeSymbol?.trim()) { alert('Please enter a symbol'); return }
     if (!quickTradePnl || isNaN(parseFloat(quickTradePnl))) { alert('Please enter a valid PnL number'); return }
-    if (quickTradeRR && isNaN(parseFloat(quickTradeRR))) { alert('Please enter a valid RR number'); return }
+    // Parse RR - accepts "2.5" or "1:2" format
+    const parseRR = (rr) => {
+      if (!rr) return null
+      if (rr.includes(':')) {
+        const parts = rr.split(':')
+        if (parts.length === 2 && !isNaN(parseFloat(parts[1]))) return parseFloat(parts[1])
+        return null
+      }
+      return isNaN(parseFloat(rr)) ? null : parseFloat(rr)
+    }
+    const parsedRR = parseRR(quickTradeRR)
+    if (quickTradeRR && parsedRR === null) { alert('Invalid RR. Use number (2.5) or ratio (1:2)'); return }
     setSubmittingTrade(true)
     const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY)
 
@@ -744,7 +761,7 @@ export default function DashboardPage() {
       symbol: quickTradeSymbol.trim().toUpperCase(),
       outcome: quickTradeOutcome,
       pnl: parseFloat(quickTradePnl) || 0,
-      rr: quickTradeRR || null,
+      rr: parsedRR,
       date: quickTradeDate,
       direction: quickTradeDirection,
       notes: quickTradeNotes || null,
@@ -849,8 +866,8 @@ export default function DashboardPage() {
     const profitFactor = grossLoss > 0 ? (grossProfit / grossLoss).toFixed(2) : grossProfit > 0 ? '∞' : '-'
     const totalStartingBalance = accounts.reduce((sum, acc) => sum + (parseFloat(acc.starting_balance) || 0), 0)
     const currentBalance = totalStartingBalance + totalPnl
-    const avgWin = wins > 0 ? (grossProfit / wins).toFixed(0) : 0
-    const avgLoss = losses > 0 ? (grossLoss / losses).toFixed(0) : 0
+    const avgWin = wins > 0 ? (grossProfit / wins) : 0
+    const avgLoss = losses > 0 ? (grossLoss / losses) : 0
     return { totalTrades, wins, losses, totalPnl, winrate, avgRR, profitFactor, totalStartingBalance, currentBalance, avgWin, avgLoss, grossProfit, grossLoss }
   }
 
@@ -1623,7 +1640,7 @@ export default function DashboardPage() {
                                   <div style={{ width: '5px', height: '5px', borderRadius: '50%', background: isSelected ? '#22c55e' : '#444' }} />
                                   {acc.name}
                                 </div>
-                                <span style={{ fontSize: '11px', color: totalPnl >= 0 ? '#22c55e' : '#ef4444' }}>{totalPnl >= 0 ? '+' : ''}${Math.round(totalPnl).toLocaleString()}</span>
+                                <span style={{ fontSize: '11px', color: totalPnl >= 0 ? '#22c55e' : '#ef4444' }}>{totalPnl >= 0 ? '+' : ''}${formatCurrency(totalPnl)}</span>
                               </div>
                             </button>
                           )
@@ -1797,9 +1814,9 @@ export default function DashboardPage() {
                   const winningTrades = allTrades.filter(t => t.outcome === 'win')
                   const losingTrades = allTrades.filter(t => t.outcome === 'loss')
                   const avgRR = allTrades.length > 0 ? (allTrades.reduce((sum, t) => sum + (parseFloat(t.rr) || 0), 0) / allTrades.length).toFixed(1) : '-'
-                  const expectancy = allTrades.length > 0 ? Math.round(cumPnl / allTrades.length) : 0
-                  const avgWin = winningTrades.length > 0 ? Math.round(winningTrades.reduce((sum, t) => sum + (parseFloat(t.pnl) || 0), 0) / winningTrades.length) : 0
-                  const avgLoss = losingTrades.length > 0 ? Math.round(losingTrades.reduce((sum, t) => sum + (parseFloat(t.pnl) || 0), 0) / losingTrades.length) : 0
+                  const expectancy = allTrades.length > 0 ? (cumPnl / allTrades.length) : 0
+                  const avgWin = winningTrades.length > 0 ? (winningTrades.reduce((sum, t) => sum + (parseFloat(t.pnl) || 0), 0) / winningTrades.length) : 0
+                  const avgLoss = losingTrades.length > 0 ? (losingTrades.reduce((sum, t) => sum + (parseFloat(t.pnl) || 0), 0) / losingTrades.length) : 0
                   const longTrades = allTrades.filter(t => t.direction === 'long' || t.direction === 'Long')
                   const shortTrades = allTrades.filter(t => t.direction === 'short' || t.direction === 'Short')
                   const longWins = longTrades.filter(t => t.outcome === 'win').length
@@ -1827,8 +1844,8 @@ export default function DashboardPage() {
                           <div>
                             <div style={{ fontSize: '13px', color: '#666', marginBottom: '2px' }}>Overall Stats</div>
                             <div style={{ display: 'flex', alignItems: 'baseline', gap: '12px' }}>
-                              <span style={{ fontSize: '24px', fontWeight: 700, color: isProfitable ? '#22c55e' : '#ef4444' }}>${Math.round(totalBalance).toLocaleString()}</span>
-                              <span style={{ fontSize: '12px', color: '#555' }}><span style={{ fontWeight: 600, color: '#888' }}>${Math.round(stats.totalStartingBalance).toLocaleString()}</span> INITIAL BALANCE</span>
+                              <span style={{ fontSize: '24px', fontWeight: 700, color: isProfitable ? '#22c55e' : '#ef4444' }}>${formatCurrency(totalBalance)}</span>
+                              <span style={{ fontSize: '12px', color: '#555' }}><span style={{ fontWeight: 600, color: '#888' }}>${formatCurrency(stats.totalStartingBalance)}</span> INITIAL BALANCE</span>
                             </div>
                           </div>
                         </div>
@@ -2019,15 +2036,15 @@ export default function DashboardPage() {
                               { label: 'Trades', value: stats.totalTrades, color: '#fff' },
                               { label: 'Winrate', value: `${stats.winrate}%`, color: stats.winrate >= 50 ? '#22c55e' : '#ef4444' },
                               { label: 'Wins', value: stats.totalWins, color: '#22c55e' },
-                              { label: 'Avg Win', value: `+$${avgWin}`, color: '#22c55e' },
+                              { label: 'Avg Win', value: `+$${formatCurrency(avgWin)}`, color: '#22c55e' },
                               { label: 'Win Streak', value: winStreak, color: '#22c55e' },
                               { label: 'Day WR', value: `${dayWR}%`, color: dayWR >= 50 ? '#22c55e' : '#ef4444' },
                               { label: 'Profit Factor', value: stats.profitFactor, color: stats.profitFactor === '-' ? '#666' : stats.profitFactor === '∞' ? '#22c55e' : parseFloat(stats.profitFactor) >= 1 ? '#22c55e' : '#ef4444' },
                               { label: 'Consistency', value: `${consistency}%`, color: consistency >= 50 ? '#22c55e' : '#ef4444' },
                               { label: 'Losses', value: stats.totalLosses, color: '#ef4444' },
-                              { label: 'Avg Loss', value: `$${avgLoss}`, color: avgLoss >= 0 ? '#22c55e' : '#ef4444' },
+                              { label: 'Avg Loss', value: `$${formatCurrency(avgLoss)}`, color: avgLoss >= 0 ? '#22c55e' : '#ef4444' },
                               { label: 'Loss Streak', value: lossStreak, color: '#ef4444' },
-                              { label: 'Expectancy', value: `${expectancy >= 0 ? '+' : ''}$${expectancy}`, color: expectancy >= 0 ? '#22c55e' : '#ef4444' },
+                              { label: 'Expectancy', value: `${expectancy >= 0 ? '+' : ''}$${formatCurrency(expectancy)}`, color: expectancy >= 0 ? '#22c55e' : '#ef4444' },
                             ].map((s, i) => (
                               <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '6px 0', borderBottom: '1px solid #1a1a22' }}>
                                 <span style={{ fontSize: '12px', color: '#888' }}>{s.label}</span>
@@ -2108,7 +2125,7 @@ export default function DashboardPage() {
                           <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
                             <div>
                               <div style={{ fontSize: '13px', color: '#666', marginBottom: '2px' }}>{account.name}</div>
-                              <div style={{ fontSize: '24px', fontWeight: 700, color: isProfitable ? '#22c55e' : '#ef4444' }}>${Math.round(currentBalance).toLocaleString()}</div>
+                              <div style={{ fontSize: '24px', fontWeight: 700, color: isProfitable ? '#22c55e' : '#ef4444' }}>${formatCurrency(currentBalance)}</div>
                             </div>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                               {/* Show objective lines toggle - only if account has objectives */}
@@ -2371,7 +2388,7 @@ export default function DashboardPage() {
 
                             // 6 key stats
                             const stats = [
-                              { label: 'PnL', value: `${totalPnl >= 0 ? '+' : ''}$${Math.round(totalPnl).toLocaleString()}`, color: totalPnl >= 0 ? '#22c55e' : '#ef4444' },
+                              { label: 'PnL', value: `${totalPnl >= 0 ? '+' : ''}$${formatCurrency(totalPnl)}`, color: totalPnl >= 0 ? '#22c55e' : '#ef4444' },
                               { label: 'Trades', value: accTrades.length, color: '#fff' },
                               { label: 'Winrate', value: `${winrate}%`, color: winrate >= 50 ? '#22c55e' : '#ef4444' },
                               { label: 'W/L', value: `${wins}/${losses}`, color: '#fff' },
@@ -3003,7 +3020,7 @@ export default function DashboardPage() {
                               {acc.name}
                             </div>
                             <span style={{ fontSize: '13px', color: totalPnl >= 0 ? '#22c55e' : '#ef4444' }}>
-                              {totalPnl >= 0 ? '+' : ''}${Math.round(totalPnl).toLocaleString()}
+                              {totalPnl >= 0 ? '+' : ''}${formatCurrency(totalPnl)}
                             </span>
                           </div>
                         </button>
@@ -3255,7 +3272,7 @@ export default function DashboardPage() {
                               {acc.name}
                             </div>
                             <span style={{ fontSize: '12px', color: totalPnl >= 0 ? '#22c55e' : '#ef4444' }}>
-                              {totalPnl >= 0 ? '+' : ''}${Math.round(totalPnl).toLocaleString()}
+                              {totalPnl >= 0 ? '+' : ''}${formatCurrency(totalPnl)}
                             </span>
                           </div>
                         </button>
@@ -3831,11 +3848,11 @@ export default function DashboardPage() {
                           <div style={{ fontSize: '12px', color: '#888', marginBottom: '4px' }}>{journalHover.date || 'Start'}</div>
                           {journalHover.symbol && <div style={{ fontSize: '11px', color: '#666', marginBottom: '4px' }}>{journalHover.symbol}</div>}
                           <div style={{ fontSize: '16px', fontWeight: 700, color: journalHover.balance >= startingBalance ? '#22c55e' : '#ef4444' }}>
-                            ${Math.round(journalHover.balance).toLocaleString()}
+                            ${formatCurrency(journalHover.balance)}
                           </div>
                           {journalHover.pnl !== 0 && (
                             <div style={{ fontSize: '12px', color: journalHover.pnl >= 0 ? '#22c55e' : '#ef4444', marginTop: '2px' }}>
-                              {journalHover.pnl >= 0 ? '+' : ''}${Math.round(journalHover.pnl).toLocaleString()}
+                              {journalHover.pnl >= 0 ? '+' : ''}${formatCurrency(journalHover.pnl)}
                             </div>
                           )}
                         </div>
