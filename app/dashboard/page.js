@@ -162,6 +162,8 @@ export default function DashboardPage() {
   const [quickTradeTimeframe, setQuickTradeTimeframe] = useState('')
   const [quickTradeSession, setQuickTradeSession] = useState('')
   const [quickTradeNotes, setQuickTradeNotes] = useState('')
+  const [quickTradeImages, setQuickTradeImages] = useState([]) // Array of image URLs/base64
+  const [uploadingImage, setUploadingImage] = useState(false)
   const [submittingTrade, setSubmittingTrade] = useState(false)
   const [quickTradeExtraData, setQuickTradeExtraData] = useState({})
   const [dashHover, setDashHover] = useState(null) // Hover state for dashboard graph
@@ -718,6 +720,37 @@ export default function DashboardPage() {
     }
   }
 
+  // Upload image to Supabase Storage
+  async function uploadQuickTradeImage(file) {
+    if (!file || !user?.id || !quickTradeAccount) return null
+    if (file.size > 5 * 1024 * 1024) { alert('Image too large (max 5MB)'); return null }
+    if (!file.type.startsWith('image/')) { alert('Please upload an image file'); return null }
+    setUploadingImage(true)
+    try {
+      const formData = new FormData()
+      formData.append('file', file)
+      formData.append('userId', user.id)
+      formData.append('accountId', quickTradeAccount)
+      const response = await fetch('/api/upload-image', { method: 'POST', body: formData })
+      if (!response.ok) throw new Error('Upload failed')
+      const { url } = await response.json()
+      setQuickTradeImages(prev => [...prev, url])
+      return url
+    } catch (err) {
+      // Fallback to base64 for small files
+      if (file.size > 1 * 1024 * 1024) { alert('Upload failed. Try a smaller image.'); setUploadingImage(false); return null }
+      return new Promise((resolve) => {
+        const reader = new FileReader()
+        reader.onloadend = () => { setQuickTradeImages(prev => [...prev, reader.result]); resolve(reader.result) }
+        reader.readAsDataURL(file)
+      })
+    } finally { setUploadingImage(false) }
+  }
+
+  function removeQuickTradeImage(index) {
+    setQuickTradeImages(prev => prev.filter((_, i) => i !== index))
+  }
+
   async function submitQuickTrade() {
     if (!quickTradeAccount) { alert('Please select a journal'); return }
     if (!quickTradeSymbol?.trim()) { alert('Please enter a symbol'); return }
@@ -754,6 +787,7 @@ export default function DashboardPage() {
       timeframe: quickTradeTimeframe || '',
       session: quickTradeSession || '',
       rating: quickTradeRating || '',
+      images: quickTradeImages.length > 0 ? quickTradeImages : undefined,
     }
 
     const { data, error } = await supabase.from('trades').insert({
@@ -783,6 +817,7 @@ export default function DashboardPage() {
     setQuickTradeTimeframe('')
     setQuickTradeSession('')
     setQuickTradeNotes('')
+    setQuickTradeImages([])
     setQuickTradeExtraData({})
     setSubmittingTrade(false)
   }
@@ -1779,6 +1814,23 @@ export default function DashboardPage() {
                     <input type="text" value={quickTradeNotes} onChange={e => setQuickTradeNotes(e.target.value)} placeholder="Quick notes..." style={{ width: '100%', padding: '8px 10px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '12px', boxSizing: 'border-box' }} />
                   </div>
 
+                  {/* Image Upload */}
+                  <div style={{ marginBottom: '12px' }}>
+                    <label style={{ display: 'block', fontSize: '9px', color: '#666', marginBottom: '4px', textTransform: 'uppercase' }}>Images</label>
+                    <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', alignItems: 'center' }}>
+                      {quickTradeImages.map((img, idx) => (
+                        <div key={idx} style={{ position: 'relative', width: '48px', height: '48px', borderRadius: '6px', overflow: 'hidden', border: '1px solid #1a1a22' }}>
+                          <img src={img} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                          <button onClick={() => removeQuickTradeImage(idx)} style={{ position: 'absolute', top: '2px', right: '2px', width: '16px', height: '16px', borderRadius: '50%', background: 'rgba(0,0,0,0.7)', border: 'none', color: '#fff', fontSize: '10px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 0 }}>×</button>
+                        </div>
+                      ))}
+                      <label style={{ width: '48px', height: '48px', borderRadius: '6px', border: '1px dashed #333', background: '#0a0a0f', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: uploadingImage ? 'wait' : 'pointer', opacity: uploadingImage ? 0.5 : 1 }}>
+                        <input type="file" accept="image/*" multiple onChange={async (e) => { for (const file of e.target.files) { await uploadQuickTradeImage(file) } e.target.value = '' }} style={{ display: 'none' }} disabled={uploadingImage} />
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#555" strokeWidth="2"><path d="M12 5v14M5 12h14" /></svg>
+                      </label>
+                    </div>
+                  </div>
+
                   {/* Action Buttons */}
                   <div style={{ display: 'flex', gap: '10px' }}>
                     <button onClick={submitQuickTrade} disabled={submittingTrade || !quickTradeSymbol.trim() || !quickTradePnl || !quickTradeDate} style={{ flex: 1, padding: '12px', background: (submittingTrade || !quickTradeSymbol.trim() || !quickTradePnl || !quickTradeDate) ? '#1a1a22' : 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)', border: 'none', borderRadius: '10px', color: (submittingTrade || !quickTradeSymbol.trim() || !quickTradePnl || !quickTradeDate) ? '#555' : '#fff', fontWeight: 700, fontSize: '13px', cursor: (submittingTrade || !quickTradeSymbol.trim() || !quickTradePnl || !quickTradeDate) ? 'not-allowed' : 'pointer', transition: 'all 0.2s', boxShadow: (submittingTrade || !quickTradeSymbol.trim() || !quickTradePnl || !quickTradeDate) ? 'none' : '0 4px 20px rgba(34,197,94,0.4)' }}>
@@ -2058,17 +2110,17 @@ export default function DashboardPage() {
                           <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
                             {/* Buttons - stacked vertically, each spans 2 stat rows */}
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', flex: 1 }}>
-                              <a href="/journal" style={{ flex: 1, background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '10px', color: '#22c55e', fontWeight: 600, fontSize: '14px', textDecoration: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+                              <a href="/journal" style={{ flex: 1, background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '10px', color: '#22c55e', fontWeight: 600, fontSize: '13px', textDecoration: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', transition: 'all 0.2s' }} onMouseEnter={e => { e.currentTarget.style.background = 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)'; e.currentTarget.style.color = '#fff'; e.currentTarget.style.border = '1px solid #22c55e'; e.currentTarget.style.boxShadow = '0 4px 20px rgba(34,197,94,0.4)' }} onMouseLeave={e => { e.currentTarget.style.background = '#0a0a0f'; e.currentTarget.style.color = '#22c55e'; e.currentTarget.style.border = '1px solid #1a1a22'; e.currentTarget.style.boxShadow = 'none' }}>
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
-                                Journal
+                                See Overall Journal
                               </a>
-                              <a href="/statistics" style={{ flex: 1, background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '10px', color: '#22c55e', fontWeight: 600, fontSize: '14px', textDecoration: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+                              <a href="/statistics" style={{ flex: 1, background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '10px', color: '#22c55e', fontWeight: 600, fontSize: '13px', textDecoration: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', transition: 'all 0.2s' }} onMouseEnter={e => { e.currentTarget.style.background = 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)'; e.currentTarget.style.color = '#fff'; e.currentTarget.style.border = '1px solid #22c55e'; e.currentTarget.style.boxShadow = '0 4px 20px rgba(34,197,94,0.4)' }} onMouseLeave={e => { e.currentTarget.style.background = '#0a0a0f'; e.currentTarget.style.color = '#22c55e'; e.currentTarget.style.border = '1px solid #1a1a22'; e.currentTarget.style.boxShadow = 'none' }}>
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 20V10M12 20V4M6 20v-6"/></svg>
-                                Stats
+                                See Overall Stats
                               </a>
-                              <a href="/notes" style={{ flex: 1, background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '10px', color: '#22c55e', fontWeight: 600, fontSize: '14px', textDecoration: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+                              <a href="/notes" style={{ flex: 1, background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '10px', color: '#22c55e', fontWeight: 600, fontSize: '13px', textDecoration: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', transition: 'all 0.2s' }} onMouseEnter={e => { e.currentTarget.style.background = 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)'; e.currentTarget.style.color = '#fff'; e.currentTarget.style.border = '1px solid #22c55e'; e.currentTarget.style.boxShadow = '0 4px 20px rgba(34,197,94,0.4)' }} onMouseLeave={e => { e.currentTarget.style.background = '#0a0a0f'; e.currentTarget.style.color = '#22c55e'; e.currentTarget.style.border = '1px solid #1a1a22'; e.currentTarget.style.boxShadow = 'none' }}>
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
-                                Notes
+                                See Notes
                               </a>
                             </div>
                           </div>
@@ -2119,7 +2171,7 @@ export default function DashboardPage() {
                     if (maxDdFloor) minBal = Math.min(minBal, maxDdFloor)
 
                     return (
-                      <div key={account.id} style={{ background: 'linear-gradient(135deg, #0f0f14 0%, #0a0a0f 100%)', border: '1px solid #1a1a22', borderRadius: '16px', overflow: 'hidden', display: 'flex', flexDirection: 'column', boxShadow: '0 4px 24px rgba(0,0,0,0.3)' }}>
+                      <div key={account.id} style={{ background: 'linear-gradient(135deg, #0f0f14 0%, #0a0a0f 100%)', border: '1px solid #1a1a22', borderRadius: '16px', overflow: 'hidden', display: 'flex', flexDirection: 'column', boxShadow: '0 4px 24px rgba(0,0,0,0.3)', transition: 'all 0.2s', cursor: 'pointer' }} onMouseEnter={e => { e.currentTarget.style.background = 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)'; e.currentTarget.style.border = '1px solid #22c55e'; e.currentTarget.style.boxShadow = '0 4px 20px rgba(34,197,94,0.4)' }} onMouseLeave={e => { e.currentTarget.style.background = 'linear-gradient(135deg, #0f0f14 0%, #0a0a0f 100%)'; e.currentTarget.style.border = '1px solid #1a1a22'; e.currentTarget.style.boxShadow = '0 4px 24px rgba(0,0,0,0.3)' }}>
                         {/* Header - Clean layout */}
                         <div style={{ padding: '16px 16px 12px' }}>
                           <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
@@ -2400,7 +2452,7 @@ export default function DashboardPage() {
                               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0 24px' }}>
                                 {stats.map((stat, i) => (
                                   <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '6px 0', borderBottom: i < 4 ? '1px solid rgba(255,255,255,0.05)' : 'none' }}>
-                                    <span style={{ fontSize: '12px', color: '#555' }}>{stat.label}</span>
+                                    <span style={{ fontSize: '12px', color: '#888' }}>{stat.label}</span>
                                     <span style={{ fontSize: '13px', fontWeight: 600, color: stat.color }}>{stat.value}</span>
                                   </div>
                                 ))}
@@ -2411,9 +2463,12 @@ export default function DashboardPage() {
 
                         {/* Buttons - Compact */}
                         <div onClick={e => e.stopPropagation()} style={{ padding: '12px 16px 16px', display: 'flex', gap: '8px' }}>
-                          <a href={`/account/${account.id}`} style={{ flex: 1, padding: '10px', background: '#22c55e', borderRadius: '8px', color: '#fff', fontWeight: 600, fontSize: '11px', textAlign: 'center', textDecoration: 'none' }}>Enter Journal</a>
-                          <a href={`/account/${account.id}?tab=statistics`} style={{ padding: '10px 14px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '8px', color: '#888', fontWeight: 500, fontSize: '11px', textAlign: 'center', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 20V10M12 20V4M6 20v-6"/></svg>
+                          <a href={`/account/${account.id}`} style={{ flex: 1, padding: '10px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '10px', color: '#22c55e', fontWeight: 600, fontSize: '14px', textAlign: 'center', textDecoration: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg>
+                            Enter Journal
+                          </a>
+                          <a href={`/account/${account.id}?tab=statistics`} style={{ padding: '10px 14px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '10px', color: '#22c55e', fontWeight: 600, fontSize: '14px', textAlign: 'center', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 20V10M12 20V4M6 20v-6"/></svg>
                             Stats
                           </a>
                         </div>
@@ -3157,6 +3212,23 @@ export default function DashboardPage() {
                   ))}
                 </div>
               )}
+
+              {/* Image Upload */}
+              <div style={{ marginBottom: '16px' }}>
+                <label style={{ display: 'block', fontSize: '11px', color: '#666', marginBottom: '6px', textTransform: 'uppercase' }}>Images</label>
+                <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', alignItems: 'center' }}>
+                  {quickTradeImages.map((img, idx) => (
+                    <div key={idx} style={{ position: 'relative', width: '60px', height: '60px', borderRadius: '8px', overflow: 'hidden', border: '1px solid #1a1a22' }}>
+                      <img src={img} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                      <button onClick={() => removeQuickTradeImage(idx)} style={{ position: 'absolute', top: '4px', right: '4px', width: '20px', height: '20px', borderRadius: '50%', background: 'rgba(0,0,0,0.7)', border: 'none', color: '#fff', fontSize: '12px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 0 }}>×</button>
+                    </div>
+                  ))}
+                  <label style={{ width: '60px', height: '60px', borderRadius: '8px', border: '1px dashed #333', background: '#0a0a0f', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: uploadingImage ? 'wait' : 'pointer', opacity: uploadingImage ? 0.5 : 1 }}>
+                    <input type="file" accept="image/*" multiple onChange={async (e) => { for (const file of e.target.files) { await uploadQuickTradeImage(file) } e.target.value = '' }} style={{ display: 'none' }} disabled={uploadingImage} />
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#555" strokeWidth="2"><path d="M12 5v14M5 12h14" /></svg>
+                  </label>
+                </div>
+              </div>
             </div>
 
             {/* Fixed Bottom Button */}
@@ -3403,9 +3475,26 @@ export default function DashboardPage() {
               )}
 
               {/* Notes */}
-              <div style={{ marginBottom: '24px' }}>
+              <div style={{ marginBottom: '20px' }}>
                 <label style={{ display: 'block', fontSize: '11px', color: '#666', marginBottom: '6px', textTransform: 'uppercase' }}>Notes</label>
                 <textarea value={quickTradeNotes} onChange={e => setQuickTradeNotes(e.target.value)} placeholder="Trade notes..." rows={3} style={{ width: '100%', padding: '12px 14px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '8px', color: '#fff', fontSize: '14px', resize: 'none', boxSizing: 'border-box' }} />
+              </div>
+
+              {/* Image Upload */}
+              <div style={{ marginBottom: '24px' }}>
+                <label style={{ display: 'block', fontSize: '11px', color: '#666', marginBottom: '6px', textTransform: 'uppercase' }}>Images</label>
+                <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', alignItems: 'center' }}>
+                  {quickTradeImages.map((img, idx) => (
+                    <div key={idx} style={{ position: 'relative', width: '64px', height: '64px', borderRadius: '8px', overflow: 'hidden', border: '1px solid #1a1a22' }}>
+                      <img src={img} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                      <button onClick={() => removeQuickTradeImage(idx)} style={{ position: 'absolute', top: '4px', right: '4px', width: '20px', height: '20px', borderRadius: '50%', background: 'rgba(0,0,0,0.7)', border: 'none', color: '#fff', fontSize: '12px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 0 }}>×</button>
+                    </div>
+                  ))}
+                  <label style={{ width: '64px', height: '64px', borderRadius: '8px', border: '1px dashed #333', background: '#0a0a0f', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: uploadingImage ? 'wait' : 'pointer', opacity: uploadingImage ? 0.5 : 1 }}>
+                    <input type="file" accept="image/*" multiple onChange={async (e) => { for (const file of e.target.files) { await uploadQuickTradeImage(file) } e.target.value = '' }} style={{ display: 'none' }} disabled={uploadingImage} />
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#555" strokeWidth="2"><path d="M12 5v14M5 12h14" /></svg>
+                  </label>
+                </div>
               </div>
 
               {/* Action Buttons */}
