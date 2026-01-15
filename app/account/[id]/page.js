@@ -1923,7 +1923,7 @@ export default function AccountPage() {
                       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px' }}>
                         {allFields.map((field, idx) => (
                           <div key={idx} style={{ background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '8px', padding: '12px' }}>
-                            <div style={{ fontSize: '9px', color: '#666', textTransform: 'uppercase', marginBottom: '6px', letterSpacing: '0.5px' }}>{field.label}</div>
+                            <div style={{ fontSize: '10px', color: '#666', textTransform: 'uppercase', marginBottom: '6px', letterSpacing: '0.5px' }}>{field.label}</div>
                             <div style={{ fontSize: '13px', fontWeight: 600, color: '#fff' }}>{field.value}</div>
                           </div>
                         ))}
@@ -1935,7 +1935,7 @@ export default function AccountPage() {
                       <div style={{ width: '320px', flexShrink: 0 }}>
                         <div style={{ background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '10px', padding: '12px', height: '100%', display: 'flex', flexDirection: 'column' }}>
                           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
-                            <div style={{ fontSize: '9px', color: '#666', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Screenshot{tradeImages.length > 1 ? 's' : ''}</div>
+                            <div style={{ fontSize: '10px', color: '#666', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Screenshot{tradeImages.length > 1 ? 's' : ''}</div>
                             {tradeImages.length > 1 && (
                               <div style={{ fontSize: '10px', color: '#888' }}>{tradeImageIndex + 1} / {tradeImages.length}</div>
                             )}
@@ -1964,7 +1964,7 @@ export default function AccountPage() {
                   {/* Notes below - full width */}
                   {noteContent && (
                     <div style={{ marginTop: '16px' }}>
-                      <div style={{ fontSize: '9px', color: '#666', textTransform: 'uppercase', marginBottom: '8px', letterSpacing: '0.5px' }}>Notes</div>
+                      <div style={{ fontSize: '10px', color: '#666', textTransform: 'uppercase', marginBottom: '8px', letterSpacing: '0.5px' }}>Notes</div>
                       <div style={{ background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '8px', padding: '12px', color: '#ccc', fontSize: '13px', lineHeight: '1.6', whiteSpace: 'pre-wrap' }}>{noteContent}</div>
                     </div>
                   )}
