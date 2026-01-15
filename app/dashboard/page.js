@@ -1647,7 +1647,7 @@ export default function DashboardPage() {
         </div>
       </header>
 
-      <div style={{ maxWidth: '1800px', margin: '0 auto', padding: '12px', minHeight: 'calc(100vh - 80px)' }}>
+      <div style={{ maxWidth: '1600px', margin: '0 auto', padding: '12px', minHeight: 'calc(100vh - 80px)' }}>
         {/* Main Layout: LOG TRADE Sidebar (left) + Main Content (right 2/3) */}
         {!isMobile && accounts.length > 0 ? (
           <div style={{ display: 'flex', gap: '12px' }}>
