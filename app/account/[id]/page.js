@@ -66,7 +66,7 @@ export default function AccountPage() {
   const [activeTab, setActiveTab] = useState(searchParams.get('tab') === 'statistics' ? 'statistics' : searchParams.get('tab') === 'notes' ? 'notes' : 'trades')
   const [notesSubTab, setNotesSubTab] = useState('daily')
   const [showAddTrade, setShowAddTrade] = useState(false)
-  const [showEditInputs, setShowEditInputs] = useState(false)
+  const [showEditInputs, setShowEditInputs] = useState(searchParams.get('editColumns') === 'true')
   const [showExpandedNote, setShowExpandedNote] = useState(null)
   const [showExpandedImage, setShowExpandedImage] = useState(null)
   const [editingOptions, setEditingOptions] = useState(null)
