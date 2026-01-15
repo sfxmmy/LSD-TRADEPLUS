@@ -2224,7 +2224,7 @@ export default function AccountPage() {
                             <span style={{ fontSize: '14px', fontWeight: 700, color: chartCurrent >= chartStart ? '#22c55e' : '#ef4444' }}>${Math.round(chartCurrent).toLocaleString()}</span>
                           </div>
                           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                            <select value={equityCurveGroupBy} onChange={e => { setEquityCurveGroupBy(e.target.value); setSelectedCurveLines({}) }} style={{ padding: '4px 8px', background: '#141418', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '4px', color: '#fff', fontSize: '11px', boxShadow: '0 0 4px rgba(255,255,255,0.1)' }}>
+                            <select value={equityCurveGroupBy} onChange={e => { setEquityCurveGroupBy(e.target.value); setSelectedCurveLines({}) }} style={{ padding: '4px 8px', background: '#141418', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '4px', color: '#fff', fontSize: '12px', fontWeight: 600, boxShadow: '0 0 4px rgba(255,255,255,0.1)' }}>
                               <option value="total">Total PnL</option>
                               <option value="symbol">By Pair</option>
                               {inputs.filter(inp => inp.type === 'select' && inp.enabled).map(inp => (
@@ -3053,13 +3053,13 @@ export default function AccountPage() {
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px', flexWrap: 'wrap', gap: '8px' }}>
                           <span style={{ fontSize: '11px', color: '#aaa', textTransform: 'uppercase', letterSpacing: '0.5px', fontWeight: 600 }}>PERFORMANCE BY {graphGroupBy === 'symbol' ? 'PAIR' : graphGroupBy.toUpperCase()}</span>
                           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                            <select value={barGraphMetric} onChange={e => setBarGraphMetric(e.target.value)} style={{ padding: '4px 8px', background: '#141418', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '4px', color: '#fff', fontSize: '11px', boxShadow: '0 0 4px rgba(255,255,255,0.1)' }}>
+                            <select value={barGraphMetric} onChange={e => setBarGraphMetric(e.target.value)} style={{ padding: '4px 8px', background: '#141418', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '4px', color: '#fff', fontSize: '12px', fontWeight: 600, boxShadow: '0 0 4px rgba(255,255,255,0.1)' }}>
                               <option value="winrate">Winrate</option>
                               <option value="pnl">PnL</option>
                               <option value="avgpnl">Avg PnL</option>
                               <option value="count">Count</option>
                             </select>
-                            <select value={graphGroupBy} onChange={e => setGraphGroupBy(e.target.value)} style={{ padding: '4px 8px', background: '#141418', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '4px', color: '#fff', fontSize: '11px', boxShadow: '0 0 4px rgba(255,255,255,0.1)' }}>
+                            <select value={graphGroupBy} onChange={e => setGraphGroupBy(e.target.value)} style={{ padding: '4px 8px', background: '#141418', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '4px', color: '#fff', fontSize: '12px', fontWeight: 600, boxShadow: '0 0 4px rgba(255,255,255,0.1)' }}>
                               <option value="symbol">Pairs</option>
                               {inputs.filter(inp => inp.type === 'select' && inp.enabled).map(inp => (
                                 <option key={inp.id} value={inp.id}>{inp.label}</option>
@@ -4826,7 +4826,7 @@ export default function AccountPage() {
                 {enlargedChart === 'equity' && (
                   <>
                     <span style={{ fontSize: '18px', fontWeight: 700, color: currentBalance >= startingBalance ? '#22c55e' : '#ef4444' }}>${Math.round(currentBalance).toLocaleString()}</span>
-                    <select value={equityCurveGroupBy} onChange={e => { setEquityCurveGroupBy(e.target.value); setSelectedCurveLines({}) }} style={{ padding: '4px 8px', background: '#141418', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '4px', color: '#fff', fontSize: '11px', boxShadow: '0 0 4px rgba(255,255,255,0.1)' }}>
+                    <select value={equityCurveGroupBy} onChange={e => { setEquityCurveGroupBy(e.target.value); setSelectedCurveLines({}) }} style={{ padding: '4px 8px', background: '#141418', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '4px', color: '#fff', fontSize: '12px', fontWeight: 600, boxShadow: '0 0 4px rgba(255,255,255,0.1)' }}>
                       <option value="total">Total PnL</option>
                       <option value="symbol">By Pair</option>
                       {inputs.filter(inp => inp.type === 'select' && inp.enabled).map(inp => (
@@ -4923,13 +4923,13 @@ export default function AccountPage() {
                 )}
                 {enlargedChart === 'bar' && (
                   <>
-                    <select value={barGraphMetric} onChange={e => setBarGraphMetric(e.target.value)} style={{ padding: '4px 8px', background: '#141418', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '4px', color: '#fff', fontSize: '11px', boxShadow: '0 0 4px rgba(255,255,255,0.1)' }}>
+                    <select value={barGraphMetric} onChange={e => setBarGraphMetric(e.target.value)} style={{ padding: '4px 8px', background: '#141418', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '4px', color: '#fff', fontSize: '12px', fontWeight: 600, boxShadow: '0 0 4px rgba(255,255,255,0.1)' }}>
                       <option value="winrate">Winrate</option>
                       <option value="pnl">PnL</option>
                       <option value="trades">Trades</option>
                       <option value="avgRR">Avg RR</option>
                     </select>
-                    <select value={graphGroupBy} onChange={e => setGraphGroupBy(e.target.value)} style={{ padding: '4px 8px', background: '#141418', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '4px', color: '#fff', fontSize: '11px', boxShadow: '0 0 4px rgba(255,255,255,0.1)' }}>
+                    <select value={graphGroupBy} onChange={e => setGraphGroupBy(e.target.value)} style={{ padding: '4px 8px', background: '#141418', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '4px', color: '#fff', fontSize: '12px', fontWeight: 600, boxShadow: '0 0 4px rgba(255,255,255,0.1)' }}>
                       <option value="symbol">Pairs</option>
                       {inputs.filter(inp => inp.type === 'select' && inp.enabled).map(inp => (
                         <option key={inp.id} value={inp.id}>{inp.label}</option>
