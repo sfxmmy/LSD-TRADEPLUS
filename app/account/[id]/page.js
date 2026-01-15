@@ -101,6 +101,7 @@ export default function AccountPage() {
   const [deleteConfirmId, setDeleteConfirmId] = useState(null)
   const [deleteInputConfirm, setDeleteInputConfirm] = useState(null)
   const [deleteSelectedConfirm, setDeleteSelectedConfirm] = useState(false)
+  const [deleteNoteConfirm, setDeleteNoteConfirm] = useState(null) // { type: 'daily'|'weekly'|'custom', key: date|idx }
   const [showRestoreDefaults, setShowRestoreDefaults] = useState(false)
   const [showCumulativeStats, setShowCumulativeStats] = useState(searchParams.get('cumulative') === 'true')
   const [viewMode, setViewMode] = useState(searchParams.get('cumulative') === 'true' ? 'all' : 'this') // 'this', 'all', 'selected'
@@ -1862,6 +1863,25 @@ export default function AccountPage() {
           </div>
         )}
 
+        {/* Delete Note Confirmation Modal */}
+        {deleteNoteConfirm && (
+          <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.8)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }} onClick={() => setDeleteNoteConfirm(null)}>
+            <div style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '12px', padding: '24px', width: '90%', maxWidth: '340px' }} onClick={e => e.stopPropagation()}>
+              <h3 style={{ fontSize: '18px', marginBottom: '8px', color: '#ef4444' }}>Delete Note?</h3>
+              <p style={{ color: '#888', fontSize: '14px', marginBottom: '20px' }}>This action cannot be undone.</p>
+              <div style={{ display: 'flex', gap: '12px' }}>
+                <button onClick={() => setDeleteNoteConfirm(null)} style={{ flex: 1, padding: '12px', background: 'transparent', border: '1px solid #1a1a22', borderRadius: '8px', color: '#888', cursor: 'pointer', fontWeight: 600, fontSize: '14px' }}>Cancel</button>
+                <button
+                  onClick={() => { deleteNote(deleteNoteConfirm.type, deleteNoteConfirm.key); setDeleteNoteConfirm(null) }}
+                  style={{ flex: 1, padding: '12px', background: '#ef4444', border: 'none', borderRadius: '8px', color: '#fff', cursor: 'pointer', fontWeight: 600, fontSize: '14px' }}
+                >
+                  Delete
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Trade Overview Modal */}
         {viewingTrade && (() => {
           const trade = viewingTrade
@@ -1937,7 +1957,7 @@ export default function AccountPage() {
                       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px' }}>
                         {allFields.map((field, idx) => (
                           <div key={idx} style={{ background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '8px', padding: '12px' }}>
-                            <div style={{ fontSize: '12px', color: '#888', marginBottom: '6px', fontWeight: 600 }}>{field.label}</div>
+                            <div style={{ fontSize: '10px', color: '#888', marginBottom: '6px', fontWeight: 600 }}>{field.label}</div>
                             <div style={{ fontSize: '13px', fontWeight: 600, color: '#fff' }}>{field.value}</div>
                           </div>
                         ))}
@@ -3947,7 +3967,7 @@ export default function AccountPage() {
                         <span style={{ fontSize: '14px', color: '#22c55e', fontWeight: 600 }}>{note.title}</span>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                           <span style={{ fontSize: '12px', color: '#999' }}>{new Date(note.date).toLocaleDateString()}</span>
-                          <button onClick={() => deleteNote('custom', idx)} style={{ background: 'transparent', border: 'none', color: '#999', cursor: 'pointer', fontSize: '16px' }}>×</button>
+                          <button onClick={() => setDeleteNoteConfirm({ type: 'custom', key: idx })} style={{ background: 'transparent', border: 'none', color: '#999', cursor: 'pointer', fontSize: '16px' }}>×</button>
                         </div>
                       </div>
                       <div style={{ fontSize: '14px', color: '#fff', lineHeight: '1.6', whiteSpace: 'pre-wrap' }}>{note.text}</div>
@@ -3958,7 +3978,7 @@ export default function AccountPage() {
                     <div key={date} style={{ padding: '12px', background: '#0a0a0e', borderRadius: '8px', border: '1px solid #1a1a22' }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
                         <span style={{ fontSize: '14px', color: '#22c55e', fontWeight: 600 }}>{new Date(date).toLocaleDateString('en-GB', { weekday: 'short', day: '2-digit', month: 'short', year: 'numeric' })}</span>
-                        <button onClick={() => deleteNote(notesSubTab, date)} style={{ background: 'transparent', border: 'none', color: '#999', cursor: 'pointer', fontSize: '16px' }}>×</button>
+                        <button onClick={() => setDeleteNoteConfirm({ type: notesSubTab, key: date })} style={{ background: 'transparent', border: 'none', color: '#999', cursor: 'pointer', fontSize: '16px' }}>×</button>
                       </div>
                       <div style={{ fontSize: '14px', color: '#fff', lineHeight: '1.6', whiteSpace: 'pre-wrap' }}>{text}</div>
                     </div>
@@ -4240,7 +4260,7 @@ export default function AccountPage() {
                       const currentColor = getColor(currentVal, currentOpt)
                       return (
                         <div key={input.id} style={input.type === 'select' ? { position: 'relative' } : {}}>
-                          <label style={{ display: 'block', fontSize: '12px', color: '#888', marginBottom: '6px', fontWeight: 600 }}>{input.label}</label>
+                          <label style={{ display: 'block', fontSize: '10px', color: '#888', marginBottom: '6px', fontWeight: 600 }}>{input.label}</label>
                           {input.type === 'select' ? (
                             <>
                               <button type="button" onClick={() => {
