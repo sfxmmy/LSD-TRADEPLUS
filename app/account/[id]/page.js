@@ -3342,7 +3342,7 @@ export default function AccountPage() {
                     <div style={{ fontSize: '9px', color: '#999' }}>{displayTrades.length} trades</div>
                   </div>
                   <div style={{ display: 'flex', gap: '6px', marginBottom: '10px' }}>
-                    <select value={analysisGroupBy} onChange={e => setAnalysisGroupBy(e.target.value)} style={{ flex: 1, padding: '4px 8px', background: '#141418', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '4px', color: '#fff', fontSize: '11px', cursor: 'pointer', boxShadow: '0 0 4px rgba(255,255,255,0.1)' }}>
+                    <select value={analysisGroupBy} onChange={e => setAnalysisGroupBy(e.target.value)} style={{ flex: 1, padding: '4px 8px', background: '#141418', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '4px', color: '#fff', fontSize: '12px', fontWeight: 600, cursor: 'pointer', boxShadow: '0 0 4px rgba(255,255,255,0.1)' }}>
                       <option value="direction">Direction</option>
                       <option value="symbol">Pair</option>
                       <option value="confidence">Confidence</option>
@@ -3354,7 +3354,7 @@ export default function AccountPage() {
                         <option key={inp.id} value={inp.id}>{inp.label}</option>
                       ))}
                     </select>
-                    <select value={analysisMetric} onChange={e => setAnalysisMetric(e.target.value)} style={{ flex: 1, padding: '4px 8px', background: '#141418', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '4px', color: '#fff', fontSize: '11px', cursor: 'pointer', boxShadow: '0 0 4px rgba(255,255,255,0.1)' }}>
+                    <select value={analysisMetric} onChange={e => setAnalysisMetric(e.target.value)} style={{ flex: 1, padding: '4px 8px', background: '#141418', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '4px', color: '#fff', fontSize: '12px', fontWeight: 600, cursor: 'pointer', boxShadow: '0 0 4px rgba(255,255,255,0.1)' }}>
                       <option value="avgpnl">Avg PnL</option>
                       <option value="winrate">Winrate</option>
                       <option value="pnl">Total PnL</option>
@@ -3906,7 +3906,7 @@ export default function AccountPage() {
               {/* Pair Analysis */}
               <div style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '14px' }}>
                 <div style={{ fontSize: '11px', color: '#aaa', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '6px', borderBottom: '1px solid #1a1a22', paddingBottom: '5px', fontWeight: 600 }}>Pair Analysis</div>
-                <select value={pairAnalysisType} onChange={e => setPairAnalysisType(e.target.value)} style={{ width: '100%', padding: '4px 8px', background: '#141418', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '4px', color: '#fff', fontSize: '11px', cursor: 'pointer', boxShadow: '0 0 4px rgba(255,255,255,0.1)', marginBottom: '10px' }}>
+                <select value={pairAnalysisType} onChange={e => setPairAnalysisType(e.target.value)} style={{ width: '100%', padding: '4px 8px', background: '#141418', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '4px', color: '#fff', fontSize: '12px', fontWeight: 600, cursor: 'pointer', boxShadow: '0 0 4px rgba(255,255,255,0.1)', marginBottom: '10px' }}>
                   <option value="best">Best Pair</option>
                   <option value="worst">Worst Pair</option>
                   <option value="most">Most Traded</option>

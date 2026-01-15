@@ -1699,11 +1699,11 @@ export default function DashboardPage() {
                   {/* Core Fields Grid */}
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '14px' }}>
                     <div>
-                      <label style={{ display: 'block', fontSize: '10px', color: '#888', marginBottom: '6px', fontWeight: 600 }}>Symbol</label>
+                      <label style={{ display: 'block', fontSize: '12px', color: '#888', marginBottom: '6px', fontWeight: 600 }}>Symbol</label>
                       <input type="text" value={quickTradeSymbol} onChange={e => setQuickTradeSymbol(e.target.value)} placeholder="XAUUSD" style={{ width: '100%', padding: '10px 12px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '8px', color: '#fff', fontSize: '14px', boxSizing: 'border-box', transition: 'border-color 0.2s' }} />
                     </div>
                     <div>
-                      <label style={{ display: 'block', fontSize: '10px', color: '#888', marginBottom: '6px', fontWeight: 600 }}>P&L ($)</label>
+                      <label style={{ display: 'block', fontSize: '12px', color: '#888', marginBottom: '6px', fontWeight: 600 }}>P&L ($)</label>
                       <input type="number" value={quickTradePnl} onChange={e => setQuickTradePnl(e.target.value)} placeholder="0" style={{ width: '100%', padding: '10px 12px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '8px', color: '#fff', fontSize: '14px', boxSizing: 'border-box' }} />
                     </div>
                   </div>
@@ -1711,7 +1711,7 @@ export default function DashboardPage() {
                   {/* Direction + Outcome Row */}
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '14px' }}>
                     <div style={{ position: 'relative' }}>
-                      <label style={{ display: 'block', fontSize: '10px', color: '#888', marginBottom: '6px', fontWeight: 600 }}>Direction</label>
+                      <label style={{ display: 'block', fontSize: '12px', color: '#888', marginBottom: '6px', fontWeight: 600 }}>Direction</label>
                       <button type="button" onClick={() => { setDirectionDropdownOpen(!directionDropdownOpen); setOutcomeDropdownOpen(false); setConfidenceDropdownOpen(false); setTimeframeDropdownOpen(false); setSessionDropdownOpen(false); setCustomDropdownOpen({}) }} style={{ width: '100%', padding: '10px 12px', background: '#0a0a0f', border: directionDropdownOpen ? '1px solid #22c55e' : '1px solid #1a1a22', borderRadius: directionDropdownOpen ? '8px 8px 0 0' : '8px', color: quickTradeDirection === 'long' ? '#22c55e' : quickTradeDirection === 'short' ? '#ef4444' : '#888', fontSize: '14px', boxSizing: 'border-box', cursor: 'pointer', textAlign: 'left', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                         <span>{quickTradeDirection === 'long' ? 'Long' : quickTradeDirection === 'short' ? 'Short' : '-'}</span>
                         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ transform: directionDropdownOpen ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }}><path d="M6 9l6 6 6-6" /></svg>
@@ -1725,7 +1725,7 @@ export default function DashboardPage() {
                       )}
                     </div>
                     <div style={{ position: 'relative' }}>
-                      <label style={{ display: 'block', fontSize: '10px', color: '#888', marginBottom: '6px', fontWeight: 600 }}>Outcome</label>
+                      <label style={{ display: 'block', fontSize: '12px', color: '#888', marginBottom: '6px', fontWeight: 600 }}>Outcome</label>
                       <button type="button" onClick={() => { setOutcomeDropdownOpen(!outcomeDropdownOpen); setDirectionDropdownOpen(false); setConfidenceDropdownOpen(false); setTimeframeDropdownOpen(false); setSessionDropdownOpen(false); setCustomDropdownOpen({}) }} style={{ width: '100%', padding: '10px 12px', background: '#0a0a0f', border: outcomeDropdownOpen ? '1px solid #22c55e' : '1px solid #1a1a22', borderRadius: outcomeDropdownOpen ? '8px 8px 0 0' : '8px', color: quickTradeOutcome === 'win' ? '#22c55e' : quickTradeOutcome === 'loss' ? '#ef4444' : quickTradeOutcome === 'be' ? '#f59e0b' : '#888', fontSize: '14px', boxSizing: 'border-box', cursor: 'pointer', textAlign: 'left', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                         <span>{quickTradeOutcome === 'win' ? 'Win' : quickTradeOutcome === 'loss' ? 'Loss' : quickTradeOutcome === 'be' ? 'Breakeven' : '-'}</span>
                         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ transform: outcomeDropdownOpen ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }}><path d="M6 9l6 6 6-6" /></svg>
@@ -1744,11 +1744,11 @@ export default function DashboardPage() {
                   {/* RR + % Risk */}
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '14px' }}>
                     <div>
-                      <label style={{ display: 'block', fontSize: '10px', color: '#888', marginBottom: '6px', fontWeight: 600 }}>RR</label>
+                      <label style={{ display: 'block', fontSize: '12px', color: '#888', marginBottom: '6px', fontWeight: 600 }}>RR</label>
                       <input type="text" value={quickTradeRR} onChange={e => setQuickTradeRR(e.target.value)} placeholder="2.5" style={{ width: '100%', padding: '10px 12px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '8px', color: '#fff', fontSize: '14px', boxSizing: 'border-box' }} />
                     </div>
                     <div>
-                      <label style={{ display: 'block', fontSize: '10px', color: '#888', marginBottom: '6px', fontWeight: 600 }}>% Risk</label>
+                      <label style={{ display: 'block', fontSize: '12px', color: '#888', marginBottom: '6px', fontWeight: 600 }}>% Risk</label>
                       <input type="number" value={quickTradeRiskPercent} onChange={e => setQuickTradeRiskPercent(e.target.value)} placeholder="1" style={{ width: '100%', padding: '10px 12px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '8px', color: '#fff', fontSize: '14px', boxSizing: 'border-box' }} />
                     </div>
                   </div>
@@ -1756,7 +1756,7 @@ export default function DashboardPage() {
                   {/* Confidence + Timeframe */}
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '14px' }}>
                     <div style={{ position: 'relative' }}>
-                      <label style={{ display: 'block', fontSize: '10px', color: '#888', marginBottom: '6px', fontWeight: 600 }}>Confidence</label>
+                      <label style={{ display: 'block', fontSize: '12px', color: '#888', marginBottom: '6px', fontWeight: 600 }}>Confidence</label>
                       <button type="button" onClick={() => { setConfidenceDropdownOpen(!confidenceDropdownOpen); setDirectionDropdownOpen(false); setOutcomeDropdownOpen(false); setTimeframeDropdownOpen(false); setSessionDropdownOpen(false); setCustomDropdownOpen({}) }} style={{ width: '100%', padding: '10px 12px', background: '#0a0a0f', border: confidenceDropdownOpen ? '1px solid #22c55e' : '1px solid #1a1a22', borderRadius: confidenceDropdownOpen ? '8px 8px 0 0' : '8px', color: quickTradeConfidence === 'High' ? '#22c55e' : quickTradeConfidence === 'Medium' ? '#f59e0b' : quickTradeConfidence === 'Low' ? '#ef4444' : '#888', fontSize: '14px', boxSizing: 'border-box', cursor: 'pointer', textAlign: 'left', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                         <span>{quickTradeConfidence || '-'}</span>
                         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ transform: confidenceDropdownOpen ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }}><path d="M6 9l6 6 6-6" /></svg>
@@ -1771,7 +1771,7 @@ export default function DashboardPage() {
                       )}
                     </div>
                     <div style={{ position: 'relative' }}>
-                      <label style={{ display: 'block', fontSize: '10px', color: '#888', marginBottom: '6px', fontWeight: 600 }}>Timeframe</label>
+                      <label style={{ display: 'block', fontSize: '12px', color: '#888', marginBottom: '6px', fontWeight: 600 }}>Timeframe</label>
                       <button type="button" onClick={() => { setTimeframeDropdownOpen(!timeframeDropdownOpen); setDirectionDropdownOpen(false); setOutcomeDropdownOpen(false); setConfidenceDropdownOpen(false); setSessionDropdownOpen(false); setCustomDropdownOpen({}) }} style={{ width: '100%', padding: '10px 12px', background: '#0a0a0f', border: timeframeDropdownOpen ? '1px solid #22c55e' : '1px solid #1a1a22', borderRadius: timeframeDropdownOpen ? '8px 8px 0 0' : '8px', color: quickTradeTimeframe ? '#06b6d4' : '#888', fontSize: '14px', boxSizing: 'border-box', cursor: 'pointer', textAlign: 'left', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                         <span>{quickTradeTimeframe || '-'}</span>
                         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ transform: timeframeDropdownOpen ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }}><path d="M6 9l6 6 6-6" /></svg>
@@ -1790,7 +1790,7 @@ export default function DashboardPage() {
                   {/* Session + Custom Inputs - flowing grid */}
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '14px' }}>
                     <div style={{ position: 'relative' }}>
-                      <label style={{ display: 'block', fontSize: '10px', color: '#888', marginBottom: '6px', fontWeight: 600 }}>Session</label>
+                      <label style={{ display: 'block', fontSize: '12px', color: '#888', marginBottom: '6px', fontWeight: 600 }}>Session</label>
                       <button type="button" onClick={() => { setSessionDropdownOpen(!sessionDropdownOpen); setDirectionDropdownOpen(false); setOutcomeDropdownOpen(false); setConfidenceDropdownOpen(false); setTimeframeDropdownOpen(false); setCustomDropdownOpen({}) }} style={{ width: '100%', padding: '10px 12px', background: '#0a0a0f', border: sessionDropdownOpen ? '1px solid #22c55e' : '1px solid #1a1a22', borderRadius: sessionDropdownOpen ? '8px 8px 0 0' : '8px', color: quickTradeSession === 'London' ? '#3b82f6' : quickTradeSession === 'New York' ? '#22c55e' : quickTradeSession === 'Asian' ? '#f59e0b' : '#888', fontSize: '14px', boxSizing: 'border-box', cursor: 'pointer', textAlign: 'left', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                         <span>{quickTradeSession === 'New York' ? 'NY' : quickTradeSession || '-'}</span>
                         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ transform: sessionDropdownOpen ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }}><path d="M6 9l6 6 6-6" /></svg>
@@ -1811,7 +1811,7 @@ export default function DashboardPage() {
                       const currentColor = currentOpt && typeof currentOpt === 'object' ? (currentOpt.textColor || '#fff') : '#fff'
                       return (
                         <div key={input.id} style={{ position: 'relative' }}>
-                          <label style={{ display: 'block', fontSize: '10px', color: '#888', marginBottom: '6px', fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{input.label || input.id}</label>
+                          <label style={{ display: 'block', fontSize: '12px', color: '#888', marginBottom: '6px', fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{input.label || input.id}</label>
                           <button type="button" onClick={() => { setCustomDropdownOpen(prev => ({ ...Object.fromEntries(Object.keys(prev).map(k => [k, false])), [input.id]: !isOpen })); setDirectionDropdownOpen(false); setOutcomeDropdownOpen(false); setConfidenceDropdownOpen(false); setTimeframeDropdownOpen(false); setSessionDropdownOpen(false) }} style={{ width: '100%', padding: '10px 12px', background: '#0a0a0f', border: isOpen ? '1px solid #22c55e' : '1px solid #1a1a22', borderRadius: isOpen ? '8px 8px 0 0' : '8px', color: currentVal ? currentColor : '#888', fontSize: '14px', boxSizing: 'border-box', cursor: 'pointer', textAlign: 'left', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                             <span>{currentVal || '-'}</span>
                             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }}><path d="M6 9l6 6 6-6" /></svg>
@@ -1836,13 +1836,13 @@ export default function DashboardPage() {
 
                   {/* Date */}
                   <div style={{ marginBottom: '14px' }}>
-                    <label style={{ display: 'block', fontSize: '10px', color: '#888', marginBottom: '6px', fontWeight: 600 }}>Date</label>
+                    <label style={{ display: 'block', fontSize: '12px', color: '#888', marginBottom: '6px', fontWeight: 600 }}>Date</label>
                     <input type="date" value={quickTradeDate} onChange={e => setQuickTradeDate(e.target.value)} style={{ width: '100%', padding: '10px 12px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '8px', color: '#fff', fontSize: '14px', boxSizing: 'border-box' }} />
                   </div>
 
                   {/* Rating */}
                   <div style={{ marginBottom: '14px' }}>
-                    <label style={{ display: 'block', fontSize: '10px', color: '#888', marginBottom: '6px', fontWeight: 600 }}>Rating</label>
+                    <label style={{ display: 'block', fontSize: '12px', color: '#888', marginBottom: '6px', fontWeight: 600 }}>Rating</label>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                       <div style={{ display: 'inline-flex', gap: '2px', padding: '8px 12px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '8px' }} onMouseLeave={() => setHoverRating(0)}>
                         {[1, 2, 3, 4, 5].map(star => {
@@ -1868,13 +1868,13 @@ export default function DashboardPage() {
 
                   {/* Notes */}
                   <div style={{ marginBottom: '14px' }}>
-                    <label style={{ display: 'block', fontSize: '10px', color: '#888', marginBottom: '6px', fontWeight: 600 }}>Notes</label>
+                    <label style={{ display: 'block', fontSize: '12px', color: '#888', marginBottom: '6px', fontWeight: 600 }}>Notes</label>
                     <input type="text" value={quickTradeNotes} onChange={e => setQuickTradeNotes(e.target.value)} placeholder="Quick notes..." style={{ width: '100%', padding: '10px 12px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '8px', color: '#fff', fontSize: '14px', boxSizing: 'border-box' }} />
                   </div>
 
                   {/* Image Upload */}
                   <div style={{ marginBottom: '14px' }}>
-                    <label style={{ display: 'block', fontSize: '10px', color: '#888', marginBottom: '6px', fontWeight: 600 }}>Images</label>
+                    <label style={{ display: 'block', fontSize: '12px', color: '#888', marginBottom: '6px', fontWeight: 600 }}>Images</label>
                     <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', alignItems: 'center' }}>
                       {quickTradeImages.map((img, idx) => (
                         <div key={idx} style={{ position: 'relative', width: '48px', height: '48px', borderRadius: '6px', overflow: 'hidden', border: '1px solid #1a1a22' }}>
@@ -2851,7 +2851,7 @@ export default function DashboardPage() {
                     {profitTargetEnabled && (
                       <>
                         <div style={{ marginBottom: '12px' }}>
-                          <label style={{ display: 'block', fontSize: '10px', color: '#888', marginBottom: '6px', fontWeight: 600 }}>Profit Target (%)</label>
+                          <label style={{ display: 'block', fontSize: '12px', color: '#888', marginBottom: '6px', fontWeight: 600 }}>Profit Target (%)</label>
                           <input type="number" step="0.1" min="0" max="500" value={profitTarget} onChange={e => setProfitTarget(e.target.value)} placeholder="e.g. 10" style={{ width: '100%', padding: '10px 12px', background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '14px', boxSizing: 'border-box' }} />
                         </div>
                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 10px', background: '#0d0d12', borderRadius: '6px', border: '1px solid #1a1a22' }}>
@@ -2881,11 +2881,11 @@ export default function DashboardPage() {
                       <>
                         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '10px' }}>
                           <div>
-                            <label style={{ display: 'block', fontSize: '10px', color: '#888', marginBottom: '6px', fontWeight: 600 }}>Percentage (%)</label>
+                            <label style={{ display: 'block', fontSize: '12px', color: '#888', marginBottom: '6px', fontWeight: 600 }}>Percentage (%)</label>
                             <input type="number" step="0.1" min="0" max="99" value={dailyDdPct} onChange={e => setDailyDdPct(e.target.value)} placeholder="e.g. 5" style={{ width: '100%', padding: '10px 12px', background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '14px', boxSizing: 'border-box' }} />
                           </div>
                           <div>
-                            <label style={{ display: 'block', fontSize: '10px', color: '#888', marginBottom: '6px', fontWeight: 600 }}>Type</label>
+                            <label style={{ display: 'block', fontSize: '12px', color: '#888', marginBottom: '6px', fontWeight: 600 }}>Type</label>
                             <select value={dailyDdType} onChange={e => setDailyDdType(e.target.value)} style={{ width: '100%', padding: '10px 12px', background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '14px', boxSizing: 'border-box', cursor: 'pointer' }}>
                               <option value="static">Static</option>
                               <option value="trailing">Trailing</option>
@@ -2894,7 +2894,7 @@ export default function DashboardPage() {
                         </div>
                         {dailyDdType === 'trailing' && (
                           <div style={{ marginBottom: '10px' }}>
-                            <label style={{ display: 'block', fontSize: '10px', color: '#888', marginBottom: '6px', fontWeight: 600 }}>Locks At</label>
+                            <label style={{ display: 'block', fontSize: '12px', color: '#888', marginBottom: '6px', fontWeight: 600 }}>Locks At</label>
                             <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
                               <select value={dailyDdLocksAt} onChange={e => setDailyDdLocksAt(e.target.value)} style={{ flex: 1, padding: '10px 12px', background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '14px', boxSizing: 'border-box', cursor: 'pointer' }}>
                                 <option value="start_balance">Start Balance</option>
@@ -2912,11 +2912,11 @@ export default function DashboardPage() {
                         )}
                         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
                           <div>
-                            <label style={{ display: 'block', fontSize: '10px', color: '#888', marginBottom: '6px', fontWeight: 600 }}>Resets At</label>
+                            <label style={{ display: 'block', fontSize: '12px', color: '#888', marginBottom: '6px', fontWeight: 600 }}>Resets At</label>
                             <input type="time" value={dailyDdResetTime} onChange={e => setDailyDdResetTime(e.target.value)} style={{ width: '100%', padding: '10px 12px', background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '14px', boxSizing: 'border-box' }} />
                           </div>
                           <div>
-                            <label style={{ display: 'block', fontSize: '10px', color: '#888', marginBottom: '6px', fontWeight: 600 }}>Timezone</label>
+                            <label style={{ display: 'block', fontSize: '12px', color: '#888', marginBottom: '6px', fontWeight: 600 }}>Timezone</label>
                             <select value={dailyDdResetTimezone} onChange={e => setDailyDdResetTimezone(e.target.value)} style={{ width: '100%', padding: '10px 12px', background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '14px', boxSizing: 'border-box', cursor: 'pointer' }}>
                               <option value="Europe/London">UK (London)</option>
                               <option value="America/New_York">US Eastern</option>
@@ -2942,11 +2942,11 @@ export default function DashboardPage() {
                       <>
                         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '10px' }}>
                           <div>
-                            <label style={{ display: 'block', fontSize: '10px', color: '#888', marginBottom: '6px', fontWeight: 600 }}>Percentage (%)</label>
+                            <label style={{ display: 'block', fontSize: '12px', color: '#888', marginBottom: '6px', fontWeight: 600 }}>Percentage (%)</label>
                             <input type="number" step="0.1" min="0" max="99" value={maxDdPct} onChange={e => setMaxDdPct(e.target.value)} placeholder="e.g. 10" style={{ width: '100%', padding: '10px 12px', background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '14px', boxSizing: 'border-box' }} />
                           </div>
                           <div>
-                            <label style={{ display: 'block', fontSize: '10px', color: '#888', marginBottom: '6px', fontWeight: 600 }}>Type</label>
+                            <label style={{ display: 'block', fontSize: '12px', color: '#888', marginBottom: '6px', fontWeight: 600 }}>Type</label>
                             <select value={maxDdType} onChange={e => setMaxDdType(e.target.value)} style={{ width: '100%', padding: '10px 12px', background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '14px', boxSizing: 'border-box', cursor: 'pointer' }}>
                               <option value="static">Static</option>
                               <option value="trailing">Trailing</option>
@@ -2955,7 +2955,7 @@ export default function DashboardPage() {
                         </div>
                         {maxDdType === 'trailing' && (
                           <div>
-                            <label style={{ display: 'block', fontSize: '10px', color: '#888', marginBottom: '6px', fontWeight: 600 }}>Locks At</label>
+                            <label style={{ display: 'block', fontSize: '12px', color: '#888', marginBottom: '6px', fontWeight: 600 }}>Locks At</label>
                             <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
                               <select value={maxDdTrailingStopsAt} onChange={e => setMaxDdTrailingStopsAt(e.target.value)} style={{ flex: 1, padding: '10px 12px', background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '14px', boxSizing: 'border-box', cursor: 'pointer' }}>
                                 <option value="initial">Start Balance</option>
@@ -3002,7 +3002,7 @@ export default function DashboardPage() {
                 </div>
 
                 <div style={{ marginBottom: '14px' }}>
-                  <label style={{ display: 'block', fontSize: '10px', color: '#888', marginBottom: '6px', fontWeight: 600 }}>Profit Target (%)</label>
+                  <label style={{ display: 'block', fontSize: '12px', color: '#888', marginBottom: '6px', fontWeight: 600 }}>Profit Target (%)</label>
                   <input type="number" step="0.1" min="0" max="500" value={editProfitTarget} onChange={e => setEditProfitTarget(e.target.value)} placeholder="e.g. 10" style={{ width: '100%', padding: '12px 14px', background: '#0d0d12', border: '1px solid #2a2a35', borderRadius: '6px', color: '#fff', fontSize: '14px', boxSizing: 'border-box' }} />
                 </div>
 
@@ -3033,11 +3033,11 @@ export default function DashboardPage() {
                   <>
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px', marginBottom: '14px' }}>
                       <div>
-                        <label style={{ display: 'block', fontSize: '10px', color: '#888', marginBottom: '6px', fontWeight: 600 }}>Percentage (%)</label>
+                        <label style={{ display: 'block', fontSize: '12px', color: '#888', marginBottom: '6px', fontWeight: 600 }}>Percentage (%)</label>
                         <input type="number" step="0.1" min="0" max="99" value={editDailyDdPct} onChange={e => setEditDailyDdPct(e.target.value)} placeholder="e.g. 5" style={{ width: '100%', padding: '12px 14px', background: '#0d0d12', border: '1px solid #2a2a35', borderRadius: '6px', color: '#fff', fontSize: '14px', boxSizing: 'border-box' }} />
                       </div>
                       <div>
-                        <label style={{ display: 'block', fontSize: '10px', color: '#888', marginBottom: '6px', fontWeight: 600 }}>Type</label>
+                        <label style={{ display: 'block', fontSize: '12px', color: '#888', marginBottom: '6px', fontWeight: 600 }}>Type</label>
                         <select value={editDailyDdType} onChange={e => setEditDailyDdType(e.target.value)} style={{ width: '100%', padding: '12px 14px', background: '#0d0d12', border: '1px solid #2a2a35', borderRadius: '6px', color: '#fff', fontSize: '14px', boxSizing: 'border-box', cursor: 'pointer' }}>
                           <option value="static">Static</option>
                           <option value="trailing">Trailing</option>
@@ -3049,7 +3049,7 @@ export default function DashboardPage() {
                     </div>
                     {editDailyDdType === 'trailing' && (
                       <div style={{ marginBottom: '14px' }}>
-                        <label style={{ display: 'block', fontSize: '10px', color: '#888', marginBottom: '6px', fontWeight: 600 }}>Locks At</label>
+                        <label style={{ display: 'block', fontSize: '12px', color: '#888', marginBottom: '6px', fontWeight: 600 }}>Locks At</label>
                         <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
                           <select value={editDailyDdLocksAt} onChange={e => setEditDailyDdLocksAt(e.target.value)} style={{ flex: 1, padding: '12px 14px', background: '#0d0d12', border: '1px solid #2a2a35', borderRadius: '6px', color: '#fff', fontSize: '14px', boxSizing: 'border-box', cursor: 'pointer' }}>
                             <option value="start_balance">Start Balance</option>
@@ -3068,11 +3068,11 @@ export default function DashboardPage() {
                     )}
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px' }}>
                       <div>
-                        <label style={{ display: 'block', fontSize: '10px', color: '#888', marginBottom: '6px', fontWeight: 600 }}>Resets At</label>
+                        <label style={{ display: 'block', fontSize: '12px', color: '#888', marginBottom: '6px', fontWeight: 600 }}>Resets At</label>
                         <input type="time" value={editDailyDdResetTime} onChange={e => setEditDailyDdResetTime(e.target.value)} style={{ width: '100%', padding: '12px 14px', background: '#0d0d12', border: '1px solid #2a2a35', borderRadius: '6px', color: '#fff', fontSize: '14px', boxSizing: 'border-box' }} />
                       </div>
                       <div>
-                        <label style={{ display: 'block', fontSize: '10px', color: '#888', marginBottom: '6px', fontWeight: 600 }}>Timezone</label>
+                        <label style={{ display: 'block', fontSize: '12px', color: '#888', marginBottom: '6px', fontWeight: 600 }}>Timezone</label>
                         <select value={editDailyDdResetTimezone} onChange={e => setEditDailyDdResetTimezone(e.target.value)} style={{ width: '100%', padding: '12px 14px', background: '#0d0d12', border: '1px solid #2a2a35', borderRadius: '6px', color: '#fff', fontSize: '14px', boxSizing: 'border-box', cursor: 'pointer' }}>
                           <option value="Europe/London">UK (London)</option>
                           <option value="America/New_York">US Eastern (New York)</option>
@@ -3106,11 +3106,11 @@ export default function DashboardPage() {
                   <>
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px', marginBottom: '14px' }}>
                       <div>
-                        <label style={{ display: 'block', fontSize: '10px', color: '#888', marginBottom: '6px', fontWeight: 600 }}>Percentage (%)</label>
+                        <label style={{ display: 'block', fontSize: '12px', color: '#888', marginBottom: '6px', fontWeight: 600 }}>Percentage (%)</label>
                         <input type="number" step="0.1" min="0" max="99" value={editMaxDdPct} onChange={e => setEditMaxDdPct(e.target.value)} placeholder="e.g. 10" style={{ width: '100%', padding: '12px 14px', background: '#0d0d12', border: '1px solid #2a2a35', borderRadius: '6px', color: '#fff', fontSize: '14px', boxSizing: 'border-box' }} />
                       </div>
                       <div>
-                        <label style={{ display: 'block', fontSize: '10px', color: '#888', marginBottom: '6px', fontWeight: 600 }}>Type</label>
+                        <label style={{ display: 'block', fontSize: '12px', color: '#888', marginBottom: '6px', fontWeight: 600 }}>Type</label>
                         <select value={editMaxDdType} onChange={e => setEditMaxDdType(e.target.value)} style={{ width: '100%', padding: '12px 14px', background: '#0d0d12', border: '1px solid #2a2a35', borderRadius: '6px', color: '#fff', fontSize: '14px', boxSizing: 'border-box', cursor: 'pointer' }}>
                           <option value="static">Static</option>
                           <option value="trailing">Trailing</option>
@@ -3122,7 +3122,7 @@ export default function DashboardPage() {
                     </div>
                     {editMaxDdType === 'trailing' && (
                       <div>
-                        <label style={{ display: 'block', fontSize: '10px', color: '#888', marginBottom: '6px', fontWeight: 600 }}>Locks At</label>
+                        <label style={{ display: 'block', fontSize: '12px', color: '#888', marginBottom: '6px', fontWeight: 600 }}>Locks At</label>
                         <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
                           <select value={editMaxDdTrailingStopsAt} onChange={e => setEditMaxDdTrailingStopsAt(e.target.value)} style={{ flex: 1, padding: '12px 14px', background: '#0d0d12', border: '1px solid #2a2a35', borderRadius: '6px', color: '#fff', fontSize: '14px', boxSizing: 'border-box', cursor: 'pointer' }}>
                             <option value="initial">Start Balance</option>
@@ -3679,17 +3679,17 @@ export default function DashboardPage() {
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px' }}>
                       {/* Symbol */}
                       <div>
-                        <label style={{ display: 'block', fontSize: '10px', color: '#888', marginBottom: '6px', fontWeight: 600 }}>Symbol</label>
+                        <label style={{ display: 'block', fontSize: '12px', color: '#888', marginBottom: '6px', fontWeight: 600 }}>Symbol</label>
                         <input type="text" value={quickTradeSymbol} onChange={e => setQuickTradeSymbol(e.target.value)} placeholder="XAUUSD" style={{ width: '100%', padding: '10px 12px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '8px', color: '#fff', fontSize: '13px', boxSizing: 'border-box' }} />
                       </div>
                       {/* P&L */}
                       <div>
-                        <label style={{ display: 'block', fontSize: '10px', color: '#888', marginBottom: '6px', fontWeight: 600 }}>P&L ($)</label>
+                        <label style={{ display: 'block', fontSize: '12px', color: '#888', marginBottom: '6px', fontWeight: 600 }}>P&L ($)</label>
                         <input type="number" value={quickTradePnl} onChange={e => setQuickTradePnl(e.target.value)} placeholder="0" style={{ width: '100%', padding: '10px 12px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '8px', color: '#fff', fontSize: '13px', boxSizing: 'border-box' }} />
                       </div>
                       {/* Direction */}
                       <div style={{ position: 'relative' }}>
-                        <label style={{ display: 'block', fontSize: '10px', color: '#888', marginBottom: '6px', fontWeight: 600 }}>Direction</label>
+                        <label style={{ display: 'block', fontSize: '12px', color: '#888', marginBottom: '6px', fontWeight: 600 }}>Direction</label>
                         <button type="button" onClick={() => { setDirectionDropdownOpen(!directionDropdownOpen); setOutcomeDropdownOpen(false); setConfidenceDropdownOpen(false); setTimeframeDropdownOpen(false); setSessionDropdownOpen(false); setCustomDropdownOpen({}) }} style={{ width: '100%', padding: '10px 12px', background: '#0a0a0f', border: directionDropdownOpen ? '1px solid #22c55e' : '1px solid #1a1a22', borderRadius: directionDropdownOpen ? '8px 8px 0 0' : '8px', color: quickTradeDirection === 'long' ? '#22c55e' : quickTradeDirection === 'short' ? '#ef4444' : '#888', fontSize: '13px', boxSizing: 'border-box', cursor: 'pointer', textAlign: 'left', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                           <span>{quickTradeDirection === 'long' ? 'Long' : quickTradeDirection === 'short' ? 'Short' : '-'}</span>
                           <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ transform: directionDropdownOpen ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }}><path d="M6 9l6 6 6-6" /></svg>
@@ -3704,7 +3704,7 @@ export default function DashboardPage() {
                       </div>
                       {/* Outcome */}
                       <div style={{ position: 'relative' }}>
-                        <label style={{ display: 'block', fontSize: '10px', color: '#888', marginBottom: '6px', fontWeight: 600 }}>Outcome</label>
+                        <label style={{ display: 'block', fontSize: '12px', color: '#888', marginBottom: '6px', fontWeight: 600 }}>Outcome</label>
                         <button type="button" onClick={() => { setOutcomeDropdownOpen(!outcomeDropdownOpen); setDirectionDropdownOpen(false); setConfidenceDropdownOpen(false); setTimeframeDropdownOpen(false); setSessionDropdownOpen(false); setCustomDropdownOpen({}) }} style={{ width: '100%', padding: '10px 12px', background: '#0a0a0f', border: outcomeDropdownOpen ? '1px solid #22c55e' : '1px solid #1a1a22', borderRadius: outcomeDropdownOpen ? '8px 8px 0 0' : '8px', color: quickTradeOutcome === 'win' ? '#22c55e' : quickTradeOutcome === 'loss' ? '#ef4444' : quickTradeOutcome === 'be' ? '#f59e0b' : '#888', fontSize: '13px', boxSizing: 'border-box', cursor: 'pointer', textAlign: 'left', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                           <span>{quickTradeOutcome === 'win' ? 'Win' : quickTradeOutcome === 'loss' ? 'Loss' : quickTradeOutcome === 'be' ? 'Breakeven' : '-'}</span>
                           <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ transform: outcomeDropdownOpen ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }}><path d="M6 9l6 6 6-6" /></svg>
@@ -3720,17 +3720,17 @@ export default function DashboardPage() {
                       </div>
                       {/* RR */}
                       <div>
-                        <label style={{ display: 'block', fontSize: '10px', color: '#888', marginBottom: '6px', fontWeight: 600 }}>RR</label>
+                        <label style={{ display: 'block', fontSize: '12px', color: '#888', marginBottom: '6px', fontWeight: 600 }}>RR</label>
                         <input type="text" value={quickTradeRR} onChange={e => setQuickTradeRR(e.target.value)} placeholder="2.5" style={{ width: '100%', padding: '10px 12px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '8px', color: '#fff', fontSize: '13px', boxSizing: 'border-box' }} />
                       </div>
                       {/* % Risk */}
                       <div>
-                        <label style={{ display: 'block', fontSize: '10px', color: '#888', marginBottom: '6px', fontWeight: 600 }}>% Risk</label>
+                        <label style={{ display: 'block', fontSize: '12px', color: '#888', marginBottom: '6px', fontWeight: 600 }}>% Risk</label>
                         <input type="number" value={quickTradeRiskPercent} onChange={e => setQuickTradeRiskPercent(e.target.value)} placeholder="1" style={{ width: '100%', padding: '10px 12px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '8px', color: '#fff', fontSize: '13px', boxSizing: 'border-box' }} />
                       </div>
                       {/* Confidence */}
                       <div style={{ position: 'relative' }}>
-                        <label style={{ display: 'block', fontSize: '10px', color: '#888', marginBottom: '6px', fontWeight: 600 }}>Confidence</label>
+                        <label style={{ display: 'block', fontSize: '12px', color: '#888', marginBottom: '6px', fontWeight: 600 }}>Confidence</label>
                         <button type="button" onClick={() => { setConfidenceDropdownOpen(!confidenceDropdownOpen); setDirectionDropdownOpen(false); setOutcomeDropdownOpen(false); setTimeframeDropdownOpen(false); setSessionDropdownOpen(false); setCustomDropdownOpen({}) }} style={{ width: '100%', padding: '10px 12px', background: '#0a0a0f', border: confidenceDropdownOpen ? '1px solid #22c55e' : '1px solid #1a1a22', borderRadius: confidenceDropdownOpen ? '8px 8px 0 0' : '8px', color: quickTradeConfidence === 'High' ? '#22c55e' : quickTradeConfidence === 'Medium' ? '#f59e0b' : quickTradeConfidence === 'Low' ? '#ef4444' : '#888', fontSize: '13px', cursor: 'pointer', textAlign: 'left', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                           <span>{quickTradeConfidence || '-'}</span>
                           <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ transform: confidenceDropdownOpen ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }}><path d="M6 9l6 6 6-6" /></svg>
@@ -3746,7 +3746,7 @@ export default function DashboardPage() {
                       </div>
                       {/* Timeframe */}
                       <div style={{ position: 'relative' }}>
-                        <label style={{ display: 'block', fontSize: '10px', color: '#888', marginBottom: '6px', fontWeight: 600 }}>Timeframe</label>
+                        <label style={{ display: 'block', fontSize: '12px', color: '#888', marginBottom: '6px', fontWeight: 600 }}>Timeframe</label>
                         <button type="button" onClick={() => { setTimeframeDropdownOpen(!timeframeDropdownOpen); setDirectionDropdownOpen(false); setOutcomeDropdownOpen(false); setConfidenceDropdownOpen(false); setSessionDropdownOpen(false); setCustomDropdownOpen({}) }} style={{ width: '100%', padding: '10px 12px', background: '#0a0a0f', border: timeframeDropdownOpen ? '1px solid #22c55e' : '1px solid #1a1a22', borderRadius: timeframeDropdownOpen ? '8px 8px 0 0' : '8px', color: quickTradeTimeframe ? '#06b6d4' : '#888', fontSize: '13px', cursor: 'pointer', textAlign: 'left', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                           <span>{quickTradeTimeframe || '-'}</span>
                           <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ transform: timeframeDropdownOpen ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }}><path d="M6 9l6 6 6-6" /></svg>
@@ -3762,7 +3762,7 @@ export default function DashboardPage() {
                       </div>
                       {/* Session */}
                       <div style={{ position: 'relative' }}>
-                        <label style={{ display: 'block', fontSize: '10px', color: '#888', marginBottom: '6px', fontWeight: 600 }}>Session</label>
+                        <label style={{ display: 'block', fontSize: '12px', color: '#888', marginBottom: '6px', fontWeight: 600 }}>Session</label>
                         <button type="button" onClick={() => { setSessionDropdownOpen(!sessionDropdownOpen); setDirectionDropdownOpen(false); setOutcomeDropdownOpen(false); setConfidenceDropdownOpen(false); setTimeframeDropdownOpen(false); setCustomDropdownOpen({}) }} style={{ width: '100%', padding: '10px 12px', background: '#0a0a0f', border: sessionDropdownOpen ? '1px solid #22c55e' : '1px solid #1a1a22', borderRadius: sessionDropdownOpen ? '8px 8px 0 0' : '8px', color: quickTradeSession === 'London' ? '#3b82f6' : quickTradeSession === 'New York' ? '#22c55e' : quickTradeSession === 'Asian' ? '#f59e0b' : '#888', fontSize: '13px', cursor: 'pointer', textAlign: 'left', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                           <span>{quickTradeSession || '-'}</span>
                           <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ transform: sessionDropdownOpen ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }}><path d="M6 9l6 6 6-6" /></svg>
@@ -3784,7 +3784,7 @@ export default function DashboardPage() {
                         const currentColor = currentOpt && typeof currentOpt === 'object' ? (currentOpt.textColor || '#fff') : '#fff'
                         return (
                           <div key={input.id} style={{ position: 'relative' }}>
-                            <label style={{ display: 'block', fontSize: '10px', color: '#888', marginBottom: '6px', fontWeight: 600 }}>{input.label || input.id}</label>
+                            <label style={{ display: 'block', fontSize: '12px', color: '#888', marginBottom: '6px', fontWeight: 600 }}>{input.label || input.id}</label>
                             <button type="button" onClick={() => { setCustomDropdownOpen(prev => ({ ...Object.fromEntries(Object.keys(prev).map(k => [k, false])), [input.id]: !isOpen })); setDirectionDropdownOpen(false); setOutcomeDropdownOpen(false); setConfidenceDropdownOpen(false); setTimeframeDropdownOpen(false); setSessionDropdownOpen(false) }} style={{ width: '100%', padding: '10px 12px', background: '#0a0a0f', border: isOpen ? '1px solid #22c55e' : '1px solid #1a1a22', borderRadius: isOpen ? '8px 8px 0 0' : '8px', color: currentVal ? currentColor : '#888', fontSize: '13px', cursor: 'pointer', textAlign: 'left', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                               <span>{currentVal || '-'}</span>
                               <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }}><path d="M6 9l6 6 6-6" /></svg>
@@ -3812,7 +3812,7 @@ export default function DashboardPage() {
                   <div style={{ width: '260px', flexShrink: 0, display: 'flex', flexDirection: 'column', gap: '16px' }}>
                     {/* Image Upload - at top */}
                     <div>
-                      <div style={{ fontSize: '10px', color: '#888', marginBottom: '8px', fontWeight: 600 }}>Images</div>
+                      <div style={{ fontSize: '12px', color: '#888', marginBottom: '8px', fontWeight: 600 }}>Images</div>
                       <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', alignItems: 'center' }}>
                         {quickTradeImages.map((img, idx) => (
                           <div key={idx} style={{ position: 'relative', width: '60px', height: '60px', borderRadius: '8px', overflow: 'hidden', border: '1px solid #1a1a22' }}>
@@ -3829,13 +3829,13 @@ export default function DashboardPage() {
 
                     {/* Date */}
                     <div>
-                      <label style={{ display: 'block', fontSize: '10px', color: '#888', marginBottom: '6px', fontWeight: 600 }}>Date</label>
+                      <label style={{ display: 'block', fontSize: '12px', color: '#888', marginBottom: '6px', fontWeight: 600 }}>Date</label>
                       <input type="date" value={quickTradeDate} onChange={e => setQuickTradeDate(e.target.value)} style={{ width: '100%', padding: '10px 12px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '8px', color: '#fff', fontSize: '13px', boxSizing: 'border-box' }} />
                     </div>
 
                     {/* Rating */}
                     <div>
-                      <label style={{ display: 'block', fontSize: '10px', color: '#888', marginBottom: '6px', fontWeight: 600 }}>Rating</label>
+                      <label style={{ display: 'block', fontSize: '12px', color: '#888', marginBottom: '6px', fontWeight: 600 }}>Rating</label>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                         <div style={{ display: 'inline-flex', gap: '3px', padding: '8px 12px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '8px' }} onMouseLeave={() => setHoverRating(0)}>
                           {[1, 2, 3, 4, 5].map(star => {
@@ -3861,7 +3861,7 @@ export default function DashboardPage() {
 
                     {/* Notes */}
                     <div style={{ flex: 1 }}>
-                      <label style={{ display: 'block', fontSize: '10px', color: '#888', marginBottom: '6px', fontWeight: 600 }}>Notes</label>
+                      <label style={{ display: 'block', fontSize: '12px', color: '#888', marginBottom: '6px', fontWeight: 600 }}>Notes</label>
                       <textarea value={quickTradeNotes} onChange={e => setQuickTradeNotes(e.target.value)} placeholder="Trade notes..." rows={4} style={{ width: '100%', padding: '10px 12px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '8px', color: '#fff', fontSize: '13px', resize: 'none', boxSizing: 'border-box' }} />
                     </div>
                   </div>
