@@ -1907,7 +1907,15 @@ export default function DashboardPage() {
                   const stats = getCumulativeStats()
                   const allTrades = getAllTrades()
                   let cumPnl = 0
-                  const sortedTrades = allTrades.slice().sort((a, b) => new Date(a.date) - new Date(b.date))
+                  // Sort by date and time
+                  const getTradeTime = (t) => {
+                    try { const extra = JSON.parse(t.extra_data || '{}'); return extra.time || '00:00' } catch { return '00:00' }
+                  }
+                  const sortedTrades = allTrades.slice().sort((a, b) => {
+                    const dateA = new Date(a.date + 'T' + getTradeTime(a))
+                    const dateB = new Date(b.date + 'T' + getTradeTime(b))
+                    return dateA - dateB
+                  })
                   const pnlPoints = sortedTrades.map(t => {
                     cumPnl += parseFloat(t.pnl) || 0
                     return { value: cumPnl, date: t.date, symbol: t.symbol, pnl: parseFloat(t.pnl) || 0 }
@@ -1936,11 +1944,12 @@ export default function DashboardPage() {
                   const profitableDays = Object.values(dailyPnls).filter(v => v > 0).length
                   const dayWR = uniqueDays > 0 ? Math.round((profitableDays / uniqueDays) * 100) : 0
                   const consistency = uniqueDays > 0 ? Math.round((profitableDays / uniqueDays) * 100) : 0
-                  // Win/Loss streaks
+                  // Win/Loss streaks (BE breaks streak)
                   let winStreak = 0, lossStreak = 0, currentWin = 0, currentLoss = 0
                   sortedTrades.forEach(t => {
                     if (t.outcome === 'win') { currentWin++; currentLoss = 0; if (currentWin > winStreak) winStreak = currentWin }
                     else if (t.outcome === 'loss') { currentLoss++; currentWin = 0; if (currentLoss > lossStreak) lossStreak = currentLoss }
+                    else { currentWin = 0; currentLoss = 0 } // BE or other breaks both streaks
                   })
 
                   const totalBalance = stats.totalStartingBalance + cumPnl
@@ -2211,13 +2220,13 @@ export default function DashboardPage() {
                             {[
                               { label: 'Trades', value: stats.totalTrades, color: '#fff' },
                               { label: 'Winrate', value: `${stats.winrate}%`, color: stats.winrate >= 50 ? '#22c55e' : '#ef4444' },
-                              { label: 'Wins', value: stats.totalWins, color: '#22c55e' },
+                              { label: 'Wins', value: stats.wins, color: '#22c55e' },
                               { label: 'Avg Win', value: `+$${formatCurrency(avgWin)}`, color: '#22c55e' },
                               { label: 'Win Streak', value: winStreak, color: '#22c55e' },
                               { label: 'Day WR', value: `${dayWR}%`, color: dayWR >= 50 ? '#22c55e' : '#ef4444' },
                               { label: 'Profit Factor', value: stats.profitFactor, color: stats.profitFactor === '-' ? '#666' : stats.profitFactor === '∞' ? '#22c55e' : parseFloat(stats.profitFactor) >= 1 ? '#22c55e' : '#ef4444' },
                               { label: 'Consistency', value: `${consistency}%`, color: consistency >= 50 ? '#22c55e' : '#ef4444' },
-                              { label: 'Losses', value: stats.totalLosses, color: '#ef4444' },
+                              { label: 'Losses', value: stats.losses, color: '#ef4444' },
                               { label: 'Avg Loss', value: `$${formatCurrency(avgLoss)}`, color: avgLoss >= 0 ? '#22c55e' : '#ef4444' },
                               { label: 'Loss Streak', value: lossStreak, color: '#ef4444' },
                               { label: 'Expectancy', value: `${expectancy >= 0 ? '+' : ''}$${formatCurrency(expectancy)}`, color: expectancy >= 0 ? '#22c55e' : '#ef4444' },
@@ -3674,18 +3683,18 @@ export default function DashboardPage() {
               <div style={{ padding: '20px 24px', overflow: 'auto', flex: 1 }}>
                 {/* Main content: Left inputs + Right side */}
                 <div style={{ display: 'flex', gap: '24px' }}>
-                  {/* Left: 3-column grid of inputs */}
+                  {/* Left: 2-column grid of inputs */}
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px' }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '12px' }}>
                       {/* Symbol */}
                       <div>
                         <label style={{ display: 'block', fontSize: '12px', color: '#888', marginBottom: '6px', fontWeight: 600 }}>Symbol</label>
-                        <input type="text" value={quickTradeSymbol} onChange={e => setQuickTradeSymbol(e.target.value)} placeholder="XAUUSD" style={{ width: '100%', padding: '10px 12px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '8px', color: '#fff', fontSize: '13px', boxSizing: 'border-box' }} />
+                        <input type="text" value={quickTradeSymbol} onChange={e => setQuickTradeSymbol(e.target.value)} placeholder="XAUUSD" style={{ width: '100%', padding: '10px 12px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '8px', color: '#fff', fontSize: '14px', boxSizing: 'border-box' }} />
                       </div>
                       {/* P&L */}
                       <div>
                         <label style={{ display: 'block', fontSize: '12px', color: '#888', marginBottom: '6px', fontWeight: 600 }}>P&L ($)</label>
-                        <input type="number" value={quickTradePnl} onChange={e => setQuickTradePnl(e.target.value)} placeholder="0" style={{ width: '100%', padding: '10px 12px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '8px', color: '#fff', fontSize: '13px', boxSizing: 'border-box' }} />
+                        <input type="number" value={quickTradePnl} onChange={e => setQuickTradePnl(e.target.value)} placeholder="0" style={{ width: '100%', padding: '10px 12px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '8px', color: '#fff', fontSize: '14px', boxSizing: 'border-box' }} />
                       </div>
                       {/* Direction */}
                       <div style={{ position: 'relative' }}>
