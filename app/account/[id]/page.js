@@ -1860,150 +1860,114 @@ export default function AccountPage() {
           const outcomeStyles = findOptStyles(outcomeInput?.options, trade.outcome)
           const directionInput = inputs.find(i => i.id === 'direction')
           const directionStyles = findOptStyles(directionInput?.options, trade.direction)
+
+          // Build all fields array for 3-column grid
+          const allFields = []
+          allFields.push({ label: 'P&L', value: <span style={{ color: pnlValue >= 0 ? '#22c55e' : '#ef4444', fontWeight: 700 }}>{pnlValue >= 0 ? '+' : ''}${formatPnl(pnlValue)}</span> })
+          allFields.push({ label: 'Outcome', value: <span style={{ padding: '4px 12px', borderRadius: '6px', fontSize: '12px', fontWeight: 600, background: outcomeStyles.bgColor || 'transparent', color: outcomeStyles.textColor, border: outcomeStyles.borderColor ? `1px solid ${outcomeStyles.borderColor}` : 'none' }}>{trade.outcome?.toUpperCase() || '-'}</span> })
+          allFields.push({ label: 'Date', value: new Date(trade.date).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' }) })
+          if (extra.time) allFields.push({ label: 'Time', value: extra.time })
+          if (trade.rr) allFields.push({ label: 'Risk:Reward', value: `${trade.rr}R` })
+          if (extra.riskPercent) allFields.push({ label: 'Risk %', value: `${extra.riskPercent}%` })
+          if (extra.session) allFields.push({ label: 'Session', value: extra.session })
+          if (extra.timeframe) allFields.push({ label: 'Timeframe', value: extra.timeframe })
+          if (extra.confidence) allFields.push({ label: 'Confidence', value: extra.confidence })
+          if (extra.rating) allFields.push({ label: 'Rating', value: (
+            <div style={{ display: 'flex', gap: '2px' }}>
+              {[1,2,3,4,5].map(star => {
+                const rating = parseFloat(extra.rating || 0)
+                const isFullStar = rating >= star
+                const isHalfStar = rating >= star - 0.5 && rating < star
+                return (
+                  <div key={star} style={{ position: 'relative', width: '16px', height: '16px' }}>
+                    <span style={{ position: 'absolute', color: '#2a2a35', fontSize: '16px', lineHeight: 1 }}>★</span>
+                    {isHalfStar && <span style={{ position: 'absolute', color: '#22c55e', fontSize: '16px', lineHeight: 1, clipPath: 'inset(0 50% 0 0)' }}>★</span>}
+                    {isFullStar && <span style={{ position: 'absolute', color: '#22c55e', fontSize: '16px', lineHeight: 1 }}>★</span>}
+                  </div>
+                )
+              })}
+            </div>
+          )})
+          // Add custom fields
+          enabledInputs.filter(inp => !['symbol', 'outcome', 'pnl', 'rr', 'riskPercent', 'date', 'time', 'direction', 'session', 'timeframe', 'confidence', 'rating', 'image', 'notes'].includes(inp.id) && extra[inp.id]).forEach(inp => {
+            allFields.push({ label: inp.label, value: extra[inp.id] })
+          })
+
           return (
             <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.9)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }} onClick={() => setViewingTrade(null)}>
-              <div style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '16px', padding: '0', width: '90%', maxWidth: tradeImages.length > 0 ? '700px' : '500px', maxHeight: '90vh', overflow: 'hidden', display: 'flex', flexDirection: 'column' }} onClick={e => e.stopPropagation()}>
+              <div style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '16px', padding: '0', width: '95%', maxWidth: '1000px', maxHeight: '90vh', overflow: 'hidden', display: 'flex', flexDirection: 'column' }} onClick={e => e.stopPropagation()}>
                 {/* Header */}
-                <div style={{ padding: '20px 24px', borderBottom: '1px solid #1a1a22', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <div style={{ padding: '16px 20px', borderBottom: '1px solid #1a1a22', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                    <span style={{ fontSize: '22px', fontWeight: 700, color: '#fff' }}>{trade.symbol}</span>
+                    <span style={{ fontSize: '20px', fontWeight: 700, color: '#fff' }}>{trade.symbol}</span>
                     {trade.direction && (
-                      <span style={{ padding: '4px 10px', borderRadius: '6px', fontSize: '12px', fontWeight: 600, background: directionStyles.bgColor || 'transparent', color: directionStyles.textColor, border: directionStyles.borderColor ? `1px solid ${directionStyles.borderColor}` : 'none' }}>
+                      <span style={{ padding: '4px 10px', borderRadius: '6px', fontSize: '11px', fontWeight: 600, background: directionStyles.bgColor || 'transparent', color: directionStyles.textColor, border: directionStyles.borderColor ? `1px solid ${directionStyles.borderColor}` : 'none' }}>
                         {trade.direction.toUpperCase()}
                       </span>
                     )}
                   </div>
-                  <button onClick={() => setViewingTrade(null)} style={{ background: 'transparent', border: 'none', color: '#666', fontSize: '24px', cursor: 'pointer', padding: '4px' }}>×</button>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <button onClick={() => { setViewingTrade(null); startEditTrade(trade) }} style={{ padding: '6px 14px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '6px', color: '#fff', fontWeight: 600, fontSize: '12px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                      Edit
+                    </button>
+                    <button onClick={() => setViewingTrade(null)} style={{ background: 'transparent', border: 'none', color: '#666', fontSize: '24px', cursor: 'pointer', padding: '4px', lineHeight: 1 }}>×</button>
+                  </div>
                 </div>
 
-                {/* Content */}
-                <div style={{ padding: '24px', overflow: 'auto', flex: 1 }}>
-                  {/* Main Stats Row */}
-                  <div style={{ display: 'flex', gap: '16px', marginBottom: '24px' }}>
-                    <div style={{ flex: 1, background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '12px', padding: '16px', textAlign: 'center' }}>
-                      <div style={{ fontSize: '11px', color: '#666', textTransform: 'uppercase', marginBottom: '8px' }}>P&L</div>
-                      <div style={{ fontSize: '28px', fontWeight: 700, color: pnlValue >= 0 ? '#22c55e' : '#ef4444' }}>{pnlValue >= 0 ? '+' : ''}${formatPnl(pnlValue)}</div>
+                {/* Content - Main area with fields on left, images on right */}
+                <div style={{ padding: '20px', overflow: 'auto', flex: 1 }}>
+                  <div style={{ display: 'flex', gap: '20px' }}>
+                    {/* Left: 3-column grid of all fields */}
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px' }}>
+                        {allFields.map((field, idx) => (
+                          <div key={idx} style={{ background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '8px', padding: '12px' }}>
+                            <div style={{ fontSize: '9px', color: '#666', textTransform: 'uppercase', marginBottom: '6px', letterSpacing: '0.5px' }}>{field.label}</div>
+                            <div style={{ fontSize: '13px', fontWeight: 600, color: '#fff' }}>{field.value}</div>
+                          </div>
+                        ))}
+                      </div>
                     </div>
-                    <div style={{ flex: 1, background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '12px', padding: '16px', textAlign: 'center' }}>
-                      <div style={{ fontSize: '11px', color: '#666', textTransform: 'uppercase', marginBottom: '8px' }}>Outcome</div>
-                      <span style={{ padding: '6px 16px', borderRadius: '8px', fontSize: '14px', fontWeight: 600, background: outcomeStyles.bgColor || 'transparent', color: outcomeStyles.textColor, border: outcomeStyles.borderColor ? `1px solid ${outcomeStyles.borderColor}` : 'none' }}>
-                        {trade.outcome?.toUpperCase() || '-'}
-                      </span>
-                    </div>
-                  </div>
 
-                  {/* Details Grid */}
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '12px', marginBottom: '24px' }}>
-                    <div style={{ background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '10px', padding: '14px' }}>
-                      <div style={{ fontSize: '10px', color: '#666', textTransform: 'uppercase', marginBottom: '6px' }}>Date</div>
-                      <div style={{ fontSize: '15px', fontWeight: 600, color: '#fff' }}>{new Date(trade.date).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })}</div>
-                    </div>
-                    {extra.time && (
-                      <div style={{ background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '10px', padding: '14px' }}>
-                        <div style={{ fontSize: '10px', color: '#666', textTransform: 'uppercase', marginBottom: '6px' }}>Time</div>
-                        <div style={{ fontSize: '15px', fontWeight: 600, color: '#fff' }}>{extra.time}</div>
-                      </div>
-                    )}
-                    {trade.rr && (
-                      <div style={{ background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '10px', padding: '14px' }}>
-                        <div style={{ fontSize: '10px', color: '#666', textTransform: 'uppercase', marginBottom: '6px' }}>Risk:Reward</div>
-                        <div style={{ fontSize: '15px', fontWeight: 600, color: '#fff' }}>{trade.rr}R</div>
-                      </div>
-                    )}
-                    {extra.riskPercent && (
-                      <div style={{ background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '10px', padding: '14px' }}>
-                        <div style={{ fontSize: '10px', color: '#666', textTransform: 'uppercase', marginBottom: '6px' }}>Risk %</div>
-                        <div style={{ fontSize: '15px', fontWeight: 600, color: '#fff' }}>{extra.riskPercent}%</div>
-                      </div>
-                    )}
-                    {extra.session && (
-                      <div style={{ background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '10px', padding: '14px' }}>
-                        <div style={{ fontSize: '10px', color: '#666', textTransform: 'uppercase', marginBottom: '6px' }}>Session</div>
-                        <div style={{ fontSize: '15px', fontWeight: 600, color: '#fff' }}>{extra.session}</div>
-                      </div>
-                    )}
-                    {extra.timeframe && (
-                      <div style={{ background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '10px', padding: '14px' }}>
-                        <div style={{ fontSize: '10px', color: '#666', textTransform: 'uppercase', marginBottom: '6px' }}>Timeframe</div>
-                        <div style={{ fontSize: '15px', fontWeight: 600, color: '#fff' }}>{extra.timeframe}</div>
-                      </div>
-                    )}
-                    {extra.confidence && (
-                      <div style={{ background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '10px', padding: '14px' }}>
-                        <div style={{ fontSize: '10px', color: '#666', textTransform: 'uppercase', marginBottom: '6px' }}>Confidence</div>
-                        <div style={{ fontSize: '15px', fontWeight: 600, color: '#fff' }}>{extra.confidence}</div>
-                      </div>
-                    )}
-                    {/* Rating */}
-                    {extra.rating && (
-                      <div style={{ background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '10px', padding: '14px' }}>
-                        <div style={{ fontSize: '10px', color: '#666', textTransform: 'uppercase', marginBottom: '6px' }}>Rating</div>
-                        <div style={{ display: 'flex', gap: '2px' }}>
-                          {[1,2,3,4,5].map(star => {
-                            const rating = parseFloat(extra.rating || 0)
-                            const isFullStar = rating >= star
-                            const isHalfStar = rating >= star - 0.5 && rating < star
-                            return (
-                              <div key={star} style={{ position: 'relative', width: '18px', height: '18px' }}>
-                                <span style={{ position: 'absolute', color: '#2a2a35', fontSize: '18px', lineHeight: 1 }}>★</span>
-                                {isHalfStar && <span style={{ position: 'absolute', color: '#22c55e', fontSize: '18px', lineHeight: 1, clipPath: 'inset(0 50% 0 0)' }}>★</span>}
-                                {isFullStar && <span style={{ position: 'absolute', color: '#22c55e', fontSize: '18px', lineHeight: 1 }}>★</span>}
-                              </div>
-                            )
-                          })}
+                    {/* Right: Fixed image area */}
+                    {tradeImages.length > 0 && (
+                      <div style={{ width: '320px', flexShrink: 0 }}>
+                        <div style={{ background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '10px', padding: '12px', height: '100%', display: 'flex', flexDirection: 'column' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
+                            <div style={{ fontSize: '9px', color: '#666', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Screenshot{tradeImages.length > 1 ? 's' : ''}</div>
+                            {tradeImages.length > 1 && (
+                              <div style={{ fontSize: '10px', color: '#888' }}>{tradeImageIndex + 1} / {tradeImages.length}</div>
+                            )}
+                          </div>
+                          <div style={{ position: 'relative', flex: 1, minHeight: '200px' }}>
+                            <img src={tradeImages[tradeImageIndex]} alt="" style={{ width: '100%', height: '100%', borderRadius: '8px', cursor: 'pointer', objectFit: 'contain', background: '#0d0d12' }} onClick={() => setShowExpandedImage(tradeImages[tradeImageIndex])} />
+                            {tradeImages.length > 1 && (
+                              <>
+                                <button onClick={(e) => { e.stopPropagation(); setTradeImageIndex(prev => prev > 0 ? prev - 1 : tradeImages.length - 1) }} style={{ position: 'absolute', left: '4px', top: '50%', transform: 'translateY(-50%)', width: '28px', height: '28px', borderRadius: '50%', background: 'rgba(0,0,0,0.7)', border: 'none', color: '#fff', fontSize: '16px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>‹</button>
+                                <button onClick={(e) => { e.stopPropagation(); setTradeImageIndex(prev => prev < tradeImages.length - 1 ? prev + 1 : 0) }} style={{ position: 'absolute', right: '4px', top: '50%', transform: 'translateY(-50%)', width: '28px', height: '28px', borderRadius: '50%', background: 'rgba(0,0,0,0.7)', border: 'none', color: '#fff', fontSize: '16px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>›</button>
+                              </>
+                            )}
+                          </div>
+                          {tradeImages.length > 1 && (
+                            <div style={{ display: 'flex', gap: '6px', marginTop: '10px', justifyContent: 'center' }}>
+                              {tradeImages.map((img, idx) => (
+                                <button key={idx} onClick={() => setTradeImageIndex(idx)} style={{ width: '8px', height: '8px', borderRadius: '50%', background: idx === tradeImageIndex ? '#22c55e' : '#333', border: 'none', cursor: 'pointer', padding: 0 }} />
+                              ))}
+                            </div>
+                          )}
                         </div>
                       </div>
                     )}
-                    {/* Custom fields */}
-                    {enabledInputs.filter(inp => !['symbol', 'outcome', 'pnl', 'rr', 'riskPercent', 'date', 'time', 'direction', 'session', 'timeframe', 'confidence', 'rating', 'image', 'notes'].includes(inp.id) && extra[inp.id]).map(inp => (
-                      <div key={inp.id} style={{ background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '10px', padding: '14px' }}>
-                        <div style={{ fontSize: '10px', color: '#666', textTransform: 'uppercase', marginBottom: '6px' }}>{inp.label}</div>
-                        <div style={{ fontSize: '15px', fontWeight: 600, color: '#fff' }}>{extra[inp.id]}</div>
-                      </div>
-                    ))}
                   </div>
 
-                  {/* Images with Slideshow */}
-                  {tradeImages.length > 0 && (
-                    <div style={{ marginBottom: '20px' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
-                        <div style={{ fontSize: '10px', color: '#666', textTransform: 'uppercase' }}>Screenshot{tradeImages.length > 1 ? 's' : ''}</div>
-                        {tradeImages.length > 1 && (
-                          <div style={{ fontSize: '11px', color: '#888' }}>{tradeImageIndex + 1} / {tradeImages.length}</div>
-                        )}
-                      </div>
-                      <div style={{ position: 'relative' }}>
-                        <img src={tradeImages[tradeImageIndex]} alt="" style={{ width: '100%', borderRadius: '10px', border: '1px solid #1a1a22', cursor: 'pointer', maxHeight: '300px', objectFit: 'contain', background: '#0a0a0f' }} onClick={() => setShowExpandedImage(tradeImages[tradeImageIndex])} />
-                        {tradeImages.length > 1 && (
-                          <>
-                            <button onClick={(e) => { e.stopPropagation(); setTradeImageIndex(prev => prev > 0 ? prev - 1 : tradeImages.length - 1) }} style={{ position: 'absolute', left: '8px', top: '50%', transform: 'translateY(-50%)', width: '32px', height: '32px', borderRadius: '50%', background: 'rgba(0,0,0,0.7)', border: 'none', color: '#fff', fontSize: '18px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>‹</button>
-                            <button onClick={(e) => { e.stopPropagation(); setTradeImageIndex(prev => prev < tradeImages.length - 1 ? prev + 1 : 0) }} style={{ position: 'absolute', right: '8px', top: '50%', transform: 'translateY(-50%)', width: '32px', height: '32px', borderRadius: '50%', background: 'rgba(0,0,0,0.7)', border: 'none', color: '#fff', fontSize: '18px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>›</button>
-                          </>
-                        )}
-                      </div>
-                      {tradeImages.length > 1 && (
-                        <div style={{ display: 'flex', gap: '6px', marginTop: '10px', justifyContent: 'center' }}>
-                          {tradeImages.map((img, idx) => (
-                            <button key={idx} onClick={() => setTradeImageIndex(idx)} style={{ width: '8px', height: '8px', borderRadius: '50%', background: idx === tradeImageIndex ? '#22c55e' : '#333', border: 'none', cursor: 'pointer', padding: 0 }} />
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  )}
-
-                  {/* Notes */}
+                  {/* Notes below - full width */}
                   {noteContent && (
-                    <div>
-                      <div style={{ fontSize: '10px', color: '#666', textTransform: 'uppercase', marginBottom: '10px' }}>Notes</div>
-                      <div style={{ background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '10px', padding: '14px', color: '#ccc', fontSize: '14px', lineHeight: '1.6', whiteSpace: 'pre-wrap' }}>{noteContent}</div>
+                    <div style={{ marginTop: '16px' }}>
+                      <div style={{ fontSize: '9px', color: '#666', textTransform: 'uppercase', marginBottom: '8px', letterSpacing: '0.5px' }}>Notes</div>
+                      <div style={{ background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '8px', padding: '12px', color: '#ccc', fontSize: '13px', lineHeight: '1.6', whiteSpace: 'pre-wrap' }}>{noteContent}</div>
                     </div>
                   )}
-                </div>
-
-                {/* Footer */}
-                <div style={{ padding: '16px 24px', borderTop: '1px solid #1a1a22', display: 'flex', gap: '12px' }}>
-                  <button onClick={() => { setViewingTrade(null); startEditTrade(trade) }} style={{ flex: 1, padding: '12px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '8px', color: '#fff', fontWeight: 600, fontSize: '14px', cursor: 'pointer' }}>Edit Trade</button>
-                  <button onClick={() => setViewingTrade(null)} style={{ flex: 1, padding: '12px', background: '#22c55e', border: 'none', borderRadius: '8px', color: '#fff', fontWeight: 600, fontSize: '14px', cursor: 'pointer' }}>Close</button>
                 </div>
               </div>
             </div>
