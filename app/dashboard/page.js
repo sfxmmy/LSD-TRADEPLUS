@@ -2314,7 +2314,10 @@ export default function DashboardPage() {
                           <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
                             <div>
                               <div style={{ fontSize: '13px', color: '#666', marginBottom: '2px' }}>{account.name}</div>
-                              <div style={{ fontSize: '24px', fontWeight: 700, color: isProfitable ? '#22c55e' : '#ef4444' }}>${formatCurrency(currentBalance)}</div>
+                              <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px' }}>
+                                <span style={{ fontSize: '24px', fontWeight: 700, color: isProfitable ? '#22c55e' : '#ef4444' }}>${formatCurrency(currentBalance)}</span>
+                                <span style={{ fontSize: '11px', color: '#555' }}><span style={{ fontWeight: 600, color: '#888' }}>${formatCurrency(startingBalance)}</span> INITIAL</span>
+                              </div>
                             </div>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                               {/* Show objective lines toggle - only if account has objectives */}
@@ -2702,9 +2705,12 @@ export default function DashboardPage() {
                       >
                         {/* Left: Name & Balance */}
                         <div style={{ display: 'flex', alignItems: 'center', gap: '24px', flex: 1 }}>
-                          <div style={{ minWidth: '160px' }}>
-                            <div style={{ fontSize: '11px', color: '#888', marginBottom: '2px' }}>{account.name}</div>
-                            <div style={{ fontSize: '20px', fontWeight: 700, color: isProfitable ? '#22c55e' : '#ef4444' }}>${formatCurrency(currentBalance)}</div>
+                          <div style={{ minWidth: '180px' }}>
+                            <div style={{ fontSize: '11px', color: '#666', marginBottom: '2px' }}>{account.name}</div>
+                            <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px' }}>
+                              <span style={{ fontSize: '20px', fontWeight: 700, color: isProfitable ? '#22c55e' : '#ef4444' }}>${formatCurrency(currentBalance)}</span>
+                              <span style={{ fontSize: '10px', color: '#555' }}><span style={{ fontWeight: 600, color: '#888' }}>${formatCurrency(startingBalance)}</span> INITIAL</span>
+                            </div>
                           </div>
 
                           {/* Stats Row */}
@@ -3717,28 +3723,28 @@ export default function DashboardPage() {
                       {/* Outcome */}
                       <div style={{ position: 'relative' }}>
                         <label style={{ display: 'block', fontSize: '12px', color: '#888', marginBottom: '6px', fontWeight: 600 }}>Outcome</label>
-                        <button type="button" onClick={() => { setOutcomeDropdownOpen(!outcomeDropdownOpen); setDirectionDropdownOpen(false); setConfidenceDropdownOpen(false); setTimeframeDropdownOpen(false); setSessionDropdownOpen(false); setCustomDropdownOpen({}) }} style={{ width: '100%', padding: '10px 12px', background: '#0a0a0f', border: outcomeDropdownOpen ? '1px solid #22c55e' : '1px solid #1a1a22', borderRadius: outcomeDropdownOpen ? '8px 8px 0 0' : '8px', color: quickTradeOutcome === 'win' ? '#22c55e' : quickTradeOutcome === 'loss' ? '#ef4444' : quickTradeOutcome === 'be' ? '#f59e0b' : '#888', fontSize: '13px', boxSizing: 'border-box', cursor: 'pointer', textAlign: 'left', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <button type="button" onClick={() => { setOutcomeDropdownOpen(!outcomeDropdownOpen); setDirectionDropdownOpen(false); setConfidenceDropdownOpen(false); setTimeframeDropdownOpen(false); setSessionDropdownOpen(false); setCustomDropdownOpen({}) }} style={{ width: '100%', padding: '10px 12px', background: quickTradeOutcome === 'win' ? 'rgba(34,197,94,0.2)' : quickTradeOutcome === 'loss' ? 'rgba(239,68,68,0.2)' : quickTradeOutcome === 'be' ? 'rgba(245,158,11,0.2)' : '#0a0a0f', border: outcomeDropdownOpen ? '1px solid #22c55e' : quickTradeOutcome === 'win' ? '1px solid rgba(34,197,94,0.5)' : quickTradeOutcome === 'loss' ? '1px solid rgba(239,68,68,0.5)' : quickTradeOutcome === 'be' ? '1px solid rgba(245,158,11,0.5)' : '1px solid #1a1a22', borderRadius: outcomeDropdownOpen ? '8px 8px 0 0' : '8px', color: quickTradeOutcome === 'win' ? '#22c55e' : quickTradeOutcome === 'loss' ? '#ef4444' : quickTradeOutcome === 'be' ? '#f59e0b' : '#888', fontSize: '14px', boxSizing: 'border-box', cursor: 'pointer', textAlign: 'left', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                           <span>{quickTradeOutcome === 'win' ? 'Win' : quickTradeOutcome === 'loss' ? 'Loss' : quickTradeOutcome === 'be' ? 'Breakeven' : '-'}</span>
                           <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ transform: outcomeDropdownOpen ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }}><path d="M6 9l6 6 6-6" /></svg>
                         </button>
                         {outcomeDropdownOpen && (
                           <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, background: '#0a0a0f', border: '1px solid #22c55e', borderTop: 'none', borderRadius: '0 0 8px 8px', zIndex: 100, overflow: 'hidden' }}>
-                            <div onClick={() => { setQuickTradeOutcome(''); setOutcomeDropdownOpen(false) }} style={{ padding: '10px 12px', cursor: 'pointer', color: '#888', fontSize: '13px', transition: 'background 0.15s' }} onMouseEnter={e => e.currentTarget.style.background = '#1a1a22'} onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>-</div>
-                            <div onClick={() => { setQuickTradeOutcome('win'); setOutcomeDropdownOpen(false) }} style={{ padding: '10px 12px', cursor: 'pointer', color: '#22c55e', fontSize: '13px', fontWeight: 600, transition: 'background 0.15s' }} onMouseEnter={e => e.currentTarget.style.background = 'rgba(34,197,94,0.15)'} onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>Win</div>
-                            <div onClick={() => { setQuickTradeOutcome('loss'); setOutcomeDropdownOpen(false) }} style={{ padding: '10px 12px', cursor: 'pointer', color: '#ef4444', fontSize: '13px', fontWeight: 600, transition: 'background 0.15s' }} onMouseEnter={e => e.currentTarget.style.background = 'rgba(239,68,68,0.15)'} onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>Loss</div>
-                            <div onClick={() => { setQuickTradeOutcome('be'); setOutcomeDropdownOpen(false) }} style={{ padding: '10px 12px', cursor: 'pointer', color: '#f59e0b', fontSize: '13px', fontWeight: 600, transition: 'background 0.15s' }} onMouseEnter={e => e.currentTarget.style.background = 'rgba(245,158,11,0.15)'} onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>Breakeven</div>
+                            <div onClick={() => { setQuickTradeOutcome(''); setOutcomeDropdownOpen(false) }} style={{ padding: '10px 12px', cursor: 'pointer', color: '#888', fontSize: '14px', transition: 'background 0.15s' }} onMouseEnter={e => e.currentTarget.style.background = '#1a1a22'} onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>-</div>
+                            <div onClick={() => { setQuickTradeOutcome('win'); setOutcomeDropdownOpen(false) }} style={{ padding: '10px 12px', cursor: 'pointer', color: '#22c55e', fontSize: '14px', fontWeight: 600, transition: 'background 0.15s' }} onMouseEnter={e => e.currentTarget.style.background = 'rgba(34,197,94,0.15)'} onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>Win</div>
+                            <div onClick={() => { setQuickTradeOutcome('loss'); setOutcomeDropdownOpen(false) }} style={{ padding: '10px 12px', cursor: 'pointer', color: '#ef4444', fontSize: '14px', fontWeight: 600, transition: 'background 0.15s' }} onMouseEnter={e => e.currentTarget.style.background = 'rgba(239,68,68,0.15)'} onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>Loss</div>
+                            <div onClick={() => { setQuickTradeOutcome('be'); setOutcomeDropdownOpen(false) }} style={{ padding: '10px 12px', cursor: 'pointer', color: '#f59e0b', fontSize: '14px', fontWeight: 600, transition: 'background 0.15s' }} onMouseEnter={e => e.currentTarget.style.background = 'rgba(245,158,11,0.15)'} onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>Breakeven</div>
                           </div>
                         )}
                       </div>
                       {/* RR */}
                       <div>
                         <label style={{ display: 'block', fontSize: '12px', color: '#888', marginBottom: '6px', fontWeight: 600 }}>RR</label>
-                        <input type="text" value={quickTradeRR} onChange={e => setQuickTradeRR(e.target.value)} placeholder="2.5" style={{ width: '100%', padding: '10px 12px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '8px', color: '#fff', fontSize: '13px', boxSizing: 'border-box' }} />
+                        <input type="text" value={quickTradeRR} onChange={e => setQuickTradeRR(e.target.value)} placeholder="2.5" style={{ width: '100%', padding: '10px 12px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '8px', color: '#fff', fontSize: '14px', boxSizing: 'border-box' }} />
                       </div>
                       {/* % Risk */}
                       <div>
                         <label style={{ display: 'block', fontSize: '12px', color: '#888', marginBottom: '6px', fontWeight: 600 }}>% Risk</label>
-                        <input type="number" value={quickTradeRiskPercent} onChange={e => setQuickTradeRiskPercent(e.target.value)} placeholder="1" style={{ width: '100%', padding: '10px 12px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '8px', color: '#fff', fontSize: '13px', boxSizing: 'border-box' }} />
+                        <input type="number" value={quickTradeRiskPercent} onChange={e => setQuickTradeRiskPercent(e.target.value)} placeholder="1" style={{ width: '100%', padding: '10px 12px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '8px', color: '#fff', fontSize: '14px', boxSizing: 'border-box' }} />
                       </div>
                       {/* Confidence */}
                       <div style={{ position: 'relative' }}>
