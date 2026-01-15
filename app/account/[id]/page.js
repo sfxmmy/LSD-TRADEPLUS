@@ -89,6 +89,7 @@ export default function AccountPage() {
   const [includeDaysNotTraded, setIncludeDaysNotTraded] = useState(false)
   const [analysisGroupBy, setAnalysisGroupBy] = useState('direction')
   const [analysisMetric, setAnalysisMetric] = useState('avgpnl')
+  const [analysisFilters, setAnalysisFilters] = useState([]) // Array of { field: string, value: string }
   const [pairAnalysisType, setPairAnalysisType] = useState('best')
   const [tooltip, setTooltip] = useState(null)
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 })
@@ -3343,32 +3344,88 @@ export default function AccountPage() {
                     <div style={{ fontSize: '11px', color: '#aaa', textTransform: 'uppercase', fontWeight: 600, letterSpacing: '0.5px' }}>Trade Analysis</div>
                     <div style={{ fontSize: '9px', color: '#999' }}>{displayTrades.length} trades</div>
                   </div>
-                  <div style={{ display: 'flex', gap: '6px', marginBottom: '10px' }}>
-                    <select value={analysisGroupBy} onChange={e => setAnalysisGroupBy(e.target.value)} style={{ flex: 1, padding: '4px 8px', background: '#141418', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '4px', color: '#fff', fontSize: '12px', fontWeight: 600, cursor: 'pointer', boxShadow: '0 0 4px rgba(255,255,255,0.1)' }}>
-                      <option value="direction">Direction</option>
-                      <option value="symbol">Pair</option>
-                      <option value="confidence">Confidence</option>
-                      <option value="session">Session</option>
-                      <option value="timeframe">Timeframe</option>
-                      <option value="rating">Rating</option>
-                      <option value="outcome">Outcome</option>
-                      {getCustomSelectInputs().filter(i => !['direction', 'session', 'confidence', 'timeframe', 'outcome', 'symbol', 'rating'].includes(i.id)).map(inp => (
-                        <option key={inp.id} value={inp.id}>{inp.label}</option>
-                      ))}
-                    </select>
-                    <select value={analysisMetric} onChange={e => setAnalysisMetric(e.target.value)} style={{ flex: 1, padding: '4px 8px', background: '#141418', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '4px', color: '#fff', fontSize: '12px', fontWeight: 600, cursor: 'pointer', boxShadow: '0 0 4px rgba(255,255,255,0.1)' }}>
-                      <option value="avgpnl">Avg PnL</option>
-                      <option value="winrate">Winrate</option>
-                      <option value="pnl">Total PnL</option>
-                      <option value="count">Trade Count</option>
-                      <option value="avgrr">Avg RR</option>
-                      <option value="profitfactor">Profit Factor</option>
-                    </select>
-                  </div>
+                  {/* Filter options for dropdowns */}
+                  {(() => {
+                    const filterOptions = [
+                      { value: 'direction', label: 'Direction' },
+                      { value: 'symbol', label: 'Pair' },
+                      { value: 'confidence', label: 'Confidence' },
+                      { value: 'session', label: 'Session' },
+                      { value: 'timeframe', label: 'Timeframe' },
+                      { value: 'rating', label: 'Rating' },
+                      { value: 'outcome', label: 'Outcome' },
+                      ...getCustomSelectInputs().filter(i => !['direction', 'session', 'confidence', 'timeframe', 'outcome', 'symbol', 'rating'].includes(i.id)).map(inp => ({ value: inp.id, label: inp.label }))
+                    ]
+                    const getValuesForField = (field) => {
+                      const values = new Set()
+                      displayTrades.forEach(t => {
+                        let val
+                        if (field === 'direction') val = t.direction?.toUpperCase()
+                        else if (field === 'symbol') val = t.symbol
+                        else if (field === 'outcome') val = t.outcome?.toUpperCase()
+                        else if (field === 'rating') {
+                          const rating = parseFloat(getExtraData(t).rating) || 0
+                          if (rating > 0) val = rating % 1 === 0 ? `${rating}` : `${rating}`
+                        }
+                        else val = getExtraData(t)[field]
+                        if (val) values.add(val)
+                      })
+                      return Array.from(values).sort()
+                    }
+                    return (
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', marginBottom: '10px' }}>
+                        {/* Main row: groupBy + add button + metric */}
+                        <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
+                          <select value={analysisGroupBy} onChange={e => setAnalysisGroupBy(e.target.value)} style={{ flex: 1, padding: '4px 8px', background: '#141418', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '4px', color: '#fff', fontSize: '12px', fontWeight: 600, cursor: 'pointer', boxShadow: '0 0 4px rgba(255,255,255,0.1)' }}>
+                            {filterOptions.map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
+                          </select>
+                          <button onClick={() => setAnalysisFilters([...analysisFilters, { field: 'direction', value: '' }])} style={{ width: '26px', height: '26px', background: '#141418', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '4px', color: '#888', fontSize: '14px', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.2s' }} onMouseEnter={e => { e.currentTarget.style.background = '#1a1a22'; e.currentTarget.style.color = '#fff' }} onMouseLeave={e => { e.currentTarget.style.background = '#141418'; e.currentTarget.style.color = '#888' }} title="Add filter">+</button>
+                          <select value={analysisMetric} onChange={e => setAnalysisMetric(e.target.value)} style={{ flex: 1, padding: '4px 8px', background: '#141418', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '4px', color: '#fff', fontSize: '12px', fontWeight: 600, cursor: 'pointer', boxShadow: '0 0 4px rgba(255,255,255,0.1)' }}>
+                            <option value="avgpnl">Avg PnL</option>
+                            <option value="winrate">Winrate</option>
+                            <option value="pnl">Total PnL</option>
+                            <option value="count">Trade Count</option>
+                            <option value="avgrr">Avg RR</option>
+                            <option value="profitfactor">Profit Factor</option>
+                          </select>
+                        </div>
+                        {/* Additional filter rows */}
+                        {analysisFilters.map((filter, idx) => (
+                          <div key={idx} style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
+                            <span style={{ fontSize: '10px', color: '#666', fontWeight: 600, textTransform: 'uppercase', minWidth: '28px' }}>and</span>
+                            <select value={filter.field} onChange={e => { const newFilters = [...analysisFilters]; newFilters[idx].field = e.target.value; newFilters[idx].value = ''; setAnalysisFilters(newFilters) }} style={{ flex: 1, padding: '4px 8px', background: '#141418', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '4px', color: '#fff', fontSize: '12px', fontWeight: 600, cursor: 'pointer', boxShadow: '0 0 4px rgba(255,255,255,0.1)' }}>
+                              {filterOptions.map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
+                            </select>
+                            <select value={filter.value} onChange={e => { const newFilters = [...analysisFilters]; newFilters[idx].value = e.target.value; setAnalysisFilters(newFilters) }} style={{ flex: 1, padding: '4px 8px', background: '#141418', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '4px', color: '#fff', fontSize: '12px', fontWeight: 600, cursor: 'pointer', boxShadow: '0 0 4px rgba(255,255,255,0.1)' }}>
+                              <option value="">All</option>
+                              {getValuesForField(filter.field).map(val => <option key={val} value={val}>{val}</option>)}
+                            </select>
+                            <button onClick={() => setAnalysisFilters(analysisFilters.filter((_, i) => i !== idx))} style={{ width: '26px', height: '26px', background: '#141418', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '4px', color: '#666', fontSize: '12px', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.2s' }} onMouseEnter={e => { e.currentTarget.style.background = '#1a1a22'; e.currentTarget.style.color = '#ef4444' }} onMouseLeave={e => { e.currentTarget.style.background = '#141418'; e.currentTarget.style.color = '#666' }} title="Remove filter">×</button>
+                          </div>
+                        ))}
+                      </div>
+                    )
+                  })()}
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                     {(() => {
+                      // First filter trades based on analysisFilters
+                      const filteredTrades = displayTrades.filter(t => {
+                        return analysisFilters.every(filter => {
+                          if (!filter.value) return true // "All" selected
+                          let val
+                          if (filter.field === 'direction') val = t.direction?.toUpperCase()
+                          else if (filter.field === 'symbol') val = t.symbol
+                          else if (filter.field === 'outcome') val = t.outcome?.toUpperCase()
+                          else if (filter.field === 'rating') {
+                            const rating = parseFloat(getExtraData(t).rating) || 0
+                            if (rating > 0) val = rating % 1 === 0 ? `${rating}` : `${rating}`
+                          }
+                          else val = getExtraData(t)[filter.field]
+                          return val === filter.value
+                        })
+                      })
                       const groups = {}
-                      displayTrades.forEach(t => {
+                      filteredTrades.forEach(t => {
                         let key
                         if (analysisGroupBy === 'direction') key = t.direction?.toUpperCase()
                         else if (analysisGroupBy === 'symbol') key = t.symbol
@@ -3913,7 +3970,7 @@ export default function AccountPage() {
                   <option value="worst">Worst Pair</option>
                   <option value="most">Most Traded</option>
                 </select>
-                {(() => { const ps = {}; displayTrades.forEach(t => { if (!ps[t.symbol]) ps[t.symbol] = { w: 0, l: 0, pnl: 0, count: 0, rrs: [], wins: [], losses: [] }; if (t.outcome === 'win') { ps[t.symbol].w++; ps[t.symbol].wins.push(parseFloat(t.pnl) || 0) } else if (t.outcome === 'loss') { ps[t.symbol].l++; ps[t.symbol].losses.push(Math.abs(parseFloat(t.pnl)) || 0) }; ps[t.symbol].pnl += parseFloat(t.pnl) || 0; ps[t.symbol].count++; if (t.rr) ps[t.symbol].rrs.push(parseFloat(t.rr)) }); let selected; if (pairAnalysisType === 'best') selected = Object.entries(ps).sort((a, b) => b[1].pnl - a[1].pnl)[0]; else if (pairAnalysisType === 'worst') selected = Object.entries(ps).sort((a, b) => a[1].pnl - b[1].pnl)[0]; else selected = Object.entries(ps).sort((a, b) => b[1].count - a[1].count)[0]; if (!selected) return <div style={{ color: '#999', textAlign: 'center', fontSize: '12px' }}>No data</div>; const data = selected[1]; const wr = data.w + data.l > 0 ? Math.round((data.w / (data.w + data.l)) * 100) : 0; const pairAvgRR = data.rrs.length > 0 ? (data.rrs.reduce((a, b) => a + b, 0) / data.rrs.length).toFixed(1) : '-'; const totalWins = data.wins.reduce((a, b) => a + b, 0); const totalLosses = data.losses.reduce((a, b) => a + b, 0); const pf = totalLosses > 0 ? (totalWins / totalLosses).toFixed(2) : totalWins > 0 ? '∞' : '-'; const size = 80, stroke = 7, r = (size - stroke) / 2, c = 2 * Math.PI * r; return (<div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}><div style={{ position: 'relative', width: size, height: size }}><svg width={size} height={size} style={{ transform: 'rotate(-90deg)' }}><circle cx={size/2} cy={size/2} r={r} fill="none" stroke="#ef4444" strokeWidth={stroke} /><circle cx={size/2} cy={size/2} r={r} fill="none" stroke="#22c55e" strokeWidth={stroke} strokeDasharray={c} strokeDashoffset={c * (1 - wr/100)} strokeLinecap="butt" /></svg><div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}><div style={{ fontSize: '12px', fontWeight: 700, color: '#fff' }}>{selected[0]}</div><div style={{ fontSize: '14px', fontWeight: 700, color: '#22c55e' }}>{wr}%</div></div></div><div style={{ display: 'flex', gap: '10px', marginTop: '8px', fontSize: '11px' }}><span><span style={{ color: '#22c55e' }}>●</span> Win</span><span><span style={{ color: '#ef4444' }}>●</span> Loss</span></div><div style={{ marginTop: '10px', width: '100%' }}><StatBox label="PnL" value={(data.pnl >= 0 ? '+' : '') + '$' + Math.round(data.pnl)} color={data.pnl >= 0 ? '#22c55e' : '#ef4444'} /><StatBox label="Avg RR" value={pairAvgRR} color="#fff" /><StatBox label="Profit Factor" value={pf} color="#fff" /></div></div>) })()}
+                {(() => { const ps = {}; displayTrades.forEach(t => { if (!ps[t.symbol]) ps[t.symbol] = { w: 0, l: 0, pnl: 0, count: 0, rrs: [], wins: [], losses: [], longs: 0, shorts: 0 }; if (t.outcome === 'win') { ps[t.symbol].w++; ps[t.symbol].wins.push(parseFloat(t.pnl) || 0) } else if (t.outcome === 'loss') { ps[t.symbol].l++; ps[t.symbol].losses.push(Math.abs(parseFloat(t.pnl)) || 0) }; ps[t.symbol].pnl += parseFloat(t.pnl) || 0; ps[t.symbol].count++; if (t.direction === 'long') ps[t.symbol].longs++; else if (t.direction === 'short') ps[t.symbol].shorts++; if (t.rr) ps[t.symbol].rrs.push(parseFloat(t.rr)) }); let selected; if (pairAnalysisType === 'best') selected = Object.entries(ps).sort((a, b) => b[1].pnl - a[1].pnl)[0]; else if (pairAnalysisType === 'worst') selected = Object.entries(ps).sort((a, b) => a[1].pnl - b[1].pnl)[0]; else selected = Object.entries(ps).sort((a, b) => b[1].count - a[1].count)[0]; if (!selected) return <div style={{ color: '#999', textAlign: 'center', fontSize: '12px' }}>No data</div>; const data = selected[1]; const wr = data.w + data.l > 0 ? Math.round((data.w / (data.w + data.l)) * 100) : 0; const pairAvgRR = data.rrs.length > 0 ? (data.rrs.reduce((a, b) => a + b, 0) / data.rrs.length).toFixed(1) : '-'; const totalWins = data.wins.reduce((a, b) => a + b, 0); const totalLosses = data.losses.reduce((a, b) => a + b, 0); const pf = totalLosses > 0 ? (totalWins / totalLosses).toFixed(2) : totalWins > 0 ? '∞' : '-'; const size = 80, stroke = 7, r = (size - stroke) / 2, c = 2 * Math.PI * r; return (<div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}><div style={{ position: 'relative', width: size, height: size }}><svg width={size} height={size} style={{ transform: 'rotate(-90deg)' }}><circle cx={size/2} cy={size/2} r={r} fill="none" stroke="#ef4444" strokeWidth={stroke} /><circle cx={size/2} cy={size/2} r={r} fill="none" stroke="#22c55e" strokeWidth={stroke} strokeDasharray={c} strokeDashoffset={c * (1 - wr/100)} strokeLinecap="butt" /></svg><div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}><div style={{ fontSize: '12px', fontWeight: 700, color: '#fff' }}>{selected[0]}</div><div style={{ fontSize: '14px', fontWeight: 700, color: '#fff' }}>{wr}% WR</div></div></div><div style={{ display: 'flex', gap: '10px', marginTop: '8px', fontSize: '11px' }}><span><span style={{ color: '#22c55e' }}>●</span> Win</span><span><span style={{ color: '#ef4444' }}>●</span> Loss</span></div><div style={{ marginTop: '10px', width: '100%' }}><StatBox label="Trades" value={data.count} color="#fff" /><StatBox label="Longs" value={data.longs} color="#fff" /><StatBox label="Shorts" value={data.shorts} color="#fff" /><StatBox label="PnL" value={(data.pnl >= 0 ? '+' : '') + '$' + Math.round(data.pnl)} color={data.pnl >= 0 ? '#22c55e' : '#ef4444'} /><StatBox label="Avg RR" value={pairAvgRR} color="#fff" /><StatBox label="Profit Factor" value={pf} color="#fff" /></div></div>) })()}
               </div>
               {/* Avg Rating */}
               <div style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '14px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
