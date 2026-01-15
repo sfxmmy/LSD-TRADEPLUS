@@ -1471,7 +1471,7 @@ export default function AccountPage() {
           {/* Stats View Selector - hide on notes tab since notes are user-level */}
           {activeTab !== 'notes' && (
           <div style={{ marginBottom: '8px', padding: '10px', background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px' }}>
-            <div style={{ fontSize: '9px', color: '#666', textTransform: 'uppercase', marginBottom: '8px', letterSpacing: '0.5px' }}>Viewing {activeTab === 'trades' ? 'Trades' : 'Stats'} For</div>
+            <div style={{ fontSize: '9px', color: '#888', textTransform: 'uppercase', marginBottom: '8px', letterSpacing: '0.5px', fontWeight: 600 }}>Viewing {activeTab === 'trades' ? 'Trades' : 'Stats'} For</div>
 
               {/* Show "Selected Trades" indicator when viewing selected */}
               {viewingSelectedStats && (
@@ -1927,7 +1927,7 @@ export default function AccountPage() {
                       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px' }}>
                         {allFields.map((field, idx) => (
                           <div key={idx} style={{ background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '8px', padding: '12px' }}>
-                            <div style={{ fontSize: '10px', color: '#666', textTransform: 'uppercase', marginBottom: '6px', letterSpacing: '0.5px' }}>{field.label}</div>
+                            <div style={{ fontSize: '12px', color: '#888', marginBottom: '6px', fontWeight: 600 }}>{field.label}</div>
                             <div style={{ fontSize: '13px', fontWeight: 600, color: '#fff' }}>{field.value}</div>
                           </div>
                         ))}
@@ -1939,7 +1939,7 @@ export default function AccountPage() {
                       <div style={{ width: '320px', flexShrink: 0 }}>
                         <div style={{ background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '10px', padding: '12px', height: '100%', display: 'flex', flexDirection: 'column' }}>
                           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
-                            <div style={{ fontSize: '10px', color: '#666', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Screenshot{tradeImages.length > 1 ? 's' : ''}</div>
+                            <div style={{ fontSize: '12px', color: '#888', fontWeight: 600 }}>Screenshot{tradeImages.length > 1 ? 's' : ''}</div>
                             {tradeImages.length > 1 && (
                               <div style={{ fontSize: '10px', color: '#888' }}>{tradeImageIndex + 1} / {tradeImages.length}</div>
                             )}
@@ -1968,7 +1968,7 @@ export default function AccountPage() {
                   {/* Notes below - full width */}
                   {noteContent && (
                     <div style={{ marginTop: '16px' }}>
-                      <div style={{ fontSize: '10px', color: '#666', textTransform: 'uppercase', marginBottom: '8px', letterSpacing: '0.5px' }}>Notes</div>
+                      <div style={{ fontSize: '12px', color: '#888', marginBottom: '8px', fontWeight: 600 }}>Notes</div>
                       <div style={{ background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '8px', padding: '12px', color: '#ccc', fontSize: '13px', lineHeight: '1.6', whiteSpace: 'pre-wrap' }}>{noteContent}</div>
                     </div>
                   )}
@@ -3120,18 +3120,18 @@ export default function AccountPage() {
               <div style={{ flex: 1, background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '12px 16px', display: 'flex', alignItems: 'center', gap: '12px' }}>
                 <span style={{ fontSize: '11px', color: '#aaa', textTransform: 'uppercase', letterSpacing: '0.5px', fontWeight: 600 }}>DIRECTION</span>
                 <span style={{ fontSize: '13px', color: '#22c55e', fontWeight: 700 }}>{displayLongPct}% Long</span>
-                <div style={{ flex: 1, height: '12px', borderRadius: '6px', overflow: 'hidden', display: 'flex', background: 'rgba(0,0,0,0.3)', boxShadow: 'inset 0 1px 3px rgba(0,0,0,0.4)' }}>
-                  <div style={{ width: `${displayLongPct}%`, background: 'linear-gradient(90deg, rgba(34,197,94,0.3) 0%, rgba(34,197,94,0.9) 30%, rgba(34,197,94,0.9) 70%, rgba(34,197,94,0.3) 100%)', boxShadow: 'inset 0 0 8px rgba(34,197,94,0.5), 0 0 6px rgba(34,197,94,0.3)' }} />
-                  <div style={{ width: `${100 - displayLongPct}%`, background: 'linear-gradient(90deg, rgba(239,68,68,0.3) 0%, rgba(239,68,68,0.9) 30%, rgba(239,68,68,0.9) 70%, rgba(239,68,68,0.3) 100%)', boxShadow: 'inset 0 0 8px rgba(239,68,68,0.5), 0 0 6px rgba(239,68,68,0.3)' }} />
+                <div style={{ flex: 1, height: '12px', borderRadius: '6px', overflow: 'hidden', display: 'flex', background: '#1a1a22' }}>
+                  <div style={{ width: `${displayLongPct}%`, background: '#22c55e' }} />
+                  <div style={{ width: `${100 - displayLongPct}%`, background: '#ef4444' }} />
                 </div>
                 <span style={{ fontSize: '13px', color: '#ef4444', fontWeight: 700 }}>{100 - displayLongPct}% Short</span>
               </div>
               <div style={{ flex: 1, background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '12px 16px', display: 'flex', alignItems: 'center', gap: '12px' }}>
                 <span style={{ fontSize: '11px', color: '#aaa', textTransform: 'uppercase', letterSpacing: '0.5px', fontWeight: 600 }}>SENTIMENT</span>
                 <span style={{ fontSize: '13px', color: '#22c55e', fontWeight: 700 }}>{displayWinrate}% Bullish</span>
-                <div style={{ flex: 1, height: '12px', borderRadius: '6px', overflow: 'hidden', display: 'flex', background: 'rgba(0,0,0,0.3)', boxShadow: 'inset 0 1px 3px rgba(0,0,0,0.4)' }}>
-                  <div style={{ width: `${displayWinrate}%`, background: 'linear-gradient(90deg, rgba(34,197,94,0.3) 0%, rgba(34,197,94,0.9) 30%, rgba(34,197,94,0.9) 70%, rgba(34,197,94,0.3) 100%)', boxShadow: 'inset 0 0 8px rgba(34,197,94,0.5), 0 0 6px rgba(34,197,94,0.3)' }} />
-                  <div style={{ width: `${100 - displayWinrate}%`, background: 'linear-gradient(90deg, rgba(239,68,68,0.3) 0%, rgba(239,68,68,0.9) 30%, rgba(239,68,68,0.9) 70%, rgba(239,68,68,0.3) 100%)', boxShadow: 'inset 0 0 8px rgba(239,68,68,0.5), 0 0 6px rgba(239,68,68,0.3)' }} />
+                <div style={{ flex: 1, height: '12px', borderRadius: '6px', overflow: 'hidden', display: 'flex', background: '#1a1a22' }}>
+                  <div style={{ width: `${displayWinrate}%`, background: '#22c55e' }} />
+                  <div style={{ width: `${100 - displayWinrate}%`, background: '#ef4444' }} />
                 </div>
                 <span style={{ fontSize: '13px', color: '#ef4444', fontWeight: 700 }}>{100 - displayWinrate}% Bearish</span>
               </div>
@@ -3563,7 +3563,7 @@ export default function AccountPage() {
                     {/* Profit Target Progress */}
                     {account?.profit_target && (
                       <div>
-                        <div style={{ fontSize: '10px', color: '#888', marginBottom: '6px', textTransform: 'uppercase' }}>Profit Target ({account.profit_target}%)</div>
+                        <div style={{ fontSize: '12px', color: '#888', marginBottom: '6px' }}>Profit Target ({account.profit_target}%)</div>
                         <div style={{ background: '#1a1a22', borderRadius: '4px', height: '10px', overflow: 'hidden', marginBottom: '6px' }}>
                           <div style={{ width: `${Math.min(100, distanceFromTarget?.passed ? 100 : ((totalPnl / (startingBalance * account.profit_target / 100)) * 100) || 0)}%`, height: '100%', background: distanceFromTarget?.passed ? '#22c55e' : '#3b82f6', transition: 'width 0.3s' }} />
                         </div>
@@ -3576,7 +3576,7 @@ export default function AccountPage() {
                     {/* Legacy Drawdown Status (only show if new max DD not enabled) */}
                     {propFirmDrawdown && !account?.max_dd_enabled && (
                       <div>
-                        <div style={{ fontSize: '10px', color: '#888', marginBottom: '6px', textTransform: 'uppercase' }}>{propFirmDrawdown.ddType === 'trailing' ? 'Trailing' : 'Max'} Drawdown ({account.max_drawdown}%){propFirmDrawdown.ddType === 'trailing' && <span style={{ marginLeft: '4px', fontSize: '9px', color: '#666' }}>({propFirmDrawdown.trailingMode === 'eod' ? 'EOD' : 'Real-time'})</span>}</div>
+                        <div style={{ fontSize: '12px', color: '#888', marginBottom: '6px' }}>{propFirmDrawdown.ddType === 'trailing' ? 'Trailing' : 'Max'} Drawdown ({account.max_drawdown}%){propFirmDrawdown.ddType === 'trailing' && <span style={{ marginLeft: '4px', fontSize: '9px', color: '#666' }}>({propFirmDrawdown.trailingMode === 'eod' ? 'EOD' : 'Real-time'})</span>}</div>
                         <div style={{ background: '#1a1a22', borderRadius: '4px', height: '10px', overflow: 'hidden', marginBottom: '6px' }}>
                           <div style={{ width: `${propFirmDrawdown.usedPct}%`, height: '100%', background: propFirmDrawdown.breached ? '#ef4444' : propFirmDrawdown.usedPct > 80 ? '#ef4444' : propFirmDrawdown.usedPct > 50 ? '#f59e0b' : '#22c55e', transition: 'width 0.3s' }} />
                         </div>
@@ -3616,7 +3616,7 @@ export default function AccountPage() {
                     {/* Consistency Rule */}
                     {consistencyCheck && (
                       <div>
-                        <div style={{ fontSize: '10px', color: '#888', marginBottom: '6px', textTransform: 'uppercase' }}>Consistency Rule ({consistencyCheck.pct}%)</div>
+                        <div style={{ fontSize: '12px', color: '#888', marginBottom: '6px' }}>Consistency Rule ({consistencyCheck.pct}%)</div>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
                           <span style={{ fontSize: '13px', color: consistencyCheck.passed ? '#22c55e' : '#ef4444', fontWeight: 600 }}>{consistencyCheck.passed ? '✓ Passing' : `✗ ${consistencyCheck.violations.length} violation(s)`}</span>
                         </div>
@@ -3631,7 +3631,7 @@ export default function AccountPage() {
                     )}
                     {/* Current Status */}
                     <div>
-                      <div style={{ fontSize: '10px', color: '#888', marginBottom: '6px', textTransform: 'uppercase' }}>Current Balance</div>
+                      <div style={{ fontSize: '12px', color: '#888', marginBottom: '6px' }}>Current Balance</div>
                       <div style={{ fontSize: '18px', fontWeight: 700, color: currentBalance >= startingBalance ? '#22c55e' : '#ef4444', marginBottom: '4px' }}>${Math.round(currentBalance).toLocaleString()}</div>
                       <div style={{ fontSize: '11px', color: '#666' }}>Started: ${Math.round(startingBalance).toLocaleString()}</div>
                     </div>
@@ -4032,11 +4032,11 @@ export default function AccountPage() {
               {/* Date Range Row */}
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '12px' }}>
                 <div>
-                  <label style={{ display: 'block', fontSize: '10px', color: '#666', marginBottom: '5px', textTransform: 'uppercase' }}>From</label>
+                  <label style={{ display: 'block', fontSize: '12px', color: '#888', marginBottom: '5px', fontWeight: 600 }}>From</label>
                   <input type="date" value={draftFilters.dateFrom} onChange={e => setDraftFilters({...draftFilters, dateFrom: e.target.value, quickSelect: ''})} style={{ width: '100%', padding: '10px 12px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '13px', boxSizing: 'border-box' }} />
                 </div>
                 <div>
-                  <label style={{ display: 'block', fontSize: '10px', color: '#666', marginBottom: '5px', textTransform: 'uppercase' }}>To</label>
+                  <label style={{ display: 'block', fontSize: '12px', color: '#888', marginBottom: '5px', fontWeight: 600 }}>To</label>
                   <input type="date" value={draftFilters.dateTo} onChange={e => setDraftFilters({...draftFilters, dateTo: e.target.value, quickSelect: ''})} style={{ width: '100%', padding: '10px 12px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '13px', boxSizing: 'border-box' }} />
                 </div>
               </div>
@@ -4057,7 +4057,7 @@ export default function AccountPage() {
               {/* Direction + Outcome Row */}
               <div style={{ display: 'flex', gap: '12px', marginBottom: '12px' }}>
                 <div style={{ flex: 1 }}>
-                  <label style={{ display: 'block', fontSize: '10px', color: '#666', marginBottom: '5px', textTransform: 'uppercase' }}>Direction</label>
+                  <label style={{ display: 'block', fontSize: '12px', color: '#888', marginBottom: '5px', fontWeight: 600 }}>Direction</label>
                   <div style={{ display: 'flex', borderRadius: '6px', overflow: 'hidden', border: '1px solid #1a1a22' }}>
                     {['', 'long', 'short'].map(d => (
                       <button key={d || 'all'} onClick={() => setDraftFilters({...draftFilters, direction: d})} style={{ flex: 1, padding: '9px', background: draftFilters.direction === d ? (d === 'long' ? 'rgba(34,197,94,0.2)' : d === 'short' ? 'rgba(239,68,68,0.2)' : 'rgba(34,197,94,0.15)') : '#0a0a0f', border: 'none', borderLeft: d !== '' ? '1px solid #1a1a22' : 'none', color: draftFilters.direction === d ? (d === 'long' ? '#22c55e' : d === 'short' ? '#ef4444' : '#22c55e') : '#666', fontSize: '12px', fontWeight: 600, cursor: 'pointer', textTransform: 'uppercase' }}>{d || 'ALL'}</button>
@@ -4065,7 +4065,7 @@ export default function AccountPage() {
                   </div>
                 </div>
                 <div style={{ flex: 1 }}>
-                  <label style={{ display: 'block', fontSize: '10px', color: '#666', marginBottom: '5px', textTransform: 'uppercase' }}>Outcome</label>
+                  <label style={{ display: 'block', fontSize: '12px', color: '#888', marginBottom: '5px', fontWeight: 600 }}>Outcome</label>
                   <div style={{ display: 'flex', borderRadius: '6px', overflow: 'hidden', border: '1px solid #1a1a22' }}>
                     {[{v: '', l: 'ALL'}, {v: 'win', l: 'W'}, {v: 'loss', l: 'L'}, {v: 'breakeven', l: 'BE'}].map((o, i) => (
                       <button key={o.v || 'all'} onClick={() => setDraftFilters({...draftFilters, outcome: o.v})} style={{ flex: 1, padding: '9px', background: draftFilters.outcome === o.v ? (o.v === 'win' ? 'rgba(34,197,94,0.2)' : o.v === 'loss' ? 'rgba(239,68,68,0.2)' : o.v === 'breakeven' ? 'rgba(234,179,8,0.2)' : 'rgba(34,197,94,0.15)') : '#0a0a0f', border: 'none', borderLeft: i > 0 ? '1px solid #1a1a22' : 'none', color: draftFilters.outcome === o.v ? (o.v === 'win' ? '#22c55e' : o.v === 'loss' ? '#ef4444' : o.v === 'breakeven' ? '#eab308' : '#22c55e') : '#666', fontSize: '12px', fontWeight: 600, cursor: 'pointer' }}>{o.l}</button>
@@ -4077,11 +4077,11 @@ export default function AccountPage() {
               {/* Symbol + Min RR Row */}
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '12px' }}>
                 <div>
-                  <label style={{ display: 'block', fontSize: '10px', color: '#666', marginBottom: '5px', textTransform: 'uppercase' }}>Symbol</label>
+                  <label style={{ display: 'block', fontSize: '12px', color: '#888', marginBottom: '5px', fontWeight: 600 }}>Symbol</label>
                   <input type="text" value={draftFilters.symbol} onChange={e => setDraftFilters({...draftFilters, symbol: e.target.value})} placeholder="XAUUSD" style={{ width: '100%', padding: '10px 12px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '13px', boxSizing: 'border-box' }} />
                 </div>
                 <div>
-                  <label style={{ display: 'block', fontSize: '10px', color: '#666', marginBottom: '5px', textTransform: 'uppercase' }}>Min R:R</label>
+                  <label style={{ display: 'block', fontSize: '12px', color: '#888', marginBottom: '5px', fontWeight: 600 }}>Min R:R</label>
                   <input type="number" step="0.1" value={draftFilters.rr} onChange={e => setDraftFilters({...draftFilters, rr: e.target.value})} placeholder="2.5" style={{ width: '100%', padding: '10px 12px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '13px', boxSizing: 'border-box' }} />
                 </div>
               </div>
@@ -4089,7 +4089,7 @@ export default function AccountPage() {
               {/* Confidence + Rating Row */}
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '12px' }}>
                 <div>
-                  <label style={{ display: 'block', fontSize: '10px', color: '#666', marginBottom: '5px', textTransform: 'uppercase' }}>Confidence</label>
+                  <label style={{ display: 'block', fontSize: '12px', color: '#888', marginBottom: '5px', fontWeight: 600 }}>Confidence</label>
                   <select value={draftFilters.confidence} onChange={e => setDraftFilters({...draftFilters, confidence: e.target.value})} style={{ width: '100%', padding: '10px 12px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '13px', boxSizing: 'border-box', appearance: 'none', backgroundImage: 'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'12\' height=\'12\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'%23666\' stroke-width=\'2\'%3E%3Cpath d=\'M6 9l6 6 6-6\'/%3E%3C/svg%3E")', backgroundRepeat: 'no-repeat', backgroundPosition: 'right 12px center' }}>
                     <option value="">Any</option>
                     {(filterInputs.find(i => i.id === 'confidence')?.options || ['high', 'medium', 'low']).map(c => (
@@ -4098,7 +4098,7 @@ export default function AccountPage() {
                   </select>
                 </div>
                 <div>
-                  <label style={{ display: 'block', fontSize: '10px', color: '#666', marginBottom: '5px', textTransform: 'uppercase' }}>Min Rating</label>
+                  <label style={{ display: 'block', fontSize: '12px', color: '#888', marginBottom: '5px', fontWeight: 600 }}>Min Rating</label>
                   <div style={{ display: 'flex', gap: '4px', padding: '8px 0' }}>
                     {[0, 1, 2, 3, 4, 5].map(r => (
                       <span key={r} onClick={() => setDraftFilters({...draftFilters, rating: r === 0 ? '' : String(r)})} style={{ fontSize: '18px', cursor: 'pointer', color: (draftFilters.rating ? parseInt(draftFilters.rating) >= r : r === 0) && r > 0 ? '#f59e0b' : '#333' }}>★</span>
@@ -4110,7 +4110,7 @@ export default function AccountPage() {
               {/* Timeframe + Session Row */}
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '12px' }}>
                 <div>
-                  <label style={{ display: 'block', fontSize: '10px', color: '#666', marginBottom: '5px', textTransform: 'uppercase' }}>Timeframe</label>
+                  <label style={{ display: 'block', fontSize: '12px', color: '#888', marginBottom: '5px', fontWeight: 600 }}>Timeframe</label>
                   <select value={draftFilters.timeframe} onChange={e => setDraftFilters({...draftFilters, timeframe: e.target.value})} style={{ width: '100%', padding: '10px 12px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '13px', boxSizing: 'border-box', appearance: 'none', backgroundImage: 'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'12\' height=\'12\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'%23666\' stroke-width=\'2\'%3E%3Cpath d=\'M6 9l6 6 6-6\'/%3E%3C/svg%3E")', backgroundRepeat: 'no-repeat', backgroundPosition: 'right 12px center' }}>
                     <option value="">Any</option>
                     {(filterInputs.find(i => i.id === 'timeframe')?.options || ['1m', '5m', '15m', '1h', '4h', 'daily']).map(t => (
@@ -4119,7 +4119,7 @@ export default function AccountPage() {
                   </select>
                 </div>
                 <div>
-                  <label style={{ display: 'block', fontSize: '10px', color: '#666', marginBottom: '5px', textTransform: 'uppercase' }}>Session</label>
+                  <label style={{ display: 'block', fontSize: '12px', color: '#888', marginBottom: '5px', fontWeight: 600 }}>Session</label>
                   <select value={draftFilters.session} onChange={e => setDraftFilters({...draftFilters, session: e.target.value})} style={{ width: '100%', padding: '10px 12px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '13px', boxSizing: 'border-box', appearance: 'none', backgroundImage: 'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'12\' height=\'12\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'%23666\' stroke-width=\'2\'%3E%3Cpath d=\'M6 9l6 6 6-6\'/%3E%3C/svg%3E")', backgroundRepeat: 'no-repeat', backgroundPosition: 'right 12px center' }}>
                     <option value="">Any</option>
                     {(filterInputs.find(i => i.id === 'session')?.options || ['london', 'new york', 'asian', 'other']).map(s => (
@@ -4133,11 +4133,11 @@ export default function AccountPage() {
               {customFilterInputs.length > 0 && (
                 <>
                   <div style={{ borderTop: '1px solid #1a1a22', marginTop: '8px', paddingTop: '12px', marginBottom: '12px' }}>
-                    <div style={{ fontSize: '10px', color: '#666', textTransform: 'uppercase', marginBottom: '10px' }}>Custom Inputs</div>
+                    <div style={{ fontSize: '12px', color: '#888', marginBottom: '10px', fontWeight: 600 }}>Custom Inputs</div>
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
                       {customFilterInputs.map(inp => (
                         <div key={inp.id}>
-                          <label style={{ display: 'block', fontSize: '10px', color: '#666', marginBottom: '5px', textTransform: 'uppercase' }}>{inp.label}</label>
+                          <label style={{ display: 'block', fontSize: '12px', color: '#888', marginBottom: '5px', fontWeight: 600 }}>{inp.label}</label>
                           {inp.type === 'select' ? (
                             <select
                               value={draftFilters.custom?.[inp.id] || ''}
@@ -4240,7 +4240,7 @@ export default function AccountPage() {
                       const currentColor = getColor(currentVal, currentOpt)
                       return (
                         <div key={input.id} style={input.type === 'select' ? { position: 'relative' } : {}}>
-                          <label style={{ display: 'block', fontSize: '10px', color: '#666', marginBottom: '6px', textTransform: 'uppercase' }}>{input.label}</label>
+                          <label style={{ display: 'block', fontSize: '12px', color: '#888', marginBottom: '6px', fontWeight: 600 }}>{input.label}</label>
                           {input.type === 'select' ? (
                             <>
                               <button type="button" onClick={() => {
@@ -4285,7 +4285,7 @@ export default function AccountPage() {
                   {rightInputs.map(input => {
                     return (
                       <div key={input.id} style={input.type === 'textarea' ? { flex: 1 } : {}}>
-                        <label style={{ display: 'block', fontSize: '10px', color: '#666', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{input.type === 'file' ? 'Images' : input.label}</label>
+                        <label style={{ display: 'block', fontSize: '12px', color: '#888', marginBottom: '8px', fontWeight: 600 }}>{input.type === 'file' ? 'Images' : input.label}</label>
                         {input.type === 'file' ? (
                           <div>
                             <input id={`file-upload-${input.id}`} type="file" accept="image/*" onChange={e => { const file = e.target.files[0]; if (file) uploadImage(file, input.id) }} style={{ display: 'none' }} />
@@ -4362,10 +4362,10 @@ export default function AccountPage() {
             <div style={{ flex: 1, overflowY: 'auto', padding: '16px 24px' }}>
               {/* Column headers */}
               <div style={{ display: 'grid', gridTemplateColumns: '28px 1fr 100px 80px 28px', gap: '10px', padding: '8px 12px', marginBottom: '8px', alignItems: 'center' }}>
-                <span style={{ fontSize: '10px', color: '#666', textTransform: 'uppercase', fontWeight: 600 }}>On</span>
-                <span style={{ fontSize: '10px', color: '#666', textTransform: 'uppercase', fontWeight: 600 }}>Name</span>
-                <span style={{ fontSize: '10px', color: '#666', textTransform: 'uppercase', fontWeight: 600 }}>Type</span>
-                <span style={{ fontSize: '10px', color: '#666', textTransform: 'uppercase', fontWeight: 600 }}>Options</span>
+                <span style={{ fontSize: '12px', color: '#888', fontWeight: 600 }}>On</span>
+                <span style={{ fontSize: '12px', color: '#888', fontWeight: 600 }}>Name</span>
+                <span style={{ fontSize: '12px', color: '#888', fontWeight: 600 }}>Type</span>
+                <span style={{ fontSize: '12px', color: '#888', fontWeight: 600 }}>Options</span>
                 <span></span>
               </div>
 
