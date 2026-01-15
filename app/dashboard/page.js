@@ -1753,7 +1753,7 @@ export default function DashboardPage() {
                     </div>
                   </div>
 
-                  {/* Session */}
+                  {/* Session + Custom Inputs - flowing grid */}
                   <div onClick={e => e.stopPropagation()} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '14px' }}>
                     <div>
                       <label style={{ display: 'block', fontSize: '10px', color: '#666', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Session</label>
@@ -1764,23 +1764,16 @@ export default function DashboardPage() {
                         <option value="Asian">Asian</option>
                       </select>
                     </div>
-                    <div></div>
+                    {getSelectedAccountCustomInputs().filter(input => !['confidence', 'timeframe', 'session'].includes(input.id)).map(input => (
+                      <div key={input.id}>
+                        <label style={{ display: 'block', fontSize: '10px', color: '#666', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{(input.label || input.id).slice(0, 10)}</label>
+                        <select value={quickTradeExtraData[input.id] || ''} onChange={e => setQuickTradeExtraData(prev => ({ ...prev, [input.id]: e.target.value }))} style={{ width: '100%', padding: '10px 12px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '8px', color: '#fff', fontSize: '14px', boxSizing: 'border-box', cursor: 'pointer' }}>
+                          <option value="">-</option>
+                          {(input.options || []).map(opt => <option key={getOptVal(opt)} value={getOptVal(opt)}>{getOptVal(opt)}</option>)}
+                        </select>
+                      </div>
+                    ))}
                   </div>
-
-                  {/* Custom Inputs */}
-                  {getSelectedAccountCustomInputs().filter(input => !['confidence', 'timeframe', 'session'].includes(input.id)).length > 0 && (
-                    <div onClick={e => e.stopPropagation()} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '14px' }}>
-                      {getSelectedAccountCustomInputs().filter(input => !['confidence', 'timeframe', 'session'].includes(input.id)).map(input => (
-                        <div key={input.id}>
-                          <label style={{ display: 'block', fontSize: '10px', color: '#666', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{(input.label || input.id).slice(0, 10)}</label>
-                          <select value={quickTradeExtraData[input.id] || ''} onChange={e => setQuickTradeExtraData(prev => ({ ...prev, [input.id]: e.target.value }))} style={{ width: '100%', padding: '10px 12px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '8px', color: '#fff', fontSize: '14px', boxSizing: 'border-box', cursor: 'pointer' }}>
-                            <option value="">-</option>
-                            {(input.options || []).map(opt => <option key={getOptVal(opt)} value={getOptVal(opt)}>{getOptVal(opt)}</option>)}
-                          </select>
-                        </div>
-                      ))}
-                    </div>
-                  )}
 
                   {/* Date */}
                   <div onClick={e => e.stopPropagation()} style={{ marginBottom: '14px' }}>
