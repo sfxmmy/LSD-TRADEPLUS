@@ -1889,7 +1889,7 @@ export default function DashboardPage() {
                   const isProfitable = cumPnl >= 0
 
                   return (
-                    <div style={{ background: 'linear-gradient(135deg, #0f0f14 0%, #0a0a0f 100%)', border: '1px solid #1a1a22', borderRadius: '16px', overflow: 'hidden', display: 'flex', flexDirection: 'column', boxShadow: '0 4px 24px rgba(0,0,0,0.3)' }}>
+                    <div onClick={() => window.location.href = '/journal'} style={{ background: 'linear-gradient(135deg, #0f0f14 0%, #0a0a0f 100%)', border: '1px solid #1a1a22', borderRadius: '16px', overflow: 'hidden', display: 'flex', flexDirection: 'column', boxShadow: '0 4px 24px rgba(0,0,0,0.3)', transition: 'all 0.2s', cursor: 'pointer' }} onMouseEnter={e => { e.currentTarget.style.background = 'linear-gradient(135deg, #16161c 0%, #101016 100%)'; e.currentTarget.style.border = '1px solid #2a2a35' }} onMouseLeave={e => { e.currentTarget.style.background = 'linear-gradient(135deg, #0f0f14 0%, #0a0a0f 100%)'; e.currentTarget.style.border = '1px solid #1a1a22' }}>
                       {/* Header - Clean layout like journal widgets */}
                       <div style={{ padding: '16px 16px 12px' }}>
                         <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
@@ -2107,7 +2107,7 @@ export default function DashboardPage() {
                           </div>
 
                           {/* Right side: buttons fill height */}
-                          <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+                          <div onClick={e => e.stopPropagation()} style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
                             {/* Buttons - stacked vertically, each spans 2 stat rows */}
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', flex: 1 }}>
                               <a href="/journal" style={{ flex: 1, background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '10px', color: '#22c55e', fontWeight: 600, fontSize: '13px', textDecoration: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', transition: 'all 0.2s' }} onMouseEnter={e => { e.currentTarget.style.background = 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)'; e.currentTarget.style.color = '#fff'; e.currentTarget.style.border = '1px solid #22c55e'; e.currentTarget.style.boxShadow = '0 4px 20px rgba(34,197,94,0.4)' }} onMouseLeave={e => { e.currentTarget.style.background = '#0a0a0f'; e.currentTarget.style.color = '#22c55e'; e.currentTarget.style.border = '1px solid #1a1a22'; e.currentTarget.style.boxShadow = 'none' }}>
