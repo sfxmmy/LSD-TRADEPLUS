@@ -4263,24 +4263,24 @@ export default function AccountPage() {
                 </div>
 
                 {/* Right: Images, Date, Rating, Notes */}
-                <div style={{ width: '280px', flexShrink: 0, display: 'flex', flexDirection: 'column', gap: '14px' }}>
+                <div style={{ width: '260px', flexShrink: 0, display: 'flex', flexDirection: 'column', gap: '16px' }}>
                   {rightInputs.map(input => {
                     return (
-                      <div key={input.id} style={input.type === 'file' ? { background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '10px', padding: '12px' } : input.type === 'textarea' ? { flex: 1 } : {}}>
-                        <label style={{ display: 'block', fontSize: '10px', color: '#666', marginBottom: input.type === 'file' ? '10px' : '6px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{input.label}</label>
+                      <div key={input.id} style={input.type === 'textarea' ? { flex: 1 } : {}}>
+                        <label style={{ display: 'block', fontSize: '10px', color: '#666', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{input.type === 'file' ? 'Images' : input.label}</label>
                         {input.type === 'file' ? (
                           <div>
                             <input id={`file-upload-${input.id}`} type="file" accept="image/*" onChange={e => { const file = e.target.files[0]; if (file) uploadImage(file, input.id) }} style={{ display: 'none' }} />
                             <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', alignItems: 'center' }}>
                               {tradeForm[input.id] && (
-                                <div style={{ position: 'relative', width: '70px', height: '70px', borderRadius: '8px', overflow: 'hidden', border: '1px solid #1a1a22' }}>
+                                <div style={{ position: 'relative', width: '60px', height: '60px', borderRadius: '8px', overflow: 'hidden', border: '1px solid #1a1a22' }}>
                                   <img src={tradeForm[input.id]} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                                  <button onClick={() => setTradeForm({...tradeForm, [input.id]: ''})} style={{ position: 'absolute', top: '4px', right: '4px', width: '18px', height: '18px', borderRadius: '50%', background: 'rgba(0,0,0,0.7)', border: 'none', color: '#fff', fontSize: '11px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 0 }}>×</button>
+                                  <button onClick={() => setTradeForm({...tradeForm, [input.id]: ''})} style={{ position: 'absolute', top: '2px', right: '2px', width: '16px', height: '16px', borderRadius: '50%', background: 'rgba(0,0,0,0.7)', border: 'none', color: '#fff', fontSize: '10px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 0 }}>×</button>
                                 </div>
                               )}
-                              <label style={{ width: '70px', height: '70px', borderRadius: '8px', border: '1px dashed #333', background: '#0d0d12', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: uploadingImage ? 'wait' : 'pointer', opacity: uploadingImage ? 0.5 : 1 }}>
+                              <label style={{ width: '60px', height: '60px', borderRadius: '8px', border: '1px dashed #333', background: '#0a0a0f', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: uploadingImage ? 'wait' : 'pointer', opacity: uploadingImage ? 0.5 : 1 }}>
                                 <input type="file" accept="image/*" onChange={e => { const file = e.target.files[0]; if (file) uploadImage(file, input.id) }} style={{ display: 'none' }} disabled={uploadingImage} />
-                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#555" strokeWidth="2"><path d="M12 5v14M5 12h14" /></svg>
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#555" strokeWidth="2"><path d="M12 5v14M5 12h14" /></svg>
                               </label>
                             </div>
                           </div>
