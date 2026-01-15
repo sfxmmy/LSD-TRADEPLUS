@@ -2223,7 +2223,7 @@ export default function DashboardPage() {
                               { label: 'Expectancy', value: `${expectancy >= 0 ? '+' : ''}$${formatCurrency(expectancy)}`, color: expectancy >= 0 ? '#22c55e' : '#ef4444' },
                             ].map((s, i) => (
                               <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '6px 0', borderBottom: '1px solid #1a1a22' }}>
-                                <span style={{ fontSize: '12px', color: '#888' }}>{s.label}</span>
+                                <span style={{ fontSize: '12px', color: '#888', fontWeight: 600 }}>{s.label}</span>
                                 <span style={{ fontSize: '13px', fontWeight: 700, color: s.color }}>{s.value}</span>
                               </div>
                             ))}
@@ -2578,7 +2578,7 @@ export default function DashboardPage() {
                               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0 24px' }}>
                                 {stats.map((stat, i) => (
                                   <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '6px 0', borderBottom: i < 4 ? '1px solid rgba(255,255,255,0.05)' : 'none' }}>
-                                    <span style={{ fontSize: '12px', color: '#888' }}>{stat.label}</span>
+                                    <span style={{ fontSize: '12px', color: '#888', fontWeight: 600 }}>{stat.label}</span>
                                     <span style={{ fontSize: '13px', fontWeight: 600, color: stat.color }}>{stat.value}</span>
                                   </div>
                                 ))}
