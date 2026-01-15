@@ -2190,30 +2190,8 @@ export default function AccountPage() {
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px', flexWrap: 'wrap', gap: '8px' }}>
                           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                             <span style={{ fontSize: '11px', color: '#aaa', textTransform: 'uppercase', letterSpacing: '0.5px', fontWeight: 600 }}>EQUITY CURVE</span>
+                            <span style={{ fontSize: '11px', color: '#666', fontWeight: 600 }}>BALANCE:</span>
                             <span style={{ fontSize: '14px', fontWeight: 700, color: chartCurrent >= chartStart ? '#22c55e' : '#ef4444' }}>${Math.round(chartCurrent).toLocaleString()}</span>
-                            {/* Show Objectives button - purple with magnifying glass */}
-                            <button
-                              onClick={() => setShowObjectiveLines(!showObjectiveLines)}
-                              style={{
-                                padding: '3px 6px',
-                                background: showObjectiveLines ? 'rgba(147,51,234,0.15)' : 'transparent',
-                                border: showObjectiveLines ? '1px solid rgba(147,51,234,0.4)' : '1px solid transparent',
-                                borderRadius: '4px',
-                                color: showObjectiveLines ? '#9333ea' : '#666',
-                                fontSize: '9px',
-                                cursor: 'pointer',
-                                whiteSpace: 'nowrap',
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: '3px',
-                                transition: 'all 0.2s'
-                              }}
-                              onMouseEnter={e => { e.currentTarget.style.color = '#9333ea'; e.currentTarget.style.borderColor = 'rgba(147,51,234,0.4)' }}
-                              onMouseLeave={e => { if (!showObjectiveLines) { e.currentTarget.style.color = '#666'; e.currentTarget.style.borderColor = 'transparent' } }}
-                            >
-                              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
-                              <span>Objectives</span>
-                            </button>
                           </div>
                           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                             <select value={equityCurveGroupBy} onChange={e => { setEquityCurveGroupBy(e.target.value); setSelectedCurveLines({}) }} style={{ padding: '4px 8px', background: '#141418', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '4px', color: '#fff', fontSize: '11px', boxShadow: '0 0 4px rgba(255,255,255,0.1)' }}>
@@ -2250,6 +2228,10 @@ export default function AccountPage() {
                                 )}
                               </div>
                             )}
+                            <button onClick={() => setShowObjectiveLines(!showObjectiveLines)} style={{ padding: '4px 8px', background: showObjectiveLines ? 'rgba(147,51,234,0.15)' : '#141418', border: showObjectiveLines ? '1px solid rgba(147,51,234,0.4)' : '1px solid rgba(255,255,255,0.15)', borderRadius: '4px', color: showObjectiveLines ? '#9333ea' : '#fff', fontSize: '11px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px', boxShadow: '0 0 4px rgba(255,255,255,0.1)' }}>
+                              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+                              Show Objectives
+                            </button>
                             <button onClick={() => setEnlargedChart(enlargedChart === 'equity' ? null : 'equity')} style={{ background: '#1a1a22', border: '1px solid #2a2a35', borderRadius: '4px', padding: '4px 8px', color: '#999', fontSize: '10px', cursor: 'pointer' }}>⛶</button>
                           </div>
                         </div>
@@ -2815,7 +2797,7 @@ export default function AccountPage() {
                                           {lineData[0].greenPath && <path d={lineData[0].greenPath} fill="none" stroke="#22c55e" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />}
                                           {lineData[0].redPath && <path d={lineData[0].redPath} fill="none" stroke="#ef4444" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />}
                                           {/* Daily DD floor line - orange, follows balance curve */}
-                                          {showObjectiveLines && dailyDdPath && <path d={dailyDdPath} fill="none" stroke="#f97316" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />}
+                                          {showObjectiveLines && dailyDdPath && <path d={dailyDdPath} fill="none" stroke="#f97316" strokeWidth="2" strokeDasharray="5,5" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />}
                                           {/* Trailing Max DD floor line - red, follows peak curve */}
                                           {showObjectiveLines && trailingMaxDdPath && <path d={trailingMaxDdPath} fill="none" stroke="#ef4444" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />}
                                         </>
@@ -5400,7 +5382,7 @@ export default function AccountPage() {
                                 {lineData[0].greenPath && <path d={lineData[0].greenPath} fill="none" stroke="#22c55e" strokeWidth="2" strokeLinecap="round" vectorEffect="non-scaling-stroke" />}
                                 {lineData[0].redPath && <path d={lineData[0].redPath} fill="none" stroke="#ef4444" strokeWidth="2" strokeLinecap="round" vectorEffect="non-scaling-stroke" />}
                                 {/* Objective lines - daily DD and trailing max DD */}
-                                {showObjectiveLines && dailyDdPathEnl && <path d={dailyDdPathEnl} fill="none" stroke="#f97316" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />}
+                                {showObjectiveLines && dailyDdPathEnl && <path d={dailyDdPathEnl} fill="none" stroke="#f97316" strokeWidth="2" strokeDasharray="5,5" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />}
                                 {showObjectiveLines && trailingMaxDdPathEnl && <path d={trailingMaxDdPathEnl} fill="none" stroke="#ef4444" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />}
                               </>
                             ) : (() => {
