@@ -1639,7 +1639,7 @@ export default function DashboardPage() {
         {!isMobile && accounts.length > 0 ? (
           <div style={{ display: 'flex', gap: '12px' }}>
             {/* LOG TRADE Widget - Fixed Left Sidebar */}
-            <div onClick={() => setSidebarExpanded(true)} style={{ width: '280px', flexShrink: 0, background: 'linear-gradient(135deg, #0f0f14 0%, #0a0a0f 100%)', border: '1px solid #1a1a22', borderRadius: '16px', padding: '20px', boxShadow: '0 4px 24px rgba(0,0,0,0.3)', alignSelf: 'flex-start', cursor: 'pointer', transition: 'all 0.2s' }} onMouseEnter={e => { e.currentTarget.style.border = '1px solid #4ade80'; e.currentTarget.style.background = 'rgba(34, 197, 94, 0.05)' }} onMouseLeave={e => { e.currentTarget.style.border = '1px solid #1a1a22'; e.currentTarget.style.background = 'linear-gradient(135deg, #0f0f14 0%, #0a0a0f 100%)' }}>
+            <div style={{ width: '280px', flexShrink: 0, background: 'linear-gradient(135deg, #0f0f14 0%, #0a0a0f 100%)', border: '1px solid #1a1a22', borderRadius: '16px', padding: '20px', boxShadow: '0 4px 24px rgba(0,0,0,0.3)', alignSelf: 'flex-start', transition: 'all 0.2s' }} onMouseEnter={e => { e.currentTarget.style.border = '1px solid #22c55e' }} onMouseLeave={e => { e.currentTarget.style.border = '1px solid #1a1a22' }}>
                   {/* Header */}
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px', paddingBottom: '12px', borderBottom: '1px solid #1a1a22' }}>
                     <span style={{ fontSize: '14px', color: '#fff', fontWeight: 600 }}>Log Trade</span>
@@ -1892,7 +1892,7 @@ export default function DashboardPage() {
                   const isProfitable = cumPnl >= 0
 
                   return (
-                    <div onClick={() => window.location.href = `/account/${accounts[0]?.id}?cumulative=true`} style={{ background: 'linear-gradient(135deg, #0f0f14 0%, #0a0a0f 100%)', border: '1px solid #1a1a22', borderRadius: '16px', overflow: 'hidden', display: 'flex', flexDirection: 'column', boxShadow: '0 4px 24px rgba(0,0,0,0.3)', transition: 'all 0.2s', cursor: 'pointer' }} onMouseEnter={e => { e.currentTarget.style.boxShadow = '0 4px 24px rgba(0,0,0,0.3), inset 0 0 40px rgba(34, 197, 94, 0.12), inset 0 0 15px rgba(34, 197, 94, 0.08)'; e.currentTarget.style.border = '1px solid rgba(34, 197, 94, 0.3)' }} onMouseLeave={e => { e.currentTarget.style.boxShadow = '0 4px 24px rgba(0,0,0,0.3)'; e.currentTarget.style.border = '1px solid #1a1a22' }}>
+                    <div onClick={() => window.location.href = `/account/${accounts[0]?.id}?cumulative=true`} style={{ background: 'linear-gradient(135deg, #0f0f14 0%, #0a0a0f 100%)', border: '1px solid #1a1a22', borderRadius: '16px', overflow: 'hidden', display: 'flex', flexDirection: 'column', boxShadow: '0 4px 24px rgba(0,0,0,0.3)', transition: 'all 0.2s', cursor: 'pointer' }} onMouseEnter={e => { e.currentTarget.style.border = '1px solid #22c55e' }} onMouseLeave={e => { e.currentTarget.style.border = '1px solid #1a1a22' }}>
                       {/* Header - Clean layout like journal widgets */}
                       <div style={{ padding: '16px 16px 12px' }}>
                         <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
@@ -2175,7 +2175,7 @@ export default function DashboardPage() {
                     if (maxDdFloor) minBal = Math.min(minBal, maxDdFloor)
 
                     return (
-                      <div key={account.id} onClick={() => window.location.href = `/account/${account.id}`} style={{ background: 'linear-gradient(135deg, #0f0f14 0%, #0a0a0f 100%)', border: '1px solid #1a1a22', borderRadius: '16px', overflow: 'hidden', display: 'flex', flexDirection: 'column', boxShadow: '0 4px 24px rgba(0,0,0,0.3)', transition: 'all 0.2s', cursor: 'pointer' }} onMouseEnter={e => { e.currentTarget.style.border = '1px solid #4ade80'; e.currentTarget.style.background = 'rgba(34, 197, 94, 0.05)' }} onMouseLeave={e => { e.currentTarget.style.border = '1px solid #1a1a22'; e.currentTarget.style.background = 'linear-gradient(135deg, #0f0f14 0%, #0a0a0f 100%)' }}>
+                      <div key={account.id} onClick={() => window.location.href = `/account/${account.id}`} style={{ background: 'linear-gradient(135deg, #0f0f14 0%, #0a0a0f 100%)', border: '1px solid #1a1a22', borderRadius: '16px', overflow: 'hidden', display: 'flex', flexDirection: 'column', boxShadow: '0 4px 24px rgba(0,0,0,0.3)', transition: 'all 0.2s', cursor: 'pointer' }} onMouseEnter={e => { e.currentTarget.style.border = '1px solid #22c55e' }} onMouseLeave={e => { e.currentTarget.style.border = '1px solid #1a1a22' }}>
                         {/* Header - Clean layout */}
                         <div style={{ padding: '16px 16px 12px' }}>
                           <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
@@ -2544,8 +2544,8 @@ export default function DashboardPage() {
                           cursor: 'pointer',
                           transition: 'all 0.2s'
                         }}
-                        onMouseEnter={e => { e.currentTarget.style.border = '1px solid #4ade80'; e.currentTarget.style.background = 'rgba(34, 197, 94, 0.05)' }}
-                        onMouseLeave={e => { e.currentTarget.style.border = '1px solid #1a1a22'; e.currentTarget.style.background = 'linear-gradient(135deg, #0f0f14 0%, #0a0a0f 100%)' }}
+                        onMouseEnter={e => { e.currentTarget.style.border = '1px solid #22c55e' }}
+                        onMouseLeave={e => { e.currentTarget.style.border = '1px solid #1a1a22' }}
                       >
                         {/* Left: Name & Balance */}
                         <div style={{ display: 'flex', alignItems: 'center', gap: '24px', flex: 1 }}>
