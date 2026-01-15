@@ -2327,15 +2327,18 @@ export default function AccountPage() {
                               return `$${v}`
                             }
 
-                            // Generate y-axis labels anchored to starting balance (start is always a label)
-                            const yLabels = [displayStartingBalance]
-                            // Add labels above start - extend beyond yMax to ensure padding
-                            for (let v = displayStartingBalance + yStep; v < yMax + yStep; v += yStep) {
+                            // Generate y-axis labels - anchor depends on mode
+                            // For total mode: anchor to starting balance
+                            // For grouped modes: anchor to 0 (since lines show cumulative PnL from 0)
+                            const labelAnchor = equityCurveGroupBy === 'total' ? displayStartingBalance : 0
+                            const yLabels = [labelAnchor]
+                            // Add labels above anchor - extend beyond yMax to ensure padding
+                            for (let v = labelAnchor + yStep; v < yMax + yStep; v += yStep) {
                               yLabels.push(v)
                             }
-                            // Add labels below start - extend beyond yMin to ensure padding
-                            for (let v = displayStartingBalance - yStep; v > yMin - yStep; v -= yStep) {
-                              if (v >= 0 || minBal < 0 || showObjectiveLines) yLabels.push(v)
+                            // Add labels below anchor - extend beyond yMin to ensure padding
+                            for (let v = labelAnchor - yStep; v > yMin - yStep; v -= yStep) {
+                              if (v >= 0 || minBal < 0 || showObjectiveLines || equityCurveGroupBy !== 'total') yLabels.push(v)
                             }
                             // Sort from highest to lowest
                             yLabels.sort((a, b) => b - a)
@@ -5034,15 +5037,18 @@ export default function AccountPage() {
                   return `$${v}`
                 }
 
-                // Generate y-axis labels anchored to starting balance (start is always a label)
-                const yLabels = [startingBalance]
-                // Add labels above start - extend beyond yMax to ensure padding
-                for (let v = startingBalance + yStep; v < yMax + yStep; v += yStep) {
+                // Generate y-axis labels - anchor depends on mode
+                // For total mode: anchor to starting balance
+                // For grouped modes: anchor to 0 (since lines show cumulative PnL from 0)
+                const labelAnchorEnl = equityCurveGroupBy === 'total' ? startingBalance : 0
+                const yLabels = [labelAnchorEnl]
+                // Add labels above anchor - extend beyond yMax to ensure padding
+                for (let v = labelAnchorEnl + yStep; v < yMax + yStep; v += yStep) {
                   yLabels.push(v)
                 }
-                // Add labels below start - extend beyond yMin to ensure padding
-                for (let v = startingBalance - yStep; v > yMin - yStep; v -= yStep) {
-                  if (v >= 0 || minBal < 0 || showObjectiveLines) yLabels.push(v)
+                // Add labels below anchor - extend beyond yMin to ensure padding
+                for (let v = labelAnchorEnl - yStep; v > yMin - yStep; v -= yStep) {
+                  if (v >= 0 || minBal < 0 || showObjectiveLines || equityCurveGroupBy !== 'total') yLabels.push(v)
                 }
                 // Sort from highest to lowest
                 yLabels.sort((a, b) => b - a)
