@@ -2109,15 +2109,15 @@ export default function DashboardPage() {
                           <div onClick={e => e.stopPropagation()} style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
                             {/* Buttons - stacked vertically, each spans 2 stat rows */}
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', flex: 1 }}>
-                              <a href={`/account/${accounts[0]?.id}?cumulative=true`} style={{ flex: 1, background: '#0a0a0f', border: '2px solid #2a2a35', borderRadius: '10px', color: '#22c55e', fontWeight: 600, fontSize: '13px', textDecoration: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', transition: 'all 0.2s' }} onMouseEnter={e => { e.currentTarget.style.background = 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)'; e.currentTarget.style.color = '#fff'; e.currentTarget.style.border = '2px solid #22c55e'; e.currentTarget.style.boxShadow = '0 4px 20px rgba(34,197,94,0.4)' }} onMouseLeave={e => { e.currentTarget.style.background = '#0a0a0f'; e.currentTarget.style.color = '#22c55e'; e.currentTarget.style.border = '2px solid #2a2a35'; e.currentTarget.style.boxShadow = 'none' }}>
+                              <a href={`/account/${accounts[0]?.id}?cumulative=true`} style={{ flex: 1, background: '#0a0a0f', border: '2px solid rgba(34,197,94,0.3)', borderRadius: '10px', color: '#22c55e', fontWeight: 600, fontSize: '13px', textDecoration: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', transition: 'all 0.2s' }} onMouseEnter={e => { e.currentTarget.style.background = 'rgba(34,197,94,0.08)'; e.currentTarget.style.border = '2px solid rgba(34,197,94,0.5)' }} onMouseLeave={e => { e.currentTarget.style.background = '#0a0a0f'; e.currentTarget.style.border = '2px solid rgba(34,197,94,0.3)' }}>
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
                                 See Overall Journal
                               </a>
-                              <a href={`/account/${accounts[0]?.id}?cumulative=true&tab=statistics`} style={{ flex: 1, background: '#0a0a0f', border: '2px solid #2a2a35', borderRadius: '10px', color: '#22c55e', fontWeight: 600, fontSize: '13px', textDecoration: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', transition: 'all 0.2s' }} onMouseEnter={e => { e.currentTarget.style.background = 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)'; e.currentTarget.style.color = '#fff'; e.currentTarget.style.border = '2px solid #22c55e'; e.currentTarget.style.boxShadow = '0 4px 20px rgba(34,197,94,0.4)' }} onMouseLeave={e => { e.currentTarget.style.background = '#0a0a0f'; e.currentTarget.style.color = '#22c55e'; e.currentTarget.style.border = '2px solid #2a2a35'; e.currentTarget.style.boxShadow = 'none' }}>
+                              <a href={`/account/${accounts[0]?.id}?cumulative=true&tab=statistics`} style={{ flex: 1, background: '#0a0a0f', border: '2px solid rgba(34,197,94,0.3)', borderRadius: '10px', color: '#22c55e', fontWeight: 600, fontSize: '13px', textDecoration: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', transition: 'all 0.2s' }} onMouseEnter={e => { e.currentTarget.style.background = 'rgba(34,197,94,0.08)'; e.currentTarget.style.border = '2px solid rgba(34,197,94,0.5)' }} onMouseLeave={e => { e.currentTarget.style.background = '#0a0a0f'; e.currentTarget.style.border = '2px solid rgba(34,197,94,0.3)' }}>
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 20V10M12 20V4M6 20v-6"/></svg>
                                 See Overall Stats
                               </a>
-                              <a href={`/account/${accounts[0]?.id}?cumulative=true&tab=notes`} style={{ flex: 1, background: '#0a0a0f', border: '2px solid #2a2a35', borderRadius: '10px', color: '#22c55e', fontWeight: 600, fontSize: '13px', textDecoration: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', transition: 'all 0.2s' }} onMouseEnter={e => { e.currentTarget.style.background = 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)'; e.currentTarget.style.color = '#fff'; e.currentTarget.style.border = '2px solid #22c55e'; e.currentTarget.style.boxShadow = '0 4px 20px rgba(34,197,94,0.4)' }} onMouseLeave={e => { e.currentTarget.style.background = '#0a0a0f'; e.currentTarget.style.color = '#22c55e'; e.currentTarget.style.border = '2px solid #2a2a35'; e.currentTarget.style.boxShadow = 'none' }}>
+                              <a href={`/account/${accounts[0]?.id}?cumulative=true&tab=notes`} style={{ flex: 1, background: '#0a0a0f', border: '2px solid rgba(34,197,94,0.3)', borderRadius: '10px', color: '#22c55e', fontWeight: 600, fontSize: '13px', textDecoration: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', transition: 'all 0.2s' }} onMouseEnter={e => { e.currentTarget.style.background = 'rgba(34,197,94,0.08)'; e.currentTarget.style.border = '2px solid rgba(34,197,94,0.5)' }} onMouseLeave={e => { e.currentTarget.style.background = '#0a0a0f'; e.currentTarget.style.border = '2px solid rgba(34,197,94,0.3)' }}>
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
                                 See Notes
                               </a>
@@ -2463,11 +2463,11 @@ export default function DashboardPage() {
 
                         {/* Buttons - Compact */}
                         <div onClick={e => e.stopPropagation()} style={{ padding: '12px 16px 16px', display: 'flex', gap: '8px' }}>
-                          <a href={`/account/${account.id}`} style={{ flex: 1, padding: '10px', background: '#0a0a0f', border: '2px solid #2a2a35', borderRadius: '10px', color: '#22c55e', fontWeight: 600, fontSize: '14px', textAlign: 'center', textDecoration: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', transition: 'all 0.2s' }} onMouseEnter={e => { e.currentTarget.style.background = 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)'; e.currentTarget.style.color = '#fff'; e.currentTarget.style.border = '2px solid #22c55e'; e.currentTarget.style.boxShadow = '0 4px 20px rgba(34,197,94,0.4)' }} onMouseLeave={e => { e.currentTarget.style.background = '#0a0a0f'; e.currentTarget.style.color = '#22c55e'; e.currentTarget.style.border = '2px solid #2a2a35'; e.currentTarget.style.boxShadow = 'none' }}>
+                          <a href={`/account/${account.id}`} style={{ flex: 1, padding: '10px', background: '#0a0a0f', border: '2px solid rgba(34,197,94,0.3)', borderRadius: '10px', color: '#22c55e', fontWeight: 600, fontSize: '14px', textAlign: 'center', textDecoration: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', transition: 'all 0.2s' }} onMouseEnter={e => { e.currentTarget.style.background = 'rgba(34,197,94,0.08)'; e.currentTarget.style.border = '2px solid rgba(34,197,94,0.5)' }} onMouseLeave={e => { e.currentTarget.style.background = '#0a0a0f'; e.currentTarget.style.border = '2px solid rgba(34,197,94,0.3)' }}>
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg>
                             Enter Journal
                           </a>
-                          <a href={`/account/${account.id}?tab=statistics`} style={{ padding: '10px 14px', background: '#0a0a0f', border: '2px solid #2a2a35', borderRadius: '10px', color: '#22c55e', fontWeight: 600, fontSize: '14px', textAlign: 'center', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '8px', transition: 'all 0.2s' }} onMouseEnter={e => { e.currentTarget.style.background = 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)'; e.currentTarget.style.color = '#fff'; e.currentTarget.style.border = '2px solid #22c55e'; e.currentTarget.style.boxShadow = '0 4px 20px rgba(34,197,94,0.4)' }} onMouseLeave={e => { e.currentTarget.style.background = '#0a0a0f'; e.currentTarget.style.color = '#22c55e'; e.currentTarget.style.border = '2px solid #2a2a35'; e.currentTarget.style.boxShadow = 'none' }}>
+                          <a href={`/account/${account.id}?tab=statistics`} style={{ padding: '10px 14px', background: '#0a0a0f', border: '2px solid rgba(34,197,94,0.3)', borderRadius: '10px', color: '#22c55e', fontWeight: 600, fontSize: '14px', textAlign: 'center', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '8px', transition: 'all 0.2s' }} onMouseEnter={e => { e.currentTarget.style.background = 'rgba(34,197,94,0.08)'; e.currentTarget.style.border = '2px solid rgba(34,197,94,0.5)' }} onMouseLeave={e => { e.currentTarget.style.background = '#0a0a0f'; e.currentTarget.style.border = '2px solid rgba(34,197,94,0.3)' }}>
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 20V10M12 20V4M6 20v-6"/></svg>
                             Stats
                           </a>
@@ -2524,6 +2524,25 @@ export default function DashboardPage() {
                     const winrate = (wins + losses) > 0 ? Math.round((wins / (wins + losses)) * 100) : 0
                     const currentBalance = (parseFloat(account.starting_balance) || 0) + totalPnl
                     const isProfitable = totalPnl >= 0
+                    const startingBalance = parseFloat(account.starting_balance) || 0
+
+                    // Additional stats
+                    const winTrades = accTrades.filter(t => t.outcome === 'win')
+                    const lossTrades = accTrades.filter(t => t.outcome === 'loss')
+                    const grossProfit = winTrades.reduce((sum, t) => sum + (parseFloat(t.pnl) || 0), 0)
+                    const grossLoss = Math.abs(lossTrades.reduce((sum, t) => sum + (parseFloat(t.pnl) || 0), 0))
+                    const profitFactor = grossLoss > 0 ? (grossProfit / grossLoss).toFixed(2) : grossProfit > 0 ? '∞' : '-'
+                    const avgWin = wins > 0 ? (grossProfit / wins).toFixed(0) : 0
+                    const avgLoss = losses > 0 ? (grossLoss / losses).toFixed(0) : 0
+
+                    // Mini graph data
+                    const sortedTrades = accTrades.slice().sort((a, b) => new Date(a.date) - new Date(b.date))
+                    let cumBal = startingBalance
+                    const balancePoints = [startingBalance]
+                    sortedTrades.forEach(t => {
+                      cumBal += parseFloat(t.pnl) || 0
+                      balancePoints.push(cumBal)
+                    })
 
                     return (
                       <div
@@ -2545,34 +2564,68 @@ export default function DashboardPage() {
                       >
                         {/* Left: Name & Balance */}
                         <div style={{ display: 'flex', alignItems: 'center', gap: '24px', flex: 1 }}>
-                          <div style={{ minWidth: '180px' }}>
-                            <div style={{ fontSize: '11px', color: '#666', marginBottom: '2px' }}>{account.name}</div>
+                          <div style={{ minWidth: '160px' }}>
+                            <div style={{ fontSize: '11px', color: '#888', marginBottom: '2px' }}>{account.name}</div>
                             <div style={{ fontSize: '20px', fontWeight: 700, color: isProfitable ? '#22c55e' : '#ef4444' }}>${formatCurrency(currentBalance)}</div>
                           </div>
 
                           {/* Stats Row */}
-                          <div style={{ display: 'flex', gap: '32px' }}>
+                          <div style={{ display: 'flex', gap: '24px' }}>
                             <div>
-                              <div style={{ fontSize: '10px', color: '#666', marginBottom: '2px' }}>PnL</div>
-                              <div style={{ fontSize: '14px', fontWeight: 600, color: totalPnl >= 0 ? '#22c55e' : '#ef4444' }}>{totalPnl >= 0 ? '+' : ''}${formatCurrency(totalPnl)}</div>
+                              <div style={{ fontSize: '10px', color: '#888', marginBottom: '2px' }}>PnL</div>
+                              <div style={{ fontSize: '13px', fontWeight: 600, color: totalPnl >= 0 ? '#22c55e' : '#ef4444' }}>{totalPnl >= 0 ? '+' : ''}${formatCurrency(totalPnl)}</div>
                             </div>
                             <div>
-                              <div style={{ fontSize: '10px', color: '#666', marginBottom: '2px' }}>Trades</div>
-                              <div style={{ fontSize: '14px', fontWeight: 600, color: '#fff' }}>{accTrades.length}</div>
+                              <div style={{ fontSize: '10px', color: '#888', marginBottom: '2px' }}>Trades</div>
+                              <div style={{ fontSize: '13px', fontWeight: 600, color: '#fff' }}>{accTrades.length}</div>
                             </div>
                             <div>
-                              <div style={{ fontSize: '10px', color: '#666', marginBottom: '2px' }}>Winrate</div>
-                              <div style={{ fontSize: '14px', fontWeight: 600, color: winrate >= 50 ? '#22c55e' : '#ef4444' }}>{winrate}%</div>
+                              <div style={{ fontSize: '10px', color: '#888', marginBottom: '2px' }}>Winrate</div>
+                              <div style={{ fontSize: '13px', fontWeight: 600, color: winrate >= 50 ? '#22c55e' : '#ef4444' }}>{winrate}%</div>
                             </div>
                             <div>
-                              <div style={{ fontSize: '10px', color: '#666', marginBottom: '2px' }}>W/L</div>
-                              <div style={{ fontSize: '14px', fontWeight: 600, color: '#fff' }}>{wins}/{losses}</div>
+                              <div style={{ fontSize: '10px', color: '#888', marginBottom: '2px' }}>W/L</div>
+                              <div style={{ fontSize: '13px', fontWeight: 600, color: '#fff' }}>{wins}/{losses}</div>
+                            </div>
+                            <div>
+                              <div style={{ fontSize: '10px', color: '#888', marginBottom: '2px' }}>PF</div>
+                              <div style={{ fontSize: '13px', fontWeight: 600, color: profitFactor === '-' ? '#666' : profitFactor === '∞' ? '#22c55e' : parseFloat(profitFactor) >= 1 ? '#22c55e' : '#ef4444' }}>{profitFactor}</div>
+                            </div>
+                            <div>
+                              <div style={{ fontSize: '10px', color: '#888', marginBottom: '2px' }}>Avg W</div>
+                              <div style={{ fontSize: '13px', fontWeight: 600, color: '#22c55e' }}>${avgWin}</div>
+                            </div>
+                            <div>
+                              <div style={{ fontSize: '10px', color: '#888', marginBottom: '2px' }}>Avg L</div>
+                              <div style={{ fontSize: '13px', fontWeight: 600, color: '#ef4444' }}>-${avgLoss}</div>
                             </div>
                           </div>
                         </div>
 
-                        {/* Right: Buttons */}
-                        <div onClick={e => e.stopPropagation()} style={{ display: 'flex', gap: '8px' }}>
+                        {/* Mini Graph + Buttons */}
+                        <div onClick={e => e.stopPropagation()} style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                          {/* Mini Sparkline Graph */}
+                          {balancePoints.length > 1 && (
+                            <div style={{ width: '80px', height: '32px' }}>
+                              <svg width="80" height="32" viewBox="0 0 80 32" preserveAspectRatio="none">
+                                {(() => {
+                                  const minVal = Math.min(...balancePoints)
+                                  const maxVal = Math.max(...balancePoints)
+                                  const range = maxVal - minVal || 1
+                                  const pts = balancePoints.map((v, i) => {
+                                    const x = (i / (balancePoints.length - 1)) * 80
+                                    const y = 32 - ((v - minVal) / range) * 28 - 2
+                                    return `${x},${y}`
+                                  }).join(' ')
+                                  const lastVal = balancePoints[balancePoints.length - 1]
+                                  const lineColor = lastVal >= startingBalance ? '#22c55e' : '#ef4444'
+                                  return <polyline points={pts} fill="none" stroke={lineColor} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                                })()}
+                              </svg>
+                            </div>
+                          )}
+
+                          {/* Buttons */}
                           <a href={`/account/${account.id}`} style={{ padding: '8px 14px', background: '#0a0a0f', border: '2px solid #2a2a35', borderRadius: '8px', color: '#22c55e', fontWeight: 600, fontSize: '12px', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '6px', transition: 'all 0.2s' }} onMouseEnter={e => { e.currentTarget.style.background = 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)'; e.currentTarget.style.color = '#fff'; e.currentTarget.style.border = '2px solid #22c55e'; e.currentTarget.style.boxShadow = '0 4px 20px rgba(34,197,94,0.4)' }} onMouseLeave={e => { e.currentTarget.style.background = '#0a0a0f'; e.currentTarget.style.color = '#22c55e'; e.currentTarget.style.border = '2px solid #2a2a35'; e.currentTarget.style.boxShadow = 'none' }}>
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg>
                             Enter
