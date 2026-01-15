@@ -2484,7 +2484,7 @@ export default function DashboardPage() {
                     onClick={() => setShowModal(true)}
                     style={{
                       background: 'linear-gradient(135deg, #0f0f14 0%, #0a0a0f 100%)',
-                      border: '2px dashed #3b82f6',
+                      border: '2px dashed #22c55e',
                       borderRadius: '16px',
                       overflow: 'hidden',
                       display: 'flex',
@@ -2495,22 +2495,22 @@ export default function DashboardPage() {
                       minHeight: '400px',
                       transition: 'all 0.2s',
                     }}
-                    onMouseEnter={e => { e.currentTarget.style.borderColor = '#60a5fa'; e.currentTarget.style.background = 'rgba(59, 130, 246, 0.05)' }}
-                    onMouseLeave={e => { e.currentTarget.style.borderColor = '#3b82f6'; e.currentTarget.style.background = 'linear-gradient(135deg, #0f0f14 0%, #0a0a0f 100%)' }}
+                    onMouseEnter={e => { e.currentTarget.style.borderColor = '#4ade80'; e.currentTarget.style.background = 'rgba(34, 197, 94, 0.05)' }}
+                    onMouseLeave={e => { e.currentTarget.style.borderColor = '#22c55e'; e.currentTarget.style.background = 'linear-gradient(135deg, #0f0f14 0%, #0a0a0f 100%)' }}
                   >
                     <div style={{
                       width: '80px',
                       height: '80px',
                       borderRadius: '50%',
-                      background: 'rgba(59, 130, 246, 0.15)',
+                      background: 'rgba(34, 197, 94, 0.15)',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
                       marginBottom: '16px'
                     }}>
-                      <span style={{ fontSize: '40px', color: '#3b82f6', fontWeight: 300 }}>+</span>
+                      <span style={{ fontSize: '40px', color: '#22c55e', fontWeight: 300 }}>+</span>
                     </div>
-                    <span style={{ fontSize: '16px', fontWeight: 600, color: '#3b82f6' }}>Add Journal</span>
+                    <span style={{ fontSize: '16px', fontWeight: 600, color: '#22c55e' }}>Add Journal</span>
                     <span style={{ fontSize: '12px', color: '#666', marginTop: '4px' }}>Create a new trading account</span>
                   </div>
                 </div>
@@ -2543,8 +2543,8 @@ export default function DashboardPage() {
                           cursor: 'pointer',
                           transition: 'all 0.2s'
                         }}
-                        onMouseEnter={e => { e.currentTarget.style.background = 'linear-gradient(135deg, #16161c 0%, #101016 100%)'; e.currentTarget.style.border = '1px solid #2a2a35' }}
-                        onMouseLeave={e => { e.currentTarget.style.background = 'linear-gradient(135deg, #0f0f14 0%, #0a0a0f 100%)'; e.currentTarget.style.border = '1px solid #1a1a22' }}
+                        onMouseEnter={e => { e.currentTarget.style.boxShadow = 'inset 0 0 30px rgba(34, 197, 94, 0.15), inset 0 0 10px rgba(34, 197, 94, 0.1)'; e.currentTarget.style.border = '1px solid rgba(34, 197, 94, 0.3)' }}
+                        onMouseLeave={e => { e.currentTarget.style.boxShadow = 'none'; e.currentTarget.style.border = '1px solid #1a1a22' }}
                       >
                         {/* Left: Name & Balance */}
                         <div style={{ display: 'flex', alignItems: 'center', gap: '24px', flex: 1 }}>
@@ -2597,7 +2597,7 @@ export default function DashboardPage() {
                     onClick={() => setShowModal(true)}
                     style={{
                       background: 'linear-gradient(135deg, #0f0f14 0%, #0a0a0f 100%)',
-                      border: '2px dashed #3b82f6',
+                      border: '2px dashed #22c55e',
                       borderRadius: '12px',
                       padding: '20px',
                       display: 'flex',
@@ -2607,21 +2607,21 @@ export default function DashboardPage() {
                       cursor: 'pointer',
                       transition: 'all 0.2s',
                     }}
-                    onMouseEnter={e => { e.currentTarget.style.borderColor = '#60a5fa'; e.currentTarget.style.background = 'rgba(59, 130, 246, 0.05)' }}
-                    onMouseLeave={e => { e.currentTarget.style.borderColor = '#3b82f6'; e.currentTarget.style.background = 'linear-gradient(135deg, #0f0f14 0%, #0a0a0f 100%)' }}
+                    onMouseEnter={e => { e.currentTarget.style.borderColor = '#4ade80'; e.currentTarget.style.background = 'rgba(34, 197, 94, 0.05)' }}
+                    onMouseLeave={e => { e.currentTarget.style.borderColor = '#22c55e'; e.currentTarget.style.background = 'linear-gradient(135deg, #0f0f14 0%, #0a0a0f 100%)' }}
                   >
                     <div style={{
                       width: '32px',
                       height: '32px',
                       borderRadius: '50%',
-                      background: 'rgba(59, 130, 246, 0.15)',
+                      background: 'rgba(34, 197, 94, 0.15)',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
                     }}>
-                      <span style={{ fontSize: '20px', color: '#3b82f6', fontWeight: 300 }}>+</span>
+                      <span style={{ fontSize: '20px', color: '#22c55e', fontWeight: 300 }}>+</span>
                     </div>
-                    <span style={{ fontSize: '14px', fontWeight: 600, color: '#3b82f6' }}>Add New Journal</span>
+                    <span style={{ fontSize: '14px', fontWeight: 600, color: '#22c55e' }}>Add New Journal</span>
                   </div>
                 </div>
                 )}
