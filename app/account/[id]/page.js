@@ -3314,11 +3314,11 @@ export default function AccountPage() {
                 <div style={{ position: 'absolute', inset: '-20px', background: 'radial-gradient(ellipse at center, rgba(34,197,94,0.15) 0%, rgba(34,197,94,0.05) 40%, transparent 70%)', borderRadius: '30px', pointerEvents: 'none', filter: 'blur(8px)' }} />
                 <div style={{ position: 'relative', height: '100%', background: 'linear-gradient(145deg, #0d0d12 0%, #0a0a0e 100%)', border: '2px solid #22c55e', borderRadius: '10px', padding: '14px', boxShadow: '0 0 20px rgba(34,197,94,0.25), inset 0 1px 0 rgba(34,197,94,0.2)' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
-                    <div style={{ fontSize: '11px', color: '#22c55e', textTransform: 'uppercase', fontWeight: 700, textShadow: '0 0 10px rgba(34,197,94,0.5)', letterSpacing: '1px' }}>Trade Analysis</div>
+                    <div style={{ fontSize: '11px', color: '#aaa', textTransform: 'uppercase', fontWeight: 600, letterSpacing: '0.5px' }}>Trade Analysis</div>
                     <div style={{ fontSize: '9px', color: '#999' }}>{displayTrades.length} trades</div>
                   </div>
                   <div style={{ display: 'flex', gap: '6px', marginBottom: '10px' }}>
-                    <select value={analysisGroupBy} onChange={e => setAnalysisGroupBy(e.target.value)} style={{ flex: 1, padding: '6px 8px', background: 'linear-gradient(180deg, #1a1a22 0%, #141418 100%)', border: '1px solid rgba(34,197,94,0.4)', borderRadius: '6px', color: '#fff', fontSize: '10px', cursor: 'pointer' }}>
+                    <select value={analysisGroupBy} onChange={e => setAnalysisGroupBy(e.target.value)} style={{ flex: 1, padding: '4px 8px', background: '#141418', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '4px', color: '#fff', fontSize: '11px', cursor: 'pointer', boxShadow: '0 0 4px rgba(255,255,255,0.1)' }}>
                       <option value="direction">Direction</option>
                       <option value="symbol">Pair</option>
                       <option value="confidence">Confidence</option>
