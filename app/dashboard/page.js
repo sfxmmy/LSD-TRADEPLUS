@@ -1639,9 +1639,9 @@ export default function DashboardPage() {
         {!isMobile && accounts.length > 0 ? (
           <div style={{ display: 'flex', gap: '12px' }}>
             {/* LOG TRADE Widget - Fixed Left Sidebar */}
-            <div style={{ width: '280px', flexShrink: 0, background: 'linear-gradient(135deg, #0f0f14 0%, #0a0a0f 100%)', border: '1px solid #1a1a22', borderRadius: '16px', padding: '20px', boxShadow: '0 4px 24px rgba(0,0,0,0.3)', alignSelf: 'flex-start' }}>
+            <div onClick={() => setSidebarExpanded(true)} style={{ width: '280px', flexShrink: 0, background: 'linear-gradient(135deg, #0f0f14 0%, #0a0a0f 100%)', border: '1px solid #1a1a22', borderRadius: '16px', padding: '20px', boxShadow: '0 4px 24px rgba(0,0,0,0.3)', alignSelf: 'flex-start', cursor: 'pointer', transition: 'all 0.2s' }} onMouseEnter={e => { e.currentTarget.style.border = '1px solid #4ade80'; e.currentTarget.style.background = 'rgba(34, 197, 94, 0.05)' }} onMouseLeave={e => { e.currentTarget.style.border = '1px solid #1a1a22'; e.currentTarget.style.background = 'linear-gradient(135deg, #0f0f14 0%, #0a0a0f 100%)' }}>
                   {/* Header */}
-                  <div onClick={() => setSidebarExpanded(true)} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px', paddingBottom: '12px', borderBottom: '1px solid #1a1a22', cursor: 'pointer' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px', paddingBottom: '12px', borderBottom: '1px solid #1a1a22' }}>
                     <span style={{ fontSize: '14px', color: '#fff', fontWeight: 600 }}>Log Trade</span>
                     {getSelectedAccountCustomInputs().length > 2 && (
                       <button onClick={(e) => { e.stopPropagation(); setSidebarExpanded(true) }} style={{ padding: '6px 8px', background: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.3)', borderRadius: '6px', color: '#22c55e', cursor: 'pointer', display: 'flex', alignItems: 'center' }} title="Expand">
@@ -2171,7 +2171,7 @@ export default function DashboardPage() {
                     if (maxDdFloor) minBal = Math.min(minBal, maxDdFloor)
 
                     return (
-                      <div key={account.id} onClick={() => window.location.href = `/account/${account.id}`} style={{ background: 'linear-gradient(135deg, #0f0f14 0%, #0a0a0f 100%)', border: '1px solid #1a1a22', borderRadius: '16px', overflow: 'hidden', display: 'flex', flexDirection: 'column', boxShadow: '0 4px 24px rgba(0,0,0,0.3)', transition: 'all 0.2s', cursor: 'pointer' }} onMouseEnter={e => { e.currentTarget.style.boxShadow = '0 4px 24px rgba(0,0,0,0.3), inset 0 0 40px rgba(34, 197, 94, 0.12), inset 0 0 15px rgba(34, 197, 94, 0.08)'; e.currentTarget.style.border = '1px solid rgba(34, 197, 94, 0.3)' }} onMouseLeave={e => { e.currentTarget.style.boxShadow = '0 4px 24px rgba(0,0,0,0.3)'; e.currentTarget.style.border = '1px solid #1a1a22' }}>
+                      <div key={account.id} onClick={() => window.location.href = `/account/${account.id}`} style={{ background: 'linear-gradient(135deg, #0f0f14 0%, #0a0a0f 100%)', border: '1px solid #1a1a22', borderRadius: '16px', overflow: 'hidden', display: 'flex', flexDirection: 'column', boxShadow: '0 4px 24px rgba(0,0,0,0.3)', transition: 'all 0.2s', cursor: 'pointer' }} onMouseEnter={e => { e.currentTarget.style.border = '1px solid #4ade80'; e.currentTarget.style.background = 'rgba(34, 197, 94, 0.05)' }} onMouseLeave={e => { e.currentTarget.style.border = '1px solid #1a1a22'; e.currentTarget.style.background = 'linear-gradient(135deg, #0f0f14 0%, #0a0a0f 100%)' }}>
                         {/* Header - Clean layout */}
                         <div style={{ padding: '16px 16px 12px' }}>
                           <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
@@ -2540,8 +2540,8 @@ export default function DashboardPage() {
                           cursor: 'pointer',
                           transition: 'all 0.2s'
                         }}
-                        onMouseEnter={e => { e.currentTarget.style.boxShadow = 'inset 0 0 30px rgba(34, 197, 94, 0.15), inset 0 0 10px rgba(34, 197, 94, 0.1)'; e.currentTarget.style.border = '1px solid rgba(34, 197, 94, 0.3)' }}
-                        onMouseLeave={e => { e.currentTarget.style.boxShadow = 'none'; e.currentTarget.style.border = '1px solid #1a1a22' }}
+                        onMouseEnter={e => { e.currentTarget.style.border = '1px solid #4ade80'; e.currentTarget.style.background = 'rgba(34, 197, 94, 0.05)' }}
+                        onMouseLeave={e => { e.currentTarget.style.border = '1px solid #1a1a22'; e.currentTarget.style.background = 'linear-gradient(135deg, #0f0f14 0%, #0a0a0f 100%)' }}
                       >
                         {/* Left: Name & Balance */}
                         <div style={{ display: 'flex', alignItems: 'center', gap: '24px', flex: 1 }}>
@@ -2806,7 +2806,7 @@ export default function DashboardPage() {
 
         {showEditModal && (
           <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.85)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100, backdropFilter: 'blur(4px)' }} onClick={() => setShowEditModal(null)}>
-            <div style={{ background: '#0d0d12', border: '1px solid #2a2a35', borderRadius: '12px', padding: '24px', width: '420px', boxShadow: '0 20px 60px rgba(0,0,0,0.5)' }} onClick={e => e.stopPropagation()}>
+            <div style={{ background: '#0d0d12', border: '1px solid #2a2a35', borderRadius: '12px', padding: '24px', width: '420px', maxHeight: '90vh', overflowY: 'auto', boxShadow: '0 20px 60px rgba(0,0,0,0.5)' }} onClick={e => e.stopPropagation()}>
               <h2 style={{ fontSize: '20px', fontWeight: 600, marginBottom: '24px', color: '#fff' }}>Edit Journal</h2>
 
               {/* Journal Name */}
