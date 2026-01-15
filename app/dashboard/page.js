@@ -1647,10 +1647,10 @@ export default function DashboardPage() {
         </div>
       </header>
 
-      <div style={{ maxWidth: '1600px', margin: '0 auto', padding: '12px', minHeight: 'calc(100vh - 80px)' }}>
+      <div style={{ maxWidth: '1800px', margin: '0 auto', padding: '12px', minHeight: 'calc(100vh - 80px)' }}>
         {/* Main Layout: LOG TRADE Sidebar (left) + Main Content (right 2/3) */}
         {!isMobile && accounts.length > 0 ? (
-          <div style={{ display: 'flex', gap: '12px' }}>
+          <div style={{ display: 'flex', gap: '12px', minWidth: 0 }}>
             {/* LOG TRADE Widget - Fixed Left Sidebar */}
             <div onClick={() => setSidebarExpanded(true)} style={{ width: '280px', flexShrink: 0, background: 'linear-gradient(135deg, #0f0f14 0%, #0a0a0f 100%)', border: '1px solid #1a1a22', borderRadius: '16px', padding: '20px', boxShadow: '0 4px 24px rgba(0,0,0,0.3)', alignSelf: 'flex-start', cursor: 'pointer' }}>
                   {/* Header */}
@@ -1901,7 +1901,7 @@ export default function DashboardPage() {
                 </div>
 
               {/* Right Content Area (Overall Stats + Journal Cards) */}
-              <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: '12px' }}>
                 {/* Overall Stats */}
                 {(() => {
                   const stats = getCumulativeStats()
