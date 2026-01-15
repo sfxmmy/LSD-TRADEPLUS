@@ -1411,7 +1411,15 @@ export default function AccountPage() {
       {/* FIXED SUBHEADER - starts at sidebar edge */}
       {!isMobile && (
         <div style={{ position: 'fixed', top: '60px', left: '180px', right: 0, zIndex: 46, padding: '18px 12px 13px 12px', background: '#0a0a0f', borderBottom: '1px solid #1a1a22', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <span style={{ fontSize: '28px', fontWeight: 700, color: '#fff', lineHeight: 1 }}>{account?.name}</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+            <span style={{ fontSize: '28px', fontWeight: 700, color: '#fff', lineHeight: 1 }}>{account?.name}</span>
+            {getTradesWithImages().length > 0 && (
+              <button onClick={() => { setSlideshowIndex(0); setSlideshowMode(true) }} style={{ padding: '6px 12px', background: '#0d0d12', border: '1px solid #2a2a35', borderRadius: '6px', color: '#888', fontSize: '11px', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', transition: 'all 0.2s' }} onMouseEnter={e => { e.currentTarget.style.borderColor = '#3a3a45'; e.currentTarget.style.background = '#141418' }} onMouseLeave={e => { e.currentTarget.style.borderColor = '#2a2a35'; e.currentTarget.style.background = '#0d0d12' }}>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                Slideshow Trades ({getSlideshowImages().length})
+              </button>
+            )}
+          </div>
           <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
               {activeTab === 'trades' && trades.length > 0 && !selectMode && (
                 <button onClick={() => setSelectMode(true)} style={{ height: '36px', margin: 0, padding: '0 20px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '6px', color: '#fff', fontSize: '13px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', lineHeight: 1 }}>Select</button>
@@ -1603,20 +1611,16 @@ export default function AccountPage() {
 
         </div>
 
-        {/* Slideshow Button */}
-        {getTradesWithImages().length > 0 && (
-          <button onClick={() => { setSlideshowIndex(0); setSlideshowMode(true) }} style={{ width: '100%', padding: '10px', marginTop: '12px', marginBottom: '12px', background: '#0d0d12', border: '1px solid #2a2a35', borderRadius: '6px', color: '#888', fontSize: '11px', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
-            Slideshow ({getSlideshowImages().length})
-          </button>
-        )}
-
         {/* Spacer */}
         <div style={{ flex: 1 }} />
 
         {/* Journal Select */}
         <div style={{ marginBottom: '12px' }}>
-          <div style={{ fontSize: '11px', color: '#888', fontWeight: 600, marginBottom: '8px' }}>Journal Select</div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
+            <div style={{ flex: 1, height: '1px', background: '#2a2a35' }} />
+            <span style={{ fontSize: '10px', color: '#666', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px' }}>Journal Select</span>
+            <div style={{ flex: 1, height: '1px', background: '#2a2a35' }} />
+          </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', maxHeight: allAccounts.length > 2 ? '120px' : 'none', overflowY: allAccounts.length > 2 ? 'auto' : 'visible' }}>
             {allAccounts.map((acc) => {
               const isSelected = acc.id === accountId
