@@ -1696,6 +1696,8 @@ export default function DashboardPage() {
                     )}
                   </div>
 
+                  {/* Form content wrapper - stops propagation to prevent expand on input clicks */}
+                  <div onClick={e => e.stopPropagation()}>
                   {/* Core Fields Grid */}
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '14px' }}>
                     <div>
@@ -1898,6 +1900,7 @@ export default function DashboardPage() {
                       <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" /><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" /></svg>
                     </button>
                   </div>
+                  </div>{/* Close form wrapper */}
                 </div>
 
               {/* Right Content Area (Overall Stats + Journal Cards) */}
@@ -3699,15 +3702,15 @@ export default function DashboardPage() {
                       {/* Direction */}
                       <div style={{ position: 'relative' }}>
                         <label style={{ display: 'block', fontSize: '12px', color: '#888', marginBottom: '6px', fontWeight: 600 }}>Direction</label>
-                        <button type="button" onClick={() => { setDirectionDropdownOpen(!directionDropdownOpen); setOutcomeDropdownOpen(false); setConfidenceDropdownOpen(false); setTimeframeDropdownOpen(false); setSessionDropdownOpen(false); setCustomDropdownOpen({}) }} style={{ width: '100%', padding: '10px 12px', background: '#0a0a0f', border: directionDropdownOpen ? '1px solid #22c55e' : '1px solid #1a1a22', borderRadius: directionDropdownOpen ? '8px 8px 0 0' : '8px', color: quickTradeDirection === 'long' ? '#22c55e' : quickTradeDirection === 'short' ? '#ef4444' : '#888', fontSize: '13px', boxSizing: 'border-box', cursor: 'pointer', textAlign: 'left', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <button type="button" onClick={() => { setDirectionDropdownOpen(!directionDropdownOpen); setOutcomeDropdownOpen(false); setConfidenceDropdownOpen(false); setTimeframeDropdownOpen(false); setSessionDropdownOpen(false); setCustomDropdownOpen({}) }} style={{ width: '100%', padding: '10px 12px', background: quickTradeDirection === 'long' ? 'rgba(34,197,94,0.2)' : quickTradeDirection === 'short' ? 'rgba(239,68,68,0.2)' : '#0a0a0f', border: directionDropdownOpen ? '1px solid #22c55e' : quickTradeDirection === 'long' ? '1px solid rgba(34,197,94,0.5)' : quickTradeDirection === 'short' ? '1px solid rgba(239,68,68,0.5)' : '1px solid #1a1a22', borderRadius: directionDropdownOpen ? '8px 8px 0 0' : '8px', color: quickTradeDirection === 'long' ? '#22c55e' : quickTradeDirection === 'short' ? '#ef4444' : '#888', fontSize: '14px', boxSizing: 'border-box', cursor: 'pointer', textAlign: 'left', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                           <span>{quickTradeDirection === 'long' ? 'Long' : quickTradeDirection === 'short' ? 'Short' : '-'}</span>
                           <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ transform: directionDropdownOpen ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }}><path d="M6 9l6 6 6-6" /></svg>
                         </button>
                         {directionDropdownOpen && (
                           <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, background: '#0a0a0f', border: '1px solid #22c55e', borderTop: 'none', borderRadius: '0 0 8px 8px', zIndex: 100, overflow: 'hidden' }}>
-                            <div onClick={() => { setQuickTradeDirection(''); setDirectionDropdownOpen(false) }} style={{ padding: '10px 12px', cursor: 'pointer', color: '#888', fontSize: '13px', transition: 'background 0.15s' }} onMouseEnter={e => e.currentTarget.style.background = '#1a1a22'} onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>-</div>
-                            <div onClick={() => { setQuickTradeDirection('long'); setDirectionDropdownOpen(false) }} style={{ padding: '10px 12px', cursor: 'pointer', color: '#22c55e', fontSize: '13px', fontWeight: 600, transition: 'background 0.15s' }} onMouseEnter={e => e.currentTarget.style.background = 'rgba(34,197,94,0.15)'} onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>Long</div>
-                            <div onClick={() => { setQuickTradeDirection('short'); setDirectionDropdownOpen(false) }} style={{ padding: '10px 12px', cursor: 'pointer', color: '#ef4444', fontSize: '13px', fontWeight: 600, transition: 'background 0.15s' }} onMouseEnter={e => e.currentTarget.style.background = 'rgba(239,68,68,0.15)'} onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>Short</div>
+                            <div onClick={() => { setQuickTradeDirection(''); setDirectionDropdownOpen(false) }} style={{ padding: '10px 12px', cursor: 'pointer', color: '#888', fontSize: '14px', transition: 'background 0.15s' }} onMouseEnter={e => e.currentTarget.style.background = '#1a1a22'} onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>-</div>
+                            <div onClick={() => { setQuickTradeDirection('long'); setDirectionDropdownOpen(false) }} style={{ padding: '10px 12px', cursor: 'pointer', color: '#22c55e', fontSize: '14px', fontWeight: 600, transition: 'background 0.15s' }} onMouseEnter={e => e.currentTarget.style.background = 'rgba(34,197,94,0.15)'} onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>Long</div>
+                            <div onClick={() => { setQuickTradeDirection('short'); setDirectionDropdownOpen(false) }} style={{ padding: '10px 12px', cursor: 'pointer', color: '#ef4444', fontSize: '14px', fontWeight: 600, transition: 'background 0.15s' }} onMouseEnter={e => e.currentTarget.style.background = 'rgba(239,68,68,0.15)'} onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>Short</div>
                           </div>
                         )}
                       </div>
