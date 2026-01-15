@@ -2191,7 +2191,6 @@ export default function AccountPage() {
                           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                             <span style={{ fontSize: '11px', color: '#aaa', textTransform: 'uppercase', letterSpacing: '0.5px', fontWeight: 600 }}>EQUITY CURVE</span>
                             <span style={{ fontSize: '14px', fontWeight: 700, color: chartCurrent >= chartStart ? '#22c55e' : '#ef4444' }}>${Math.round(chartCurrent).toLocaleString()}</span>
-                            <span style={{ fontSize: '10px', color: '#666' }}>${chartStart.toLocaleString()} INITIAL</span>
                             {/* Show Objectives button - purple with magnifying glass */}
                             <button
                               onClick={() => setShowObjectiveLines(!showObjectiveLines)}
@@ -4822,7 +4821,6 @@ export default function AccountPage() {
                 {enlargedChart === 'equity' && (
                   <>
                     <span style={{ fontSize: '18px', fontWeight: 700, color: currentBalance >= startingBalance ? '#22c55e' : '#ef4444' }}>${Math.round(currentBalance).toLocaleString()}</span>
-                    <span style={{ fontSize: '12px', color: '#666' }}>${startingBalance.toLocaleString()} <span style={{ textTransform: 'uppercase', letterSpacing: '0.5px' }}>INITIAL BALANCE</span></span>
                     <select value={equityCurveGroupBy} onChange={e => { setEquityCurveGroupBy(e.target.value); setSelectedCurveLines({}) }} style={{ padding: '4px 8px', background: '#141418', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '4px', color: '#fff', fontSize: '11px', boxShadow: '0 0 4px rgba(255,255,255,0.1)' }}>
                       <option value="total">Total PnL</option>
                       <option value="symbol">By Pair</option>
