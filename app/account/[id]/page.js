@@ -1409,7 +1409,7 @@ export default function AccountPage() {
           <span style={{ fontSize: '28px', fontWeight: 700, color: '#fff', lineHeight: 1 }}>{account?.name}</span>
           <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
               {activeTab === 'trades' && trades.length > 0 && !selectMode && (
-                <button onClick={() => setSelectMode(true)} style={{ height: '28px', margin: 0, padding: '0 16px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '6px', color: '#fff', fontSize: '13px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>Select</button>
+                <button onClick={() => setSelectMode(true)} style={{ height: '36px', margin: 0, padding: '0 20px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '6px', color: '#fff', fontSize: '13px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>Select</button>
               )}
               {activeTab === 'trades' && selectMode && (
                 <>
@@ -1421,15 +1421,15 @@ export default function AccountPage() {
                 </>
               )}
               {!selectMode && (
-                <button onClick={() => { setDraftFilters({...filters, quickSelect: ''}); setShowFilters(true) }} style={{ height: '28px', margin: 0, padding: '0 16px', background: hasActiveFilters ? 'rgba(34,197,94,0.15)' : 'transparent', border: hasActiveFilters ? '1px solid #22c55e' : '1px solid #2a2a35', borderRadius: '6px', color: hasActiveFilters ? '#22c55e' : '#fff', fontSize: '13px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
+                <button onClick={() => { setDraftFilters({...filters, quickSelect: ''}); setShowFilters(true) }} style={{ height: '36px', margin: 0, padding: '0 20px', background: hasActiveFilters ? 'rgba(34,197,94,0.15)' : 'transparent', border: hasActiveFilters ? '1px solid #22c55e' : '1px solid #2a2a35', borderRadius: '6px', color: hasActiveFilters ? '#22c55e' : '#fff', fontSize: '13px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
                   Filters{hasActiveFilters && ` (${Object.values(filters).filter(Boolean).length})`}
                 </button>
               )}
               {activeTab === 'trades' && !selectMode && (
                 <>
-                  <button onClick={() => setShowEditInputs(true)} style={{ height: '28px', margin: 0, padding: '0 16px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '6px', color: '#fff', fontSize: '13px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>Edit Columns</button>
-                  <button onClick={() => { setTradeForm({ date: new Date().toISOString().split('T')[0] }); setEditingTrade(null); setShowAddTrade(true) }} style={{ height: '28px', margin: 0, padding: '0 20px', background: 'linear-gradient(135deg, #9333ea 0%, #7c3aed 100%)', border: 'none', borderRadius: '6px', color: '#fff', fontWeight: 600, fontSize: '13px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 0 20px rgba(147,51,234,0.4)' }}>+ LOG TRADE</button>
+                  <button onClick={() => setShowEditInputs(true)} style={{ height: '36px', margin: 0, padding: '0 20px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '6px', color: '#fff', fontSize: '13px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>Edit Columns</button>
+                  <button onClick={() => { setTradeForm({ date: new Date().toISOString().split('T')[0] }); setEditingTrade(null); setShowAddTrade(true) }} style={{ height: '36px', margin: 0, padding: '0 20px', background: 'transparent', border: '2px dashed #22c55e', borderRadius: '6px', color: '#22c55e', fontWeight: 600, fontSize: '13px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.2s' }} onMouseEnter={e => { e.currentTarget.style.borderColor = '#4ade80'; e.currentTarget.style.background = 'rgba(34, 197, 94, 0.05)' }} onMouseLeave={e => { e.currentTarget.style.borderColor = '#22c55e'; e.currentTarget.style.background = 'transparent' }}>+ LOG TRADE</button>
                 </>
               )}
           </div>
