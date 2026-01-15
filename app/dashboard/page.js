@@ -1992,15 +1992,15 @@ export default function DashboardPage() {
                             style={{
                               flex: 1,
                               maxWidth: '50%',
-                              background: '#08080c',
+                              background: 'transparent',
                               border: '1px solid #1a1a22',
                               borderRadius: '8px',
                               padding: '10px 12px',
                               cursor: recentNote ? 'pointer' : 'default',
                               transition: 'all 0.2s'
                             }}
-                            onMouseEnter={e => { if (recentNote) { e.currentTarget.style.borderColor = '#2a2a35'; e.currentTarget.style.background = '#0d0d12' } }}
-                            onMouseLeave={e => { e.currentTarget.style.borderColor = '#1a1a22'; e.currentTarget.style.background = '#08080c' }}
+                            onMouseEnter={e => { if (recentNote) { e.currentTarget.style.borderColor = '#2a2a35'; e.currentTarget.style.background = 'rgba(255,255,255,0.02)' } }}
+                            onMouseLeave={e => { e.currentTarget.style.borderColor = '#1a1a22'; e.currentTarget.style.background = 'transparent' }}
                           >
                             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
                               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#666" strokeWidth="2">
