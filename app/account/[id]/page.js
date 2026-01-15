@@ -117,6 +117,10 @@ export default function AccountPage() {
   const [draftFilters, setDraftFilters] = useState({ dateFrom: '', dateTo: '', outcome: '', direction: '', symbol: '', session: '', timeframe: '', confidence: '', rr: '', rating: '', quickSelect: '', custom: {} })
   const [hoverRatings, setHoverRatings] = useState({}) // Track hover per input ID
   const [editingTrade, setEditingTrade] = useState(null)
+  // Custom dropdown open states for Log Trade modal
+  const [directionDropdownOpen, setDirectionDropdownOpen] = useState(false)
+  const [outcomeDropdownOpen, setOutcomeDropdownOpen] = useState(false)
+  const [customDropdownOpen, setCustomDropdownOpen] = useState({}) // Map of input.id -> boolean
   const [viewingTrade, setViewingTrade] = useState(null)
   const [tradeImageIndex, setTradeImageIndex] = useState(0)
   const [transferFromJournal, setTransferFromJournal] = useState('')
@@ -2185,33 +2189,31 @@ export default function AccountPage() {
                         {/* Header row with title, stats, controls and enlarge button */}
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px', flexWrap: 'wrap', gap: '8px' }}>
                           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                            <span style={{ fontSize: '12px', color: '#999', textTransform: 'uppercase' }}>Equity Curve</span>
+                            <span style={{ fontSize: '11px', color: '#888', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Equity Curve</span>
                             <span style={{ fontSize: '11px', color: '#999' }}>Start: <span style={{ color: '#fff' }}>${chartStart.toLocaleString()}</span></span>
                             <span style={{ fontSize: '11px', color: '#999' }}>Current: <span style={{ color: chartCurrent >= chartStart ? '#22c55e' : '#ef4444' }}>${Math.round(chartCurrent).toLocaleString()}</span></span>
-                            {/* Show Objective Lines button - purple */}
+                            {/* Show Objectives button - purple with magnifying glass */}
                             <button
                               onClick={() => setShowObjectiveLines(!showObjectiveLines)}
                               style={{
                                 padding: '4px 8px',
                                 background: showObjectiveLines ? 'rgba(147,51,234,0.15)' : 'transparent',
-                                border: showObjectiveLines ? '1px solid rgba(147,51,234,0.5)' : '1px solid #2a2a35',
+                                border: showObjectiveLines ? '1px solid rgba(147,51,234,0.4)' : '1px solid transparent',
                                 borderRadius: '4px',
                                 color: showObjectiveLines ? '#9333ea' : '#666',
                                 fontSize: '10px',
                                 cursor: 'pointer',
-                                fontWeight: 500,
                                 whiteSpace: 'nowrap',
                                 display: 'flex',
                                 alignItems: 'center',
-                                gap: '4px'
+                                gap: '4px',
+                                transition: 'all 0.2s'
                               }}
+                              onMouseEnter={e => { e.currentTarget.style.color = '#9333ea'; e.currentTarget.style.borderColor = 'rgba(147,51,234,0.4)' }}
+                              onMouseLeave={e => { if (!showObjectiveLines) { e.currentTarget.style.color = '#666'; e.currentTarget.style.borderColor = 'transparent' } }}
                             >
-                              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                <path d="M3 3v18h18" />
-                                <path d="M3 12h18" strokeDasharray="4,3" />
-                                <path d="M3 6h18" strokeDasharray="4,3" />
-                              </svg>
-                              {showObjectiveLines ? 'Hide Objective Lines' : 'Show Objective Lines'}
+                              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+                              <span>Show Objectives</span>
                             </button>
                           </div>
                           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -3034,7 +3036,7 @@ export default function AccountPage() {
                       <>
                         {/* Header row with title, controls and enlarge */}
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px', flexWrap: 'wrap', gap: '8px' }}>
-                          <span style={{ fontSize: '12px', color: '#999', textTransform: 'uppercase' }}>Performance by {graphGroupBy === 'symbol' ? 'Pair' : graphGroupBy}</span>
+                          <span style={{ fontSize: '11px', color: '#888', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Performance by {graphGroupBy === 'symbol' ? 'Pair' : graphGroupBy}</span>
                           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                             <select value={barGraphMetric} onChange={e => setBarGraphMetric(e.target.value)} style={{ padding: '4px 8px', background: '#141418', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '4px', color: '#fff', fontSize: '11px', boxShadow: '0 0 4px rgba(255,255,255,0.1)' }}>
                               <option value="winrate">Winrate</option>
@@ -3131,20 +3133,20 @@ export default function AccountPage() {
             {/* ROW 2: Direction + Sentiment bars */}
             <div style={{ display: 'flex', gap: '12px', marginBottom: '12px' }}>
               <div style={{ flex: 1, background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '12px 16px', display: 'flex', alignItems: 'center', gap: '12px' }}>
-                <span style={{ fontSize: '12px', color: '#999', textTransform: 'uppercase' }}>Direction</span>
+                <span style={{ fontSize: '11px', color: '#888', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Direction</span>
                 <span style={{ fontSize: '13px', color: '#22c55e', fontWeight: 700 }}>{displayLongPct}% Long</span>
-                <div style={{ flex: 1, height: '10px', borderRadius: '5px', overflow: 'hidden', display: 'flex' }}>
-                  <div style={{ width: `${displayLongPct}%`, background: '#22c55e' }} />
-                  <div style={{ width: `${100 - displayLongPct}%`, background: '#ef4444' }} />
+                <div style={{ flex: 1, height: '12px', borderRadius: '6px', overflow: 'hidden', display: 'flex', background: 'rgba(0,0,0,0.3)', boxShadow: 'inset 0 1px 3px rgba(0,0,0,0.4)' }}>
+                  <div style={{ width: `${displayLongPct}%`, background: 'linear-gradient(90deg, rgba(34,197,94,0.3) 0%, rgba(34,197,94,0.9) 30%, rgba(34,197,94,0.9) 70%, rgba(34,197,94,0.3) 100%)', boxShadow: 'inset 0 0 8px rgba(34,197,94,0.5), 0 0 6px rgba(34,197,94,0.3)' }} />
+                  <div style={{ width: `${100 - displayLongPct}%`, background: 'linear-gradient(90deg, rgba(239,68,68,0.3) 0%, rgba(239,68,68,0.9) 30%, rgba(239,68,68,0.9) 70%, rgba(239,68,68,0.3) 100%)', boxShadow: 'inset 0 0 8px rgba(239,68,68,0.5), 0 0 6px rgba(239,68,68,0.3)' }} />
                 </div>
                 <span style={{ fontSize: '13px', color: '#ef4444', fontWeight: 700 }}>{100 - displayLongPct}% Short</span>
               </div>
               <div style={{ flex: 1, background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '12px 16px', display: 'flex', alignItems: 'center', gap: '12px' }}>
-                <span style={{ fontSize: '12px', color: '#999', textTransform: 'uppercase' }}>Sentiment</span>
+                <span style={{ fontSize: '11px', color: '#888', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Sentiment</span>
                 <span style={{ fontSize: '13px', color: '#22c55e', fontWeight: 700 }}>{displayWinrate}% Bullish</span>
-                <div style={{ flex: 1, height: '10px', borderRadius: '5px', overflow: 'hidden', display: 'flex' }}>
-                  <div style={{ width: `${displayWinrate}%`, background: '#22c55e' }} />
-                  <div style={{ width: `${100 - displayWinrate}%`, background: '#ef4444' }} />
+                <div style={{ flex: 1, height: '12px', borderRadius: '6px', overflow: 'hidden', display: 'flex', background: 'rgba(0,0,0,0.3)', boxShadow: 'inset 0 1px 3px rgba(0,0,0,0.4)' }}>
+                  <div style={{ width: `${displayWinrate}%`, background: 'linear-gradient(90deg, rgba(34,197,94,0.3) 0%, rgba(34,197,94,0.9) 30%, rgba(34,197,94,0.9) 70%, rgba(34,197,94,0.3) 100%)', boxShadow: 'inset 0 0 8px rgba(34,197,94,0.5), 0 0 6px rgba(34,197,94,0.3)' }} />
+                  <div style={{ width: `${100 - displayWinrate}%`, background: 'linear-gradient(90deg, rgba(239,68,68,0.3) 0%, rgba(239,68,68,0.9) 30%, rgba(239,68,68,0.9) 70%, rgba(239,68,68,0.3) 100%)', boxShadow: 'inset 0 0 8px rgba(239,68,68,0.5), 0 0 6px rgba(239,68,68,0.3)' }} />
                 </div>
                 <span style={{ fontSize: '13px', color: '#ef4444', fontWeight: 700 }}>{100 - displayWinrate}% Bearish</span>
               </div>
@@ -3155,7 +3157,7 @@ export default function AccountPage() {
               {/* Net Daily PnL - bars fill full width */}
               <div style={{ flex: 1, background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '16px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-                  <span style={{ fontSize: '13px', color: '#999', textTransform: 'uppercase' }}>Net Daily PnL</span>
+                  <span style={{ fontSize: '11px', color: '#888', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Net Daily PnL</span>
                   <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '10px', color: '#999', cursor: 'pointer', background: includeDaysNotTraded ? '#22c55e' : '#1a1a22', padding: '4px 10px', borderRadius: '4px', border: '1px solid #2a2a35' }}>
                     <span style={{ color: includeDaysNotTraded ? '#fff' : '#888' }}>{includeDaysNotTraded ? '✓' : ''}</span>
                     <input type="checkbox" checked={includeDaysNotTraded} onChange={e => setIncludeDaysNotTraded(e.target.checked)} style={{ display: 'none' }} />
@@ -4240,14 +4242,45 @@ export default function AccountPage() {
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px' }}>
                     {leftInputs.map(input => {
                       const optionsArr = Array.isArray(input.options) ? input.options : []
+                      const isDropdownOpen = input.id === 'direction' ? directionDropdownOpen : input.id === 'outcome' ? outcomeDropdownOpen : (customDropdownOpen[input.id] || false)
+                      const currentVal = tradeForm[input.id] || ''
+                      const currentOpt = optionsArr.find(o => getOptVal(o).toLowerCase() === currentVal.toLowerCase())
+                      const getColor = (val, opt) => {
+                        if (!val) return '#888'
+                        if (input.id === 'direction') return val === 'long' ? '#22c55e' : val === 'short' ? '#ef4444' : '#fff'
+                        if (input.id === 'outcome') return val === 'win' ? '#22c55e' : val === 'loss' ? '#ef4444' : val === 'be' ? '#f59e0b' : '#fff'
+                        if (opt && typeof opt === 'object') return opt.textColor || '#fff'
+                        return '#fff'
+                      }
+                      const currentColor = getColor(currentVal, currentOpt)
                       return (
-                        <div key={input.id}>
+                        <div key={input.id} style={input.type === 'select' ? { position: 'relative' } : {}}>
                           <label style={{ display: 'block', fontSize: '10px', color: '#666', marginBottom: '6px', textTransform: 'uppercase' }}>{input.label}</label>
                           {input.type === 'select' ? (
-                            <select value={tradeForm[input.id] || ''} onChange={e => setTradeForm({...tradeForm, [input.id]: e.target.value})} style={{ width: '100%', padding: '10px 12px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '8px', color: '#fff', fontSize: '13px', boxSizing: 'border-box' }}>
-                              <option value="">-</option>
-                              {optionsArr.map((o, idx) => <option key={idx} value={getOptVal(o).toLowerCase()}>{getOptVal(o)}</option>)}
-                            </select>
+                            <>
+                              <button type="button" onClick={() => {
+                                if (input.id === 'direction') { setDirectionDropdownOpen(!directionDropdownOpen); setOutcomeDropdownOpen(false); setCustomDropdownOpen({}) }
+                                else if (input.id === 'outcome') { setOutcomeDropdownOpen(!outcomeDropdownOpen); setDirectionDropdownOpen(false); setCustomDropdownOpen({}) }
+                                else { setCustomDropdownOpen(prev => ({ ...Object.fromEntries(Object.keys(prev).map(k => [k, false])), [input.id]: !isDropdownOpen })); setDirectionDropdownOpen(false); setOutcomeDropdownOpen(false) }
+                              }} style={{ width: '100%', padding: '10px 12px', background: '#0a0a0f', border: isDropdownOpen ? '1px solid #22c55e' : '1px solid #1a1a22', borderRadius: isDropdownOpen ? '8px 8px 0 0' : '8px', color: currentColor, fontSize: '13px', boxSizing: 'border-box', cursor: 'pointer', textAlign: 'left', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                <span>{currentVal ? (currentOpt ? getOptVal(currentOpt) : currentVal) : '-'}</span>
+                                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ transform: isDropdownOpen ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }}><path d="M6 9l6 6 6-6" /></svg>
+                              </button>
+                              {isDropdownOpen && (
+                                <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, background: '#0a0a0f', border: '1px solid #22c55e', borderTop: 'none', borderRadius: '0 0 8px 8px', zIndex: 100, overflow: 'hidden', maxHeight: '200px', overflowY: 'auto' }}>
+                                  <div onClick={() => { setTradeForm({...tradeForm, [input.id]: ''}); setDirectionDropdownOpen(false); setOutcomeDropdownOpen(false); setCustomDropdownOpen({}) }} style={{ padding: '10px 12px', cursor: 'pointer', color: '#888', fontSize: '13px', transition: 'background 0.15s' }} onMouseEnter={e => e.currentTarget.style.background = '#1a1a22'} onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>-</div>
+                                  {optionsArr.map((o, idx) => {
+                                    const optVal = getOptVal(o)
+                                    const optColor = getColor(optVal.toLowerCase(), o)
+                                    const optBg = typeof o === 'object' ? (o.bgColor || null) : null
+                                    const defaultBg = input.id === 'direction' ? (optVal.toLowerCase() === 'long' ? 'rgba(34,197,94,0.15)' : 'rgba(239,68,68,0.15)') : input.id === 'outcome' ? (optVal.toLowerCase() === 'win' ? 'rgba(34,197,94,0.15)' : optVal.toLowerCase() === 'loss' ? 'rgba(239,68,68,0.15)' : 'rgba(245,158,11,0.15)') : null
+                                    return (
+                                      <div key={idx} onClick={() => { setTradeForm({...tradeForm, [input.id]: optVal.toLowerCase()}); setDirectionDropdownOpen(false); setOutcomeDropdownOpen(false); setCustomDropdownOpen({}) }} style={{ padding: '10px 12px', cursor: 'pointer', color: optColor, fontSize: '13px', fontWeight: 600, transition: 'background 0.15s' }} onMouseEnter={e => e.currentTarget.style.background = optBg || defaultBg || 'rgba(255,255,255,0.1)'} onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>{optVal}</div>
+                                    )
+                                  })}
+                                </div>
+                              )}
+                            </>
                           ) : input.type === 'value' ? (
                             <div style={{ display: 'flex', gap: '0' }}>
                               <span style={{ padding: '10px 12px', background: '#141418', border: '1px solid #1a1a22', borderRight: 'none', borderRadius: '8px 0 0 8px', color: '#888', fontSize: '13px' }}>{input.currency || '$'}</span>
@@ -4799,26 +4832,24 @@ export default function AccountPage() {
                     <button
                       onClick={() => setShowObjectiveLines(!showObjectiveLines)}
                       style={{
-                        padding: '6px 12px',
+                        padding: '5px 10px',
                         background: showObjectiveLines ? 'rgba(147,51,234,0.15)' : 'transparent',
-                        border: showObjectiveLines ? '1px solid rgba(147,51,234,0.5)' : '1px solid #2a2a35',
+                        border: showObjectiveLines ? '1px solid rgba(147,51,234,0.4)' : '1px solid transparent',
                         borderRadius: '4px',
                         color: showObjectiveLines ? '#9333ea' : '#666',
                         fontSize: '11px',
                         cursor: 'pointer',
-                        fontWeight: 500,
                         whiteSpace: 'nowrap',
                         display: 'flex',
                         alignItems: 'center',
-                        gap: '6px'
+                        gap: '5px',
+                        transition: 'all 0.2s'
                       }}
+                      onMouseEnter={e => { e.currentTarget.style.color = '#9333ea'; e.currentTarget.style.borderColor = 'rgba(147,51,234,0.4)' }}
+                      onMouseLeave={e => { if (!showObjectiveLines) { e.currentTarget.style.color = '#666'; e.currentTarget.style.borderColor = 'transparent' } }}
                     >
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <path d="M3 3v18h18" />
-                        <path d="M3 12h18" strokeDasharray="4,3" />
-                        <path d="M3 6h18" strokeDasharray="4,3" />
-                      </svg>
-                      {showObjectiveLines ? 'Hide Objective Lines' : 'Show Objective Lines'}
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+                      <span>Show Objectives</span>
                     </button>
                   </>
                 )}
