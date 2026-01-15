@@ -2073,59 +2073,59 @@ export default function AccountPage() {
               <div style={{ width: isMobile ? '100%' : '200px', background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '12px', display: 'flex', flexDirection: 'column' }}>
                 {/* Key Metrics List */}
                 <div style={{ display: 'flex', justifyContent: 'space-between', paddingBottom: '6px', borderBottom: '1px solid #1a1a22' }}>
-                  <span style={{ fontSize: '12px', color: '#888' }}>Total PnL</span>
+                  <span style={{ fontSize: '12px', color: '#888', fontWeight: 600 }}>Total PnL</span>
                   <span style={{ fontSize: '13px', fontWeight: 700, color: displayTotalPnl >= 0 ? '#22c55e' : '#ef4444' }}>{displayTotalPnl >= 0 ? '+' : ''}${Math.abs(displayTotalPnl).toLocaleString()}</span>
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 0', borderBottom: '1px solid #1a1a22' }}>
-                  <span style={{ fontSize: '12px', color: '#888' }}>Total Trades</span>
+                  <span style={{ fontSize: '12px', color: '#888', fontWeight: 600 }}>Total Trades</span>
                   <span style={{ fontSize: '13px', fontWeight: 700, color: '#fff' }}>{displayTrades.length}</span>
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 0', borderBottom: '1px solid #1a1a22' }}>
-                  <span style={{ fontSize: '12px', color: '#888' }}>Winrate</span>
+                  <span style={{ fontSize: '12px', color: '#888', fontWeight: 600 }}>Winrate</span>
                   <span style={{ fontSize: '13px', fontWeight: 700, color: displayWinrate >= 50 ? '#22c55e' : '#ef4444' }}>{displayWinrate}%</span>
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 0', borderBottom: '1px solid #1a1a22' }}>
-                  <span style={{ fontSize: '12px', color: '#888' }}>Profit Factor</span>
+                  <span style={{ fontSize: '12px', color: '#888', fontWeight: 600 }}>Profit Factor</span>
                   <span style={{ fontSize: '13px', fontWeight: 700, color: displayProfitFactor === '-' ? '#666' : displayProfitFactor === '∞' ? '#22c55e' : parseFloat(displayProfitFactor) >= 1 ? '#22c55e' : '#ef4444' }}>{displayProfitFactor}</span>
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 0', borderBottom: '1px solid #1a1a22' }}>
-                  <span style={{ fontSize: '12px', color: '#888' }}>Avg RR</span>
+                  <span style={{ fontSize: '12px', color: '#888', fontWeight: 600 }}>Avg RR</span>
                   <span style={{ fontSize: '13px', fontWeight: 700, color: '#fff' }}>{displayAvgRR}</span>
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 0', borderBottom: '1px solid #1a1a22' }}>
-                  <span style={{ fontSize: '12px', color: '#888' }}>Expectancy</span>
+                  <span style={{ fontSize: '12px', color: '#888', fontWeight: 600 }}>Expectancy</span>
                   <span style={{ fontSize: '13px', fontWeight: 700, color: displayExpectancy >= 0 ? '#22c55e' : '#ef4444' }}>${displayExpectancy}</span>
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 0', borderBottom: '1px solid #1a1a22' }}>
-                  <span style={{ fontSize: '12px', color: '#888' }}>Avg Win</span>
+                  <span style={{ fontSize: '12px', color: '#888', fontWeight: 600 }}>Avg Win</span>
                   <span style={{ fontSize: '13px', fontWeight: 700, color: '#22c55e' }}>+${displayAvgWin}</span>
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 0', borderBottom: '1px solid #1a1a22' }}>
-                  <span style={{ fontSize: '12px', color: '#888' }}>Avg Loss</span>
+                  <span style={{ fontSize: '12px', color: '#888', fontWeight: 600 }}>Avg Loss</span>
                   <span style={{ fontSize: '13px', fontWeight: 700, color: '#ef4444' }}>-${displayAvgLoss}</span>
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 0', borderBottom: '1px solid #1a1a22' }}>
-                  <span style={{ fontSize: '12px', color: '#888' }}>Long WR</span>
+                  <span style={{ fontSize: '12px', color: '#888', fontWeight: 600 }}>Long WR</span>
                   <span style={{ fontSize: '13px', fontWeight: 700, color: displayLongWinrate >= 50 ? '#22c55e' : '#ef4444' }}>{displayLongWinrate}%</span>
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 0', borderBottom: '1px solid #1a1a22' }}>
-                  <span style={{ fontSize: '12px', color: '#888' }}>Short WR</span>
+                  <span style={{ fontSize: '12px', color: '#888', fontWeight: 600 }}>Short WR</span>
                   <span style={{ fontSize: '13px', fontWeight: 700, color: displayShortWinrate >= 50 ? '#22c55e' : '#ef4444' }}>{displayShortWinrate}%</span>
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 0', borderBottom: '1px solid #1a1a22' }}>
-                  <span style={{ fontSize: '12px', color: '#888' }}>Day WR</span>
+                  <span style={{ fontSize: '12px', color: '#888', fontWeight: 600 }}>Day WR</span>
                   <span style={{ fontSize: '13px', fontWeight: 700, color: displayDayWinrate >= 50 ? '#22c55e' : '#ef4444' }}>{displayDayWinrate}%</span>
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 0', borderBottom: '1px solid #1a1a22' }}>
-                  <span style={{ fontSize: '12px', color: '#888' }}>Consistency</span>
+                  <span style={{ fontSize: '12px', color: '#888', fontWeight: 600 }}>Consistency</span>
                   <span style={{ fontSize: '13px', fontWeight: 700, color: displayConsistencyScore >= 50 ? '#22c55e' : '#ef4444' }}>{displayConsistencyScore}%</span>
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 0', borderBottom: '1px solid #1a1a22' }}>
-                  <span style={{ fontSize: '12px', color: '#888' }}>Win Streak</span>
+                  <span style={{ fontSize: '12px', color: '#888', fontWeight: 600 }}>Win Streak</span>
                   <span style={{ fontSize: '13px', fontWeight: 700, color: '#22c55e' }}>{displayStreaks.mw}</span>
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', paddingTop: '6px' }}>
-                  <span style={{ fontSize: '12px', color: '#888' }}>Loss Streak</span>
+                  <span style={{ fontSize: '12px', color: '#888', fontWeight: 600 }}>Loss Streak</span>
                   <span style={{ fontSize: '13px', fontWeight: 700, color: '#ef4444' }}>{displayStreaks.ml}</span>
                 </div>
               </div>
@@ -2273,7 +2273,8 @@ export default function AccountPage() {
                             const dailyDdFloorVal = account?.daily_dd_enabled && !isNaN(dailyDdPctRange) && dailyDdPctRange > 0 ? displayStartingBalance * (1 - dailyDdPctRange / 100) : null
                             const maxDdPctRange = parseFloat(account?.max_dd_pct)
                             const maxDdFloorVal = account?.max_dd_enabled && !isNaN(maxDdPctRange) && maxDdPctRange > 0 ? displayStartingBalance * (1 - maxDdPctRange / 100) : null
-                            if (equityCurveGroupBy === 'total') {
+                            // Only include objective lines in range when showObjectiveLines is true
+                            if (equityCurveGroupBy === 'total' && showObjectiveLines) {
                               if (ddFloorVal) minBal = Math.min(minBal, ddFloorVal)
                               if (profitTargetVal) maxBal = Math.max(maxBal, profitTargetVal)
                               if (dailyDdFloorVal) minBal = Math.min(minBal, dailyDdFloorVal)
@@ -4984,7 +4985,8 @@ export default function AccountPage() {
                 const maxDdPctEnlRaw = parseFloat(account?.max_dd_pct)
                 const maxDdPctEnl = !isNaN(maxDdPctEnlRaw) ? Math.min(99, Math.max(0, maxDdPctEnlRaw)) : 0
                 const maxDdFloorValEnl = account?.max_dd_enabled && maxDdPctEnl > 0 ? startingBalance * (1 - maxDdPctEnl / 100) : null
-                if (equityCurveGroupBy === 'total') {
+                // Only include objective lines in range when showObjectiveLines is true
+                if (equityCurveGroupBy === 'total' && showObjectiveLines) {
                   if (ddFloorValEnl) minBal = Math.min(minBal, ddFloorValEnl)
                   if (profitTargetValEnl) maxBal = Math.max(maxBal, profitTargetValEnl)
                   if (dailyDdFloorValEnl) minBal = Math.min(minBal, dailyDdFloorValEnl)
