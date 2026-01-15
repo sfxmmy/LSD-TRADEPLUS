@@ -1948,22 +1948,29 @@ export default function DashboardPage() {
 
                   // Get most recent note (from daily, weekly, or custom)
                   const getRecentNote = () => {
-                    const allNotes = []
-                    // Daily notes
-                    Object.entries(notes.daily || {}).forEach(([date, text]) => {
-                      allNotes.push({ type: 'daily', date, text, sortDate: new Date(date) })
-                    })
-                    // Weekly notes
-                    Object.entries(notes.weekly || {}).forEach(([date, text]) => {
-                      allNotes.push({ type: 'weekly', date, text, sortDate: new Date(date) })
-                    })
-                    // Custom notes
-                    (notes.custom || []).forEach((note, idx) => {
-                      allNotes.push({ type: 'custom', date: note.date, text: note.text, title: note.title, sortDate: new Date(note.date), idx })
-                    })
-                    // Sort by date descending and return most recent
-                    allNotes.sort((a, b) => b.sortDate - a.sortDate)
-                    return allNotes[0] || null
+                    try {
+                      const allNotes = []
+                      // Daily notes
+                      const dailyNotes = notes && typeof notes.daily === 'object' && notes.daily !== null ? notes.daily : {}
+                      Object.entries(dailyNotes).forEach(([date, text]) => {
+                        if (date && text) allNotes.push({ type: 'daily', date, text, sortDate: new Date(date) })
+                      })
+                      // Weekly notes
+                      const weeklyNotes = notes && typeof notes.weekly === 'object' && notes.weekly !== null ? notes.weekly : {}
+                      Object.entries(weeklyNotes).forEach(([date, text]) => {
+                        if (date && text) allNotes.push({ type: 'weekly', date, text, sortDate: new Date(date) })
+                      })
+                      // Custom notes
+                      const customNotes = notes && Array.isArray(notes.custom) ? notes.custom : []
+                      customNotes.forEach((note, idx) => {
+                        if (note && note.text) allNotes.push({ type: 'custom', date: note.date || new Date().toISOString(), text: note.text, title: note.title || 'Note', sortDate: new Date(note.date || Date.now()), idx })
+                      })
+                      // Sort by date descending and return most recent
+                      allNotes.sort((a, b) => b.sortDate - a.sortDate)
+                      return allNotes[0] || null
+                    } catch (e) {
+                      return null
+                    }
                   }
                   const recentNote = getRecentNote()
 
