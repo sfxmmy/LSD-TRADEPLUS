@@ -2189,9 +2189,9 @@ export default function AccountPage() {
                         {/* Header row with title, stats, controls and enlarge button */}
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px', flexWrap: 'wrap', gap: '8px' }}>
                           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                            <span style={{ fontSize: '11px', color: '#888', textTransform: 'uppercase', letterSpacing: '0.5px', fontWeight: 600 }}>EQUITY CURVE</span>
-                            <span style={{ fontSize: '11px', color: '#999' }}>Start: <span style={{ color: '#fff' }}>${chartStart.toLocaleString()}</span></span>
-                            <span style={{ fontSize: '11px', color: '#999' }}>Current: <span style={{ color: chartCurrent >= chartStart ? '#22c55e' : '#ef4444' }}>${Math.round(chartCurrent).toLocaleString()}</span></span>
+                            <span style={{ fontSize: '11px', color: '#aaa', textTransform: 'uppercase', letterSpacing: '0.5px', fontWeight: 600 }}>EQUITY CURVE</span>
+                            <span style={{ fontSize: '14px', fontWeight: 700, color: chartCurrent >= chartStart ? '#22c55e' : '#ef4444' }}>${Math.round(chartCurrent).toLocaleString()}</span>
+                            <span style={{ fontSize: '11px', color: '#666' }}>${chartStart.toLocaleString()} <span style={{ textTransform: 'uppercase', letterSpacing: '0.5px' }}>INITIAL BALANCE</span></span>
                             {/* Show Objectives button - purple with magnifying glass */}
                             <button
                               onClick={() => setShowObjectiveLines(!showObjectiveLines)}
@@ -3036,7 +3036,7 @@ export default function AccountPage() {
                       <>
                         {/* Header row with title, controls and enlarge */}
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px', flexWrap: 'wrap', gap: '8px' }}>
-                          <span style={{ fontSize: '11px', color: '#888', textTransform: 'uppercase', letterSpacing: '0.5px', fontWeight: 600 }}>PERFORMANCE BY {graphGroupBy === 'symbol' ? 'PAIR' : graphGroupBy.toUpperCase()}</span>
+                          <span style={{ fontSize: '11px', color: '#aaa', textTransform: 'uppercase', letterSpacing: '0.5px', fontWeight: 600 }}>PERFORMANCE BY {graphGroupBy === 'symbol' ? 'PAIR' : graphGroupBy.toUpperCase()}</span>
                           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                             <select value={barGraphMetric} onChange={e => setBarGraphMetric(e.target.value)} style={{ padding: '4px 8px', background: '#141418', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '4px', color: '#fff', fontSize: '11px', boxShadow: '0 0 4px rgba(255,255,255,0.1)' }}>
                               <option value="winrate">Winrate</option>
@@ -3133,7 +3133,7 @@ export default function AccountPage() {
             {/* ROW 2: Direction + Sentiment bars */}
             <div style={{ display: 'flex', gap: '12px', marginBottom: '12px' }}>
               <div style={{ flex: 1, background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '12px 16px', display: 'flex', alignItems: 'center', gap: '12px' }}>
-                <span style={{ fontSize: '11px', color: '#888', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Direction</span>
+                <span style={{ fontSize: '11px', color: '#aaa', textTransform: 'uppercase', letterSpacing: '0.5px', fontWeight: 600 }}>DIRECTION</span>
                 <span style={{ fontSize: '13px', color: '#22c55e', fontWeight: 700 }}>{displayLongPct}% Long</span>
                 <div style={{ flex: 1, height: '12px', borderRadius: '6px', overflow: 'hidden', display: 'flex', background: 'rgba(0,0,0,0.3)', boxShadow: 'inset 0 1px 3px rgba(0,0,0,0.4)' }}>
                   <div style={{ width: `${displayLongPct}%`, background: 'linear-gradient(90deg, rgba(34,197,94,0.3) 0%, rgba(34,197,94,0.9) 30%, rgba(34,197,94,0.9) 70%, rgba(34,197,94,0.3) 100%)', boxShadow: 'inset 0 0 8px rgba(34,197,94,0.5), 0 0 6px rgba(34,197,94,0.3)' }} />
@@ -3142,7 +3142,7 @@ export default function AccountPage() {
                 <span style={{ fontSize: '13px', color: '#ef4444', fontWeight: 700 }}>{100 - displayLongPct}% Short</span>
               </div>
               <div style={{ flex: 1, background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '12px 16px', display: 'flex', alignItems: 'center', gap: '12px' }}>
-                <span style={{ fontSize: '11px', color: '#888', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Sentiment</span>
+                <span style={{ fontSize: '11px', color: '#aaa', textTransform: 'uppercase', letterSpacing: '0.5px', fontWeight: 600 }}>SENTIMENT</span>
                 <span style={{ fontSize: '13px', color: '#22c55e', fontWeight: 700 }}>{displayWinrate}% Bullish</span>
                 <div style={{ flex: 1, height: '12px', borderRadius: '6px', overflow: 'hidden', display: 'flex', background: 'rgba(0,0,0,0.3)', boxShadow: 'inset 0 1px 3px rgba(0,0,0,0.4)' }}>
                   <div style={{ width: `${displayWinrate}%`, background: 'linear-gradient(90deg, rgba(34,197,94,0.3) 0%, rgba(34,197,94,0.9) 30%, rgba(34,197,94,0.9) 70%, rgba(34,197,94,0.3) 100%)', boxShadow: 'inset 0 0 8px rgba(34,197,94,0.5), 0 0 6px rgba(34,197,94,0.3)' }} />
@@ -3157,7 +3157,7 @@ export default function AccountPage() {
               {/* Net Daily PnL - bars fill full width */}
               <div style={{ flex: 1, background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '16px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-                  <span style={{ fontSize: '11px', color: '#888', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Net Daily PnL</span>
+                  <span style={{ fontSize: '11px', color: '#aaa', textTransform: 'uppercase', letterSpacing: '0.5px', fontWeight: 600 }}>NET DAILY PNL</span>
                   <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '10px', color: '#999', cursor: 'pointer', background: includeDaysNotTraded ? '#22c55e' : '#1a1a22', padding: '4px 10px', borderRadius: '4px', border: '1px solid #2a2a35' }}>
                     <span style={{ color: includeDaysNotTraded ? '#fff' : '#888' }}>{includeDaysNotTraded ? '✓' : ''}</span>
                     <input type="checkbox" checked={includeDaysNotTraded} onChange={e => setIncludeDaysNotTraded(e.target.checked)} style={{ display: 'none' }} />
@@ -4817,11 +4817,11 @@ export default function AccountPage() {
           <div style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '12px', padding: '24px', width: '95vw', maxWidth: '1600px', height: '90vh' }} onClick={e => e.stopPropagation()}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                <span style={{ fontSize: '18px', fontWeight: 600, color: '#fff', textTransform: 'uppercase' }}>{enlargedChart === 'equity' ? 'EQUITY CURVE' : enlargedChart === 'bar' ? 'PERFORMANCE BY ' + (graphGroupBy === 'symbol' ? 'PAIR' : graphGroupBy.toUpperCase()) : 'NET DAILY PNL'}</span>
+                <span style={{ fontSize: '14px', fontWeight: 600, color: '#aaa', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{enlargedChart === 'equity' ? 'EQUITY CURVE' : enlargedChart === 'bar' ? 'PERFORMANCE BY ' + (graphGroupBy === 'symbol' ? 'PAIR' : graphGroupBy.toUpperCase()) : 'NET DAILY PNL'}</span>
                 {enlargedChart === 'equity' && (
                   <>
-                    <span style={{ fontSize: '12px', color: '#999' }}>Start: <span style={{ color: '#fff' }}>${startingBalance.toLocaleString()}</span></span>
-                    <span style={{ fontSize: '12px', color: '#999' }}>Current: <span style={{ color: currentBalance >= startingBalance ? '#22c55e' : '#ef4444' }}>${Math.round(currentBalance).toLocaleString()}</span></span>
+                    <span style={{ fontSize: '18px', fontWeight: 700, color: currentBalance >= startingBalance ? '#22c55e' : '#ef4444' }}>${Math.round(currentBalance).toLocaleString()}</span>
+                    <span style={{ fontSize: '12px', color: '#666' }}>${startingBalance.toLocaleString()} <span style={{ textTransform: 'uppercase', letterSpacing: '0.5px' }}>INITIAL BALANCE</span></span>
                     <select value={equityCurveGroupBy} onChange={e => { setEquityCurveGroupBy(e.target.value); setSelectedCurveLines({}) }} style={{ padding: '4px 8px', background: '#141418', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '4px', color: '#fff', fontSize: '11px', boxShadow: '0 0 4px rgba(255,255,255,0.1)' }}>
                       <option value="total">Total PnL</option>
                       <option value="symbol">By Pair</option>
