@@ -3330,7 +3330,7 @@ export default function AccountPage() {
                         <option key={inp.id} value={inp.id}>{inp.label}</option>
                       ))}
                     </select>
-                    <select value={analysisMetric} onChange={e => setAnalysisMetric(e.target.value)} style={{ flex: 1, padding: '6px 8px', background: 'linear-gradient(180deg, #1a1a22 0%, #141418 100%)', border: '1px solid rgba(34,197,94,0.4)', borderRadius: '6px', color: '#fff', fontSize: '10px', cursor: 'pointer' }}>
+                    <select value={analysisMetric} onChange={e => setAnalysisMetric(e.target.value)} style={{ flex: 1, padding: '4px 8px', background: '#141418', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '4px', color: '#fff', fontSize: '11px', cursor: 'pointer', boxShadow: '0 0 4px rgba(255,255,255,0.1)' }}>
                       <option value="avgpnl">Avg PnL</option>
                       <option value="winrate">Winrate</option>
                       <option value="pnl">Total PnL</option>
@@ -3385,7 +3385,7 @@ export default function AccountPage() {
                         const wr = (data.w + data.l) > 0 ? Math.round((data.w / (data.w + data.l)) * 100) : 0
                         const barWidth = (data.count / maxCount) * 100
                         return (
-                          <div key={name} style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '5px 8px', background: 'linear-gradient(90deg, rgba(34,197,94,0.08) 0%, rgba(34,197,94,0.02) 100%)', borderRadius: '5px', border: '1px solid rgba(34,197,94,0.15)', position: 'relative', overflow: 'hidden' }}>
+                          <div key={name} style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '5px 8px', background: '#0a0a0f', borderRadius: '5px', position: 'relative', overflow: 'hidden' }}>
                             <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: `${barWidth}%`, background: isPositive ? 'rgba(34,197,94,0.15)' : 'rgba(239,68,68,0.15)', borderRadius: '5px' }} />
                             <div style={{ position: 'relative', display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
                               <div style={{ display: 'flex', flexDirection: 'column', gap: '1px' }}>
@@ -3882,7 +3882,7 @@ export default function AccountPage() {
               {/* Pair Analysis */}
               <div style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '14px' }}>
                 <div style={{ fontSize: '11px', color: '#aaa', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '6px', borderBottom: '1px solid #1a1a22', paddingBottom: '5px', fontWeight: 600 }}>Pair Analysis</div>
-                <select value={pairAnalysisType} onChange={e => setPairAnalysisType(e.target.value)} style={{ width: '100%', fontSize: '12px', color: '#fff', marginBottom: '10px', background: '#141418', border: '1px solid #2a2a35', borderRadius: '6px', padding: '8px 10px', cursor: 'pointer' }}>
+                <select value={pairAnalysisType} onChange={e => setPairAnalysisType(e.target.value)} style={{ width: '100%', padding: '4px 8px', background: '#141418', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '4px', color: '#fff', fontSize: '11px', cursor: 'pointer', boxShadow: '0 0 4px rgba(255,255,255,0.1)', marginBottom: '10px' }}>
                   <option value="best">Best Pair</option>
                   <option value="worst">Worst Pair</option>
                   <option value="most">Most Traded</option>
