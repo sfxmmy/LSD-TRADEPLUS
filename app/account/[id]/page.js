@@ -118,6 +118,7 @@ export default function AccountPage() {
   const [hoverRatings, setHoverRatings] = useState({}) // Track hover per input ID
   const [editingTrade, setEditingTrade] = useState(null)
   const [viewingTrade, setViewingTrade] = useState(null)
+  const [tradeImageIndex, setTradeImageIndex] = useState(0)
   const [transferFromJournal, setTransferFromJournal] = useState('')
   const [draggedColumn, setDraggedColumn] = useState(null)
   const [dragOverColumn, setDragOverColumn] = useState(null)
@@ -1352,7 +1353,7 @@ export default function AccountPage() {
       <Tooltip data={tooltip} />
 
       {/* FIXED HEADER - same structure as dashboard */}
-      <header style={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 50, padding: '4px 40px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#0a0a0f', borderBottom: '1px solid #1a1a22' }}>
+      <header style={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 50, padding: '4px 16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#0a0a0f', borderBottom: '1px solid #1a1a22' }}>
         <a href="/" style={{ fontSize: isMobile ? '28px' : '42px', fontWeight: 700, textDecoration: 'none', letterSpacing: '-0.5px' }}><span style={{ color: '#22c55e' }}>TRADE</span><span style={{ color: '#fff' }}>SAVE</span><span style={{ color: '#22c55e' }}>+</span></a>
         {!isMobile && (
           <>
@@ -1404,7 +1405,7 @@ export default function AccountPage() {
 
       {/* FIXED SUBHEADER - starts at sidebar edge */}
       {!isMobile && (
-        <div style={{ position: 'fixed', top: '60px', left: '180px', right: 0, zIndex: 46, padding: '17px 12px 13px 12px', background: '#0a0a0f', borderBottom: '1px solid #1a1a22', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div style={{ position: 'fixed', top: '60px', left: '180px', right: 0, zIndex: 46, padding: '17px 12px 14px 12px', background: '#0a0a0f', borderBottom: '1px solid #1a1a22', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <span style={{ fontSize: '28px', fontWeight: 700, color: '#fff', lineHeight: 1 }}>{account?.name}</span>
           <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
               {activeTab === 'trades' && trades.length > 0 && !selectMode && (
@@ -1648,11 +1649,11 @@ export default function AccountPage() {
       )}
 
       {/* MAIN CONTENT */}
-      <div style={{ marginLeft: isMobile ? 0 : '180px', marginTop: isMobile ? '100px' : '130px', padding: isMobile ? '12px' : '0' }}>
+      <div style={{ marginLeft: isMobile ? 0 : '180px', marginTop: isMobile ? '100px' : '131px', padding: isMobile ? '12px' : '0' }}>
 
         {/* TRADES TAB */}
         {activeTab === 'trades' && (
-          <div style={{ position: 'relative', height: 'calc(100vh - 130px)' }}>
+          <div style={{ position: 'relative', height: 'calc(100vh - 131px)' }}>
             {/* Green glow from bottom */}
             <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: '80px', background: 'linear-gradient(to top, rgba(34,197,94,0.03) 0%, rgba(34,197,94,0.01) 50%, transparent 100%)', pointerEvents: 'none', zIndex: 1 }} />
             {filteredTrades.length === 0 && trades.length > 0 ? (
@@ -1720,7 +1721,7 @@ export default function AccountPage() {
                       const pnlValue = parseFloat(trade.pnl) || 0
                       const noteContent = trade.notes || extra.notes || ''
                       return (
-                        <tr key={trade.id} onClick={() => selectMode ? toggleTradeSelection(trade.id) : setViewingTrade(trade)} style={{ borderBottom: '1px solid #141418', background: selectMode && selectedTrades.has(trade.id) ? 'rgba(34,197,94,0.06)' : 'transparent', cursor: 'pointer', transition: 'all 0.15s ease' }} onMouseEnter={e => { if (!selectMode || !selectedTrades.has(trade.id)) { e.currentTarget.style.background = 'rgba(34,197,94,0.08)'; e.currentTarget.style.boxShadow = 'inset 0 0 20px rgba(34,197,94,0.1)' }}} onMouseLeave={e => { e.currentTarget.style.background = selectMode && selectedTrades.has(trade.id) ? 'rgba(34,197,94,0.06)' : 'transparent'; e.currentTarget.style.boxShadow = 'none' }}>
+                        <tr key={trade.id} onClick={() => { if (selectMode) { toggleTradeSelection(trade.id) } else { setTradeImageIndex(0); setViewingTrade(trade) }}} style={{ borderBottom: '1px solid #141418', background: selectMode && selectedTrades.has(trade.id) ? 'rgba(34,197,94,0.06)' : 'transparent', cursor: 'pointer', transition: 'all 0.15s ease' }} onMouseEnter={e => { if (!selectMode || !selectedTrades.has(trade.id)) { e.currentTarget.style.background = 'rgba(255,255,255,0.03)'; e.currentTarget.style.transform = 'translateX(2px)' }}} onMouseLeave={e => { e.currentTarget.style.background = selectMode && selectedTrades.has(trade.id) ? 'rgba(34,197,94,0.06)' : 'transparent'; e.currentTarget.style.transform = 'translateX(0)' }}>
                           {selectMode && <td style={{ padding: '14px 6px', width: '32px', minWidth: '32px', textAlign: 'center' }} onClick={(e) => e.stopPropagation()}><input type="checkbox" checked={selectedTrades.has(trade.id)} onChange={() => toggleTradeSelection(trade.id)} style={{ width: '14px', height: '14px', accentColor: '#22c55e', cursor: 'pointer' }} /></td>}
                           {enabledInputs.map(inp => (
                             <td key={inp.id} style={{ padding: '14px 12px', textAlign: 'center', fontSize: '14px', fontWeight: 600, color: '#fff', verticalAlign: 'middle', minWidth: '100px' }}>
@@ -1853,14 +1854,15 @@ export default function AccountPage() {
           const extra = getExtraData(trade)
           const pnlValue = parseFloat(trade.pnl) || 0
           const noteContent = trade.notes || extra.notes || ''
-          const tradeImage = extra.image || extra.Image
+          // Support both single image and array of images
+          const tradeImages = extra.images && extra.images.length > 0 ? extra.images : (extra.image || extra.Image ? [extra.image || extra.Image] : [])
           const outcomeInput = inputs.find(i => i.id === 'outcome')
           const outcomeStyles = findOptStyles(outcomeInput?.options, trade.outcome)
           const directionInput = inputs.find(i => i.id === 'direction')
           const directionStyles = findOptStyles(directionInput?.options, trade.direction)
           return (
             <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.9)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }} onClick={() => setViewingTrade(null)}>
-              <div style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '16px', padding: '0', width: '90%', maxWidth: '500px', maxHeight: '90vh', overflow: 'hidden', display: 'flex', flexDirection: 'column' }} onClick={e => e.stopPropagation()}>
+              <div style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '16px', padding: '0', width: '90%', maxWidth: tradeImages.length > 0 ? '700px' : '500px', maxHeight: '90vh', overflow: 'hidden', display: 'flex', flexDirection: 'column' }} onClick={e => e.stopPropagation()}>
                 {/* Header */}
                 <div style={{ padding: '20px 24px', borderBottom: '1px solid #1a1a22', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
@@ -1961,11 +1963,31 @@ export default function AccountPage() {
                     ))}
                   </div>
 
-                  {/* Image */}
-                  {tradeImage && (
+                  {/* Images with Slideshow */}
+                  {tradeImages.length > 0 && (
                     <div style={{ marginBottom: '20px' }}>
-                      <div style={{ fontSize: '10px', color: '#666', textTransform: 'uppercase', marginBottom: '10px' }}>Screenshot</div>
-                      <img src={tradeImage} alt="" style={{ width: '100%', borderRadius: '10px', border: '1px solid #1a1a22', cursor: 'pointer' }} onClick={() => setShowExpandedImage(tradeImage)} />
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
+                        <div style={{ fontSize: '10px', color: '#666', textTransform: 'uppercase' }}>Screenshot{tradeImages.length > 1 ? 's' : ''}</div>
+                        {tradeImages.length > 1 && (
+                          <div style={{ fontSize: '11px', color: '#888' }}>{tradeImageIndex + 1} / {tradeImages.length}</div>
+                        )}
+                      </div>
+                      <div style={{ position: 'relative' }}>
+                        <img src={tradeImages[tradeImageIndex]} alt="" style={{ width: '100%', borderRadius: '10px', border: '1px solid #1a1a22', cursor: 'pointer', maxHeight: '300px', objectFit: 'contain', background: '#0a0a0f' }} onClick={() => setShowExpandedImage(tradeImages[tradeImageIndex])} />
+                        {tradeImages.length > 1 && (
+                          <>
+                            <button onClick={(e) => { e.stopPropagation(); setTradeImageIndex(prev => prev > 0 ? prev - 1 : tradeImages.length - 1) }} style={{ position: 'absolute', left: '8px', top: '50%', transform: 'translateY(-50%)', width: '32px', height: '32px', borderRadius: '50%', background: 'rgba(0,0,0,0.7)', border: 'none', color: '#fff', fontSize: '18px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>‹</button>
+                            <button onClick={(e) => { e.stopPropagation(); setTradeImageIndex(prev => prev < tradeImages.length - 1 ? prev + 1 : 0) }} style={{ position: 'absolute', right: '8px', top: '50%', transform: 'translateY(-50%)', width: '32px', height: '32px', borderRadius: '50%', background: 'rgba(0,0,0,0.7)', border: 'none', color: '#fff', fontSize: '18px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>›</button>
+                          </>
+                        )}
+                      </div>
+                      {tradeImages.length > 1 && (
+                        <div style={{ display: 'flex', gap: '6px', marginTop: '10px', justifyContent: 'center' }}>
+                          {tradeImages.map((img, idx) => (
+                            <button key={idx} onClick={() => setTradeImageIndex(idx)} style={{ width: '8px', height: '8px', borderRadius: '50%', background: idx === tradeImageIndex ? '#22c55e' : '#333', border: 'none', cursor: 'pointer', padding: 0 }} />
+                          ))}
+                        </div>
+                      )}
                     </div>
                   )}
 

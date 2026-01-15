@@ -1609,7 +1609,7 @@ export default function DashboardPage() {
   return (
     <div style={{ minHeight: '100vh', background: '#0a0a0f' }}>
       {/* Header */}
-      <header style={{ padding: '4px 40px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #1a1a22', flexWrap: isMobile ? 'wrap' : 'nowrap', gap: '12px' }}>
+      <header style={{ padding: '4px 16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #1a1a22', flexWrap: isMobile ? 'wrap' : 'nowrap', gap: '12px' }}>
         <a href="/" style={{ fontSize: isMobile ? '28px' : '42px', fontWeight: 700, textDecoration: 'none', letterSpacing: '-0.5px' }}>
           <span style={{ color: '#22c55e' }}>TRADE</span><span style={{ color: '#fff' }}>SAVE</span><span style={{ color: '#22c55e' }}>+</span>
         </a>
@@ -1617,11 +1617,13 @@ export default function DashboardPage() {
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
           {/* View Toggle - Grid/List */}
           <div style={{ display: 'flex', background: '#0a0a0f', borderRadius: '6px', overflow: 'hidden', border: '1px solid #1a1a22' }}>
-            <button onClick={() => setViewMode('cards')} style={{ padding: '8px 10px', background: viewMode === 'cards' ? '#22c55e' : 'transparent', border: 'none', color: viewMode === 'cards' ? '#fff' : '#666', cursor: 'pointer', display: 'flex', alignItems: 'center' }}>
+            <button onClick={() => setViewMode('cards')} style={{ padding: '8px 12px', background: viewMode === 'cards' ? '#22c55e' : 'transparent', border: 'none', color: viewMode === 'cards' ? '#fff' : '#666', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', fontWeight: 600 }}>
+              <span>Grid</span>
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="7" height="7" /><rect x="14" y="3" width="7" height="7" /><rect x="3" y="14" width="7" height="7" /><rect x="14" y="14" width="7" height="7" /></svg>
             </button>
-            <button onClick={() => setViewMode('list')} style={{ padding: '8px 10px', background: viewMode === 'list' ? '#22c55e' : 'transparent', border: 'none', color: viewMode === 'list' ? '#fff' : '#666', cursor: 'pointer', display: 'flex', alignItems: 'center' }}>
+            <button onClick={() => setViewMode('list')} style={{ padding: '8px 12px', background: viewMode === 'list' ? '#22c55e' : 'transparent', border: 'none', color: viewMode === 'list' ? '#fff' : '#666', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', fontWeight: 600 }}>
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="8" y1="6" x2="21" y2="6" /><line x1="8" y1="12" x2="21" y2="12" /><line x1="8" y1="18" x2="21" y2="18" /><line x1="3" y1="6" x2="3.01" y2="6" /><line x1="3" y1="12" x2="3.01" y2="12" /><line x1="3" y1="18" x2="3.01" y2="18" /></svg>
+              <span>List</span>
             </button>
           </div>
           <button onClick={() => setShowModal(true)} style={{ padding: '8px 16px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '6px', color: '#fff', fontSize: '13px', fontWeight: 600, cursor: 'pointer' }}>{isMobile ? '+ Add' : '+ Add Journal'}</button>
@@ -2131,6 +2133,7 @@ export default function DashboardPage() {
                 })()}
 
                 {/* Journal Cards Grid */}
+                {viewMode === 'cards' && (
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px' }}>
                   {accounts.map(account => {
                     const accTrades = trades[account.id] || []
@@ -2511,6 +2514,117 @@ export default function DashboardPage() {
                     <span style={{ fontSize: '12px', color: '#666', marginTop: '4px' }}>Create a new trading account</span>
                   </div>
                 </div>
+                )}
+
+                {/* Journal List View */}
+                {viewMode === 'list' && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  {accounts.map(account => {
+                    const accTrades = trades[account.id] || []
+                    const wins = accTrades.filter(t => t.outcome === 'win').length
+                    const losses = accTrades.filter(t => t.outcome === 'loss').length
+                    const totalPnl = accTrades.reduce((sum, t) => sum + (parseFloat(t.pnl) || 0), 0)
+                    const winrate = (wins + losses) > 0 ? Math.round((wins / (wins + losses)) * 100) : 0
+                    const currentBalance = (parseFloat(account.starting_balance) || 0) + totalPnl
+                    const isProfitable = totalPnl >= 0
+
+                    return (
+                      <div
+                        key={account.id}
+                        onClick={() => window.location.href = `/account/${account.id}`}
+                        style={{
+                          background: 'linear-gradient(135deg, #0f0f14 0%, #0a0a0f 100%)',
+                          border: '1px solid #1a1a22',
+                          borderRadius: '12px',
+                          padding: '16px 20px',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'space-between',
+                          cursor: 'pointer',
+                          transition: 'all 0.2s'
+                        }}
+                        onMouseEnter={e => { e.currentTarget.style.background = 'linear-gradient(135deg, #16161c 0%, #101016 100%)'; e.currentTarget.style.border = '1px solid #2a2a35' }}
+                        onMouseLeave={e => { e.currentTarget.style.background = 'linear-gradient(135deg, #0f0f14 0%, #0a0a0f 100%)'; e.currentTarget.style.border = '1px solid #1a1a22' }}
+                      >
+                        {/* Left: Name & Balance */}
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '24px', flex: 1 }}>
+                          <div style={{ minWidth: '180px' }}>
+                            <div style={{ fontSize: '11px', color: '#666', marginBottom: '2px' }}>{account.name}</div>
+                            <div style={{ fontSize: '20px', fontWeight: 700, color: isProfitable ? '#22c55e' : '#ef4444' }}>${formatCurrency(currentBalance)}</div>
+                          </div>
+
+                          {/* Stats Row */}
+                          <div style={{ display: 'flex', gap: '32px' }}>
+                            <div>
+                              <div style={{ fontSize: '10px', color: '#666', marginBottom: '2px' }}>PnL</div>
+                              <div style={{ fontSize: '14px', fontWeight: 600, color: totalPnl >= 0 ? '#22c55e' : '#ef4444' }}>{totalPnl >= 0 ? '+' : ''}${formatCurrency(totalPnl)}</div>
+                            </div>
+                            <div>
+                              <div style={{ fontSize: '10px', color: '#666', marginBottom: '2px' }}>Trades</div>
+                              <div style={{ fontSize: '14px', fontWeight: 600, color: '#fff' }}>{accTrades.length}</div>
+                            </div>
+                            <div>
+                              <div style={{ fontSize: '10px', color: '#666', marginBottom: '2px' }}>Winrate</div>
+                              <div style={{ fontSize: '14px', fontWeight: 600, color: winrate >= 50 ? '#22c55e' : '#ef4444' }}>{winrate}%</div>
+                            </div>
+                            <div>
+                              <div style={{ fontSize: '10px', color: '#666', marginBottom: '2px' }}>W/L</div>
+                              <div style={{ fontSize: '14px', fontWeight: 600, color: '#fff' }}>{wins}/{losses}</div>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Right: Buttons */}
+                        <div onClick={e => e.stopPropagation()} style={{ display: 'flex', gap: '8px' }}>
+                          <a href={`/account/${account.id}`} style={{ padding: '8px 14px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '8px', color: '#22c55e', fontWeight: 600, fontSize: '12px', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '6px', transition: 'all 0.2s' }} onMouseEnter={e => { e.currentTarget.style.background = 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)'; e.currentTarget.style.color = '#fff'; e.currentTarget.style.border = '1px solid #22c55e'; e.currentTarget.style.boxShadow = '0 4px 20px rgba(34,197,94,0.4)' }} onMouseLeave={e => { e.currentTarget.style.background = '#0a0a0f'; e.currentTarget.style.color = '#22c55e'; e.currentTarget.style.border = '1px solid #1a1a22'; e.currentTarget.style.boxShadow = 'none' }}>
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg>
+                            Enter
+                          </a>
+                          <a href={`/account/${account.id}?tab=statistics`} style={{ padding: '8px 14px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '8px', color: '#22c55e', fontWeight: 600, fontSize: '12px', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '6px', transition: 'all 0.2s' }} onMouseEnter={e => { e.currentTarget.style.background = 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)'; e.currentTarget.style.color = '#fff'; e.currentTarget.style.border = '1px solid #22c55e'; e.currentTarget.style.boxShadow = '0 4px 20px rgba(34,197,94,0.4)' }} onMouseLeave={e => { e.currentTarget.style.background = '#0a0a0f'; e.currentTarget.style.color = '#22c55e'; e.currentTarget.style.border = '1px solid #1a1a22'; e.currentTarget.style.boxShadow = 'none' }}>
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 20V10M12 20V4M6 20v-6"/></svg>
+                            Stats
+                          </a>
+                          <button onClick={(e) => { e.stopPropagation(); setEditName(account.name); setEditProfitTarget(account.profit_target || ''); setEditMaxDrawdown(account.max_drawdown || ''); setEditConsistencyEnabled(account.consistency_enabled || false); setEditConsistencyPct(account.consistency_pct || '30'); setEditDailyDdEnabled(account.daily_dd_enabled || false); setEditDailyDdPct(account.daily_dd_pct || ''); setEditDailyDdType(account.daily_dd_type || 'static'); setEditDailyDdLocksAt(account.daily_dd_locks_at || 'start_balance'); setEditDailyDdLocksAtPct(account.daily_dd_locks_at_pct || ''); setEditDailyDdResetTime(account.daily_dd_reset_time || '00:00'); setEditDailyDdResetTimezone(account.daily_dd_reset_timezone || 'Europe/London'); setEditMaxDdEnabled(account.max_dd_enabled || false); setEditMaxDdPct(account.max_dd_pct || ''); setEditMaxDdType(account.max_dd_type || 'static'); setEditMaxDdTrailingStopsAt(account.max_dd_trailing_stops_at || 'never'); setEditMaxDdLocksAtPct(account.max_dd_locks_at_pct || ''); setShowEditModal(account.id) }} style={{ padding: '8px', background: 'transparent', border: '1px solid #1a1a22', borderRadius: '8px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#666" strokeWidth="2"><circle cx="12" cy="12" r="1"/><circle cx="12" cy="5" r="1"/><circle cx="12" cy="19" r="1"/></svg>
+                          </button>
+                        </div>
+                      </div>
+                    )
+                  })}
+
+                  {/* Add New Journal - List Item */}
+                  <div
+                    onClick={() => setShowModal(true)}
+                    style={{
+                      background: 'linear-gradient(135deg, #0f0f14 0%, #0a0a0f 100%)',
+                      border: '2px dashed #3b82f6',
+                      borderRadius: '12px',
+                      padding: '20px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '12px',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s',
+                    }}
+                    onMouseEnter={e => { e.currentTarget.style.borderColor = '#60a5fa'; e.currentTarget.style.background = 'rgba(59, 130, 246, 0.05)' }}
+                    onMouseLeave={e => { e.currentTarget.style.borderColor = '#3b82f6'; e.currentTarget.style.background = 'linear-gradient(135deg, #0f0f14 0%, #0a0a0f 100%)' }}
+                  >
+                    <div style={{
+                      width: '32px',
+                      height: '32px',
+                      borderRadius: '50%',
+                      background: 'rgba(59, 130, 246, 0.15)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                    }}>
+                      <span style={{ fontSize: '20px', color: '#3b82f6', fontWeight: 300 }}>+</span>
+                    </div>
+                    <span style={{ fontSize: '14px', fontWeight: 600, color: '#3b82f6' }}>Add New Journal</span>
+                  </div>
+                </div>
+                )}
               </div>
             </div>
         ) : (
