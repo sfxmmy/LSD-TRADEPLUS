@@ -2189,7 +2189,7 @@ export default function AccountPage() {
                         {/* Header row with title, stats, controls and enlarge button */}
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px', flexWrap: 'wrap', gap: '8px' }}>
                           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                            <span style={{ fontSize: '11px', color: '#888', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Equity Curve</span>
+                            <span style={{ fontSize: '11px', color: '#888', textTransform: 'uppercase', letterSpacing: '0.5px', fontWeight: 600 }}>EQUITY CURVE</span>
                             <span style={{ fontSize: '11px', color: '#999' }}>Start: <span style={{ color: '#fff' }}>${chartStart.toLocaleString()}</span></span>
                             <span style={{ fontSize: '11px', color: '#999' }}>Current: <span style={{ color: chartCurrent >= chartStart ? '#22c55e' : '#ef4444' }}>${Math.round(chartCurrent).toLocaleString()}</span></span>
                             {/* Show Objectives button - purple with magnifying glass */}
@@ -3036,7 +3036,7 @@ export default function AccountPage() {
                       <>
                         {/* Header row with title, controls and enlarge */}
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px', flexWrap: 'wrap', gap: '8px' }}>
-                          <span style={{ fontSize: '11px', color: '#888', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Performance by {graphGroupBy === 'symbol' ? 'Pair' : graphGroupBy}</span>
+                          <span style={{ fontSize: '11px', color: '#888', textTransform: 'uppercase', letterSpacing: '0.5px', fontWeight: 600 }}>PERFORMANCE BY {graphGroupBy === 'symbol' ? 'PAIR' : graphGroupBy.toUpperCase()}</span>
                           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                             <select value={barGraphMetric} onChange={e => setBarGraphMetric(e.target.value)} style={{ padding: '4px 8px', background: '#141418', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '4px', color: '#fff', fontSize: '11px', boxShadow: '0 0 4px rgba(255,255,255,0.1)' }}>
                               <option value="winrate">Winrate</option>
@@ -3453,7 +3453,7 @@ export default function AccountPage() {
               const weeklyNotesCount = Object.keys(notes.weekly || {}).length
               const customNotesCount = (notes.custom || []).length
 
-              const StatBox = ({ label, value, color }) => <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '5px 0' }}><span style={{ fontSize: '12px', color: '#999', fontWeight: 500 }}>{label}</span><span style={{ fontSize: '14px', fontWeight: 700, color }}>{value}</span></div>
+              const StatBox = ({ label, value, color }) => <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '5px 0' }}><span style={{ fontSize: '12px', color: '#888', fontWeight: 600 }}>{label}</span><span style={{ fontSize: '14px', fontWeight: 700, color }}>{value}</span></div>
               return (
             <div style={{ display: 'flex', gap: '12px', marginBottom: '12px', alignItems: 'flex-start' }}>
               {/* LEFT: 3x3 Grid */}
@@ -4817,7 +4817,7 @@ export default function AccountPage() {
           <div style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '12px', padding: '24px', width: '95vw', maxWidth: '1600px', height: '90vh' }} onClick={e => e.stopPropagation()}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                <span style={{ fontSize: '18px', fontWeight: 600, color: '#fff' }}>{enlargedChart === 'equity' ? 'Equity Curve' : enlargedChart === 'bar' ? 'Performance by ' + (graphGroupBy === 'symbol' ? 'Pair' : graphGroupBy) : 'Net Daily PnL'}</span>
+                <span style={{ fontSize: '18px', fontWeight: 600, color: '#fff', textTransform: 'uppercase' }}>{enlargedChart === 'equity' ? 'EQUITY CURVE' : enlargedChart === 'bar' ? 'PERFORMANCE BY ' + (graphGroupBy === 'symbol' ? 'PAIR' : graphGroupBy.toUpperCase()) : 'NET DAILY PNL'}</span>
                 {enlargedChart === 'equity' && (
                   <>
                     <span style={{ fontSize: '12px', color: '#999' }}>Start: <span style={{ color: '#fff' }}>${startingBalance.toLocaleString()}</span></span>

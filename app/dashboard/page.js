@@ -197,6 +197,9 @@ export default function DashboardPage() {
   const [timeframeDropdownOpen, setTimeframeDropdownOpen] = useState(false)
   const [sessionDropdownOpen, setSessionDropdownOpen] = useState(false)
   const [customDropdownOpen, setCustomDropdownOpen] = useState({}) // Map of input.id -> boolean
+  // Notes state (user-level)
+  const [notes, setNotes] = useState({ daily: {}, weekly: {}, custom: [] })
+  const [showExpandedNote, setShowExpandedNote] = useState(null)
 
   useEffect(() => {
     const checkMobile = () => setIsMobile(window.innerWidth < 768)
@@ -251,6 +254,9 @@ export default function DashboardPage() {
       setTrades(tradesMap)
       setTradeCounts(countsMap)
     }
+    // Load notes from profiles (user-level)
+    const { data: profileData } = await supabase.from('profiles').select('notes_data').eq('id', user.id).single()
+    if (profileData?.notes_data) { try { setNotes(JSON.parse(profileData.notes_data)) } catch {} }
     setLoading(false)
   }
 
@@ -1940,16 +1946,75 @@ export default function DashboardPage() {
                   const totalBalance = stats.totalStartingBalance + cumPnl
                   const isProfitable = cumPnl >= 0
 
+                  // Get most recent note (from daily, weekly, or custom)
+                  const getRecentNote = () => {
+                    const allNotes = []
+                    // Daily notes
+                    Object.entries(notes.daily || {}).forEach(([date, text]) => {
+                      allNotes.push({ type: 'daily', date, text, sortDate: new Date(date) })
+                    })
+                    // Weekly notes
+                    Object.entries(notes.weekly || {}).forEach(([date, text]) => {
+                      allNotes.push({ type: 'weekly', date, text, sortDate: new Date(date) })
+                    })
+                    // Custom notes
+                    (notes.custom || []).forEach((note, idx) => {
+                      allNotes.push({ type: 'custom', date: note.date, text: note.text, title: note.title, sortDate: new Date(note.date), idx })
+                    })
+                    // Sort by date descending and return most recent
+                    allNotes.sort((a, b) => b.sortDate - a.sortDate)
+                    return allNotes[0] || null
+                  }
+                  const recentNote = getRecentNote()
+
                   return (
                     <div onClick={() => window.location.href = `/account/${accounts[0]?.id}?cumulative=true`} style={{ background: 'linear-gradient(135deg, #0f0f14 0%, #0a0a0f 100%)', border: '1px solid #1a1a22', borderRadius: '16px', overflow: 'hidden', display: 'flex', flexDirection: 'column', boxShadow: '0 4px 24px rgba(0,0,0,0.3)', transition: 'all 0.2s', cursor: 'pointer' }} onMouseEnter={e => { e.currentTarget.style.border = '1px solid #22c55e' }} onMouseLeave={e => { e.currentTarget.style.border = '1px solid #1a1a22' }}>
                       {/* Header - Clean layout like journal widgets */}
                       <div style={{ padding: '16px 16px 12px' }}>
-                        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
+                        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '12px' }}>
                           <div>
                             <div style={{ fontSize: '13px', color: '#666', marginBottom: '2px' }}>Overall Stats</div>
                             <div style={{ display: 'flex', alignItems: 'baseline', gap: '12px' }}>
                               <span style={{ fontSize: '24px', fontWeight: 700, color: isProfitable ? '#22c55e' : '#ef4444' }}>${formatCurrency(totalBalance)}</span>
                               <span style={{ fontSize: '12px', color: '#555' }}><span style={{ fontWeight: 600, color: '#888' }}>${formatCurrency(stats.totalStartingBalance)}</span> INITIAL BALANCE</span>
+                            </div>
+                          </div>
+                          {/* Recent Note - right side of header */}
+                          <div
+                            onClick={(e) => { e.stopPropagation(); if (recentNote) setShowExpandedNote(recentNote) }}
+                            style={{
+                              flex: 1,
+                              maxWidth: '50%',
+                              background: '#0d0d12',
+                              border: '1px solid #1a1a22',
+                              borderRadius: '8px',
+                              padding: '10px 12px',
+                              cursor: recentNote ? 'pointer' : 'default',
+                              transition: 'all 0.2s'
+                            }}
+                            onMouseEnter={e => { if (recentNote) { e.currentTarget.style.borderColor = '#2a2a35'; e.currentTarget.style.background = '#111116' } }}
+                            onMouseLeave={e => { e.currentTarget.style.borderColor = '#1a1a22'; e.currentTarget.style.background = '#0d0d12' }}
+                          >
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+                              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#666" strokeWidth="2">
+                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/>
+                              </svg>
+                              <span style={{ fontSize: '11px', color: '#666', textTransform: 'uppercase' }}>Recent Note</span>
+                              {recentNote && (
+                                <span style={{ fontSize: '10px', color: '#444', marginLeft: 'auto' }}>
+                                  {recentNote.type === 'custom' ? recentNote.title : new Date(recentNote.date).toLocaleDateString()}
+                                </span>
+                              )}
+                            </div>
+                            <div style={{
+                              fontSize: '12px',
+                              color: recentNote ? '#888' : '#444',
+                              overflow: 'hidden',
+                              textOverflow: 'ellipsis',
+                              whiteSpace: 'nowrap',
+                              lineHeight: 1.4
+                            }}>
+                              {recentNote ? recentNote.text : 'No notes yet'}
                             </div>
                           </div>
                         </div>
@@ -4303,6 +4368,46 @@ export default function DashboardPage() {
               <line x1="5" y1="12" x2="19" y2="12"/>
             </svg>
           </button>
+        )}
+
+        {/* Expanded Note Modal */}
+        {showExpandedNote && (
+          <div
+            style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.9)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 200 }}
+            onClick={() => setShowExpandedNote(null)}
+          >
+            <div
+              style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '12px', padding: '24px', width: '500px', maxWidth: '90vw', maxHeight: '80vh', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}
+              onClick={e => e.stopPropagation()}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#22c55e" strokeWidth="2">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/>
+                  </svg>
+                  <div>
+                    <div style={{ fontSize: '14px', fontWeight: 600, color: '#fff' }}>
+                      {showExpandedNote.type === 'custom' ? showExpandedNote.title : showExpandedNote.type === 'daily' ? 'Daily Note' : 'Weekly Note'}
+                    </div>
+                    <div style={{ fontSize: '11px', color: '#666' }}>
+                      {new Date(showExpandedNote.date).toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+                    </div>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setShowExpandedNote(null)}
+                  style={{ background: 'transparent', border: 'none', color: '#666', cursor: 'pointer', padding: '4px' }}
+                >
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                  </svg>
+                </button>
+              </div>
+              <div style={{ flex: 1, overflowY: 'auto', fontSize: '14px', color: '#ccc', lineHeight: 1.7, whiteSpace: 'pre-wrap' }}>
+                {showExpandedNote.text}
+              </div>
+            </div>
+          </div>
         )}
       </div>
     </div>
