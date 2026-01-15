@@ -1641,13 +1641,10 @@ export default function DashboardPage() {
             {/* LOG TRADE Widget - Fixed Left Sidebar */}
             <div style={{ width: '280px', flexShrink: 0, background: 'linear-gradient(135deg, #0f0f14 0%, #0a0a0f 100%)', border: '1px solid #1a1a22', borderRadius: '16px', padding: '20px', boxShadow: '0 4px 24px rgba(0,0,0,0.3)', alignSelf: 'flex-start' }}>
                   {/* Header */}
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px', paddingBottom: '12px', borderBottom: '1px solid rgba(34,197,94,0.2)' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#22c55e', boxShadow: '0 0 8px #22c55e' }} />
-                      <span style={{ fontSize: '13px', color: '#22c55e', fontWeight: 700, letterSpacing: '1px' }}>LOG TRADE</span>
-                    </div>
+                  <div onClick={() => setSidebarExpanded(true)} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px', paddingBottom: '12px', borderBottom: '1px solid #1a1a22', cursor: 'pointer' }}>
+                    <span style={{ fontSize: '14px', color: '#fff', fontWeight: 600 }}>Log Trade</span>
                     {getSelectedAccountCustomInputs().length > 2 && (
-                      <button onClick={() => setSidebarExpanded(true)} style={{ padding: '6px 8px', background: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.3)', borderRadius: '6px', color: '#22c55e', cursor: 'pointer', display: 'flex', alignItems: 'center' }} title="Expand">
+                      <button onClick={(e) => { e.stopPropagation(); setSidebarExpanded(true) }} style={{ padding: '6px 8px', background: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.3)', borderRadius: '6px', color: '#22c55e', cursor: 'pointer', display: 'flex', alignItems: 'center' }} title="Expand">
                         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                           <polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/>
                         </svg>
@@ -3375,10 +3372,7 @@ export default function DashboardPage() {
             <div style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '16px', padding: '28px', width: '500px', maxHeight: '85vh', overflow: 'auto' }} onClick={e => e.stopPropagation()}>
               {/* Header */}
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px', paddingBottom: '16px', borderBottom: '1px solid #1a1a22' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                  <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#22c55e', boxShadow: '0 0 8px #22c55e' }} />
-                  <span style={{ fontSize: '18px', color: '#fff', fontWeight: 600 }}>LOG TRADE</span>
-                </div>
+                <span style={{ fontSize: '18px', color: '#fff', fontWeight: 600 }}>Log Trade</span>
                 <button onClick={() => setSidebarExpanded(false)} style={{ background: 'transparent', border: 'none', color: '#666', cursor: 'pointer', padding: '4px' }}>
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
                 </button>
