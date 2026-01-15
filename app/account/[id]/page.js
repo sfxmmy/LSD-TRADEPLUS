@@ -3196,42 +3196,20 @@ export default function AccountPage() {
 
                     const sortedData = [...displayData].sort((a, b) => new Date(a.date) - new Date(b.date))
 
-                    // Generate X-axis labels - adaptive based on date range
+                    // Generate X-axis labels - centered under each bar
                     const xLabels = []
                     if (sortedData.length > 0) {
-                      const firstDate = new Date(sortedData[0].date)
-                      const lastDate = new Date(sortedData[sortedData.length - 1].date)
-                      const totalDays = Math.max(1, Math.ceil((lastDate - firstDate) / (1000 * 60 * 60 * 24)))
+                      const barCount = sortedData.length
+                      // Show all labels if 8 or fewer bars, otherwise show every other label
+                      const showEveryN = barCount <= 8 ? 1 : barCount <= 16 ? 2 : barCount <= 32 ? 4 : Math.ceil(barCount / 8)
 
-                      // Determine number of labels based on date range (supports up to 100 years)
-                      let numLabels
-                      if (totalDays <= 12) {
-                        numLabels = totalDays + 1
-                      } else if (totalDays <= 84) {
-                        numLabels = Math.min(12, Math.ceil(totalDays / 7) + 1)
-                      } else if (totalDays <= 180) {
-                        numLabels = Math.min(12, Math.ceil(totalDays / 14) + 1)
-                      } else if (totalDays <= 365) {
-                        numLabels = Math.min(12, Math.ceil(totalDays / 30) + 1)
-                      } else if (totalDays <= 730) {
-                        numLabels = Math.min(12, Math.ceil(totalDays / 60) + 1)
-                      } else if (totalDays <= 1825) {
-                        numLabels = Math.min(12, Math.ceil(totalDays / 90) + 1)
-                      } else if (totalDays <= 3650) {
-                        numLabels = Math.min(12, Math.ceil(totalDays / 180) + 1)
-                      } else if (totalDays <= 9125) {
-                        numLabels = Math.min(12, Math.ceil(totalDays / 365) + 1)
-                      } else if (totalDays <= 18250) {
-                        numLabels = Math.min(12, Math.ceil(totalDays / 730) + 1)
-                      } else {
-                        numLabels = Math.min(12, Math.ceil(totalDays / 1825) + 1)
-                      }
-                      numLabels = Math.min(numLabels, sortedData.length)
-
-                      for (let i = 0; i < numLabels; i++) {
-                        const idx = numLabels > 1 ? Math.floor(i * (sortedData.length - 1) / (numLabels - 1)) : 0
-                        const d = new Date(sortedData[idx]?.date)
-                        xLabels.push({ label: `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}`, pct: numLabels > 1 ? (i / (numLabels - 1)) * 100 : 50 })
+                      for (let i = 0; i < barCount; i++) {
+                        if (i % showEveryN === 0 || i === barCount - 1) {
+                          const d = new Date(sortedData[i].date)
+                          // Center label under bar: (index + 0.5) / totalBars * 100
+                          const centerPct = ((i + 0.5) / barCount) * 100
+                          xLabels.push({ label: `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}`, pct: centerPct })
+                        }
                       }
                     }
 
@@ -3274,7 +3252,7 @@ export default function AccountPage() {
                                     onMouseEnter={() => setDailyPnlHover(i)}
                                     onMouseLeave={() => setDailyPnlHover(null)}
                                   >
-                                    <div style={{ width: '100%', height: hasData ? `${Math.max(hPct, 2)}%` : '2px', background: hasData ? (isPositive ? '#22c55e' : '#ef4444') : '#2a2a35', borderRadius: '2px 2px 0 0', position: 'relative' }}>
+                                    <div style={{ width: '100%', height: hasData ? `${Math.max(hPct, 2)}%` : '2px', background: hasData ? (isPositive ? '#22c55e' : '#ef4444') : '#2a2a35', borderRadius: '6px 6px 0 0', position: 'relative' }}>
                                       {isHovered && (
                                         <>
                                           <div style={{ position: 'absolute', bottom: hasData ? '4px' : '-2px', left: '50%', transform: 'translateX(-50%)', width: '8px', height: '8px', borderRadius: '50%', background: '#22c55e', border: '2px solid #fff', zIndex: 5 }} />
