@@ -2188,32 +2188,32 @@ export default function AccountPage() {
                       <>
                         {/* Header row with title, stats, controls and enlarge button */}
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px', flexWrap: 'wrap', gap: '8px' }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                             <span style={{ fontSize: '11px', color: '#aaa', textTransform: 'uppercase', letterSpacing: '0.5px', fontWeight: 600 }}>EQUITY CURVE</span>
                             <span style={{ fontSize: '14px', fontWeight: 700, color: chartCurrent >= chartStart ? '#22c55e' : '#ef4444' }}>${Math.round(chartCurrent).toLocaleString()}</span>
-                            <span style={{ fontSize: '11px', color: '#666' }}>${chartStart.toLocaleString()} <span style={{ textTransform: 'uppercase', letterSpacing: '0.5px' }}>INITIAL BALANCE</span></span>
+                            <span style={{ fontSize: '10px', color: '#666' }}>${chartStart.toLocaleString()} INITIAL</span>
                             {/* Show Objectives button - purple with magnifying glass */}
                             <button
                               onClick={() => setShowObjectiveLines(!showObjectiveLines)}
                               style={{
-                                padding: '4px 8px',
+                                padding: '3px 6px',
                                 background: showObjectiveLines ? 'rgba(147,51,234,0.15)' : 'transparent',
                                 border: showObjectiveLines ? '1px solid rgba(147,51,234,0.4)' : '1px solid transparent',
                                 borderRadius: '4px',
                                 color: showObjectiveLines ? '#9333ea' : '#666',
-                                fontSize: '10px',
+                                fontSize: '9px',
                                 cursor: 'pointer',
                                 whiteSpace: 'nowrap',
                                 display: 'flex',
                                 alignItems: 'center',
-                                gap: '4px',
+                                gap: '3px',
                                 transition: 'all 0.2s'
                               }}
                               onMouseEnter={e => { e.currentTarget.style.color = '#9333ea'; e.currentTarget.style.borderColor = 'rgba(147,51,234,0.4)' }}
                               onMouseLeave={e => { if (!showObjectiveLines) { e.currentTarget.style.color = '#666'; e.currentTarget.style.borderColor = 'transparent' } }}
                             >
-                              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
-                              <span>Show Objectives</span>
+                              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+                              <span>Objectives</span>
                             </button>
                           </div>
                           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
