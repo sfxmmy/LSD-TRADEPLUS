@@ -1639,7 +1639,7 @@ export default function DashboardPage() {
         {!isMobile && accounts.length > 0 ? (
           <div style={{ display: 'flex', gap: '12px' }}>
             {/* LOG TRADE Widget - Fixed Left Sidebar */}
-            <div style={{ width: '280px', flexShrink: 0, background: 'linear-gradient(135deg, #0f0f14 0%, #0a0a0f 100%)', border: '1px solid #1a1a22', borderRadius: '16px', padding: '20px', boxShadow: '0 4px 24px rgba(0,0,0,0.3)', alignSelf: 'flex-start', transition: 'all 0.2s' }} onMouseEnter={e => { e.currentTarget.style.border = '1px solid #22c55e' }} onMouseLeave={e => { e.currentTarget.style.border = '1px solid #1a1a22' }}>
+            <div onClick={() => setSidebarExpanded(true)} style={{ width: '280px', flexShrink: 0, background: 'linear-gradient(135deg, #0f0f14 0%, #0a0a0f 100%)', border: '1px solid #1a1a22', borderRadius: '16px', padding: '20px', boxShadow: '0 4px 24px rgba(0,0,0,0.3)', alignSelf: 'flex-start', cursor: 'pointer' }}>
                   {/* Header */}
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px', paddingBottom: '12px', borderBottom: '1px solid #1a1a22' }}>
                     <span style={{ fontSize: '14px', color: '#fff', fontWeight: 600 }}>Log Trade</span>
@@ -1653,7 +1653,7 @@ export default function DashboardPage() {
                   </div>
 
                   {/* Journal Select - Dropdown */}
-                  <div style={{ marginBottom: '14px', position: 'relative' }}>
+                  <div onClick={e => e.stopPropagation()} style={{ marginBottom: '14px', position: 'relative' }}>
                     <button onClick={() => setJournalDropdownOpen(!journalDropdownOpen)} style={{ width: '100%', padding: '10px 14px', background: 'rgba(34,197,94,0.08)', border: '1px solid rgba(34,197,94,0.3)', borderRadius: journalDropdownOpen ? '10px 10px 0 0' : '10px', color: '#22c55e', fontSize: '13px', fontWeight: 600, cursor: 'pointer', textAlign: 'left', display: 'flex', alignItems: 'center', justifyContent: 'space-between', transition: 'all 0.2s' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                         <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#22c55e', boxShadow: '0 0 4px #22c55e' }} />
@@ -1684,7 +1684,7 @@ export default function DashboardPage() {
                   </div>
 
                   {/* Core Fields Grid */}
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '14px' }}>
+                  <div onClick={e => e.stopPropagation()} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '14px' }}>
                     <div>
                       <label style={{ display: 'block', fontSize: '10px', color: '#666', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Symbol</label>
                       <input type="text" value={quickTradeSymbol} onChange={e => setQuickTradeSymbol(e.target.value)} placeholder="XAUUSD" style={{ width: '100%', padding: '10px 12px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '8px', color: '#fff', fontSize: '14px', boxSizing: 'border-box', transition: 'border-color 0.2s' }} />
@@ -1696,7 +1696,7 @@ export default function DashboardPage() {
                   </div>
 
                   {/* Direction + Outcome Row */}
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '14px' }}>
+                  <div onClick={e => e.stopPropagation()} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '14px' }}>
                     <div>
                       <label style={{ display: 'block', fontSize: '10px', color: '#666', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Direction</label>
                       <select value={quickTradeDirection} onChange={e => setQuickTradeDirection(e.target.value)} style={{ width: '100%', padding: '10px 12px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '8px', color: '#fff', fontSize: '14px', boxSizing: 'border-box', cursor: 'pointer' }}>
@@ -1717,7 +1717,7 @@ export default function DashboardPage() {
                   </div>
 
                   {/* RR + % Risk */}
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '14px' }}>
+                  <div onClick={e => e.stopPropagation()} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '14px' }}>
                     <div>
                       <label style={{ display: 'block', fontSize: '10px', color: '#666', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>RR</label>
                       <input type="text" value={quickTradeRR} onChange={e => setQuickTradeRR(e.target.value)} placeholder="2.5" style={{ width: '100%', padding: '10px 12px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '8px', color: '#fff', fontSize: '14px', boxSizing: 'border-box' }} />
@@ -1729,7 +1729,7 @@ export default function DashboardPage() {
                   </div>
 
                   {/* Confidence + Timeframe */}
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '14px' }}>
+                  <div onClick={e => e.stopPropagation()} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '14px' }}>
                     <div>
                       <label style={{ display: 'block', fontSize: '10px', color: '#666', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Confidence</label>
                       <select value={quickTradeConfidence} onChange={e => setQuickTradeConfidence(e.target.value)} style={{ width: '100%', padding: '10px 12px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '8px', color: '#fff', fontSize: '14px', boxSizing: 'border-box', cursor: 'pointer' }}>
@@ -1754,7 +1754,7 @@ export default function DashboardPage() {
                   </div>
 
                   {/* Session */}
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '14px' }}>
+                  <div onClick={e => e.stopPropagation()} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '14px' }}>
                     <div>
                       <label style={{ display: 'block', fontSize: '10px', color: '#666', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Session</label>
                       <select value={quickTradeSession} onChange={e => setQuickTradeSession(e.target.value)} style={{ width: '100%', padding: '10px 12px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '8px', color: '#fff', fontSize: '14px', boxSizing: 'border-box', cursor: 'pointer' }}>
@@ -1769,7 +1769,7 @@ export default function DashboardPage() {
 
                   {/* Custom Inputs */}
                   {getSelectedAccountCustomInputs().filter(input => !['confidence', 'timeframe', 'session'].includes(input.id)).length > 0 && (
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '14px' }}>
+                    <div onClick={e => e.stopPropagation()} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '14px' }}>
                       {getSelectedAccountCustomInputs().filter(input => !['confidence', 'timeframe', 'session'].includes(input.id)).map(input => (
                         <div key={input.id}>
                           <label style={{ display: 'block', fontSize: '10px', color: '#666', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{(input.label || input.id).slice(0, 10)}</label>
@@ -1783,13 +1783,13 @@ export default function DashboardPage() {
                   )}
 
                   {/* Date */}
-                  <div style={{ marginBottom: '14px' }}>
+                  <div onClick={e => e.stopPropagation()} style={{ marginBottom: '14px' }}>
                     <label style={{ display: 'block', fontSize: '10px', color: '#666', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Date</label>
                     <input type="date" value={quickTradeDate} onChange={e => setQuickTradeDate(e.target.value)} style={{ width: '100%', padding: '10px 12px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '8px', color: '#fff', fontSize: '14px', boxSizing: 'border-box' }} />
                   </div>
 
                   {/* Rating */}
-                  <div style={{ marginBottom: '14px' }}>
+                  <div onClick={e => e.stopPropagation()} style={{ marginBottom: '14px' }}>
                     <label style={{ display: 'block', fontSize: '10px', color: '#666', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Rating</label>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                       <div style={{ display: 'inline-flex', gap: '2px', padding: '8px 12px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '8px' }} onMouseLeave={() => setHoverRating(0)}>
@@ -1815,13 +1815,13 @@ export default function DashboardPage() {
                   </div>
 
                   {/* Notes */}
-                  <div style={{ marginBottom: '14px' }}>
+                  <div onClick={e => e.stopPropagation()} style={{ marginBottom: '14px' }}>
                     <label style={{ display: 'block', fontSize: '10px', color: '#666', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Notes</label>
                     <input type="text" value={quickTradeNotes} onChange={e => setQuickTradeNotes(e.target.value)} placeholder="Quick notes..." style={{ width: '100%', padding: '10px 12px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '8px', color: '#fff', fontSize: '14px', boxSizing: 'border-box' }} />
                   </div>
 
                   {/* Image Upload */}
-                  <div style={{ marginBottom: '14px' }}>
+                  <div onClick={e => e.stopPropagation()} style={{ marginBottom: '14px' }}>
                     <label style={{ display: 'block', fontSize: '10px', color: '#666', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Images</label>
                     <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', alignItems: 'center' }}>
                       {quickTradeImages.map((img, idx) => (
@@ -1838,7 +1838,7 @@ export default function DashboardPage() {
                   </div>
 
                   {/* Action Buttons */}
-                  <div style={{ display: 'flex', gap: '10px' }}>
+                  <div onClick={e => e.stopPropagation()} style={{ display: 'flex', gap: '10px' }}>
                     <button onClick={submitQuickTrade} disabled={submittingTrade || !quickTradeSymbol.trim() || !quickTradePnl || !quickTradeDate} style={{ flex: 1, padding: '12px', background: (submittingTrade || !quickTradeSymbol.trim() || !quickTradePnl || !quickTradeDate) ? '#1a1a22' : 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)', border: 'none', borderRadius: '10px', color: (submittingTrade || !quickTradeSymbol.trim() || !quickTradePnl || !quickTradeDate) ? '#555' : '#fff', fontWeight: 700, fontSize: '13px', cursor: (submittingTrade || !quickTradeSymbol.trim() || !quickTradePnl || !quickTradeDate) ? 'not-allowed' : 'pointer', transition: 'all 0.2s', boxShadow: (submittingTrade || !quickTradeSymbol.trim() || !quickTradePnl || !quickTradeDate) ? 'none' : '0 4px 20px rgba(34,197,94,0.4)' }}>
                       {submittingTrade ? 'Adding...' : 'Log Trade'}
                     </button>
@@ -2116,15 +2116,15 @@ export default function DashboardPage() {
                           <div onClick={e => e.stopPropagation()} style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
                             {/* Buttons - stacked vertically, each spans 2 stat rows */}
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', flex: 1 }}>
-                              <a href={`/account/${accounts[0]?.id}?cumulative=true`} style={{ flex: 1, background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '10px', color: '#22c55e', fontWeight: 600, fontSize: '13px', textDecoration: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', transition: 'all 0.2s' }} onMouseEnter={e => { e.currentTarget.style.background = 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)'; e.currentTarget.style.color = '#fff'; e.currentTarget.style.border = '1px solid #22c55e'; e.currentTarget.style.boxShadow = '0 4px 20px rgba(34,197,94,0.4)' }} onMouseLeave={e => { e.currentTarget.style.background = '#0a0a0f'; e.currentTarget.style.color = '#22c55e'; e.currentTarget.style.border = '1px solid #1a1a22'; e.currentTarget.style.boxShadow = 'none' }}>
+                              <a href={`/account/${accounts[0]?.id}?cumulative=true`} style={{ flex: 1, background: '#0a0a0f', border: '2px solid #2a2a35', borderRadius: '10px', color: '#22c55e', fontWeight: 600, fontSize: '13px', textDecoration: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', transition: 'all 0.2s' }} onMouseEnter={e => { e.currentTarget.style.background = 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)'; e.currentTarget.style.color = '#fff'; e.currentTarget.style.border = '2px solid #22c55e'; e.currentTarget.style.boxShadow = '0 4px 20px rgba(34,197,94,0.4)' }} onMouseLeave={e => { e.currentTarget.style.background = '#0a0a0f'; e.currentTarget.style.color = '#22c55e'; e.currentTarget.style.border = '2px solid #2a2a35'; e.currentTarget.style.boxShadow = 'none' }}>
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
                                 See Overall Journal
                               </a>
-                              <a href={`/account/${accounts[0]?.id}?cumulative=true&tab=statistics`} style={{ flex: 1, background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '10px', color: '#22c55e', fontWeight: 600, fontSize: '13px', textDecoration: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', transition: 'all 0.2s' }} onMouseEnter={e => { e.currentTarget.style.background = 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)'; e.currentTarget.style.color = '#fff'; e.currentTarget.style.border = '1px solid #22c55e'; e.currentTarget.style.boxShadow = '0 4px 20px rgba(34,197,94,0.4)' }} onMouseLeave={e => { e.currentTarget.style.background = '#0a0a0f'; e.currentTarget.style.color = '#22c55e'; e.currentTarget.style.border = '1px solid #1a1a22'; e.currentTarget.style.boxShadow = 'none' }}>
+                              <a href={`/account/${accounts[0]?.id}?cumulative=true&tab=statistics`} style={{ flex: 1, background: '#0a0a0f', border: '2px solid #2a2a35', borderRadius: '10px', color: '#22c55e', fontWeight: 600, fontSize: '13px', textDecoration: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', transition: 'all 0.2s' }} onMouseEnter={e => { e.currentTarget.style.background = 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)'; e.currentTarget.style.color = '#fff'; e.currentTarget.style.border = '2px solid #22c55e'; e.currentTarget.style.boxShadow = '0 4px 20px rgba(34,197,94,0.4)' }} onMouseLeave={e => { e.currentTarget.style.background = '#0a0a0f'; e.currentTarget.style.color = '#22c55e'; e.currentTarget.style.border = '2px solid #2a2a35'; e.currentTarget.style.boxShadow = 'none' }}>
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 20V10M12 20V4M6 20v-6"/></svg>
                                 See Overall Stats
                               </a>
-                              <a href={`/account/${accounts[0]?.id}?cumulative=true&tab=notes`} style={{ flex: 1, background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '10px', color: '#22c55e', fontWeight: 600, fontSize: '13px', textDecoration: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', transition: 'all 0.2s' }} onMouseEnter={e => { e.currentTarget.style.background = 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)'; e.currentTarget.style.color = '#fff'; e.currentTarget.style.border = '1px solid #22c55e'; e.currentTarget.style.boxShadow = '0 4px 20px rgba(34,197,94,0.4)' }} onMouseLeave={e => { e.currentTarget.style.background = '#0a0a0f'; e.currentTarget.style.color = '#22c55e'; e.currentTarget.style.border = '1px solid #1a1a22'; e.currentTarget.style.boxShadow = 'none' }}>
+                              <a href={`/account/${accounts[0]?.id}?cumulative=true&tab=notes`} style={{ flex: 1, background: '#0a0a0f', border: '2px solid #2a2a35', borderRadius: '10px', color: '#22c55e', fontWeight: 600, fontSize: '13px', textDecoration: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', transition: 'all 0.2s' }} onMouseEnter={e => { e.currentTarget.style.background = 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)'; e.currentTarget.style.color = '#fff'; e.currentTarget.style.border = '2px solid #22c55e'; e.currentTarget.style.boxShadow = '0 4px 20px rgba(34,197,94,0.4)' }} onMouseLeave={e => { e.currentTarget.style.background = '#0a0a0f'; e.currentTarget.style.color = '#22c55e'; e.currentTarget.style.border = '2px solid #2a2a35'; e.currentTarget.style.boxShadow = 'none' }}>
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
                                 See Notes
                               </a>
@@ -2470,11 +2470,11 @@ export default function DashboardPage() {
 
                         {/* Buttons - Compact */}
                         <div onClick={e => e.stopPropagation()} style={{ padding: '12px 16px 16px', display: 'flex', gap: '8px' }}>
-                          <a href={`/account/${account.id}`} style={{ flex: 1, padding: '10px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '10px', color: '#22c55e', fontWeight: 600, fontSize: '14px', textAlign: 'center', textDecoration: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', transition: 'all 0.2s' }} onMouseEnter={e => { e.currentTarget.style.background = 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)'; e.currentTarget.style.color = '#fff'; e.currentTarget.style.border = '1px solid #22c55e'; e.currentTarget.style.boxShadow = '0 4px 20px rgba(34,197,94,0.4)' }} onMouseLeave={e => { e.currentTarget.style.background = '#0a0a0f'; e.currentTarget.style.color = '#22c55e'; e.currentTarget.style.border = '1px solid #1a1a22'; e.currentTarget.style.boxShadow = 'none' }}>
+                          <a href={`/account/${account.id}`} style={{ flex: 1, padding: '10px', background: '#0a0a0f', border: '2px solid #2a2a35', borderRadius: '10px', color: '#22c55e', fontWeight: 600, fontSize: '14px', textAlign: 'center', textDecoration: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', transition: 'all 0.2s' }} onMouseEnter={e => { e.currentTarget.style.background = 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)'; e.currentTarget.style.color = '#fff'; e.currentTarget.style.border = '2px solid #22c55e'; e.currentTarget.style.boxShadow = '0 4px 20px rgba(34,197,94,0.4)' }} onMouseLeave={e => { e.currentTarget.style.background = '#0a0a0f'; e.currentTarget.style.color = '#22c55e'; e.currentTarget.style.border = '2px solid #2a2a35'; e.currentTarget.style.boxShadow = 'none' }}>
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg>
                             Enter Journal
                           </a>
-                          <a href={`/account/${account.id}?tab=statistics`} style={{ padding: '10px 14px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '10px', color: '#22c55e', fontWeight: 600, fontSize: '14px', textAlign: 'center', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '8px', transition: 'all 0.2s' }} onMouseEnter={e => { e.currentTarget.style.background = 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)'; e.currentTarget.style.color = '#fff'; e.currentTarget.style.border = '1px solid #22c55e'; e.currentTarget.style.boxShadow = '0 4px 20px rgba(34,197,94,0.4)' }} onMouseLeave={e => { e.currentTarget.style.background = '#0a0a0f'; e.currentTarget.style.color = '#22c55e'; e.currentTarget.style.border = '1px solid #1a1a22'; e.currentTarget.style.boxShadow = 'none' }}>
+                          <a href={`/account/${account.id}?tab=statistics`} style={{ padding: '10px 14px', background: '#0a0a0f', border: '2px solid #2a2a35', borderRadius: '10px', color: '#22c55e', fontWeight: 600, fontSize: '14px', textAlign: 'center', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '8px', transition: 'all 0.2s' }} onMouseEnter={e => { e.currentTarget.style.background = 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)'; e.currentTarget.style.color = '#fff'; e.currentTarget.style.border = '2px solid #22c55e'; e.currentTarget.style.boxShadow = '0 4px 20px rgba(34,197,94,0.4)' }} onMouseLeave={e => { e.currentTarget.style.background = '#0a0a0f'; e.currentTarget.style.color = '#22c55e'; e.currentTarget.style.border = '2px solid #2a2a35'; e.currentTarget.style.boxShadow = 'none' }}>
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 20V10M12 20V4M6 20v-6"/></svg>
                             Stats
                           </a>
@@ -2580,15 +2580,15 @@ export default function DashboardPage() {
 
                         {/* Right: Buttons */}
                         <div onClick={e => e.stopPropagation()} style={{ display: 'flex', gap: '8px' }}>
-                          <a href={`/account/${account.id}`} style={{ padding: '8px 14px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '8px', color: '#22c55e', fontWeight: 600, fontSize: '12px', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '6px', transition: 'all 0.2s' }} onMouseEnter={e => { e.currentTarget.style.background = 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)'; e.currentTarget.style.color = '#fff'; e.currentTarget.style.border = '1px solid #22c55e'; e.currentTarget.style.boxShadow = '0 4px 20px rgba(34,197,94,0.4)' }} onMouseLeave={e => { e.currentTarget.style.background = '#0a0a0f'; e.currentTarget.style.color = '#22c55e'; e.currentTarget.style.border = '1px solid #1a1a22'; e.currentTarget.style.boxShadow = 'none' }}>
+                          <a href={`/account/${account.id}`} style={{ padding: '8px 14px', background: '#0a0a0f', border: '2px solid #2a2a35', borderRadius: '8px', color: '#22c55e', fontWeight: 600, fontSize: '12px', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '6px', transition: 'all 0.2s' }} onMouseEnter={e => { e.currentTarget.style.background = 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)'; e.currentTarget.style.color = '#fff'; e.currentTarget.style.border = '2px solid #22c55e'; e.currentTarget.style.boxShadow = '0 4px 20px rgba(34,197,94,0.4)' }} onMouseLeave={e => { e.currentTarget.style.background = '#0a0a0f'; e.currentTarget.style.color = '#22c55e'; e.currentTarget.style.border = '2px solid #2a2a35'; e.currentTarget.style.boxShadow = 'none' }}>
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg>
                             Enter
                           </a>
-                          <a href={`/account/${account.id}?tab=statistics`} style={{ padding: '8px 14px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '8px', color: '#22c55e', fontWeight: 600, fontSize: '12px', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '6px', transition: 'all 0.2s' }} onMouseEnter={e => { e.currentTarget.style.background = 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)'; e.currentTarget.style.color = '#fff'; e.currentTarget.style.border = '1px solid #22c55e'; e.currentTarget.style.boxShadow = '0 4px 20px rgba(34,197,94,0.4)' }} onMouseLeave={e => { e.currentTarget.style.background = '#0a0a0f'; e.currentTarget.style.color = '#22c55e'; e.currentTarget.style.border = '1px solid #1a1a22'; e.currentTarget.style.boxShadow = 'none' }}>
+                          <a href={`/account/${account.id}?tab=statistics`} style={{ padding: '8px 14px', background: '#0a0a0f', border: '2px solid #2a2a35', borderRadius: '8px', color: '#22c55e', fontWeight: 600, fontSize: '12px', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '6px', transition: 'all 0.2s' }} onMouseEnter={e => { e.currentTarget.style.background = 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)'; e.currentTarget.style.color = '#fff'; e.currentTarget.style.border = '2px solid #22c55e'; e.currentTarget.style.boxShadow = '0 4px 20px rgba(34,197,94,0.4)' }} onMouseLeave={e => { e.currentTarget.style.background = '#0a0a0f'; e.currentTarget.style.color = '#22c55e'; e.currentTarget.style.border = '2px solid #2a2a35'; e.currentTarget.style.boxShadow = 'none' }}>
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 20V10M12 20V4M6 20v-6"/></svg>
                             Stats
                           </a>
-                          <button onClick={(e) => { e.stopPropagation(); setEditName(account.name); setEditProfitTarget(account.profit_target || ''); setEditMaxDrawdown(account.max_drawdown || ''); setEditConsistencyEnabled(account.consistency_enabled || false); setEditConsistencyPct(account.consistency_pct || '30'); setEditDailyDdEnabled(account.daily_dd_enabled || false); setEditDailyDdPct(account.daily_dd_pct || ''); setEditDailyDdType(account.daily_dd_type || 'static'); setEditDailyDdLocksAt(account.daily_dd_locks_at || 'start_balance'); setEditDailyDdLocksAtPct(account.daily_dd_locks_at_pct || ''); setEditDailyDdResetTime(account.daily_dd_reset_time || '00:00'); setEditDailyDdResetTimezone(account.daily_dd_reset_timezone || 'Europe/London'); setEditMaxDdEnabled(account.max_dd_enabled || false); setEditMaxDdPct(account.max_dd_pct || ''); setEditMaxDdType(account.max_dd_type || 'static'); setEditMaxDdTrailingStopsAt(account.max_dd_trailing_stops_at || 'never'); setEditMaxDdLocksAtPct(account.max_dd_locks_at_pct || ''); setShowEditModal(account.id) }} style={{ padding: '8px', background: 'transparent', border: '1px solid #1a1a22', borderRadius: '8px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                          <button onClick={(e) => { e.stopPropagation(); setEditName(account.name); setEditProfitTarget(account.profit_target || ''); setEditMaxDrawdown(account.max_drawdown || ''); setEditConsistencyEnabled(account.consistency_enabled || false); setEditConsistencyPct(account.consistency_pct || '30'); setEditDailyDdEnabled(account.daily_dd_enabled || false); setEditDailyDdPct(account.daily_dd_pct || ''); setEditDailyDdType(account.daily_dd_type || 'static'); setEditDailyDdLocksAt(account.daily_dd_locks_at || 'start_balance'); setEditDailyDdLocksAtPct(account.daily_dd_locks_at_pct || ''); setEditDailyDdResetTime(account.daily_dd_reset_time || '00:00'); setEditDailyDdResetTimezone(account.daily_dd_reset_timezone || 'Europe/London'); setEditMaxDdEnabled(account.max_dd_enabled || false); setEditMaxDdPct(account.max_dd_pct || ''); setEditMaxDdType(account.max_dd_type || 'static'); setEditMaxDdTrailingStopsAt(account.max_dd_trailing_stops_at || 'never'); setEditMaxDdLocksAtPct(account.max_dd_locks_at_pct || ''); setShowEditModal(account.id) }} style={{ padding: '8px', background: 'transparent', border: '2px solid #2a2a35', borderRadius: '8px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#666" strokeWidth="2"><circle cx="12" cy="12" r="1"/><circle cx="12" cy="5" r="1"/><circle cx="12" cy="19" r="1"/></svg>
                           </button>
                         </div>
