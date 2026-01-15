@@ -1600,51 +1600,61 @@ export default function AccountPage() {
               </div>
           )}
 
-          {/* Slideshow Button */}
-          {getTradesWithImages().length > 0 && (
-            <button onClick={() => { setSlideshowIndex(0); setSlideshowMode(true) }} style={{ width: '100%', padding: '10px', marginTop: '4px', background: '#0d0d12', border: '1px solid #2a2a35', borderRadius: '6px', color: '#888', fontSize: '11px', cursor: 'pointer' }}>
-              Slideshow ({getSlideshowImages().length})
-            </button>
-          )}
         </div>
+
+        {/* Slideshow Button */}
+        {getTradesWithImages().length > 0 && (
+          <button onClick={() => { setSlideshowIndex(0); setSlideshowMode(true) }} style={{ width: '100%', padding: '10px', marginTop: '12px', marginBottom: '12px', background: '#0d0d12', border: '1px solid #2a2a35', borderRadius: '6px', color: '#888', fontSize: '11px', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+            Slideshow ({getSlideshowImages().length})
+          </button>
+        )}
+
         {/* Spacer */}
         <div style={{ flex: 1 }} />
-        {/* Journals List - at bottom */}
-        <div style={{ marginBottom: '12px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
-          {allAccounts.map((acc) => {
-            const isSelected = acc.id === accountId
-            return (
-              <a
-                key={acc.id}
-                href={`/account/${acc.id}`}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  padding: '10px 12px',
-                  background: isSelected ? 'rgba(34,197,94,0.1)' : '#0a0a0f',
-                  border: `1px solid ${isSelected ? 'rgba(34,197,94,0.5)' : '#1a1a22'}`,
-                  borderRadius: '8px',
-                  textDecoration: 'none',
-                  transition: 'all 0.15s ease',
-                  boxShadow: isSelected ? '0 0 12px rgba(34,197,94,0.2), inset 0 0 20px rgba(34,197,94,0.05)' : 'none'
-                }}
-              >
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <div style={{
-                    width: '8px',
-                    height: '8px',
-                    borderRadius: '50%',
-                    background: isSelected ? '#22c55e' : '#444',
-                    boxShadow: isSelected ? '0 0 6px #22c55e' : 'none',
-                    flexShrink: 0
-                  }} />
-                  <span style={{ fontSize: '12px', fontWeight: 600, color: isSelected ? '#22c55e' : '#888' }}>{acc.name}</span>
-                </div>
-                <span style={{ fontSize: '11px', color: isSelected ? '#22c55e' : '#666' }}>${(acc.starting_balance || 0).toLocaleString()}</span>
-              </a>
-            )
-          })}
+
+        {/* Journal Select */}
+        <div style={{ marginBottom: '12px' }}>
+          <div style={{ fontSize: '11px', color: '#888', fontWeight: 600, marginBottom: '8px' }}>Journal Select</div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', maxHeight: allAccounts.length > 2 ? '120px' : 'none', overflowY: allAccounts.length > 2 ? 'auto' : 'visible' }}>
+            {allAccounts.map((acc) => {
+              const isSelected = acc.id === accountId
+              const accTrades = allAccountsTrades[acc.id] || []
+              const totalPnl = accTrades.reduce((sum, t) => sum + (parseFloat(t.pnl) || 0), 0)
+              const currentBalance = (parseFloat(acc.starting_balance) || 0) + totalPnl
+              return (
+                <a
+                  key={acc.id}
+                  href={`/account/${acc.id}`}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    padding: '10px 12px',
+                    background: isSelected ? 'rgba(34,197,94,0.1)' : '#0a0a0f',
+                    border: `1px solid ${isSelected ? 'rgba(34,197,94,0.5)' : '#1a1a22'}`,
+                    borderRadius: '8px',
+                    textDecoration: 'none',
+                    transition: 'all 0.15s ease',
+                    boxShadow: isSelected ? '0 0 12px rgba(34,197,94,0.2), inset 0 0 20px rgba(34,197,94,0.05)' : 'none'
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <div style={{
+                      width: '8px',
+                      height: '8px',
+                      borderRadius: '50%',
+                      background: isSelected ? '#22c55e' : '#444',
+                      boxShadow: isSelected ? '0 0 6px #22c55e' : 'none',
+                      flexShrink: 0
+                    }} />
+                    <span style={{ fontSize: '12px', fontWeight: 600, color: isSelected ? '#22c55e' : '#888' }}>{acc.name}</span>
+                  </div>
+                  <span style={{ fontSize: '11px', color: isSelected ? '#22c55e' : '#666' }}>${Math.round(currentBalance).toLocaleString()}</span>
+                </a>
+              )
+            })}
+          </div>
         </div>
         <div style={{ padding: '12px', background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '6px' }}>
           <div style={{ fontSize: '11px', color: '#888', lineHeight: '1.4' }}>{tabDescriptions[activeTab]}</div>
@@ -3084,7 +3094,7 @@ export default function AccountPage() {
                                             <div style={{ position: 'absolute', bottom: '4px', left: '50%', transform: 'translateX(-50%)', width: '10px', height: '10px', borderRadius: '50%', background: isGreen ? '#22c55e' : '#ef4444', border: '2px solid #fff', zIndex: 5 }} />
                                             <div style={{ position: 'absolute', bottom: '0px', left: 'calc(50% + 10px)', background: '#1a1a22', border: '1px solid #2a2a35', borderRadius: '6px', padding: '6px 10px', fontSize: '11px', whiteSpace: 'nowrap', zIndex: 10, pointerEvents: 'none' }}>
                                               <div style={{ fontWeight: 700, color: '#fff', fontSize: '12px', marginBottom: '2px' }}>{item.name}</div>
-                                              <div style={{ fontWeight: 600, color: isGreen ? '#22c55e' : '#ef4444' }}>{item.disp}</div>
+                                              <div style={{ fontWeight: 600, color: isGreen ? '#22c55e' : '#ef4444' }}>{barGraphMetric === 'winrate' ? 'Winrate: ' : barGraphMetric === 'pnl' ? 'PnL: ' : barGraphMetric === 'avgpnl' ? 'Avg PnL: ' : 'Count: '}{item.disp}</div>
                                             </div>
                                           </>
                                         )}
@@ -3253,15 +3263,27 @@ export default function AccountPage() {
                                     onMouseLeave={() => setDailyPnlHover(null)}
                                   >
                                     <div style={{ width: '100%', height: hasData ? `${Math.max(hPct, 2)}%` : '2px', background: hasData ? (isPositive ? '#22c55e' : '#ef4444') : '#2a2a35', borderRadius: '6px 6px 0 0', position: 'relative' }}>
-                                      {isHovered && (
-                                        <>
-                                          <div style={{ position: 'absolute', bottom: hasData ? '4px' : '-2px', left: '50%', transform: 'translateX(-50%)', width: '8px', height: '8px', borderRadius: '50%', background: '#22c55e', border: '2px solid #fff', zIndex: 5 }} />
-                                          <div style={{ position: 'absolute', bottom: '0px', left: 'calc(50% + 10px)', background: '#1a1a22', border: '1px solid #2a2a35', borderRadius: '6px', padding: '6px 10px', fontSize: '11px', whiteSpace: 'nowrap', zIndex: 10, pointerEvents: 'none' }}>
-                                            <div style={{ color: '#999' }}>{new Date(d.date).toLocaleDateString()}</div>
-                                            <div style={{ fontWeight: 600, color: hasData ? (isPositive ? '#22c55e' : '#ef4444') : '#666' }}>{hasData ? ((isPositive ? '+' : '-') + '$' + Math.abs(d.pnl).toFixed(0)) : 'No trades'}</div>
-                                          </div>
-                                        </>
-                                      )}
+                                      {isHovered && (() => {
+                                        const dayTrades = displayTrades.filter(t => t.date === d.date)
+                                        return (
+                                          <>
+                                            <div style={{ position: 'absolute', bottom: hasData ? '4px' : '-2px', left: '50%', transform: 'translateX(-50%)', width: '10px', height: '10px', borderRadius: '50%', background: isPositive ? '#22c55e' : '#ef4444', border: '2px solid #fff', zIndex: 5 }} />
+                                            <div style={{ position: 'absolute', bottom: '0px', left: 'calc(50% + 10px)', background: '#1a1a22', border: '1px solid #2a2a35', borderRadius: '6px', padding: '6px 10px', fontSize: '11px', whiteSpace: 'nowrap', zIndex: 10, pointerEvents: 'none', minWidth: '120px' }}>
+                                              <div style={{ color: '#999', marginBottom: '4px' }}>{new Date(d.date).toLocaleDateString()}</div>
+                                              {dayTrades.length > 0 ? dayTrades.map((t, ti) => {
+                                                const pnl = parseFloat(t.pnl) || 0
+                                                return (
+                                                  <div key={ti} style={{ display: 'flex', justifyContent: 'space-between', gap: '12px', color: pnl >= 0 ? '#22c55e' : '#ef4444', fontWeight: 500 }}>
+                                                    <span style={{ color: '#888' }}>{t.symbol}</span>
+                                                    <span>{pnl >= 0 ? '+' : ''}{pnl < 0 ? '-' : ''}${Math.abs(pnl).toFixed(2)}</span>
+                                                  </div>
+                                                )
+                                              }) : <div style={{ color: '#666' }}>No trades</div>}
+                                              <div style={{ borderTop: '1px solid #2a2a35', marginTop: '4px', paddingTop: '4px', fontWeight: 700, color: hasData ? (isPositive ? '#22c55e' : '#ef4444') : '#666' }}>Total: {hasData ? ((isPositive ? '+' : '-') + '$' + Math.abs(d.pnl).toFixed(2)) : '$0'}</div>
+                                            </div>
+                                          </>
+                                        )
+                                      })()}
                                     </div>
                                   </div>
                                 )
@@ -5637,7 +5659,7 @@ export default function AccountPage() {
                                       <div style={{ position: 'absolute', bottom: '8px', left: '50%', transform: 'translateX(-50%)', width: '10px', height: '10px', borderRadius: '50%', background: isGreen ? '#22c55e' : '#ef4444', border: '2px solid #fff', zIndex: 5 }} />
                                       <div style={{ position: 'absolute', bottom: '0px', left: 'calc(50% + 12px)', background: '#1a1a22', border: '1px solid #2a2a35', borderRadius: '6px', padding: '8px 12px', fontSize: '12px', whiteSpace: 'nowrap', zIndex: 10, pointerEvents: 'none' }}>
                                         <div style={{ fontWeight: 700, color: '#fff', fontSize: '14px', marginBottom: '2px' }}>{item.name}</div>
-                                        <div style={{ fontWeight: 600, fontSize: '16px', color: isGreen ? '#22c55e' : '#ef4444' }}>{item.disp}</div>
+                                        <div style={{ fontWeight: 600, fontSize: '16px', color: isGreen ? '#22c55e' : '#ef4444' }}>{barGraphMetric === 'winrate' ? 'Winrate: ' : barGraphMetric === 'pnl' ? 'PnL: ' : barGraphMetric === 'avgpnl' ? 'Avg PnL: ' : 'Count: '}{item.disp}</div>
                                       </div>
                                     </>
                                   )}
