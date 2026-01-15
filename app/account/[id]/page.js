@@ -1667,7 +1667,7 @@ export default function AccountPage() {
                 ref={tradesScrollRef}
                 style={{
                   position: 'absolute',
-                  top: 0,
+                  top: 8,
                   left: 0,
                   right: 0,
                   bottom: 0,
@@ -2044,7 +2044,7 @@ export default function AccountPage() {
           const displayAvgRating = displayTrades.length > 0 ? (displayTrades.reduce((s, t) => s + (parseInt(getExtraData(t).rating) || 0), 0) / displayTrades.length).toFixed(1) : '0'
 
           return (
-          <div style={{ padding: isMobile ? '0' : '0 12px' }}>
+          <div style={{ padding: isMobile ? '0' : '8px 12px 0 12px' }}>
             {/* Stats View Indicator Banner */}
             {viewingSelectedStats && selectedTrades.size > 0 ? (
               <div style={{ marginBottom: '12px', padding: '12px 16px', background: 'rgba(34,197,94,0.1)', border: '1px solid #22c55e', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', boxShadow: '0 0 12px rgba(34,197,94,0.15)' }}>
@@ -3929,7 +3929,7 @@ export default function AccountPage() {
 
         {/* NOTES TAB */}
         {activeTab === 'notes' && (
-          <div style={{ padding: isMobile ? '0' : '0 16px 16px 12px' }}>
+          <div style={{ padding: isMobile ? '0' : '8px 16px 16px 12px' }}>
             <div style={{ display: 'flex', gap: '12px', marginBottom: '12px' }}>
               {['daily', 'weekly', 'custom'].map(sub => (
                 <button key={sub} onClick={() => setNotesSubTab(sub)} style={{ padding: '12px 24px', background: notesSubTab === sub ? '#22c55e' : 'transparent', border: notesSubTab === sub ? 'none' : '1px solid #2a2a35', borderRadius: '8px', color: notesSubTab === sub ? '#fff' : '#888', fontSize: '14px', fontWeight: 600, cursor: 'pointer', textTransform: 'capitalize' }}>{sub}</button>
@@ -4206,100 +4206,127 @@ export default function AccountPage() {
       )})()}
 
       {/* MODALS */}
-      {showAddTrade && (
+      {showAddTrade && (() => {
+        // Separate inputs: left side (grid) vs right side (date, rating, file, textarea)
+        const rightSideTypes = ['date', 'rating', 'file', 'textarea']
+        const leftInputs = customInputs.filter(i => !rightSideTypes.includes(i.type))
+        const rightInputs = customInputs.filter(i => rightSideTypes.includes(i.type))
+        // Sort right inputs: file first (images), then date, then rating, then textarea (notes)
+        const rightOrder = { file: 0, date: 1, rating: 2, textarea: 3 }
+        rightInputs.sort((a, b) => (rightOrder[a.type] ?? 99) - (rightOrder[b.type] ?? 99))
+
+        return (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.9)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100 }} onClick={() => { setShowAddTrade(false); setEditingTrade(null) }}>
-          <div style={{ background: 'linear-gradient(180deg, #0f0f14 0%, #0a0a0f 100%)', border: '1px solid #1a1a22', borderRadius: '12px', padding: '24px', width: customInputs.filter(i => !['symbol', 'outcome', 'pnl', 'riskPercent', 'rr', 'date', 'direction', 'rating'].includes(i.id) && !i.hidden).length > 4 ? '560px' : customInputs.filter(i => !['symbol', 'outcome', 'pnl', 'riskPercent', 'rr', 'date', 'direction', 'rating'].includes(i.id) && !i.hidden).length > 2 ? '500px' : '440px', maxHeight: '90vh', overflowY: 'auto' }} onClick={e => e.stopPropagation()}>
+          <div style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '16px', padding: '0', width: '95%', maxWidth: '900px', maxHeight: '90vh', overflow: 'hidden', display: 'flex', flexDirection: 'column' }} onClick={e => e.stopPropagation()}>
             {/* Header */}
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
+            <div style={{ padding: '16px 24px', borderBottom: '1px solid #1a1a22', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <span style={{ fontSize: '18px', color: '#fff', fontWeight: 600 }}>{editingTrade ? 'Edit Trade' : 'Log Trade'}</span>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: editingTrade ? '#f59e0b' : '#9333ea' }} />
-                <span style={{ fontSize: '13px', color: '#fff', fontWeight: 600, letterSpacing: '0.5px' }}>{editingTrade ? 'EDIT TRADE' : 'LOG TRADE'}</span>
                 {!editingTrade && (
-                  <button onClick={() => { setShowAddTrade(false); setShowEditInputs(true) }} style={{ padding: '4px 8px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '4px', color: '#666', fontSize: '11px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-                    Edit
+                  <button onClick={() => { setShowAddTrade(false); setShowEditInputs(true) }} style={{ padding: '6px 14px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '6px', color: '#888', fontWeight: 500, fontSize: '12px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" /><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" /></svg>
+                    Edit Inputs
                   </button>
                 )}
+                <button onClick={() => { setShowAddTrade(false); setEditingTrade(null) }} style={{ background: 'transparent', border: 'none', color: '#666', fontSize: '24px', cursor: 'pointer', padding: '4px', lineHeight: 1 }}>×</button>
               </div>
-              <button onClick={() => { setShowAddTrade(false); setEditingTrade(null) }} style={{ padding: '6px 8px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '6px', color: '#666', fontSize: '14px', cursor: 'pointer', lineHeight: 1 }}>×</button>
             </div>
 
-            {/* All inputs - unified dynamic grid (file/textarea at bottom) */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '12px', gridAutoFlow: 'dense' }}>
-              {[...customInputs].sort((a, b) => {
-                const order = (t) => t === 'textarea' ? 2 : t === 'file' ? 1 : 0
-                return order(a.type) - order(b.type)
-              }).map(input => {
-                const optionsArr = Array.isArray(input.options) ? input.options : []
-                return (
-                  <div key={input.id} style={{ gridColumn: input.type === 'textarea' ? 'span 2' : 'span 1' }}>
-                    <label style={{ display: 'block', fontSize: '10px', color: '#666', marginBottom: '5px', textTransform: 'uppercase' }}>{input.label}</label>
-                    {input.type === 'select' ? (
-                      <select value={tradeForm[input.id] || ''} onChange={e => setTradeForm({...tradeForm, [input.id]: e.target.value})} style={{ width: '100%', padding: '10px 12px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '13px', boxSizing: 'border-box' }}>
-                        <option value="">-</option>
-                        {optionsArr.map((o, idx) => <option key={idx} value={getOptVal(o).toLowerCase()}>{getOptVal(o)}</option>)}
-                      </select>
-                    ) : input.type === 'textarea' ? (
-                      <textarea value={tradeForm[input.id] || ''} onChange={e => setTradeForm({...tradeForm, [input.id]: e.target.value})} maxLength={5000} placeholder="..." rows={3} style={{ width: '100%', padding: '10px 12px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '13px', boxSizing: 'border-box', resize: 'vertical', fontFamily: 'inherit' }} />
-                    ) : input.type === 'rating' ? (
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <div style={{ display: 'flex', gap: '2px', padding: '8px 10px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px', alignItems: 'center' }} onMouseLeave={() => setHoverRatings(prev => ({...prev, [input.id]: 0}))}>
-                          {[1, 2, 3, 4, 5].map(star => {
-                            const displayRating = hoverRatings[input.id] || parseFloat(tradeForm[input.id] || 0)
-                            const isFullStar = displayRating >= star
-                            const isHalfStar = displayRating >= star - 0.5 && displayRating < star
-                            return (
-                              <div key={star} style={{ position: 'relative', width: '24px', height: '24px', cursor: 'pointer' }}
-                                onMouseMove={(e) => { const rect = e.currentTarget.getBoundingClientRect(); const x = e.clientX - rect.left; setHoverRatings(prev => ({...prev, [input.id]: x < rect.width / 2 ? star - 0.5 : star})) }}
-                                onClick={(e) => { const rect = e.currentTarget.getBoundingClientRect(); const x = e.clientX - rect.left; const newRating = x < rect.width / 2 ? star - 0.5 : star; setTradeForm({...tradeForm, [input.id]: parseFloat(tradeForm[input.id]) === newRating ? '' : String(newRating)}) }}>
-                                <span style={{ position: 'absolute', color: '#2a2a35', fontSize: '24px', lineHeight: 1 }}>★</span>
-                                {isHalfStar && <span style={{ position: 'absolute', color: input.textColor || '#22c55e', fontSize: '24px', lineHeight: 1, clipPath: 'inset(0 50% 0 0)' }}>★</span>}
-                                {isFullStar && <span style={{ position: 'absolute', color: input.textColor || '#22c55e', fontSize: '24px', lineHeight: 1 }}>★</span>}
-                              </div>
-                            )
-                          })}
+            {/* Content */}
+            <div style={{ padding: '20px 24px', overflow: 'auto', flex: 1 }}>
+              <div style={{ display: 'flex', gap: '24px' }}>
+                {/* Left: 3-column grid of inputs */}
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px' }}>
+                    {leftInputs.map(input => {
+                      const optionsArr = Array.isArray(input.options) ? input.options : []
+                      return (
+                        <div key={input.id}>
+                          <label style={{ display: 'block', fontSize: '10px', color: '#666', marginBottom: '6px', textTransform: 'uppercase' }}>{input.label}</label>
+                          {input.type === 'select' ? (
+                            <select value={tradeForm[input.id] || ''} onChange={e => setTradeForm({...tradeForm, [input.id]: e.target.value})} style={{ width: '100%', padding: '10px 12px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '8px', color: '#fff', fontSize: '13px', boxSizing: 'border-box' }}>
+                              <option value="">-</option>
+                              {optionsArr.map((o, idx) => <option key={idx} value={getOptVal(o).toLowerCase()}>{getOptVal(o)}</option>)}
+                            </select>
+                          ) : input.type === 'value' ? (
+                            <div style={{ display: 'flex', gap: '0' }}>
+                              <span style={{ padding: '10px 12px', background: '#141418', border: '1px solid #1a1a22', borderRight: 'none', borderRadius: '8px 0 0 8px', color: '#888', fontSize: '13px' }}>{input.currency || '$'}</span>
+                              <input type="number" value={tradeForm[input.id] || ''} onChange={e => setTradeForm({...tradeForm, [input.id]: e.target.value})} placeholder="0" style={{ flex: 1, padding: '10px 12px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '0 8px 8px 0', color: '#fff', fontSize: '13px', boxSizing: 'border-box', minWidth: 0 }} />
+                            </div>
+                          ) : (
+                            <input type={input.type === 'number' ? 'number' : input.type === 'time' ? 'time' : 'text'} value={tradeForm[input.id] || ''} onChange={e => setTradeForm({...tradeForm, [input.id]: e.target.value})} placeholder={input.id === 'symbol' ? 'XAUUSD' : input.id === 'rr' ? '2.5' : input.id === 'riskPercent' ? '1' : ''} maxLength={input.type === 'text' ? (input.id === 'symbol' ? 20 : 100) : undefined} style={{ width: '100%', padding: '10px 12px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '8px', color: '#fff', fontSize: '13px', boxSizing: 'border-box' }} />
+                          )}
                         </div>
-                        <span style={{ background: '#1a1a22', padding: '4px 8px', borderRadius: '4px', fontSize: '12px', color: '#fff', whiteSpace: 'nowrap', minWidth: '40px', textAlign: 'center' }}>
-                          {hoverRatings[input.id] || parseFloat(tradeForm[input.id]) || 0} / 5
-                        </span>
-                      </div>
-                    ) : input.type === 'file' ? (
-                      <div>
-                        <input id={`file-upload-${input.id}`} type="file" accept="image/*" onChange={e => { const file = e.target.files[0]; if (file) uploadImage(file, input.id) }} style={{ display: 'none' }} />
-                        {uploadingImage ? (
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 12px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px' }}>
-                            <span style={{ color: '#f59e0b', fontSize: '12px' }}>Uploading...</span>
-                          </div>
-                        ) : tradeForm[input.id] ? (
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 12px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px' }}>
-                            <span style={{ color: '#22c55e', fontSize: '12px' }}>✓ Uploaded</span>
-                            <button type="button" onClick={() => setTradeForm({...tradeForm, [input.id]: ''})} style={{ padding: '4px 8px', background: '#1a1a22', border: 'none', borderRadius: '4px', color: '#999', fontSize: '11px', cursor: 'pointer' }}>×</button>
-                          </div>
-                        ) : (
-                          <button type="button" onClick={() => document.getElementById(`file-upload-${input.id}`).click()} style={{ width: '100%', padding: '10px 12px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px', color: '#666', fontSize: '12px', cursor: 'pointer', textAlign: 'left' }}>+ Image</button>
-                        )}
-                      </div>
-                    ) : input.type === 'value' ? (
-                      <div style={{ display: 'flex', gap: '0' }}>
-                        <span style={{ padding: '10px 12px', background: '#141418', border: '1px solid #1a1a22', borderRight: 'none', borderRadius: '6px 0 0 6px', color: '#888', fontSize: '13px' }}>{input.currency || '$'}</span>
-                        <input type="number" value={tradeForm[input.id] || ''} onChange={e => setTradeForm({...tradeForm, [input.id]: e.target.value})} placeholder="0" style={{ flex: 1, padding: '10px 12px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '0 6px 6px 0', color: '#fff', fontSize: '13px', boxSizing: 'border-box' }} />
-                      </div>
-                    ) : (
-                      <input type={input.type === 'number' ? 'number' : input.type === 'date' ? 'date' : input.type === 'time' ? 'time' : 'text'} value={tradeForm[input.id] || ''} onChange={e => setTradeForm({...tradeForm, [input.id]: e.target.value})} placeholder={input.id === 'symbol' ? 'XAUUSD' : input.id === 'rr' ? '2.5' : input.id === 'riskPercent' ? '1' : ''} maxLength={input.type === 'text' ? (input.id === 'symbol' ? 20 : 100) : undefined} style={{ width: '100%', padding: '10px 12px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '13px', boxSizing: 'border-box' }} />
-                    )}
+                      )
+                    })}
                   </div>
-                )
-              })}
+                </div>
+
+                {/* Right: Images, Date, Rating, Notes */}
+                <div style={{ width: '280px', flexShrink: 0, display: 'flex', flexDirection: 'column', gap: '14px' }}>
+                  {rightInputs.map(input => {
+                    return (
+                      <div key={input.id} style={input.type === 'file' ? { background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '10px', padding: '12px' } : input.type === 'textarea' ? { flex: 1 } : {}}>
+                        <label style={{ display: 'block', fontSize: '10px', color: '#666', marginBottom: input.type === 'file' ? '10px' : '6px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{input.label}</label>
+                        {input.type === 'file' ? (
+                          <div>
+                            <input id={`file-upload-${input.id}`} type="file" accept="image/*" onChange={e => { const file = e.target.files[0]; if (file) uploadImage(file, input.id) }} style={{ display: 'none' }} />
+                            <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', alignItems: 'center' }}>
+                              {tradeForm[input.id] && (
+                                <div style={{ position: 'relative', width: '70px', height: '70px', borderRadius: '8px', overflow: 'hidden', border: '1px solid #1a1a22' }}>
+                                  <img src={tradeForm[input.id]} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                  <button onClick={() => setTradeForm({...tradeForm, [input.id]: ''})} style={{ position: 'absolute', top: '4px', right: '4px', width: '18px', height: '18px', borderRadius: '50%', background: 'rgba(0,0,0,0.7)', border: 'none', color: '#fff', fontSize: '11px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 0 }}>×</button>
+                                </div>
+                              )}
+                              <label style={{ width: '70px', height: '70px', borderRadius: '8px', border: '1px dashed #333', background: '#0d0d12', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: uploadingImage ? 'wait' : 'pointer', opacity: uploadingImage ? 0.5 : 1 }}>
+                                <input type="file" accept="image/*" onChange={e => { const file = e.target.files[0]; if (file) uploadImage(file, input.id) }} style={{ display: 'none' }} disabled={uploadingImage} />
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#555" strokeWidth="2"><path d="M12 5v14M5 12h14" /></svg>
+                              </label>
+                            </div>
+                          </div>
+                        ) : input.type === 'date' ? (
+                          <input type="date" value={tradeForm[input.id] || ''} onChange={e => setTradeForm({...tradeForm, [input.id]: e.target.value})} style={{ width: '100%', padding: '10px 12px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '8px', color: '#fff', fontSize: '13px', boxSizing: 'border-box' }} />
+                        ) : input.type === 'rating' ? (
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                            <div style={{ display: 'inline-flex', gap: '3px', padding: '8px 12px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '8px' }} onMouseLeave={() => setHoverRatings(prev => ({...prev, [input.id]: 0}))}>
+                              {[1, 2, 3, 4, 5].map(star => {
+                                const displayRating = hoverRatings[input.id] || parseFloat(tradeForm[input.id] || 0)
+                                const isFullStar = displayRating >= star
+                                const isHalfStar = displayRating >= star - 0.5 && displayRating < star
+                                return (
+                                  <div key={star} style={{ position: 'relative', width: '22px', height: '22px', cursor: 'pointer' }}
+                                    onMouseMove={(e) => { const rect = e.currentTarget.getBoundingClientRect(); const x = e.clientX - rect.left; setHoverRatings(prev => ({...prev, [input.id]: x < rect.width / 2 ? star - 0.5 : star})) }}
+                                    onClick={(e) => { const rect = e.currentTarget.getBoundingClientRect(); const x = e.clientX - rect.left; const newRating = x < rect.width / 2 ? star - 0.5 : star; setTradeForm({...tradeForm, [input.id]: parseFloat(tradeForm[input.id]) === newRating ? '' : String(newRating)}) }}>
+                                    <span style={{ position: 'absolute', color: '#2a2a35', fontSize: '22px', lineHeight: 1 }}>★</span>
+                                    {isHalfStar && <span style={{ position: 'absolute', color: input.textColor || '#22c55e', fontSize: '22px', lineHeight: 1, width: '48%', overflow: 'hidden' }}>★</span>}
+                                    {isFullStar && <span style={{ position: 'absolute', color: input.textColor || '#22c55e', fontSize: '22px', lineHeight: 1 }}>★</span>}
+                                  </div>
+                                )
+                              })}
+                            </div>
+                            <span style={{ background: '#1a1a22', padding: '4px 8px', borderRadius: '4px', fontSize: '12px', color: '#fff' }}>
+                              {hoverRatings[input.id] || parseFloat(tradeForm[input.id]) || 0}/5
+                            </span>
+                          </div>
+                        ) : input.type === 'textarea' ? (
+                          <textarea value={tradeForm[input.id] || ''} onChange={e => setTradeForm({...tradeForm, [input.id]: e.target.value})} maxLength={5000} placeholder="Trade notes..." rows={4} style={{ width: '100%', padding: '10px 12px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '8px', color: '#fff', fontSize: '13px', boxSizing: 'border-box', resize: 'none', fontFamily: 'inherit' }} />
+                        ) : null}
+                      </div>
+                    )
+                  })}
+                </div>
+              </div>
             </div>
 
-            {/* Buttons */}
-            <div style={{ display: 'flex', gap: '12px', marginTop: '12px' }}>
-              <button onClick={() => { setShowAddTrade(false); setEditingTrade(null) }} style={{ flex: 1, padding: '12px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '8px', color: '#888', fontWeight: 600, fontSize: '13px', cursor: 'pointer' }}>Cancel</button>
-              <button onClick={editingTrade ? updateTrade : addTrade} disabled={saving || !tradeForm.symbol || !tradeForm.pnl} style={{ flex: 1, padding: '12px', background: (saving || !tradeForm.symbol || !tradeForm.pnl) ? '#1a1a22' : editingTrade ? 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)' : 'linear-gradient(135deg, #9333ea 0%, #7c3aed 100%)', border: 'none', borderRadius: '8px', color: (saving || !tradeForm.symbol || !tradeForm.pnl) ? '#666' : '#fff', fontWeight: 600, fontSize: '14px', cursor: (saving || !tradeForm.symbol || !tradeForm.pnl) ? 'not-allowed' : 'pointer' }}>{saving ? '...' : editingTrade ? 'Update Trade' : 'Log Trade'}</button>
+            {/* Footer with action buttons */}
+            <div style={{ padding: '16px 24px', borderTop: '1px solid #1a1a22', display: 'flex', justifyContent: 'flex-end', gap: '12px' }}>
+              <button onClick={() => { setShowAddTrade(false); setEditingTrade(null) }} style={{ padding: '12px 24px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '10px', color: '#888', fontWeight: 600, fontSize: '13px', cursor: 'pointer' }}>Cancel</button>
+              <button onClick={editingTrade ? updateTrade : addTrade} disabled={saving || !tradeForm.symbol || !tradeForm.pnl} style={{ padding: '12px 32px', background: (saving || !tradeForm.symbol || !tradeForm.pnl) ? '#1a1a22' : editingTrade ? 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)' : 'linear-gradient(135deg, #9333ea 0%, #7c3aed 100%)', border: 'none', borderRadius: '10px', color: (saving || !tradeForm.symbol || !tradeForm.pnl) ? '#666' : '#fff', fontWeight: 600, fontSize: '15px', cursor: (saving || !tradeForm.symbol || !tradeForm.pnl) ? 'not-allowed' : 'pointer', boxShadow: (saving || !tradeForm.symbol || !tradeForm.pnl) ? 'none' : editingTrade ? '0 0 20px rgba(245,158,11,0.5)' : '0 0 20px rgba(147,51,234,0.5), 0 0 40px rgba(147,51,234,0.3)' }}>{saving ? 'Saving...' : editingTrade ? 'Update Trade' : 'Log Trade'}</button>
             </div>
           </div>
         </div>
-      )}
+        )
+      })()}
 
       {showEditInputs && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.9)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 101 }} onClick={() => setShowEditInputs(false)}>
@@ -4769,6 +4796,30 @@ export default function AccountPage() {
                         <option key={inp.id} value={inp.id}>By {inp.label}</option>
                       ))}
                     </select>
+                    <button
+                      onClick={() => setShowObjectiveLines(!showObjectiveLines)}
+                      style={{
+                        padding: '6px 12px',
+                        background: showObjectiveLines ? 'rgba(147,51,234,0.15)' : 'transparent',
+                        border: showObjectiveLines ? '1px solid rgba(147,51,234,0.5)' : '1px solid #2a2a35',
+                        borderRadius: '4px',
+                        color: showObjectiveLines ? '#9333ea' : '#666',
+                        fontSize: '11px',
+                        cursor: 'pointer',
+                        fontWeight: 500,
+                        whiteSpace: 'nowrap',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '6px'
+                      }}
+                    >
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M3 3v18h18" />
+                        <path d="M3 12h18" strokeDasharray="4,3" />
+                        <path d="M3 6h18" strokeDasharray="4,3" />
+                      </svg>
+                      {showObjectiveLines ? 'Hide Objective Lines' : 'Show Objective Lines'}
+                    </button>
                   </>
                 )}
                 {enlargedChart === 'equity' && equityCurveGroupBy !== 'total' && (
@@ -5085,6 +5136,138 @@ export default function AccountPage() {
                 const areaBottom = hasNegative ? svgH - ((0 - yMin) / yRangeFinal) * svgH : svgH
                 const areaD = equityCurveGroupBy === 'total' && mainLine ? mainLine.pathD + ` L ${mainLine.chartPoints[mainLine.chartPoints.length - 1].x} ${areaBottom} L ${mainLine.chartPoints[0].x} ${areaBottom} Z` : null
 
+                // Daily Drawdown path calculation for enlarged chart
+                const dailyDdEnabledEnl = account?.daily_dd_enabled
+                const dailyDdPctEnlCalc = !isNaN(dailyDdPctEnlRaw) ? Math.min(99, Math.max(0, dailyDdPctEnlRaw)) : 0
+                const dailyDdTypeEnl = account?.daily_dd_type || 'static'
+                const dailyDdLocksAtEnl = account?.daily_dd_locks_at || 'start_balance'
+                const dailyDdLocksAtPctEnl = parseFloat(account?.daily_dd_locks_at_pct) || 0
+                const dailyDdResetTimeEnl = account?.daily_dd_reset_time || '00:00'
+
+                const getTradingDayEnl = (tradeDate, tradeTime) => {
+                  if (!tradeDate) return null
+                  const resetParts = (dailyDdResetTimeEnl || '00:00').split(':')
+                  const resetHour = parseInt(resetParts[0]) || 0
+                  const resetMin = parseInt(resetParts[1]) || 0
+                  const tradeDateTime = new Date(`${tradeDate}T${tradeTime || '12:00'}`)
+                  if (isNaN(tradeDateTime.getTime())) return new Date(tradeDate).toDateString()
+                  const tradeHour = tradeDateTime.getHours()
+                  const tradeMinute = tradeDateTime.getMinutes()
+                  if (tradeHour < resetHour || (tradeHour === resetHour && tradeMinute < resetMin)) {
+                    const prevDay = new Date(tradeDateTime)
+                    prevDay.setDate(prevDay.getDate() - 1)
+                    return prevDay.toDateString()
+                  }
+                  return tradeDateTime.toDateString()
+                }
+
+                let dailyDdFloorPointsEnl = []
+                if (equityCurveGroupBy === 'total' && dailyDdEnabledEnl && dailyDdPctEnlCalc > 0) {
+                  let currentDayStart = startingBalance
+                  let currentTradingDay = null
+                  let isLocked = false
+                  let lockedFloor = null
+                  const getLockThresholdEnl = () => {
+                    if (dailyDdLocksAtEnl === 'start_balance') return startingBalance
+                    if (dailyDdLocksAtEnl === 'custom' && dailyDdLocksAtPctEnl > 0) return startingBalance * (1 + dailyDdLocksAtPctEnl / 100)
+                    return startingBalance
+                  }
+                  const lockThresholdEnl = getLockThresholdEnl()
+                  const totalPointsEnl = [{ balance: startingBalance, date: null, time: null }]
+                  sorted.forEach(t => totalPointsEnl.push({ balance: totalPointsEnl[totalPointsEnl.length - 1].balance + (parseFloat(t.pnl) || 0), date: t.date, time: t.time }))
+                  totalPointsEnl.forEach((p, i) => {
+                    if (i === 0) {
+                      dailyDdFloorPointsEnl.push({ idx: i, floor: startingBalance * (1 - dailyDdPctEnlCalc / 100), isNewDay: true })
+                    } else {
+                      const tradingDay = getTradingDayEnl(p.date, p.time)
+                      const isNewDay = tradingDay && tradingDay !== currentTradingDay
+                      if (isNewDay) {
+                        const prevBalance = totalPointsEnl[i - 1].balance
+                        currentDayStart = currentTradingDay ? prevBalance : startingBalance
+                        currentTradingDay = tradingDay
+                      }
+                      let floor = currentDayStart * (1 - dailyDdPctEnlCalc / 100)
+                      if (dailyDdTypeEnl === 'trailing' && !isLocked) {
+                        if (floor >= lockThresholdEnl) { isLocked = true; lockedFloor = lockThresholdEnl; floor = lockedFloor }
+                      } else if (dailyDdTypeEnl === 'trailing' && isLocked) { floor = lockedFloor }
+                      dailyDdFloorPointsEnl.push({ idx: i, floor, isNewDay })
+                    }
+                  })
+                }
+
+                // Max Drawdown trailing path for enlarged chart
+                const maxDdEnabledEnl = account?.max_dd_enabled
+                const maxDdPctEnlCalc = !isNaN(maxDdPctEnlRaw) ? Math.min(99, Math.max(0, maxDdPctEnlRaw)) : 0
+                const maxDdTypeEnl = account?.max_dd_type || 'static'
+                const maxDdStopsAtEnl = account?.max_dd_trailing_stops_at || 'never'
+                const maxDdLocksAtPctEnl = parseFloat(account?.max_dd_locks_at_pct) || 0
+                let maxDdFloorPointsEnl = []
+                let maxDdStaticFloorEnl = null
+                if (equityCurveGroupBy === 'total' && maxDdEnabledEnl && maxDdPctEnlCalc > 0) {
+                  if (maxDdTypeEnl === 'static') {
+                    maxDdStaticFloorEnl = startingBalance * (1 - maxDdPctEnlCalc / 100)
+                  } else {
+                    let peak = startingBalance
+                    let trailingFloor = startingBalance * (1 - maxDdPctEnlCalc / 100)
+                    let isLocked = false
+                    let lockedFloor = null
+                    const getLockThresholdMaxEnl = () => {
+                      if (maxDdStopsAtEnl === 'initial') return startingBalance
+                      if (maxDdStopsAtEnl === 'custom' && maxDdLocksAtPctEnl > 0) return startingBalance * (1 + maxDdLocksAtPctEnl / 100)
+                      return null
+                    }
+                    const lockThresholdMaxEnl = getLockThresholdMaxEnl()
+                    const totalPointsMax = [{ balance: startingBalance }]
+                    sorted.forEach(t => totalPointsMax.push({ balance: totalPointsMax[totalPointsMax.length - 1].balance + (parseFloat(t.pnl) || 0) }))
+                    totalPointsMax.forEach((p, i) => {
+                      if (i === 0) { maxDdFloorPointsEnl.push({ idx: i, floor: trailingFloor }) }
+                      else {
+                        if (p.balance > peak) { peak = p.balance; trailingFloor = peak * (1 - maxDdPctEnlCalc / 100) }
+                        let floor = trailingFloor
+                        if (lockThresholdMaxEnl !== null && !isLocked && floor >= lockThresholdMaxEnl) { isLocked = true; lockedFloor = lockThresholdMaxEnl; floor = lockedFloor }
+                        else if (isLocked) { floor = lockedFloor }
+                        maxDdFloorPointsEnl.push({ idx: i, floor })
+                      }
+                    })
+                  }
+                }
+
+                // Build SVG paths for daily DD and trailing max DD
+                let dailyDdPathEnl = ''
+                if (dailyDdFloorPointsEnl.length > 0) {
+                  const ddChartPointsEnl = dailyDdFloorPointsEnl.map((p, i) => {
+                    const totalLen = dailyDdFloorPointsEnl.length
+                    const x = totalLen > 1 ? (p.idx / (totalLen - 1)) * svgW : svgW / 2
+                    const y = svgH - ((p.floor - yMin) / yRangeFinal) * svgH
+                    const aboveProfitTarget = profitTargetEnl && p.floor >= profitTargetEnl
+                    return { x, y, isNewDay: p.isNewDay, floor: p.floor, aboveProfitTarget }
+                  })
+                  let pathParts = []
+                  let inPath = false
+                  for (let i = 0; i < ddChartPointsEnl.length; i++) {
+                    const p = ddChartPointsEnl[i]
+                    const prevP = i > 0 ? ddChartPointsEnl[i - 1] : null
+                    if (p.aboveProfitTarget) { inPath = false; continue }
+                    if (!inPath) { pathParts.push(`M ${p.x} ${p.y}`); inPath = true }
+                    else { pathParts.push(`H ${p.x}`); if (prevP && p.y !== prevP.y && !prevP.aboveProfitTarget) { pathParts.push(`V ${p.y}`) } }
+                  }
+                  dailyDdPathEnl = pathParts.join(' ')
+                }
+
+                let trailingMaxDdPathEnl = ''
+                if (maxDdFloorPointsEnl.length > 0) {
+                  const maxDdChartPointsEnl = maxDdFloorPointsEnl.map(p => {
+                    const totalLen = maxDdFloorPointsEnl.length
+                    const x = totalLen > 1 ? (p.idx / (totalLen - 1)) * svgW : svgW / 2
+                    const y = svgH - ((p.floor - yMin) / yRangeFinal) * svgH
+                    return { x, y }
+                  })
+                  trailingMaxDdPathEnl = maxDdChartPointsEnl.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`).join(' ')
+                }
+
+                // Static max DD floor Y position
+                const maxDdStaticFloorYEnl = maxDdStaticFloorEnl ? ((yMax - maxDdStaticFloorEnl) / yRangeFinal) * 100 : null
+
                 return (
                   <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
                     {/* Chart row - Y-axis and chart area aligned */}
@@ -5135,17 +5318,24 @@ export default function AccountPage() {
                           </div>
                           {zeroY !== null && <div style={{ position: 'absolute', left: 0, right: 0, top: `${zeroY}%`, borderTop: '1px solid rgba(51,51,51,0.5)', zIndex: 1 }}><span style={{ position: 'absolute', left: '-60px', top: '-6px', fontSize: '11px', color: '#666' }}>$0</span></div>}
                           {/* DD Floor line - dashed orange/red horizontal line */}
-                          {ddFloorYEnl !== null && (
+                          {showObjectiveLines && ddFloorYEnl !== null && (
                             <>
                               <div style={{ position: 'absolute', left: 0, right: '55px', top: `${ddFloorYEnl}%`, borderTop: `1px dashed ${propFirmDrawdown?.breached ? '#ef4444' : '#f59e0b'}`, zIndex: 1 }} />
                               <span style={{ position: 'absolute', right: '4px', top: `${ddFloorYEnl}%`, transform: 'translateY(-50%)', fontSize: '10px', color: propFirmDrawdown?.breached ? '#ef4444' : '#f59e0b', fontWeight: 500 }}>{propFirmDrawdown?.breached ? 'BREACHED' : 'DD Floor'}</span>
                             </>
                           )}
                           {/* Profit target line - dashed blue/green horizontal line */}
-                          {profitTargetYEnl !== null && (
+                          {showObjectiveLines && profitTargetYEnl !== null && (
                             <>
                               <div style={{ position: 'absolute', left: 0, right: '45px', top: `${profitTargetYEnl}%`, borderTop: `1px dashed ${distanceFromTarget?.passed ? '#22c55e' : '#3b82f6'}`, zIndex: 1 }} />
                               <span style={{ position: 'absolute', right: '4px', top: `${profitTargetYEnl}%`, transform: 'translateY(-50%)', fontSize: '10px', color: distanceFromTarget?.passed ? '#22c55e' : '#3b82f6', fontWeight: 500 }}>{distanceFromTarget?.passed ? 'PASSED' : 'Target'}</span>
+                            </>
+                          )}
+                          {/* Static Max DD floor line - dashed red horizontal line */}
+                          {showObjectiveLines && maxDdStaticFloorYEnl !== null && (
+                            <>
+                              <div style={{ position: 'absolute', left: 0, right: '65px', top: `${maxDdStaticFloorYEnl}%`, borderTop: '1px dashed #ef4444', zIndex: 1 }} />
+                              <span style={{ position: 'absolute', right: '4px', top: `${maxDdStaticFloorYEnl}%`, transform: 'translateY(-50%)', fontSize: '10px', color: '#ef4444', fontWeight: 500 }}>Max DD</span>
                             </>
                           )}
                           <svg style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', overflow: 'visible', zIndex: 2 }} viewBox={`0 0 ${svgW} ${svgH}`} preserveAspectRatio="none"
@@ -5178,6 +5368,9 @@ export default function AccountPage() {
                                 {lineData[0].redAreaPath && <path d={lineData[0].redAreaPath} fill="url(#eqGEnlR)" />}
                                 {lineData[0].greenPath && <path d={lineData[0].greenPath} fill="none" stroke="#22c55e" strokeWidth="2" strokeLinecap="round" vectorEffect="non-scaling-stroke" />}
                                 {lineData[0].redPath && <path d={lineData[0].redPath} fill="none" stroke="#ef4444" strokeWidth="2" strokeLinecap="round" vectorEffect="non-scaling-stroke" />}
+                                {/* Objective lines - daily DD and trailing max DD */}
+                                {showObjectiveLines && dailyDdPathEnl && <path d={dailyDdPathEnl} fill="none" stroke="#f97316" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />}
+                                {showObjectiveLines && trailingMaxDdPathEnl && <path d={trailingMaxDdPathEnl} fill="none" stroke="#ef4444" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />}
                               </>
                             ) : (() => {
                               // Sort lines by final Y position (end of line) - top lines first
