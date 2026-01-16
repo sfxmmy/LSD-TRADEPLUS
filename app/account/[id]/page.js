@@ -132,7 +132,22 @@ export default function AccountPage() {
 
   const tradesScrollRef = useRef(null)
   const fixedScrollRef = useRef(null)
+  const tooltipTimerRef = useRef(null)
   const [tradesScrollWidth, setTradesScrollWidth] = useState(0)
+
+  // Helper to show tooltip with delay
+  const showTooltipDelayed = (text, x, y) => {
+    if (tooltipTimerRef.current) clearTimeout(tooltipTimerRef.current)
+    tooltipTimerRef.current = setTimeout(() => {
+      // Check if tooltip would go off screen at top, if so show below
+      const showBelow = y < 50
+      setButtonTooltip({ text, x, y, showBelow })
+    }, 600)
+  }
+  const hideTooltip = () => {
+    if (tooltipTimerRef.current) clearTimeout(tooltipTimerRef.current)
+    hideTooltip()
+  }
 
   useEffect(() => {
     const checkMobile = () => setIsMobile(window.innerWidth < 768)
@@ -1418,6 +1433,20 @@ export default function AccountPage() {
           <div style={{ display: 'flex', alignItems: 'center', gap: '16px', flex: 1, minWidth: 0 }}>
             {(() => {
               const getTitle = () => {
+                // Notes tab is always just "Notes"
+                if (activeTab === 'notes') return 'Notes'
+
+                // Statistics tab
+                if (activeTab === 'statistics') {
+                  if (viewMode === 'all') return 'Overall Statistics'
+                  if (viewMode === 'selected' && selectedJournalIds.size > 0) {
+                    const names = allAccounts.filter(a => selectedJournalIds.has(a.id)).map(a => a.name)
+                    return names.join(', ') + ' Statistics'
+                  }
+                  return (account?.name || '') + ' Statistics'
+                }
+
+                // Trades tab (default)
                 if (viewMode === 'all') return 'Overall Journal'
                 if (viewMode === 'selected' && selectedJournalIds.size > 0) {
                   const names = allAccounts.filter(a => selectedJournalIds.has(a.id)).map(a => a.name)
@@ -1444,7 +1473,7 @@ export default function AccountPage() {
               )
             })()}
             {activeTab === 'trades' && getTradesWithImages().length > 0 && (
-              <button onClick={() => { setSlideshowIndex(0); setSlideshowMode(true) }} style={{ height: '36px', padding: '0 20px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '6px', color: '#fff', fontSize: '13px', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', lineHeight: 1, transition: 'all 0.2s' }} onMouseEnter={e => { e.currentTarget.style.borderColor = '#3a3a45'; e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; const rect = e.currentTarget.getBoundingClientRect(); setButtonTooltip({ text: 'View trade screenshots as slideshow', x: rect.left + rect.width / 2, y: rect.top }) }} onMouseLeave={e => { e.currentTarget.style.borderColor = '#2a2a35'; e.currentTarget.style.background = 'transparent'; setButtonTooltip(null) }}>
+              <button onClick={() => { setSlideshowIndex(0); setSlideshowMode(true) }} style={{ height: '36px', padding: '0 20px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '6px', color: '#fff', fontSize: '13px', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', lineHeight: 1, transition: 'all 0.2s' }} onMouseEnter={e => { e.currentTarget.style.borderColor = '#3a3a45'; e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; const rect = e.currentTarget.getBoundingClientRect(); showTooltipDelayed('View trade screenshots as slideshow', rect.left + rect.width / 2, rect.top) }} onMouseLeave={e => { e.currentTarget.style.borderColor = '#2a2a35'; e.currentTarget.style.background = 'transparent'; hideTooltip() }}>
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
                 Slideshow Trades ({getSlideshowImages().length})
               </button>
@@ -1455,28 +1484,28 @@ export default function AccountPage() {
               {activeTab === 'trades' && selectMode && (
                 <>
                   <span style={{ fontSize: '12px', color: '#22c55e', fontWeight: 600, lineHeight: 1, margin: 0 }}>{selectedTrades.size} selected</span>
-                  <button onClick={() => { const allSelected = filteredTrades.every(t => selectedTrades.has(t.id)); if (allSelected) { const newSet = new Set(selectedTrades); filteredTrades.forEach(t => newSet.delete(t.id)); setSelectedTrades(newSet) } else { const newSet = new Set(selectedTrades); filteredTrades.forEach(t => newSet.add(t.id)); setSelectedTrades(newSet) } }} style={{ height: '36px', margin: 0, padding: '0 20px', background: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.4)', borderRadius: '6px', color: '#22c55e', fontSize: '13px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', lineHeight: 1, transition: 'all 0.2s' }} onMouseEnter={e => { e.currentTarget.style.background = 'rgba(34,197,94,0.2)'; e.currentTarget.style.borderColor = 'rgba(34,197,94,0.6)'; const rect = e.currentTarget.getBoundingClientRect(); setButtonTooltip({ text: 'Select or deselect all visible trades', x: rect.left + rect.width / 2, y: rect.top }) }} onMouseLeave={e => { e.currentTarget.style.background = 'rgba(34,197,94,0.1)'; e.currentTarget.style.borderColor = 'rgba(34,197,94,0.4)'; setButtonTooltip(null) }}>{filteredTrades.every(t => selectedTrades.has(t.id)) && filteredTrades.length > 0 ? 'Deselect All' : 'Select All'}</button>
-                  {selectedTrades.size > 0 && <button onClick={() => { setViewingSelectedStats(true); setActiveTab('statistics') }} style={{ height: '36px', margin: 0, padding: '0 20px', background: 'rgba(34,197,94,0.15)', border: '1px solid #22c55e', borderRadius: '6px', color: '#22c55e', fontSize: '13px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', lineHeight: 1, transition: 'all 0.2s' }} onMouseEnter={e => { e.currentTarget.style.background = 'rgba(34,197,94,0.25)'; e.currentTarget.style.borderColor = '#4ade80'; const rect = e.currentTarget.getBoundingClientRect(); setButtonTooltip({ text: 'View statistics for selected trades', x: rect.left + rect.width / 2, y: rect.top }) }} onMouseLeave={e => { e.currentTarget.style.background = 'rgba(34,197,94,0.15)'; e.currentTarget.style.borderColor = '#22c55e'; setButtonTooltip(null) }}>View Stats</button>}
-                  {selectedTrades.size > 0 && <button onClick={() => setDeleteSelectedConfirm(true)} style={{ height: '36px', margin: 0, padding: '0 20px', background: 'rgba(239,68,68,0.15)', border: '1px solid #ef4444', borderRadius: '6px', color: '#ef4444', fontSize: '13px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', lineHeight: 1, transition: 'all 0.2s' }} onMouseEnter={e => { e.currentTarget.style.background = 'rgba(239,68,68,0.25)'; e.currentTarget.style.borderColor = '#f87171'; const rect = e.currentTarget.getBoundingClientRect(); setButtonTooltip({ text: 'Delete all selected trades', x: rect.left + rect.width / 2, y: rect.top }) }} onMouseLeave={e => { e.currentTarget.style.background = 'rgba(239,68,68,0.15)'; e.currentTarget.style.borderColor = '#ef4444'; setButtonTooltip(null) }}>Delete</button>}
-                  <button onClick={exitSelectMode} style={{ height: '36px', margin: 0, padding: '0 20px', background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.4)', borderRadius: '6px', color: '#ef4444', fontSize: '13px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', lineHeight: 1, transition: 'all 0.2s' }} onMouseEnter={e => { e.currentTarget.style.background = 'rgba(239,68,68,0.2)'; e.currentTarget.style.borderColor = 'rgba(239,68,68,0.6)'; const rect = e.currentTarget.getBoundingClientRect(); setButtonTooltip({ text: 'Exit selection mode', x: rect.left + rect.width / 2, y: rect.top }) }} onMouseLeave={e => { e.currentTarget.style.background = 'rgba(239,68,68,0.1)'; e.currentTarget.style.borderColor = 'rgba(239,68,68,0.4)'; setButtonTooltip(null) }}>Cancel</button>
+                  <button onClick={() => { const allSelected = filteredTrades.every(t => selectedTrades.has(t.id)); if (allSelected) { const newSet = new Set(selectedTrades); filteredTrades.forEach(t => newSet.delete(t.id)); setSelectedTrades(newSet) } else { const newSet = new Set(selectedTrades); filteredTrades.forEach(t => newSet.add(t.id)); setSelectedTrades(newSet) } }} style={{ height: '36px', margin: 0, padding: '0 20px', background: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.4)', borderRadius: '6px', color: '#22c55e', fontSize: '13px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', lineHeight: 1, transition: 'all 0.2s' }} onMouseEnter={e => { e.currentTarget.style.background = 'rgba(34,197,94,0.2)'; e.currentTarget.style.borderColor = 'rgba(34,197,94,0.6)'; const rect = e.currentTarget.getBoundingClientRect(); showTooltipDelayed('Select or deselect all visible trades', rect.left + rect.width / 2, rect.top) }} onMouseLeave={e => { e.currentTarget.style.background = 'rgba(34,197,94,0.1)'; e.currentTarget.style.borderColor = 'rgba(34,197,94,0.4)'; hideTooltip() }}>{filteredTrades.every(t => selectedTrades.has(t.id)) && filteredTrades.length > 0 ? 'Deselect All' : 'Select All'}</button>
+                  {selectedTrades.size > 0 && <button onClick={() => { setViewingSelectedStats(true); setActiveTab('statistics') }} style={{ height: '36px', margin: 0, padding: '0 20px', background: 'rgba(34,197,94,0.15)', border: '1px solid #22c55e', borderRadius: '6px', color: '#22c55e', fontSize: '13px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', lineHeight: 1, transition: 'all 0.2s' }} onMouseEnter={e => { e.currentTarget.style.background = 'rgba(34,197,94,0.25)'; e.currentTarget.style.borderColor = '#4ade80'; const rect = e.currentTarget.getBoundingClientRect(); showTooltipDelayed('View statistics for selected trades', rect.left + rect.width / 2, rect.top) }} onMouseLeave={e => { e.currentTarget.style.background = 'rgba(34,197,94,0.15)'; e.currentTarget.style.borderColor = '#22c55e'; hideTooltip() }}>View Stats</button>}
+                  {selectedTrades.size > 0 && <button onClick={() => setDeleteSelectedConfirm(true)} style={{ height: '36px', margin: 0, padding: '0 20px', background: 'rgba(239,68,68,0.15)', border: '1px solid #ef4444', borderRadius: '6px', color: '#ef4444', fontSize: '13px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', lineHeight: 1, transition: 'all 0.2s' }} onMouseEnter={e => { e.currentTarget.style.background = 'rgba(239,68,68,0.25)'; e.currentTarget.style.borderColor = '#f87171'; const rect = e.currentTarget.getBoundingClientRect(); showTooltipDelayed('Delete all selected trades', rect.left + rect.width / 2, rect.top) }} onMouseLeave={e => { e.currentTarget.style.background = 'rgba(239,68,68,0.15)'; e.currentTarget.style.borderColor = '#ef4444'; hideTooltip() }}>Delete</button>}
+                  <button onClick={exitSelectMode} style={{ height: '36px', margin: 0, padding: '0 20px', background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.4)', borderRadius: '6px', color: '#ef4444', fontSize: '13px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', lineHeight: 1, transition: 'all 0.2s' }} onMouseEnter={e => { e.currentTarget.style.background = 'rgba(239,68,68,0.2)'; e.currentTarget.style.borderColor = 'rgba(239,68,68,0.6)'; const rect = e.currentTarget.getBoundingClientRect(); showTooltipDelayed('Exit selection mode', rect.left + rect.width / 2, rect.top) }} onMouseLeave={e => { e.currentTarget.style.background = 'rgba(239,68,68,0.1)'; e.currentTarget.style.borderColor = 'rgba(239,68,68,0.4)'; hideTooltip() }}>Cancel</button>
                 </>
               )}
               {/* Select button - only on trades tab when not in select mode */}
               {activeTab === 'trades' && trades.length > 0 && !selectMode && (
-                <button onClick={() => setSelectMode(true)} style={{ height: '36px', margin: 0, padding: '0 20px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '6px', color: '#fff', fontSize: '13px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', lineHeight: 1, transition: 'all 0.2s' }} onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; e.currentTarget.style.borderColor = '#3a3a45'; const rect = e.currentTarget.getBoundingClientRect(); setButtonTooltip({ text: 'Select multiple trades for bulk actions', x: rect.left + rect.width / 2, y: rect.top }) }} onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.borderColor = '#2a2a35'; setButtonTooltip(null) }}>Select</button>
+                <button onClick={() => setSelectMode(true)} style={{ height: '36px', margin: 0, padding: '0 20px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '6px', color: '#fff', fontSize: '13px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', lineHeight: 1, transition: 'all 0.2s' }} onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; e.currentTarget.style.borderColor = '#3a3a45'; const rect = e.currentTarget.getBoundingClientRect(); showTooltipDelayed('Select multiple trades for bulk actions', rect.left + rect.width / 2, rect.top) }} onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.borderColor = '#2a2a35'; hideTooltip() }}>Select</button>
               )}
               {/* Filters - always visible */}
-              <button onClick={() => { setDraftFilters({...filters, quickSelect: ''}); setShowFilters(true) }} style={{ height: '36px', margin: 0, padding: '0 20px', background: hasActiveFilters ? 'rgba(34,197,94,0.15)' : 'transparent', border: hasActiveFilters ? '1px solid #22c55e' : '1px solid #2a2a35', borderRadius: '6px', color: hasActiveFilters ? '#22c55e' : '#fff', fontSize: '13px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', lineHeight: 1, transition: 'all 0.2s' }} onMouseEnter={e => { if (hasActiveFilters) { e.currentTarget.style.background = 'rgba(34,197,94,0.25)'; e.currentTarget.style.borderColor = '#4ade80' } else { e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; e.currentTarget.style.borderColor = '#3a3a45' }; const rect = e.currentTarget.getBoundingClientRect(); setButtonTooltip({ text: 'Filter trades by date, symbol, and more', x: rect.left + rect.width / 2, y: rect.top }) }} onMouseLeave={e => { if (hasActiveFilters) { e.currentTarget.style.background = 'rgba(34,197,94,0.15)'; e.currentTarget.style.borderColor = '#22c55e' } else { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.borderColor = '#2a2a35' }; setButtonTooltip(null) }}>
+              <button onClick={() => { setDraftFilters({...filters, quickSelect: ''}); setShowFilters(true) }} style={{ height: '36px', margin: 0, padding: '0 20px', background: hasActiveFilters ? 'rgba(34,197,94,0.15)' : 'transparent', border: hasActiveFilters ? '1px solid #22c55e' : '1px solid #2a2a35', borderRadius: '6px', color: hasActiveFilters ? '#22c55e' : '#fff', fontSize: '13px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', lineHeight: 1, transition: 'all 0.2s' }} onMouseEnter={e => { if (hasActiveFilters) { e.currentTarget.style.background = 'rgba(34,197,94,0.25)'; e.currentTarget.style.borderColor = '#4ade80' } else { e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; e.currentTarget.style.borderColor = '#3a3a45' }; const rect = e.currentTarget.getBoundingClientRect(); showTooltipDelayed('Filter trades by date, symbol, and more', rect.left + rect.width / 2, rect.top) }} onMouseLeave={e => { if (hasActiveFilters) { e.currentTarget.style.background = 'rgba(34,197,94,0.15)'; e.currentTarget.style.borderColor = '#22c55e' } else { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.borderColor = '#2a2a35' }; hideTooltip() }}>
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
                 Filters{hasActiveFilters && ` (${Object.values(filters).filter(Boolean).length})`}
               </button>
               {/* Edit Columns - only on trades tab */}
               {activeTab === 'trades' && (
-                <button onClick={() => setShowEditInputs(true)} style={{ height: '36px', margin: 0, padding: '0 20px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '6px', color: '#fff', fontSize: '13px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', lineHeight: 1, transition: 'all 0.2s' }} onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; e.currentTarget.style.borderColor = '#3a3a45'; const rect = e.currentTarget.getBoundingClientRect(); setButtonTooltip({ text: 'Customize table columns', x: rect.left + rect.width / 2, y: rect.top }) }} onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.borderColor = '#2a2a35'; setButtonTooltip(null) }}>Edit Columns</button>
+                <button onClick={() => setShowEditInputs(true)} style={{ height: '36px', margin: 0, padding: '0 20px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '6px', color: '#fff', fontSize: '13px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', lineHeight: 1, transition: 'all 0.2s' }} onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; e.currentTarget.style.borderColor = '#3a3a45'; const rect = e.currentTarget.getBoundingClientRect(); showTooltipDelayed('Customize table columns', rect.left + rect.width / 2, rect.top) }} onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.borderColor = '#2a2a35'; hideTooltip() }}>Edit Columns</button>
               )}
               {/* Log Trade - only on trades tab when not in select mode */}
               {activeTab === 'trades' && !selectMode && (
-                <button onClick={() => { setTradeForm({ date: new Date().toISOString().split('T')[0] }); setEditingTrade(null); setShowAddTrade(true) }} style={{ height: '36px', margin: 0, padding: '0 20px', background: 'transparent', border: '2px dashed #22c55e', borderRadius: '6px', color: '#22c55e', fontWeight: 600, fontSize: '13px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.2s', lineHeight: 1 }} onMouseEnter={e => { e.currentTarget.style.borderColor = '#4ade80'; e.currentTarget.style.background = 'rgba(34, 197, 94, 0.05)'; const rect = e.currentTarget.getBoundingClientRect(); setButtonTooltip({ text: 'Add a new trade entry', x: rect.left + rect.width / 2, y: rect.top }) }} onMouseLeave={e => { e.currentTarget.style.borderColor = '#22c55e'; e.currentTarget.style.background = 'transparent'; setButtonTooltip(null) }}>+ LOG TRADE</button>
+                <button onClick={() => { setTradeForm({ date: new Date().toISOString().split('T')[0] }); setEditingTrade(null); setShowAddTrade(true) }} style={{ height: '36px', margin: 0, padding: '0 20px', background: 'transparent', border: '2px dashed #22c55e', borderRadius: '6px', color: '#22c55e', fontWeight: 600, fontSize: '13px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.2s', lineHeight: 1 }} onMouseEnter={e => { e.currentTarget.style.borderColor = '#4ade80'; e.currentTarget.style.background = 'rgba(34, 197, 94, 0.05)'; const rect = e.currentTarget.getBoundingClientRect(); showTooltipDelayed('Add a new trade entry', rect.left + rect.width / 2, rect.top) }} onMouseLeave={e => { e.currentTarget.style.borderColor = '#22c55e'; e.currentTarget.style.background = 'transparent'; hideTooltip() }}>+ LOG TRADE</button>
               )}
           </div>
         </div>
@@ -1485,7 +1514,7 @@ export default function AccountPage() {
       {/* Mobile Subheader */}
       {isMobile && (
         <div style={{ position: 'fixed', top: '53px', left: 0, right: 0, zIndex: 40, padding: '10px 16px', background: '#0a0a0f', borderBottom: '1px solid #1a1a22', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <span style={{ fontSize: '14px', fontWeight: 700, color: '#fff', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '200px' }}>{viewMode === 'all' ? 'Overall Journal' : viewMode === 'selected' && selectedJournalIds.size > 0 ? allAccounts.filter(a => selectedJournalIds.has(a.id)).map(a => a.name).join(', ') : account?.name}</span>
+          <span style={{ fontSize: '14px', fontWeight: 700, color: '#fff', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '200px' }}>{activeTab === 'notes' ? 'Notes' : activeTab === 'statistics' ? (viewMode === 'all' ? 'Overall Statistics' : viewMode === 'selected' && selectedJournalIds.size > 0 ? allAccounts.filter(a => selectedJournalIds.has(a.id)).map(a => a.name).join(', ') + ' Statistics' : (account?.name || '') + ' Statistics') : (viewMode === 'all' ? 'Overall Journal' : viewMode === 'selected' && selectedJournalIds.size > 0 ? allAccounts.filter(a => selectedJournalIds.has(a.id)).map(a => a.name).join(', ') : account?.name)}</span>
           <button onClick={() => { setTradeForm({ date: new Date().toISOString().split('T')[0] }); setEditingTrade(null); setShowAddTrade(true) }} style={{ padding: '8px 16px', background: 'linear-gradient(135deg, #9333ea 0%, #7c3aed 100%)', border: 'none', borderRadius: '6px', color: '#fff', fontWeight: 600, fontSize: '12px', cursor: 'pointer', boxShadow: '0 0 15px rgba(147,51,234,0.5)' }}>+ ADD</button>
         </div>
       )}
@@ -1503,8 +1532,11 @@ export default function AccountPage() {
                 background: activeTab === tab ? 'transparent' : 'transparent',
                 border: activeTab === tab ? '1px solid #22c55e' : '1px solid #2a2a35',
                 borderRadius: '8px', color: activeTab === tab ? '#22c55e' : '#888',
-                fontSize: '14px', fontWeight: 600, textTransform: 'uppercase', cursor: 'pointer', textAlign: 'center'
+                fontSize: '14px', fontWeight: 600, textTransform: 'uppercase', cursor: 'pointer', textAlign: 'center',
+                transition: 'all 0.2s'
               }}
+              onMouseEnter={e => { if (activeTab !== tab) { e.currentTarget.style.borderColor = '#22c55e'; e.currentTarget.style.color = '#22c55e'; e.currentTarget.style.background = 'rgba(34,197,94,0.05)' } }}
+              onMouseLeave={e => { if (activeTab !== tab) { e.currentTarget.style.borderColor = '#2a2a35'; e.currentTarget.style.color = '#888'; e.currentTarget.style.background = 'transparent' } }}
             >
               {tab}
             </button>
@@ -1513,7 +1545,7 @@ export default function AccountPage() {
           {/* Stats View Selector - hide on notes tab since notes are user-level */}
           {activeTab !== 'notes' && (
           <div style={{ marginBottom: '8px', padding: '10px', background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px' }}>
-            <div style={{ fontSize: '9px', color: '#888', textTransform: 'uppercase', marginBottom: '8px', letterSpacing: '0.5px', fontWeight: 600 }}>Viewing {activeTab === 'trades' ? 'Trades' : 'Stats'} For</div>
+            <div style={{ fontSize: '10px', color: '#666', textTransform: 'uppercase', marginBottom: '8px', letterSpacing: '0.5px', fontWeight: 600, textAlign: 'center' }}>Viewing {activeTab === 'trades' ? 'Trades' : 'Stats'} For</div>
 
               {/* Show "Selected Trades" indicator when viewing selected */}
               {viewingSelectedStats && (
@@ -1555,8 +1587,11 @@ export default function AccountPage() {
                       fontWeight: 600,
                       cursor: 'pointer',
                       textAlign: 'left',
-                      boxShadow: viewMode === 'this' ? '0 0 12px rgba(34,197,94,0.5), 0 0 24px rgba(34,197,94,0.3)' : 'none'
+                      boxShadow: viewMode === 'this' ? '0 0 12px rgba(34,197,94,0.5), 0 0 24px rgba(34,197,94,0.3)' : 'none',
+                      transition: 'all 0.2s'
                     }}
+                    onMouseEnter={e => { if (viewMode !== 'this') { e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; e.currentTarget.style.borderColor = '#2a2a35'; e.currentTarget.style.color = '#888' } }}
+                    onMouseLeave={e => { if (viewMode !== 'this') { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.borderColor = '#1a1a22'; e.currentTarget.style.color = '#666' } }}
                   >
                     <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                       <div style={{ width: '5px', height: '5px', borderRadius: '50%', background: viewMode === 'this' ? '#fff' : '#444' }} />
@@ -1578,8 +1613,11 @@ export default function AccountPage() {
                           fontWeight: 600,
                           cursor: 'pointer',
                           textAlign: 'left',
-                          boxShadow: viewMode === 'all' ? '0 0 12px rgba(59,130,246,0.5), 0 0 24px rgba(59,130,246,0.3)' : 'none'
+                          boxShadow: viewMode === 'all' ? '0 0 12px rgba(59,130,246,0.5), 0 0 24px rgba(59,130,246,0.3)' : 'none',
+                          transition: 'all 0.2s'
                         }}
+                        onMouseEnter={e => { if (viewMode !== 'all') { e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; e.currentTarget.style.borderColor = '#2a2a35'; e.currentTarget.style.color = '#888' } }}
+                        onMouseLeave={e => { if (viewMode !== 'all') { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.borderColor = '#1a1a22'; e.currentTarget.style.color = '#666' } }}
                       >
                         <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                           <div style={{ width: '5px', height: '5px', borderRadius: '50%', background: viewMode === 'all' ? '#fff' : '#444' }} />
@@ -1600,8 +1638,11 @@ export default function AccountPage() {
                             fontWeight: 600,
                             cursor: 'pointer',
                             textAlign: 'left',
-                            boxShadow: viewMode === 'selected' ? '0 0 12px rgba(239,68,68,0.5), 0 0 24px rgba(239,68,68,0.3)' : 'none'
+                            boxShadow: viewMode === 'selected' ? '0 0 12px rgba(239,68,68,0.5), 0 0 24px rgba(239,68,68,0.3)' : 'none',
+                            transition: 'all 0.2s'
                           }}
+                          onMouseEnter={e => { if (viewMode !== 'selected') { e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; e.currentTarget.style.borderColor = '#2a2a35'; e.currentTarget.style.color = '#888' } }}
+                          onMouseLeave={e => { if (viewMode !== 'selected') { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.borderColor = '#1a1a22'; e.currentTarget.style.color = '#666' } }}
                         >
                           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
@@ -1676,6 +1717,8 @@ export default function AccountPage() {
                     transition: 'all 0.15s ease',
                     boxShadow: isSelected ? '0 0 12px rgba(34,197,94,0.2), inset 0 0 20px rgba(34,197,94,0.05)' : 'none'
                   }}
+                  onMouseEnter={e => { if (!isSelected) { e.currentTarget.style.borderColor = 'rgba(34,197,94,0.5)'; e.currentTarget.style.background = 'rgba(34,197,94,0.05)' } }}
+                  onMouseLeave={e => { if (!isSelected) { e.currentTarget.style.borderColor = '#1a1a22'; e.currentTarget.style.background = '#0a0a0f' } }}
                 >
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                     <div style={{
@@ -5911,8 +5954,8 @@ export default function AccountPage() {
         <div style={{
           position: 'fixed',
           left: buttonTooltip.x,
-          top: buttonTooltip.y - 8,
-          transform: 'translate(-50%, -100%)',
+          top: buttonTooltip.showBelow ? buttonTooltip.y + 44 : buttonTooltip.y - 8,
+          transform: buttonTooltip.showBelow ? 'translate(-50%, 0)' : 'translate(-50%, -100%)',
           background: '#1a1a22',
           border: '1px solid #2a2a35',
           borderRadius: '6px',
@@ -5925,11 +5968,12 @@ export default function AccountPage() {
           boxShadow: '0 4px 12px rgba(0,0,0,0.4)'
         }}>
           {buttonTooltip.text}
+          {/* Arrow - points up if showing below, points down if showing above */}
           <div style={{
             position: 'absolute',
-            bottom: '-4px',
+            [buttonTooltip.showBelow ? 'top' : 'bottom']: '-4px',
             left: '50%',
-            transform: 'translateX(-50%) rotate(45deg)',
+            transform: `translateX(-50%) rotate(${buttonTooltip.showBelow ? '-135deg' : '45deg'})`,
             width: '8px',
             height: '8px',
             background: '#1a1a22',
