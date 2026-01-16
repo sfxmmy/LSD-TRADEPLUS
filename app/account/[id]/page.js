@@ -4323,27 +4323,27 @@ export default function AccountPage() {
                       const currentColor = getColor(currentVal, currentOpt)
                       return (
                         <div key={input.id} style={input.type === 'select' ? { position: 'relative' } : {}}>
-                          <label style={{ display: 'block', fontSize: '10px', color: '#888', marginBottom: '6px', fontWeight: 600 }}>{input.label}</label>
+                          <label style={{ display: 'block', fontSize: '12px', color: '#888', marginBottom: '6px', fontWeight: 600 }}>{input.label}</label>
                           {input.type === 'select' ? (
                             <>
                               <button type="button" onClick={() => {
                                 if (input.id === 'direction') { setDirectionDropdownOpen(!directionDropdownOpen); setOutcomeDropdownOpen(false); setCustomDropdownOpen({}) }
                                 else if (input.id === 'outcome') { setOutcomeDropdownOpen(!outcomeDropdownOpen); setDirectionDropdownOpen(false); setCustomDropdownOpen({}) }
                                 else { setCustomDropdownOpen(prev => ({ ...Object.fromEntries(Object.keys(prev).map(k => [k, false])), [input.id]: !isDropdownOpen })); setDirectionDropdownOpen(false); setOutcomeDropdownOpen(false) }
-                              }} style={{ width: '100%', padding: '10px 12px', background: '#0a0a0f', border: isDropdownOpen ? '1px solid #22c55e' : '1px solid #1a1a22', borderRadius: isDropdownOpen ? '8px 8px 0 0' : '8px', color: currentColor, fontSize: '13px', boxSizing: 'border-box', cursor: 'pointer', textAlign: 'left', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                              }} style={{ width: '100%', padding: '10px 12px', background: '#0a0a0f', border: isDropdownOpen ? '1px solid #22c55e' : '1px solid #1a1a22', borderRadius: isDropdownOpen ? '8px 8px 0 0' : '8px', color: currentColor, fontSize: '14px', boxSizing: 'border-box', cursor: 'pointer', textAlign: 'left', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                 <span>{currentVal ? (currentOpt ? getOptVal(currentOpt) : currentVal) : '-'}</span>
                                 <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ transform: isDropdownOpen ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }}><path d="M6 9l6 6 6-6" /></svg>
                               </button>
                               {isDropdownOpen && (
                                 <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, background: '#0a0a0f', border: '1px solid #22c55e', borderTop: 'none', borderRadius: '0 0 8px 8px', zIndex: 100, overflow: 'hidden', maxHeight: '200px', overflowY: 'auto' }}>
-                                  <div onClick={() => { setTradeForm({...tradeForm, [input.id]: ''}); setDirectionDropdownOpen(false); setOutcomeDropdownOpen(false); setCustomDropdownOpen({}) }} style={{ padding: '10px 12px', cursor: 'pointer', color: '#888', fontSize: '13px', transition: 'background 0.15s' }} onMouseEnter={e => e.currentTarget.style.background = '#1a1a22'} onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>-</div>
+                                  <div onClick={() => { setTradeForm({...tradeForm, [input.id]: ''}); setDirectionDropdownOpen(false); setOutcomeDropdownOpen(false); setCustomDropdownOpen({}) }} style={{ padding: '10px 12px', cursor: 'pointer', color: '#888', fontSize: '14px', transition: 'background 0.15s' }} onMouseEnter={e => e.currentTarget.style.background = '#1a1a22'} onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>-</div>
                                   {optionsArr.map((o, idx) => {
                                     const optVal = getOptVal(o)
                                     const optColor = getColor(optVal.toLowerCase(), o)
                                     const optBg = typeof o === 'object' ? (o.bgColor || null) : null
                                     const defaultBg = input.id === 'direction' ? (optVal.toLowerCase() === 'long' ? 'rgba(34,197,94,0.15)' : 'rgba(239,68,68,0.15)') : input.id === 'outcome' ? (optVal.toLowerCase() === 'win' ? 'rgba(34,197,94,0.15)' : optVal.toLowerCase() === 'loss' ? 'rgba(239,68,68,0.15)' : 'rgba(245,158,11,0.15)') : null
                                     return (
-                                      <div key={idx} onClick={() => { setTradeForm({...tradeForm, [input.id]: optVal.toLowerCase()}); setDirectionDropdownOpen(false); setOutcomeDropdownOpen(false); setCustomDropdownOpen({}) }} style={{ padding: '10px 12px', cursor: 'pointer', color: optColor, fontSize: '13px', fontWeight: 600, transition: 'background 0.15s' }} onMouseEnter={e => e.currentTarget.style.background = optBg || defaultBg || 'rgba(255,255,255,0.1)'} onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>{optVal}</div>
+                                      <div key={idx} onClick={() => { setTradeForm({...tradeForm, [input.id]: optVal.toLowerCase()}); setDirectionDropdownOpen(false); setOutcomeDropdownOpen(false); setCustomDropdownOpen({}) }} style={{ padding: '10px 12px', cursor: 'pointer', color: optColor, fontSize: '14px', fontWeight: 600, transition: 'background 0.15s' }} onMouseEnter={e => e.currentTarget.style.background = optBg || defaultBg || 'rgba(255,255,255,0.1)'} onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>{optVal}</div>
                                     )
                                   })}
                                 </div>
@@ -4351,11 +4351,11 @@ export default function AccountPage() {
                             </>
                           ) : input.type === 'value' ? (
                             <div style={{ display: 'flex', gap: '0' }}>
-                              <span style={{ padding: '10px 12px', background: '#141418', border: '1px solid #1a1a22', borderRight: 'none', borderRadius: '8px 0 0 8px', color: '#888', fontSize: '13px' }}>{input.currency || '$'}</span>
-                              <input type="number" value={tradeForm[input.id] || ''} onChange={e => setTradeForm({...tradeForm, [input.id]: e.target.value})} placeholder="0" style={{ flex: 1, padding: '10px 12px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '0 8px 8px 0', color: '#fff', fontSize: '13px', boxSizing: 'border-box', minWidth: 0 }} />
+                              <span style={{ padding: '10px 12px', background: '#141418', border: '1px solid #1a1a22', borderRight: 'none', borderRadius: '8px 0 0 8px', color: '#888', fontSize: '14px' }}>{input.currency || '$'}</span>
+                              <input type="number" value={tradeForm[input.id] || ''} onChange={e => setTradeForm({...tradeForm, [input.id]: e.target.value})} placeholder="0" style={{ flex: 1, padding: '10px 12px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '0 8px 8px 0', color: '#fff', fontSize: '14px', boxSizing: 'border-box', minWidth: 0 }} />
                             </div>
                           ) : (
-                            <input type={input.type === 'number' ? 'number' : input.type === 'time' ? 'time' : 'text'} value={tradeForm[input.id] || ''} onChange={e => setTradeForm({...tradeForm, [input.id]: e.target.value})} placeholder={input.id === 'symbol' ? 'XAUUSD' : input.id === 'rr' ? '2.5' : input.id === 'riskPercent' ? '1' : ''} maxLength={input.type === 'text' ? (input.id === 'symbol' ? 20 : 100) : undefined} style={{ width: '100%', padding: '10px 12px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '8px', color: '#fff', fontSize: '13px', boxSizing: 'border-box' }} />
+                            <input type={input.type === 'number' ? 'number' : input.type === 'time' ? 'time' : 'text'} value={tradeForm[input.id] || ''} onChange={e => setTradeForm({...tradeForm, [input.id]: e.target.value})} placeholder={input.id === 'symbol' ? 'XAUUSD' : input.id === 'rr' ? '2.5' : input.id === 'riskPercent' ? '1' : ''} maxLength={input.type === 'text' ? (input.id === 'symbol' ? 20 : 100) : undefined} style={{ width: '100%', padding: '10px 12px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '8px', color: '#fff', fontSize: '14px', boxSizing: 'border-box' }} />
                           )}
                         </div>
                       )
@@ -4386,7 +4386,7 @@ export default function AccountPage() {
                             </div>
                           </div>
                         ) : input.type === 'date' ? (
-                          <input type="date" value={tradeForm[input.id] || ''} onChange={e => setTradeForm({...tradeForm, [input.id]: e.target.value})} style={{ width: '100%', padding: '10px 12px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '8px', color: '#fff', fontSize: '13px', boxSizing: 'border-box' }} />
+                          <input type="date" value={tradeForm[input.id] || ''} onChange={e => setTradeForm({...tradeForm, [input.id]: e.target.value})} style={{ width: '100%', padding: '10px 12px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '8px', color: '#fff', fontSize: '14px', boxSizing: 'border-box' }} />
                         ) : input.type === 'rating' ? (
                           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                             <div style={{ display: 'inline-flex', gap: '3px', padding: '8px 12px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '8px' }} onMouseLeave={() => setHoverRatings(prev => ({...prev, [input.id]: 0}))}>
@@ -4410,7 +4410,7 @@ export default function AccountPage() {
                             </span>
                           </div>
                         ) : input.type === 'textarea' ? (
-                          <textarea value={tradeForm[input.id] || ''} onChange={e => setTradeForm({...tradeForm, [input.id]: e.target.value})} maxLength={5000} placeholder="Trade notes..." rows={4} style={{ width: '100%', padding: '10px 12px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '8px', color: '#fff', fontSize: '13px', boxSizing: 'border-box', resize: 'none', fontFamily: 'inherit' }} />
+                          <textarea value={tradeForm[input.id] || ''} onChange={e => setTradeForm({...tradeForm, [input.id]: e.target.value})} maxLength={5000} placeholder="Trade notes..." rows={4} style={{ width: '100%', padding: '10px 12px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '8px', color: '#fff', fontSize: '14px', boxSizing: 'border-box', resize: 'none', fontFamily: 'inherit' }} />
                         ) : null}
                       </div>
                     )
@@ -4421,7 +4421,7 @@ export default function AccountPage() {
 
             {/* Footer with action buttons */}
             <div style={{ padding: '16px 24px', borderTop: '1px solid #1a1a22', display: 'flex', justifyContent: 'flex-end', gap: '12px' }}>
-              <button onClick={() => { setShowAddTrade(false); setEditingTrade(null) }} style={{ padding: '12px 24px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '10px', color: '#888', fontWeight: 600, fontSize: '13px', cursor: 'pointer' }}>Cancel</button>
+              <button onClick={() => { setShowAddTrade(false); setEditingTrade(null) }} style={{ padding: '12px 24px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '10px', color: '#888', fontWeight: 600, fontSize: '14px', cursor: 'pointer' }}>Cancel</button>
               <button onClick={editingTrade ? updateTrade : addTrade} disabled={saving || !tradeForm.symbol || !tradeForm.pnl} style={{ padding: '12px 32px', background: (saving || !tradeForm.symbol || !tradeForm.pnl) ? '#1a1a22' : editingTrade ? 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)' : 'linear-gradient(135deg, #9333ea 0%, #7c3aed 100%)', border: 'none', borderRadius: '10px', color: (saving || !tradeForm.symbol || !tradeForm.pnl) ? '#666' : '#fff', fontWeight: 600, fontSize: '15px', cursor: (saving || !tradeForm.symbol || !tradeForm.pnl) ? 'not-allowed' : 'pointer', boxShadow: (saving || !tradeForm.symbol || !tradeForm.pnl) ? 'none' : editingTrade ? '0 0 20px rgba(245,158,11,0.5)' : '0 0 20px rgba(147,51,234,0.5), 0 0 40px rgba(147,51,234,0.3)' }}>{saving ? 'Saving...' : editingTrade ? 'Update Trade' : 'Log Trade'}</button>
             </div>
           </div>
