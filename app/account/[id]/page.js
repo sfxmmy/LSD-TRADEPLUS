@@ -1948,7 +1948,7 @@ export default function AccountPage() {
                     )}
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <button onClick={() => { setViewingTrade(null); startEditTrade(trade) }} style={{ padding: '6px 14px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '6px', color: '#fff', fontWeight: 600, fontSize: '12px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <button onClick={() => { setViewingTrade(null); startEditTrade(trade) }} style={{ padding: '6px 14px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '6px', color: '#fff', fontWeight: 600, fontSize: '13px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}>
                       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
                       Edit
                     </button>
@@ -1964,8 +1964,8 @@ export default function AccountPage() {
                       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px' }}>
                         {allFields.map((field, idx) => (
                           <div key={idx} style={{ background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '8px', padding: '12px' }}>
-                            <div style={{ fontSize: '10px', color: '#888', marginBottom: '6px', fontWeight: 600 }}>{field.label}</div>
-                            <div style={{ fontSize: '13px', fontWeight: 600, color: '#fff' }}>{field.value}</div>
+                            <div style={{ fontSize: '12px', color: '#888', marginBottom: '6px', fontWeight: 600 }}>{field.label}</div>
+                            <div style={{ fontSize: '14px', fontWeight: 600, color: '#fff' }}>{field.value}</div>
                           </div>
                         ))}
                       </div>
@@ -2006,7 +2006,7 @@ export default function AccountPage() {
                   {noteContent && (
                     <div style={{ marginTop: '16px' }}>
                       <div style={{ fontSize: '12px', color: '#888', marginBottom: '8px', fontWeight: 600 }}>Notes</div>
-                      <div style={{ background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '8px', padding: '12px', color: '#ccc', fontSize: '13px', lineHeight: '1.6', whiteSpace: 'pre-wrap' }}>{noteContent}</div>
+                      <div style={{ background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '8px', padding: '12px', color: '#ccc', fontSize: '14px', lineHeight: '1.6', whiteSpace: 'pre-wrap' }}>{noteContent}</div>
                     </div>
                   )}
                 </div>
@@ -4116,11 +4116,11 @@ export default function AccountPage() {
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '12px' }}>
                 <div>
                   <label style={{ display: 'block', fontSize: '12px', color: '#888', marginBottom: '5px', fontWeight: 600 }}>From</label>
-                  <input type="date" value={draftFilters.dateFrom} onChange={e => setDraftFilters({...draftFilters, dateFrom: e.target.value, quickSelect: ''})} style={{ width: '100%', padding: '10px 12px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '13px', boxSizing: 'border-box' }} />
+                  <input type="date" value={draftFilters.dateFrom} onChange={e => setDraftFilters({...draftFilters, dateFrom: e.target.value, quickSelect: ''})} style={{ width: '100%', padding: '10px 12px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '14px', boxSizing: 'border-box' }} />
                 </div>
                 <div>
                   <label style={{ display: 'block', fontSize: '12px', color: '#888', marginBottom: '5px', fontWeight: 600 }}>To</label>
-                  <input type="date" value={draftFilters.dateTo} onChange={e => setDraftFilters({...draftFilters, dateTo: e.target.value, quickSelect: ''})} style={{ width: '100%', padding: '10px 12px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '13px', boxSizing: 'border-box' }} />
+                  <input type="date" value={draftFilters.dateTo} onChange={e => setDraftFilters({...draftFilters, dateTo: e.target.value, quickSelect: ''})} style={{ width: '100%', padding: '10px 12px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '14px', boxSizing: 'border-box' }} />
                 </div>
               </div>
 
@@ -4161,11 +4161,11 @@ export default function AccountPage() {
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '12px' }}>
                 <div>
                   <label style={{ display: 'block', fontSize: '12px', color: '#888', marginBottom: '5px', fontWeight: 600 }}>Symbol</label>
-                  <input type="text" value={draftFilters.symbol} onChange={e => setDraftFilters({...draftFilters, symbol: e.target.value})} placeholder="XAUUSD" style={{ width: '100%', padding: '10px 12px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '13px', boxSizing: 'border-box' }} />
+                  <input type="text" value={draftFilters.symbol} onChange={e => setDraftFilters({...draftFilters, symbol: e.target.value})} placeholder="XAUUSD" style={{ width: '100%', padding: '10px 12px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '14px', boxSizing: 'border-box' }} />
                 </div>
                 <div>
                   <label style={{ display: 'block', fontSize: '12px', color: '#888', marginBottom: '5px', fontWeight: 600 }}>Min R:R</label>
-                  <input type="number" step="0.1" value={draftFilters.rr} onChange={e => setDraftFilters({...draftFilters, rr: e.target.value})} placeholder="2.5" style={{ width: '100%', padding: '10px 12px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '13px', boxSizing: 'border-box' }} />
+                  <input type="number" step="0.1" value={draftFilters.rr} onChange={e => setDraftFilters({...draftFilters, rr: e.target.value})} placeholder="2.5" style={{ width: '100%', padding: '10px 12px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '14px', boxSizing: 'border-box' }} />
                 </div>
               </div>
 
@@ -4173,7 +4173,7 @@ export default function AccountPage() {
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '12px' }}>
                 <div>
                   <label style={{ display: 'block', fontSize: '12px', color: '#888', marginBottom: '5px', fontWeight: 600 }}>Confidence</label>
-                  <select value={draftFilters.confidence} onChange={e => setDraftFilters({...draftFilters, confidence: e.target.value})} style={{ width: '100%', padding: '10px 12px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '13px', boxSizing: 'border-box', appearance: 'none', backgroundImage: 'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'12\' height=\'12\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'%23666\' stroke-width=\'2\'%3E%3Cpath d=\'M6 9l6 6 6-6\'/%3E%3C/svg%3E")', backgroundRepeat: 'no-repeat', backgroundPosition: 'right 12px center' }}>
+                  <select value={draftFilters.confidence} onChange={e => setDraftFilters({...draftFilters, confidence: e.target.value})} style={{ width: '100%', padding: '10px 12px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '14px', boxSizing: 'border-box', appearance: 'none', backgroundImage: 'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'12\' height=\'12\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'%23666\' stroke-width=\'2\'%3E%3Cpath d=\'M6 9l6 6 6-6\'/%3E%3C/svg%3E")', backgroundRepeat: 'no-repeat', backgroundPosition: 'right 12px center' }}>
                     <option value="">Any</option>
                     {(filterInputs.find(i => i.id === 'confidence')?.options || ['high', 'medium', 'low']).map(c => (
                       <option key={getOptVal(c)} value={getOptVal(c)}>{getOptVal(c)}</option>
@@ -4194,7 +4194,7 @@ export default function AccountPage() {
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '12px' }}>
                 <div>
                   <label style={{ display: 'block', fontSize: '12px', color: '#888', marginBottom: '5px', fontWeight: 600 }}>Timeframe</label>
-                  <select value={draftFilters.timeframe} onChange={e => setDraftFilters({...draftFilters, timeframe: e.target.value})} style={{ width: '100%', padding: '10px 12px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '13px', boxSizing: 'border-box', appearance: 'none', backgroundImage: 'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'12\' height=\'12\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'%23666\' stroke-width=\'2\'%3E%3Cpath d=\'M6 9l6 6 6-6\'/%3E%3C/svg%3E")', backgroundRepeat: 'no-repeat', backgroundPosition: 'right 12px center' }}>
+                  <select value={draftFilters.timeframe} onChange={e => setDraftFilters({...draftFilters, timeframe: e.target.value})} style={{ width: '100%', padding: '10px 12px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '14px', boxSizing: 'border-box', appearance: 'none', backgroundImage: 'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'12\' height=\'12\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'%23666\' stroke-width=\'2\'%3E%3Cpath d=\'M6 9l6 6 6-6\'/%3E%3C/svg%3E")', backgroundRepeat: 'no-repeat', backgroundPosition: 'right 12px center' }}>
                     <option value="">Any</option>
                     {(filterInputs.find(i => i.id === 'timeframe')?.options || ['1m', '5m', '15m', '1h', '4h', 'daily']).map(t => (
                       <option key={getOptVal(t)} value={getOptVal(t)}>{getOptVal(t)}</option>
@@ -4203,7 +4203,7 @@ export default function AccountPage() {
                 </div>
                 <div>
                   <label style={{ display: 'block', fontSize: '12px', color: '#888', marginBottom: '5px', fontWeight: 600 }}>Session</label>
-                  <select value={draftFilters.session} onChange={e => setDraftFilters({...draftFilters, session: e.target.value})} style={{ width: '100%', padding: '10px 12px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '13px', boxSizing: 'border-box', appearance: 'none', backgroundImage: 'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'12\' height=\'12\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'%23666\' stroke-width=\'2\'%3E%3Cpath d=\'M6 9l6 6 6-6\'/%3E%3C/svg%3E")', backgroundRepeat: 'no-repeat', backgroundPosition: 'right 12px center' }}>
+                  <select value={draftFilters.session} onChange={e => setDraftFilters({...draftFilters, session: e.target.value})} style={{ width: '100%', padding: '10px 12px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '14px', boxSizing: 'border-box', appearance: 'none', backgroundImage: 'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'12\' height=\'12\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'%23666\' stroke-width=\'2\'%3E%3Cpath d=\'M6 9l6 6 6-6\'/%3E%3C/svg%3E")', backgroundRepeat: 'no-repeat', backgroundPosition: 'right 12px center' }}>
                     <option value="">Any</option>
                     {(filterInputs.find(i => i.id === 'session')?.options || ['london', 'new york', 'asian', 'other']).map(s => (
                       <option key={getOptVal(s)} value={getOptVal(s)}>{getOptVal(s)}</option>
@@ -4225,7 +4225,7 @@ export default function AccountPage() {
                             <select
                               value={draftFilters.custom?.[inp.id] || ''}
                               onChange={e => setDraftFilters({...draftFilters, custom: {...(draftFilters.custom || {}), [inp.id]: e.target.value}})}
-                              style={{ width: '100%', padding: '10px 12px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '13px', boxSizing: 'border-box', appearance: 'none', backgroundImage: 'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'12\' height=\'12\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'%23666\' stroke-width=\'2\'%3E%3Cpath d=\'M6 9l6 6 6-6\'/%3E%3C/svg%3E")', backgroundRepeat: 'no-repeat', backgroundPosition: 'right 12px center' }}
+                              style={{ width: '100%', padding: '10px 12px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '14px', boxSizing: 'border-box', appearance: 'none', backgroundImage: 'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'12\' height=\'12\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'%23666\' stroke-width=\'2\'%3E%3Cpath d=\'M6 9l6 6 6-6\'/%3E%3C/svg%3E")', backgroundRepeat: 'no-repeat', backgroundPosition: 'right 12px center' }}
                             >
                               <option value="">Any</option>
                               {(inp.options || []).map(opt => (
@@ -4238,7 +4238,7 @@ export default function AccountPage() {
                               value={draftFilters.custom?.[inp.id] || ''}
                               onChange={e => setDraftFilters({...draftFilters, custom: {...(draftFilters.custom || {}), [inp.id]: e.target.value}})}
                               placeholder={`Min ${inp.label}`}
-                              style={{ width: '100%', padding: '10px 12px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '13px', boxSizing: 'border-box' }}
+                              style={{ width: '100%', padding: '10px 12px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '14px', boxSizing: 'border-box' }}
                             />
                           ) : (
                             <input
@@ -4246,7 +4246,7 @@ export default function AccountPage() {
                               value={draftFilters.custom?.[inp.id] || ''}
                               onChange={e => setDraftFilters({...draftFilters, custom: {...(draftFilters.custom || {}), [inp.id]: e.target.value}})}
                               placeholder={`Search ${inp.label}`}
-                              style={{ width: '100%', padding: '10px 12px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '13px', boxSizing: 'border-box' }}
+                              style={{ width: '100%', padding: '10px 12px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '14px', boxSizing: 'border-box' }}
                             />
                           )}
                         </div>
