@@ -1450,9 +1450,9 @@ export default function AccountPage() {
                 if (viewMode === 'all') return 'Overall Journal'
                 if (viewMode === 'selected' && selectedJournalIds.size > 0) {
                   const names = allAccounts.filter(a => selectedJournalIds.has(a.id)).map(a => a.name)
-                  return names.join(', ')
+                  return names.join(', ') + ' Journal'
                 }
-                return account?.name
+                return (account?.name || '') + ' Journal'
               }
               const title = getTitle()
               const isLongTitle = viewMode === 'selected' && selectedJournalIds.size > 2
