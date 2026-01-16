@@ -194,6 +194,8 @@ export default function DashboardPage() {
   const [savingInput, setSavingInput] = useState(false)
   // Chart hover state
   const [hoverData, setHoverData] = useState(null)
+  // Button tooltip state
+  const [buttonTooltip, setButtonTooltip] = useState(null) // { text: string, x: number, y: number }
   // Sidebar expand state
   const [sidebarExpanded, setSidebarExpanded] = useState(false)
   // Pagination state
@@ -1745,18 +1747,18 @@ export default function DashboardPage() {
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
           {/* View Toggle - Grid/List */}
           <div style={{ display: 'flex', background: '#0a0a0f', borderRadius: '6px', overflow: 'hidden', border: '1px solid #1a1a22' }}>
-            <button onClick={() => setViewMode('cards')} style={{ padding: '8px 12px', background: viewMode === 'cards' ? '#22c55e' : 'transparent', border: 'none', color: viewMode === 'cards' ? '#fff' : '#666', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', fontWeight: 600, transition: 'all 0.2s' }} onMouseEnter={e => { if (viewMode !== 'cards') e.currentTarget.style.background = 'rgba(255,255,255,0.05)' }} onMouseLeave={e => { if (viewMode !== 'cards') e.currentTarget.style.background = 'transparent' }}>
+            <button onClick={() => setViewMode('cards')} style={{ padding: '8px 12px', background: viewMode === 'cards' ? '#22c55e' : 'transparent', border: 'none', color: viewMode === 'cards' ? '#fff' : '#666', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', fontWeight: 600, transition: 'all 0.2s' }} onMouseEnter={e => { if (viewMode !== 'cards') e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; const rect = e.currentTarget.getBoundingClientRect(); setButtonTooltip({ text: 'Grid view', x: rect.left + rect.width / 2, y: rect.top }) }} onMouseLeave={e => { if (viewMode !== 'cards') e.currentTarget.style.background = 'transparent'; setButtonTooltip(null) }}>
               <span>Grid</span>
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="7" height="7" /><rect x="14" y="3" width="7" height="7" /><rect x="3" y="14" width="7" height="7" /><rect x="14" y="14" width="7" height="7" /></svg>
             </button>
-            <button onClick={() => setViewMode('list')} style={{ padding: '8px 12px', background: viewMode === 'list' ? '#22c55e' : 'transparent', border: 'none', color: viewMode === 'list' ? '#fff' : '#666', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', fontWeight: 600, transition: 'all 0.2s' }} onMouseEnter={e => { if (viewMode !== 'list') e.currentTarget.style.background = 'rgba(255,255,255,0.05)' }} onMouseLeave={e => { if (viewMode !== 'list') e.currentTarget.style.background = 'transparent' }}>
+            <button onClick={() => setViewMode('list')} style={{ padding: '8px 12px', background: viewMode === 'list' ? '#22c55e' : 'transparent', border: 'none', color: viewMode === 'list' ? '#fff' : '#666', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', fontWeight: 600, transition: 'all 0.2s' }} onMouseEnter={e => { if (viewMode !== 'list') e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; const rect = e.currentTarget.getBoundingClientRect(); setButtonTooltip({ text: 'List view', x: rect.left + rect.width / 2, y: rect.top }) }} onMouseLeave={e => { if (viewMode !== 'list') e.currentTarget.style.background = 'transparent'; setButtonTooltip(null) }}>
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="8" y1="6" x2="21" y2="6" /><line x1="8" y1="12" x2="21" y2="12" /><line x1="8" y1="18" x2="21" y2="18" /><line x1="3" y1="6" x2="3.01" y2="6" /><line x1="3" y1="12" x2="3.01" y2="12" /><line x1="3" y1="18" x2="3.01" y2="18" /></svg>
               <span>List</span>
             </button>
           </div>
-          <button onClick={() => setShowModal(true)} style={{ padding: '8px 16px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '6px', color: '#fff', fontSize: '13px', fontWeight: 600, cursor: 'pointer', transition: 'all 0.2s' }} onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; e.currentTarget.style.borderColor = '#3a3a45' }} onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.borderColor = '#2a2a35' }}>{isMobile ? '+ Add' : '+ Add Journal'}</button>
-          <button onClick={() => { setShowImportModal(true); setImportStep(1); setImportFile(null); setImportData([]); setImportHeaders([]); setImportMapping({}); setImportJournalName(''); setImportStartingBalance(''); setImportError('') }} style={{ padding: '8px 16px', background: 'linear-gradient(135deg, #9333ea 0%, #7c3aed 100%)', border: 'none', borderRadius: '6px', color: '#fff', fontSize: '13px', fontWeight: 600, cursor: 'pointer', boxShadow: '0 0 15px rgba(147,51,234,0.3)', transition: 'all 0.2s' }} onMouseEnter={e => { e.currentTarget.style.boxShadow = '0 0 20px rgba(147,51,234,0.5)'; e.currentTarget.style.transform = 'translateY(-1px)' }} onMouseLeave={e => { e.currentTarget.style.boxShadow = '0 0 15px rgba(147,51,234,0.3)'; e.currentTarget.style.transform = 'translateY(0)' }}>{isMobile ? 'Import' : 'Import Journal'}</button>
-          <a href="/settings" style={{ padding: '8px 16px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '6px', color: '#fff', fontWeight: 600, fontSize: '13px', textDecoration: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', transition: 'all 0.2s' }} title="Settings" onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; e.currentTarget.style.borderColor = '#3a3a45' }} onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.borderColor = '#2a2a35' }}>
+          <button onClick={() => setShowModal(true)} style={{ padding: '8px 16px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '6px', color: '#fff', fontSize: '13px', fontWeight: 600, cursor: 'pointer', transition: 'all 0.2s' }} onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; e.currentTarget.style.borderColor = '#3a3a45'; const rect = e.currentTarget.getBoundingClientRect(); setButtonTooltip({ text: 'Create a new trading journal', x: rect.left + rect.width / 2, y: rect.top }) }} onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.borderColor = '#2a2a35'; setButtonTooltip(null) }}>{isMobile ? '+ Add' : '+ Add Journal'}</button>
+          <button onClick={() => { setShowImportModal(true); setImportStep(1); setImportFile(null); setImportData([]); setImportHeaders([]); setImportMapping({}); setImportJournalName(''); setImportStartingBalance(''); setImportError('') }} style={{ padding: '8px 16px', background: 'linear-gradient(135deg, #9333ea 0%, #7c3aed 100%)', border: 'none', borderRadius: '6px', color: '#fff', fontSize: '13px', fontWeight: 600, cursor: 'pointer', boxShadow: '0 0 15px rgba(147,51,234,0.3)', transition: 'all 0.2s' }} onMouseEnter={e => { e.currentTarget.style.boxShadow = '0 0 20px rgba(147,51,234,0.5)'; e.currentTarget.style.transform = 'translateY(-1px)'; const rect = e.currentTarget.getBoundingClientRect(); setButtonTooltip({ text: 'Import trades from CSV or Excel', x: rect.left + rect.width / 2, y: rect.top }) }} onMouseLeave={e => { e.currentTarget.style.boxShadow = '0 0 15px rgba(147,51,234,0.3)'; e.currentTarget.style.transform = 'translateY(0)'; setButtonTooltip(null) }}>{isMobile ? 'Import' : 'Import Journal'}</button>
+          <a href="/settings" style={{ padding: '8px 16px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '6px', color: '#fff', fontWeight: 600, fontSize: '13px', textDecoration: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', transition: 'all 0.2s' }} onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; e.currentTarget.style.borderColor = '#3a3a45'; const rect = e.currentTarget.getBoundingClientRect(); setButtonTooltip({ text: 'Account settings', x: rect.left + rect.width / 2, y: rect.top }) }} onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.borderColor = '#2a2a35'; setButtonTooltip(null) }}>
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
           </a>
         </div>
@@ -4872,6 +4874,39 @@ export default function DashboardPage() {
           </div>
         )}
       </div>
+
+      {/* Custom Button Tooltip */}
+      {buttonTooltip && (
+        <div style={{
+          position: 'fixed',
+          left: buttonTooltip.x,
+          top: buttonTooltip.y - 8,
+          transform: 'translate(-50%, -100%)',
+          background: '#1a1a22',
+          border: '1px solid #2a2a35',
+          borderRadius: '6px',
+          padding: '6px 10px',
+          fontSize: '11px',
+          color: '#fff',
+          whiteSpace: 'nowrap',
+          zIndex: 9999,
+          pointerEvents: 'none',
+          boxShadow: '0 4px 12px rgba(0,0,0,0.4)'
+        }}>
+          {buttonTooltip.text}
+          <div style={{
+            position: 'absolute',
+            bottom: '-4px',
+            left: '50%',
+            transform: 'translateX(-50%) rotate(45deg)',
+            width: '8px',
+            height: '8px',
+            background: '#1a1a22',
+            borderRight: '1px solid #2a2a35',
+            borderBottom: '1px solid #2a2a35'
+          }} />
+        </div>
+      )}
     </div>
   )
 }
