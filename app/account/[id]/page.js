@@ -5,13 +5,13 @@ import { useParams, useSearchParams } from 'next/navigation'
 import { createClient } from '@supabase/supabase-js'
 
 const defaultInputs = [
-  { id: 'symbol', label: 'Symbol', type: 'text', required: true, enabled: true, fixed: true, color: '#22c55e' },
+  { id: 'symbol', label: 'Symbol', type: 'text', required: false, enabled: true, fixed: true, color: '#22c55e' },
   { id: 'pnl', label: 'PnL ($)', type: 'number', required: false, enabled: true, fixed: true, color: '#22c55e' },
-  { id: 'direction', label: 'Direction', type: 'select', options: [{value: 'long', textColor: '#22c55e', bgColor: 'rgba(34,197,94,0.15)'}, {value: 'short', textColor: '#ef4444', bgColor: 'rgba(239,68,68,0.15)'}], required: true, enabled: true, fixed: true, color: '#3b82f6' },
-  { id: 'outcome', label: 'W/L', type: 'select', options: [{value: 'win', textColor: '#22c55e', bgColor: 'rgba(34,197,94,0.15)'}, {value: 'loss', textColor: '#ef4444', bgColor: 'rgba(239,68,68,0.15)'}, {value: 'be', textColor: '#f59e0b', bgColor: 'rgba(245,158,11,0.15)'}], required: true, enabled: true, fixed: true, color: '#22c55e' },
+  { id: 'direction', label: 'Direction', type: 'select', options: [{value: 'long', textColor: '#22c55e', bgColor: 'rgba(34,197,94,0.15)'}, {value: 'short', textColor: '#ef4444', bgColor: 'rgba(239,68,68,0.15)'}], required: false, enabled: true, fixed: true, color: '#3b82f6' },
+  { id: 'outcome', label: 'W/L', type: 'select', options: [{value: 'win', textColor: '#22c55e', bgColor: 'rgba(34,197,94,0.15)'}, {value: 'loss', textColor: '#ef4444', bgColor: 'rgba(239,68,68,0.15)'}, {value: 'be', textColor: '#f59e0b', bgColor: 'rgba(245,158,11,0.15)'}], required: false, enabled: true, fixed: true, color: '#22c55e' },
   { id: 'rr', label: 'RR', type: 'number', required: false, enabled: true, fixed: true, color: '#f59e0b' },
   { id: 'riskPercent', label: '% Risk', type: 'number', required: false, enabled: true, fixed: true, color: '#ef4444' },
-  { id: 'date', label: 'Date', type: 'date', required: true, enabled: true, fixed: true, color: '#8b5cf6' },
+  { id: 'date', label: 'Date', type: 'date', required: false, enabled: true, fixed: true, color: '#8b5cf6' },
   { id: 'time', label: 'Time', type: 'time', required: false, enabled: true, fixed: true, color: '#a855f7' },
   { id: 'confidence', label: 'Confidence', type: 'select', options: [{value: 'High', textColor: '#22c55e', bgColor: 'rgba(34,197,94,0.15)'}, {value: 'Medium', textColor: '#f59e0b', bgColor: 'rgba(245,158,11,0.15)'}, {value: 'Low', textColor: '#ef4444', bgColor: 'rgba(239,68,68,0.15)'}], required: false, enabled: true, fixed: true, color: '#f59e0b' },
   { id: 'rating', label: 'Rating', type: 'rating', required: false, enabled: true, fixed: true, color: '#fbbf24' },
@@ -287,7 +287,6 @@ export default function AccountPage() {
   }
 
   async function addTrade() {
-    if (!tradeForm.symbol?.trim()) { alert('Please enter a symbol'); return }
     if (tradeForm.pnl && isNaN(parseFloat(tradeForm.pnl))) { alert('Please enter a valid PnL number'); return }
     if (tradeForm.rr && isNaN(parseFloat(tradeForm.rr))) { alert('Please enter a valid RR number'); return }
     setSaving(true)
@@ -365,7 +364,6 @@ export default function AccountPage() {
 
   async function updateTrade() {
     if (!editingTrade) return
-    if (!tradeForm.symbol?.trim()) { alert('Please enter a symbol'); return }
     if (tradeForm.pnl && isNaN(parseFloat(tradeForm.pnl))) { alert('Please enter a valid PnL number'); return }
     setSaving(true)
     const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY)

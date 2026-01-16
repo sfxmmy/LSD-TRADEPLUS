@@ -699,12 +699,13 @@ export default function DashboardPage() {
       for (const row of importData) {
         const trade = { account_id: accountData.id }
         const extraData = {}
+        let riskPercentValue = null
         for (const [colIdx, fieldId] of Object.entries(finalMapping)) {
           const value = row[parseInt(colIdx)]
           if (value === null || value === undefined || value === '') continue
           const strValue = String(value).trim()
           // Map to trade fields or extra_data
-          if (['symbol', 'pnl', 'outcome', 'direction', 'rr', 'date'].includes(fieldId)) {
+          if (['symbol', 'pnl', 'outcome', 'direction', 'rr', 'date', 'time', 'riskPercent'].includes(fieldId)) {
             if (fieldId === 'pnl') {
               // Parse PnL (handles $, %, various formats)
               const { value: pnlValue, isPercent } = parsePnlValue(strValue)
@@ -718,8 +719,32 @@ export default function DashboardPage() {
               // RR can be null if not provided
               const { value: rrValue } = parsePnlValue(strValue)
               trade[fieldId] = rrValue !== 0 ? rrValue : null
-            }
-            else if (fieldId === 'date') {
+            } else if (fieldId === 'riskPercent') {
+              // Store risk percent for potential PnL calculation
+              const { value: riskVal } = parsePnlValue(strValue)
+              riskPercentValue = riskVal
+              extraData[fieldId] = strValue
+            } else if (fieldId === 'time') {
+              // Convert Excel serial time (decimal) to HH:MM:SS
+              if (!isNaN(value) && parseFloat(value) >= 0 && parseFloat(value) < 1) {
+                const totalSeconds = Math.round(parseFloat(value) * 86400)
+                const hours = Math.floor(totalSeconds / 3600)
+                const minutes = Math.floor((totalSeconds % 3600) / 60)
+                const seconds = totalSeconds % 60
+                extraData[fieldId] = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`
+              } else if (!isNaN(value) && parseFloat(value) >= 1) {
+                // DateTime serial - extract time part
+                const timePart = parseFloat(value) % 1
+                const totalSeconds = Math.round(timePart * 86400)
+                const hours = Math.floor(totalSeconds / 3600)
+                const minutes = Math.floor((totalSeconds % 3600) / 60)
+                const seconds = totalSeconds % 60
+                extraData[fieldId] = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`
+              } else {
+                // Already a string time format
+                extraData[fieldId] = strValue
+              }
+            } else if (fieldId === 'date') {
               // Use flexible date parser
               const parsedDate = parseFlexibleDate(value)
               if (parsedDate) {
@@ -743,6 +768,12 @@ export default function DashboardPage() {
           } else {
             extraData[fieldId] = strValue
           }
+        }
+        // Auto-calculate PnL from RR and % Risk if PnL is missing
+        if ((trade.pnl === undefined || trade.pnl === null) && trade.rr !== undefined && trade.rr !== null && startingBal > 0) {
+          const riskPct = riskPercentValue || 1 // Default to 1% risk if not specified
+          const riskAmount = (riskPct / 100) * startingBal
+          trade.pnl = trade.rr * riskAmount
         }
         if (!trade.date) trade.date = new Date().toISOString().split('T')[0]
         // Stringify extra_data to match the expected format
@@ -4442,16 +4473,23 @@ export default function DashboardPage() {
                   <p style={{ color: '#888', fontSize: '12px', marginBottom: '12px' }}>Auto-detected fields are highlighted. Unmapped columns will be created as custom inputs.</p>
 
                   {/* Warning if essential columns not mapped */}
-                  {(!Object.values(importMapping).includes('symbol') || !Object.values(importMapping).includes('pnl')) && (
+                  {(!Object.values(importMapping).includes('symbol') || (!Object.values(importMapping).includes('pnl') && !Object.values(importMapping).includes('rr'))) && (
                     <div style={{ marginBottom: '16px', padding: '10px 12px', background: 'rgba(245,158,11,0.1)', border: '1px solid rgba(245,158,11,0.3)', borderRadius: '8px', display: 'flex', alignItems: 'flex-start', gap: '10px' }}>
                       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" strokeWidth="2" style={{ flexShrink: 0, marginTop: '1px' }}><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
                       <div style={{ fontSize: '12px', color: '#f59e0b' }}>
                         <strong>Missing required columns:</strong>
                         {!Object.values(importMapping).includes('symbol') && <span> Symbol/Pair</span>}
-                        {!Object.values(importMapping).includes('symbol') && !Object.values(importMapping).includes('pnl') && <span>,</span>}
-                        {!Object.values(importMapping).includes('pnl') && <span> PnL</span>}
+                        {!Object.values(importMapping).includes('symbol') && !Object.values(importMapping).includes('pnl') && !Object.values(importMapping).includes('rr') && <span>,</span>}
+                        {!Object.values(importMapping).includes('pnl') && !Object.values(importMapping).includes('rr') && <span> PnL or RR</span>}
                         <div style={{ color: '#b45309', fontSize: '11px', marginTop: '4px' }}>Please map these columns or your data may not display correctly.</div>
                       </div>
+                    </div>
+                  )}
+                  {/* Info if PnL will be calculated from RR */}
+                  {!Object.values(importMapping).includes('pnl') && Object.values(importMapping).includes('rr') && (
+                    <div style={{ marginBottom: '16px', padding: '10px 12px', background: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.3)', borderRadius: '8px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#22c55e" strokeWidth="2"><circle cx="12" cy="12" r="10"/><polyline points="16 12 12 8 8 12"/><line x1="12" y1="16" x2="12" y2="8"/></svg>
+                      <span style={{ fontSize: '11px', color: '#22c55e' }}>PnL will be auto-calculated from RR × % Risk (defaults to 1% if not mapped)</span>
                     </div>
                   )}
 
