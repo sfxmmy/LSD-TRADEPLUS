@@ -2618,7 +2618,31 @@ export default function DashboardPage() {
                     if (maxDdFloor) minBal = Math.min(minBal, maxDdFloor)
 
                     return (
-                      <div key={account.id} onClick={() => window.location.href = `/account/${account.id}`} style={{ background: 'linear-gradient(135deg, #0f0f14 0%, #0a0a0f 100%)', border: '1px solid #1a1a22', borderRadius: '16px', overflow: 'hidden', display: 'flex', flexDirection: 'column', boxShadow: '0 4px 24px rgba(0,0,0,0.3)', transition: 'all 0.2s', cursor: 'pointer' }} onMouseEnter={e => { e.currentTarget.style.border = '1px solid #22c55e' }} onMouseLeave={e => { e.currentTarget.style.border = '1px solid #1a1a22' }}>
+                      <div
+                        key={account.id}
+                        draggable
+                        onDragStart={(e) => handleJournalDragStart(e, account.id)}
+                        onDragOver={(e) => handleJournalDragOver(e, account.id)}
+                        onDragLeave={handleJournalDragLeave}
+                        onDrop={(e) => handleJournalDrop(e, account.id)}
+                        onDragEnd={handleJournalDragEnd}
+                        onClick={() => { if (!draggedJournal) window.location.href = `/account/${account.id}` }}
+                        style={{
+                          background: 'linear-gradient(135deg, #0f0f14 0%, #0a0a0f 100%)',
+                          border: dragOverJournal === account.id ? '2px dashed #9333ea' : draggedJournal === account.id ? '2px solid #9333ea' : '1px solid #1a1a22',
+                          borderRadius: '16px',
+                          overflow: 'hidden',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          boxShadow: '0 4px 24px rgba(0,0,0,0.3)',
+                          transition: 'border 0.2s, opacity 0.2s, transform 0.2s',
+                          cursor: draggedJournal ? 'grabbing' : 'grab',
+                          opacity: draggedJournal === account.id ? 0.5 : 1,
+                          transform: dragOverJournal === account.id ? 'scale(1.02)' : 'scale(1)'
+                        }}
+                        onMouseEnter={e => { if (!draggedJournal) e.currentTarget.style.border = '1px solid #22c55e' }}
+                        onMouseLeave={e => { if (!draggedJournal && dragOverJournal !== account.id) e.currentTarget.style.border = '1px solid #1a1a22' }}
+                      >
                         {/* Header - Clean layout */}
                         <div style={{ padding: '16px 16px 12px', position: 'relative' }}>
                           <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
