@@ -2084,8 +2084,8 @@ export default function DashboardPage() {
                           style={{
                             position: 'absolute',
                             top: '16px',
+                            left: '50%',
                             right: '16px',
-                            width: '45%',
                             background: 'transparent',
                             border: '1px solid #1a1a22',
                             borderRadius: '8px',
@@ -3850,36 +3850,61 @@ export default function DashboardPage() {
                         <input type="number" value={quickTradePnl} onChange={e => setQuickTradePnl(e.target.value)} placeholder="0" style={{ width: '100%', padding: '10px 12px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '8px', color: '#fff', fontSize: '14px', boxSizing: 'border-box' }} />
                       </div>
                       {/* Direction */}
-                      <div style={{ position: 'relative' }}>
-                        <label style={{ display: 'block', fontSize: '12px', color: '#888', marginBottom: '6px', fontWeight: 600 }}>Direction</label>
-                        <button type="button" onClick={() => { setDirectionDropdownOpen(!directionDropdownOpen); setOutcomeDropdownOpen(false); setConfidenceDropdownOpen(false); setTimeframeDropdownOpen(false); setSessionDropdownOpen(false); setCustomDropdownOpen({}) }} style={{ width: '100%', padding: '10px 12px', background: quickTradeDirection === 'long' ? 'rgba(34,197,94,0.2)' : quickTradeDirection === 'short' ? 'rgba(239,68,68,0.2)' : '#0a0a0f', border: directionDropdownOpen ? '1px solid #22c55e' : quickTradeDirection === 'long' ? '1px solid rgba(34,197,94,0.5)' : quickTradeDirection === 'short' ? '1px solid rgba(239,68,68,0.5)' : '1px solid #1a1a22', borderRadius: directionDropdownOpen ? '8px 8px 0 0' : '8px', color: quickTradeDirection === 'long' ? '#22c55e' : quickTradeDirection === 'short' ? '#ef4444' : '#888', fontSize: '14px', boxSizing: 'border-box', cursor: 'pointer', textAlign: 'left', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                          <span>{quickTradeDirection === 'long' ? 'Long' : quickTradeDirection === 'short' ? 'Short' : '-'}</span>
-                          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ transform: directionDropdownOpen ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }}><path d="M6 9l6 6 6-6" /></svg>
-                        </button>
-                        {directionDropdownOpen && (
-                          <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, background: '#0a0a0f', border: '1px solid #22c55e', borderTop: 'none', borderRadius: '0 0 8px 8px', zIndex: 100, overflow: 'hidden' }}>
-                            <div onClick={() => { setQuickTradeDirection(''); setDirectionDropdownOpen(false) }} style={{ padding: '10px 12px', cursor: 'pointer', color: '#888', fontSize: '14px', transition: 'background 0.15s' }} onMouseEnter={e => e.currentTarget.style.background = '#1a1a22'} onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>-</div>
-                            <div onClick={() => { setQuickTradeDirection('long'); setDirectionDropdownOpen(false) }} style={{ padding: '10px 12px', cursor: 'pointer', color: '#22c55e', fontSize: '14px', fontWeight: 600, transition: 'background 0.15s' }} onMouseEnter={e => e.currentTarget.style.background = 'rgba(34,197,94,0.15)'} onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>Long</div>
-                            <div onClick={() => { setQuickTradeDirection('short'); setDirectionDropdownOpen(false) }} style={{ padding: '10px 12px', cursor: 'pointer', color: '#ef4444', fontSize: '14px', fontWeight: 600, transition: 'background 0.15s' }} onMouseEnter={e => e.currentTarget.style.background = 'rgba(239,68,68,0.15)'} onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>Short</div>
+                      {(() => {
+                        const dirStyles = getFieldOptionStyles('direction', quickTradeDirection)
+                        const dirOptions = getFieldOptions('direction')
+                        const displayVal = dirOptions.find(o => getOptVal(o).toLowerCase() === quickTradeDirection?.toLowerCase())
+                        return (
+                          <div style={{ position: 'relative' }}>
+                            <label style={{ display: 'block', fontSize: '12px', color: '#888', marginBottom: '6px', fontWeight: 600 }}>Direction</label>
+                            <button type="button" onClick={() => { setDirectionDropdownOpen(!directionDropdownOpen); setOutcomeDropdownOpen(false); setConfidenceDropdownOpen(false); setTimeframeDropdownOpen(false); setSessionDropdownOpen(false); setCustomDropdownOpen({}) }} style={{ width: '100%', padding: '10px 12px', background: quickTradeDirection ? (dirStyles.bgColor || '#0a0a0f') : '#0a0a0f', border: directionDropdownOpen ? '1px solid #22c55e' : quickTradeDirection ? `1px solid ${dirStyles.borderColor || (dirStyles.textColor ? dirStyles.textColor + '80' : '#1a1a22')}` : '1px solid #1a1a22', borderRadius: directionDropdownOpen ? '8px 8px 0 0' : '8px', color: quickTradeDirection ? (dirStyles.textColor || '#fff') : '#888', fontSize: '14px', boxSizing: 'border-box', cursor: 'pointer', textAlign: 'left', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                              <span>{displayVal ? getOptVal(displayVal) : (quickTradeDirection || '-')}</span>
+                              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ transform: directionDropdownOpen ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }}><path d="M6 9l6 6 6-6" /></svg>
+                            </button>
+                            {directionDropdownOpen && (
+                              <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, background: '#0a0a0f', border: '1px solid #22c55e', borderTop: 'none', borderRadius: '0 0 8px 8px', zIndex: 100, overflow: 'hidden' }}>
+                                <div onClick={() => { setQuickTradeDirection(''); setDirectionDropdownOpen(false) }} style={{ padding: '10px 12px', cursor: 'pointer', color: '#888', fontSize: '14px', transition: 'background 0.15s' }} onMouseEnter={e => e.currentTarget.style.background = '#1a1a22'} onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>-</div>
+                                {dirOptions.map(opt => {
+                                  const optVal = getOptVal(opt)
+                                  const optColor = typeof opt === 'object' ? (opt.textColor || '#fff') : '#fff'
+                                  const optBg = typeof opt === 'object' ? (opt.bgColor || null) : null
+                                  return (
+                                    <div key={optVal} onClick={() => { setQuickTradeDirection(optVal.toLowerCase()); setDirectionDropdownOpen(false) }} style={{ padding: '10px 12px', cursor: 'pointer', color: optColor, fontSize: '14px', fontWeight: 600, transition: 'background 0.15s' }} onMouseEnter={e => e.currentTarget.style.background = optBg || 'rgba(255,255,255,0.1)'} onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>{optVal}</div>
+                                  )
+                                })}
+                              </div>
+                            )}
                           </div>
-                        )}
-                      </div>
+                        )
+                      })()}
                       {/* Outcome */}
-                      <div style={{ position: 'relative' }}>
-                        <label style={{ display: 'block', fontSize: '12px', color: '#888', marginBottom: '6px', fontWeight: 600 }}>Outcome</label>
-                        <button type="button" onClick={() => { setOutcomeDropdownOpen(!outcomeDropdownOpen); setDirectionDropdownOpen(false); setConfidenceDropdownOpen(false); setTimeframeDropdownOpen(false); setSessionDropdownOpen(false); setCustomDropdownOpen({}) }} style={{ width: '100%', padding: '10px 12px', background: quickTradeOutcome === 'win' ? 'rgba(34,197,94,0.2)' : quickTradeOutcome === 'loss' ? 'rgba(239,68,68,0.2)' : quickTradeOutcome === 'be' ? 'rgba(245,158,11,0.2)' : '#0a0a0f', border: outcomeDropdownOpen ? '1px solid #22c55e' : quickTradeOutcome === 'win' ? '1px solid rgba(34,197,94,0.5)' : quickTradeOutcome === 'loss' ? '1px solid rgba(239,68,68,0.5)' : quickTradeOutcome === 'be' ? '1px solid rgba(245,158,11,0.5)' : '1px solid #1a1a22', borderRadius: outcomeDropdownOpen ? '8px 8px 0 0' : '8px', color: quickTradeOutcome === 'win' ? '#22c55e' : quickTradeOutcome === 'loss' ? '#ef4444' : quickTradeOutcome === 'be' ? '#f59e0b' : '#888', fontSize: '14px', boxSizing: 'border-box', cursor: 'pointer', textAlign: 'left', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                          <span>{quickTradeOutcome === 'win' ? 'Win' : quickTradeOutcome === 'loss' ? 'Loss' : quickTradeOutcome === 'be' ? 'Breakeven' : '-'}</span>
-                          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ transform: outcomeDropdownOpen ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }}><path d="M6 9l6 6 6-6" /></svg>
-                        </button>
-                        {outcomeDropdownOpen && (
-                          <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, background: '#0a0a0f', border: '1px solid #22c55e', borderTop: 'none', borderRadius: '0 0 8px 8px', zIndex: 100, overflow: 'hidden' }}>
-                            <div onClick={() => { setQuickTradeOutcome(''); setOutcomeDropdownOpen(false) }} style={{ padding: '10px 12px', cursor: 'pointer', color: '#888', fontSize: '14px', transition: 'background 0.15s' }} onMouseEnter={e => e.currentTarget.style.background = '#1a1a22'} onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>-</div>
-                            <div onClick={() => { setQuickTradeOutcome('win'); setOutcomeDropdownOpen(false) }} style={{ padding: '10px 12px', cursor: 'pointer', color: '#22c55e', fontSize: '14px', fontWeight: 600, transition: 'background 0.15s' }} onMouseEnter={e => e.currentTarget.style.background = 'rgba(34,197,94,0.15)'} onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>Win</div>
-                            <div onClick={() => { setQuickTradeOutcome('loss'); setOutcomeDropdownOpen(false) }} style={{ padding: '10px 12px', cursor: 'pointer', color: '#ef4444', fontSize: '14px', fontWeight: 600, transition: 'background 0.15s' }} onMouseEnter={e => e.currentTarget.style.background = 'rgba(239,68,68,0.15)'} onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>Loss</div>
-                            <div onClick={() => { setQuickTradeOutcome('be'); setOutcomeDropdownOpen(false) }} style={{ padding: '10px 12px', cursor: 'pointer', color: '#f59e0b', fontSize: '14px', fontWeight: 600, transition: 'background 0.15s' }} onMouseEnter={e => e.currentTarget.style.background = 'rgba(245,158,11,0.15)'} onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>Breakeven</div>
+                      {(() => {
+                        const outStyles = getFieldOptionStyles('outcome', quickTradeOutcome)
+                        const outOptions = getFieldOptions('outcome')
+                        const displayVal = outOptions.find(o => getOptVal(o).toLowerCase() === quickTradeOutcome?.toLowerCase())
+                        return (
+                          <div style={{ position: 'relative' }}>
+                            <label style={{ display: 'block', fontSize: '12px', color: '#888', marginBottom: '6px', fontWeight: 600 }}>Outcome</label>
+                            <button type="button" onClick={() => { setOutcomeDropdownOpen(!outcomeDropdownOpen); setDirectionDropdownOpen(false); setConfidenceDropdownOpen(false); setTimeframeDropdownOpen(false); setSessionDropdownOpen(false); setCustomDropdownOpen({}) }} style={{ width: '100%', padding: '10px 12px', background: quickTradeOutcome ? (outStyles.bgColor || '#0a0a0f') : '#0a0a0f', border: outcomeDropdownOpen ? '1px solid #22c55e' : quickTradeOutcome ? `1px solid ${outStyles.borderColor || (outStyles.textColor ? outStyles.textColor + '80' : '#1a1a22')}` : '1px solid #1a1a22', borderRadius: outcomeDropdownOpen ? '8px 8px 0 0' : '8px', color: quickTradeOutcome ? (outStyles.textColor || '#fff') : '#888', fontSize: '14px', boxSizing: 'border-box', cursor: 'pointer', textAlign: 'left', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                              <span>{displayVal ? getOptVal(displayVal) : (quickTradeOutcome || '-')}</span>
+                              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ transform: outcomeDropdownOpen ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }}><path d="M6 9l6 6 6-6" /></svg>
+                            </button>
+                            {outcomeDropdownOpen && (
+                              <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, background: '#0a0a0f', border: '1px solid #22c55e', borderTop: 'none', borderRadius: '0 0 8px 8px', zIndex: 100, overflow: 'hidden' }}>
+                                <div onClick={() => { setQuickTradeOutcome(''); setOutcomeDropdownOpen(false) }} style={{ padding: '10px 12px', cursor: 'pointer', color: '#888', fontSize: '14px', transition: 'background 0.15s' }} onMouseEnter={e => e.currentTarget.style.background = '#1a1a22'} onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>-</div>
+                                {outOptions.map(opt => {
+                                  const optVal = getOptVal(opt)
+                                  const optColor = typeof opt === 'object' ? (opt.textColor || '#fff') : '#fff'
+                                  const optBg = typeof opt === 'object' ? (opt.bgColor || null) : null
+                                  return (
+                                    <div key={optVal} onClick={() => { setQuickTradeOutcome(optVal.toLowerCase()); setOutcomeDropdownOpen(false) }} style={{ padding: '10px 12px', cursor: 'pointer', color: optColor, fontSize: '14px', fontWeight: 600, transition: 'background 0.15s' }} onMouseEnter={e => e.currentTarget.style.background = optBg || 'rgba(255,255,255,0.1)'} onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>{optVal}</div>
+                                  )
+                                })}
+                              </div>
+                            )}
                           </div>
-                        )}
-                      </div>
+                        )
+                      })()}
                       {/* RR */}
                       <div>
                         <label style={{ display: 'block', fontSize: '12px', color: '#888', marginBottom: '6px', fontWeight: 600 }}>RR</label>
@@ -3891,53 +3916,89 @@ export default function DashboardPage() {
                         <input type="number" value={quickTradeRiskPercent} onChange={e => setQuickTradeRiskPercent(e.target.value)} placeholder="1" style={{ width: '100%', padding: '10px 12px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '8px', color: '#fff', fontSize: '14px', boxSizing: 'border-box' }} />
                       </div>
                       {/* Confidence */}
-                      <div style={{ position: 'relative' }}>
-                        <label style={{ display: 'block', fontSize: '12px', color: '#888', marginBottom: '6px', fontWeight: 600 }}>Confidence</label>
-                        <button type="button" onClick={() => { setConfidenceDropdownOpen(!confidenceDropdownOpen); setDirectionDropdownOpen(false); setOutcomeDropdownOpen(false); setTimeframeDropdownOpen(false); setSessionDropdownOpen(false); setCustomDropdownOpen({}) }} style={{ width: '100%', padding: '10px 12px', background: '#0a0a0f', border: confidenceDropdownOpen ? '1px solid #22c55e' : '1px solid #1a1a22', borderRadius: confidenceDropdownOpen ? '8px 8px 0 0' : '8px', color: quickTradeConfidence === 'High' ? '#22c55e' : quickTradeConfidence === 'Medium' ? '#f59e0b' : quickTradeConfidence === 'Low' ? '#ef4444' : '#888', fontSize: '14px', cursor: 'pointer', textAlign: 'left', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                          <span>{quickTradeConfidence || '-'}</span>
-                          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ transform: confidenceDropdownOpen ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }}><path d="M6 9l6 6 6-6" /></svg>
-                        </button>
-                        {confidenceDropdownOpen && (
-                          <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, background: '#0a0a0f', border: '1px solid #22c55e', borderTop: 'none', borderRadius: '0 0 8px 8px', zIndex: 100, overflow: 'hidden' }}>
-                            <div onClick={() => { setQuickTradeConfidence(''); setConfidenceDropdownOpen(false) }} style={{ padding: '10px 12px', cursor: 'pointer', color: '#888', fontSize: '14px', transition: 'background 0.15s' }} onMouseEnter={e => e.currentTarget.style.background = '#1a1a22'} onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>-</div>
-                            <div onClick={() => { setQuickTradeConfidence('High'); setConfidenceDropdownOpen(false) }} style={{ padding: '10px 12px', cursor: 'pointer', color: '#22c55e', fontSize: '14px', fontWeight: 600, transition: 'background 0.15s' }} onMouseEnter={e => e.currentTarget.style.background = 'rgba(34,197,94,0.15)'} onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>High</div>
-                            <div onClick={() => { setQuickTradeConfidence('Medium'); setConfidenceDropdownOpen(false) }} style={{ padding: '10px 12px', cursor: 'pointer', color: '#f59e0b', fontSize: '14px', fontWeight: 600, transition: 'background 0.15s' }} onMouseEnter={e => e.currentTarget.style.background = 'rgba(245,158,11,0.15)'} onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>Medium</div>
-                            <div onClick={() => { setQuickTradeConfidence('Low'); setConfidenceDropdownOpen(false) }} style={{ padding: '10px 12px', cursor: 'pointer', color: '#ef4444', fontSize: '14px', fontWeight: 600, transition: 'background 0.15s' }} onMouseEnter={e => e.currentTarget.style.background = 'rgba(239,68,68,0.15)'} onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>Low</div>
+                      {(() => {
+                        const confStyles = getFieldOptionStyles('confidence', quickTradeConfidence)
+                        const confOptions = getFieldOptions('confidence')
+                        const displayVal = confOptions.find(o => getOptVal(o).toLowerCase() === quickTradeConfidence?.toLowerCase())
+                        return (
+                          <div style={{ position: 'relative' }}>
+                            <label style={{ display: 'block', fontSize: '12px', color: '#888', marginBottom: '6px', fontWeight: 600 }}>Confidence</label>
+                            <button type="button" onClick={() => { setConfidenceDropdownOpen(!confidenceDropdownOpen); setDirectionDropdownOpen(false); setOutcomeDropdownOpen(false); setTimeframeDropdownOpen(false); setSessionDropdownOpen(false); setCustomDropdownOpen({}) }} style={{ width: '100%', padding: '10px 12px', background: quickTradeConfidence ? (confStyles.bgColor || '#0a0a0f') : '#0a0a0f', border: confidenceDropdownOpen ? '1px solid #22c55e' : quickTradeConfidence ? `1px solid ${confStyles.borderColor || (confStyles.textColor ? confStyles.textColor + '80' : '#1a1a22')}` : '1px solid #1a1a22', borderRadius: confidenceDropdownOpen ? '8px 8px 0 0' : '8px', color: quickTradeConfidence ? (confStyles.textColor || '#fff') : '#888', fontSize: '14px', cursor: 'pointer', textAlign: 'left', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                              <span>{displayVal ? getOptVal(displayVal) : (quickTradeConfidence || '-')}</span>
+                              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ transform: confidenceDropdownOpen ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }}><path d="M6 9l6 6 6-6" /></svg>
+                            </button>
+                            {confidenceDropdownOpen && (
+                              <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, background: '#0a0a0f', border: '1px solid #22c55e', borderTop: 'none', borderRadius: '0 0 8px 8px', zIndex: 100, overflow: 'hidden' }}>
+                                <div onClick={() => { setQuickTradeConfidence(''); setConfidenceDropdownOpen(false) }} style={{ padding: '10px 12px', cursor: 'pointer', color: '#888', fontSize: '14px', transition: 'background 0.15s' }} onMouseEnter={e => e.currentTarget.style.background = '#1a1a22'} onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>-</div>
+                                {confOptions.map(opt => {
+                                  const optVal = getOptVal(opt)
+                                  const optColor = typeof opt === 'object' ? (opt.textColor || '#fff') : '#fff'
+                                  const optBg = typeof opt === 'object' ? (opt.bgColor || null) : null
+                                  return (
+                                    <div key={optVal} onClick={() => { setQuickTradeConfidence(optVal); setConfidenceDropdownOpen(false) }} style={{ padding: '10px 12px', cursor: 'pointer', color: optColor, fontSize: '14px', fontWeight: 600, transition: 'background 0.15s' }} onMouseEnter={e => e.currentTarget.style.background = optBg || 'rgba(255,255,255,0.1)'} onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>{optVal}</div>
+                                  )
+                                })}
+                              </div>
+                            )}
                           </div>
-                        )}
-                      </div>
+                        )
+                      })()}
                       {/* Timeframe */}
-                      <div style={{ position: 'relative' }}>
-                        <label style={{ display: 'block', fontSize: '12px', color: '#888', marginBottom: '6px', fontWeight: 600 }}>Timeframe</label>
-                        <button type="button" onClick={() => { setTimeframeDropdownOpen(!timeframeDropdownOpen); setDirectionDropdownOpen(false); setOutcomeDropdownOpen(false); setConfidenceDropdownOpen(false); setSessionDropdownOpen(false); setCustomDropdownOpen({}) }} style={{ width: '100%', padding: '10px 12px', background: '#0a0a0f', border: timeframeDropdownOpen ? '1px solid #22c55e' : '1px solid #1a1a22', borderRadius: timeframeDropdownOpen ? '8px 8px 0 0' : '8px', color: quickTradeTimeframe ? '#06b6d4' : '#888', fontSize: '14px', cursor: 'pointer', textAlign: 'left', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                          <span>{quickTradeTimeframe || '-'}</span>
-                          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ transform: timeframeDropdownOpen ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }}><path d="M6 9l6 6 6-6" /></svg>
-                        </button>
-                        {timeframeDropdownOpen && (
-                          <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, background: '#0a0a0f', border: '1px solid #22c55e', borderTop: 'none', borderRadius: '0 0 8px 8px', zIndex: 100, overflow: 'hidden' }}>
-                            <div onClick={() => { setQuickTradeTimeframe(''); setTimeframeDropdownOpen(false) }} style={{ padding: '10px 12px', cursor: 'pointer', color: '#888', fontSize: '14px', transition: 'background 0.15s' }} onMouseEnter={e => e.currentTarget.style.background = '#1a1a22'} onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>-</div>
-                            {['1m', '5m', '15m', '1H', '4H', 'Daily'].map(tf => (
-                              <div key={tf} onClick={() => { setQuickTradeTimeframe(tf); setTimeframeDropdownOpen(false) }} style={{ padding: '10px 12px', cursor: 'pointer', color: '#06b6d4', fontSize: '14px', fontWeight: 600, transition: 'background 0.15s' }} onMouseEnter={e => e.currentTarget.style.background = 'rgba(6,182,212,0.15)'} onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>{tf}</div>
-                            ))}
+                      {(() => {
+                        const tfStyles = getFieldOptionStyles('timeframe', quickTradeTimeframe)
+                        const tfOptions = getFieldOptions('timeframe')
+                        const displayVal = tfOptions.find(o => getOptVal(o).toLowerCase() === quickTradeTimeframe?.toLowerCase())
+                        return (
+                          <div style={{ position: 'relative' }}>
+                            <label style={{ display: 'block', fontSize: '12px', color: '#888', marginBottom: '6px', fontWeight: 600 }}>Timeframe</label>
+                            <button type="button" onClick={() => { setTimeframeDropdownOpen(!timeframeDropdownOpen); setDirectionDropdownOpen(false); setOutcomeDropdownOpen(false); setConfidenceDropdownOpen(false); setSessionDropdownOpen(false); setCustomDropdownOpen({}) }} style={{ width: '100%', padding: '10px 12px', background: quickTradeTimeframe ? (tfStyles.bgColor || '#0a0a0f') : '#0a0a0f', border: timeframeDropdownOpen ? '1px solid #22c55e' : quickTradeTimeframe ? `1px solid ${tfStyles.borderColor || (tfStyles.textColor ? tfStyles.textColor + '80' : '#1a1a22')}` : '1px solid #1a1a22', borderRadius: timeframeDropdownOpen ? '8px 8px 0 0' : '8px', color: quickTradeTimeframe ? (tfStyles.textColor || '#fff') : '#888', fontSize: '14px', cursor: 'pointer', textAlign: 'left', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                              <span>{displayVal ? getOptVal(displayVal) : (quickTradeTimeframe || '-')}</span>
+                              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ transform: timeframeDropdownOpen ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }}><path d="M6 9l6 6 6-6" /></svg>
+                            </button>
+                            {timeframeDropdownOpen && (
+                              <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, background: '#0a0a0f', border: '1px solid #22c55e', borderTop: 'none', borderRadius: '0 0 8px 8px', zIndex: 100, overflow: 'hidden' }}>
+                                <div onClick={() => { setQuickTradeTimeframe(''); setTimeframeDropdownOpen(false) }} style={{ padding: '10px 12px', cursor: 'pointer', color: '#888', fontSize: '14px', transition: 'background 0.15s' }} onMouseEnter={e => e.currentTarget.style.background = '#1a1a22'} onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>-</div>
+                                {tfOptions.map(opt => {
+                                  const optVal = getOptVal(opt)
+                                  const optColor = typeof opt === 'object' ? (opt.textColor || '#fff') : '#fff'
+                                  const optBg = typeof opt === 'object' ? (opt.bgColor || null) : null
+                                  return (
+                                    <div key={optVal} onClick={() => { setQuickTradeTimeframe(optVal); setTimeframeDropdownOpen(false) }} style={{ padding: '10px 12px', cursor: 'pointer', color: optColor, fontSize: '14px', fontWeight: 600, transition: 'background 0.15s' }} onMouseEnter={e => e.currentTarget.style.background = optBg || 'rgba(255,255,255,0.1)'} onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>{optVal}</div>
+                                  )
+                                })}
+                              </div>
+                            )}
                           </div>
-                        )}
-                      </div>
+                        )
+                      })()}
                       {/* Session */}
-                      <div style={{ position: 'relative' }}>
-                        <label style={{ display: 'block', fontSize: '12px', color: '#888', marginBottom: '6px', fontWeight: 600 }}>Session</label>
-                        <button type="button" onClick={() => { setSessionDropdownOpen(!sessionDropdownOpen); setDirectionDropdownOpen(false); setOutcomeDropdownOpen(false); setConfidenceDropdownOpen(false); setTimeframeDropdownOpen(false); setCustomDropdownOpen({}) }} style={{ width: '100%', padding: '10px 12px', background: '#0a0a0f', border: sessionDropdownOpen ? '1px solid #22c55e' : '1px solid #1a1a22', borderRadius: sessionDropdownOpen ? '8px 8px 0 0' : '8px', color: quickTradeSession === 'London' ? '#3b82f6' : quickTradeSession === 'New York' ? '#22c55e' : quickTradeSession === 'Asian' ? '#f59e0b' : '#888', fontSize: '14px', cursor: 'pointer', textAlign: 'left', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                          <span>{quickTradeSession || '-'}</span>
-                          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ transform: sessionDropdownOpen ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }}><path d="M6 9l6 6 6-6" /></svg>
-                        </button>
-                        {sessionDropdownOpen && (
-                          <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, background: '#0a0a0f', border: '1px solid #22c55e', borderTop: 'none', borderRadius: '0 0 8px 8px', zIndex: 100, overflow: 'hidden' }}>
-                            <div onClick={() => { setQuickTradeSession(''); setSessionDropdownOpen(false) }} style={{ padding: '10px 12px', cursor: 'pointer', color: '#888', fontSize: '14px', transition: 'background 0.15s' }} onMouseEnter={e => e.currentTarget.style.background = '#1a1a22'} onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>-</div>
-                            <div onClick={() => { setQuickTradeSession('London'); setSessionDropdownOpen(false) }} style={{ padding: '10px 12px', cursor: 'pointer', color: '#3b82f6', fontSize: '14px', fontWeight: 600, transition: 'background 0.15s' }} onMouseEnter={e => e.currentTarget.style.background = 'rgba(59,130,246,0.15)'} onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>London</div>
-                            <div onClick={() => { setQuickTradeSession('New York'); setSessionDropdownOpen(false) }} style={{ padding: '10px 12px', cursor: 'pointer', color: '#22c55e', fontSize: '14px', fontWeight: 600, transition: 'background 0.15s' }} onMouseEnter={e => e.currentTarget.style.background = 'rgba(34,197,94,0.15)'} onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>New York</div>
-                            <div onClick={() => { setQuickTradeSession('Asian'); setSessionDropdownOpen(false) }} style={{ padding: '10px 12px', cursor: 'pointer', color: '#f59e0b', fontSize: '14px', fontWeight: 600, transition: 'background 0.15s' }} onMouseEnter={e => e.currentTarget.style.background = 'rgba(245,158,11,0.15)'} onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>Asian</div>
+                      {(() => {
+                        const sessStyles = getFieldOptionStyles('session', quickTradeSession)
+                        const sessOptions = getFieldOptions('session')
+                        const displayVal = sessOptions.find(o => getOptVal(o).toLowerCase() === quickTradeSession?.toLowerCase())
+                        return (
+                          <div style={{ position: 'relative' }}>
+                            <label style={{ display: 'block', fontSize: '12px', color: '#888', marginBottom: '6px', fontWeight: 600 }}>Session</label>
+                            <button type="button" onClick={() => { setSessionDropdownOpen(!sessionDropdownOpen); setDirectionDropdownOpen(false); setOutcomeDropdownOpen(false); setConfidenceDropdownOpen(false); setTimeframeDropdownOpen(false); setCustomDropdownOpen({}) }} style={{ width: '100%', padding: '10px 12px', background: quickTradeSession ? (sessStyles.bgColor || '#0a0a0f') : '#0a0a0f', border: sessionDropdownOpen ? '1px solid #22c55e' : quickTradeSession ? `1px solid ${sessStyles.borderColor || (sessStyles.textColor ? sessStyles.textColor + '80' : '#1a1a22')}` : '1px solid #1a1a22', borderRadius: sessionDropdownOpen ? '8px 8px 0 0' : '8px', color: quickTradeSession ? (sessStyles.textColor || '#fff') : '#888', fontSize: '14px', cursor: 'pointer', textAlign: 'left', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                              <span>{displayVal ? getOptVal(displayVal) : (quickTradeSession || '-')}</span>
+                              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ transform: sessionDropdownOpen ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }}><path d="M6 9l6 6 6-6" /></svg>
+                            </button>
+                            {sessionDropdownOpen && (
+                              <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, background: '#0a0a0f', border: '1px solid #22c55e', borderTop: 'none', borderRadius: '0 0 8px 8px', zIndex: 100, overflow: 'hidden' }}>
+                                <div onClick={() => { setQuickTradeSession(''); setSessionDropdownOpen(false) }} style={{ padding: '10px 12px', cursor: 'pointer', color: '#888', fontSize: '14px', transition: 'background 0.15s' }} onMouseEnter={e => e.currentTarget.style.background = '#1a1a22'} onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>-</div>
+                                {sessOptions.map(opt => {
+                                  const optVal = getOptVal(opt)
+                                  const optColor = typeof opt === 'object' ? (opt.textColor || '#fff') : '#fff'
+                                  const optBg = typeof opt === 'object' ? (opt.bgColor || null) : null
+                                  return (
+                                    <div key={optVal} onClick={() => { setQuickTradeSession(optVal); setSessionDropdownOpen(false) }} style={{ padding: '10px 12px', cursor: 'pointer', color: optColor, fontSize: '14px', fontWeight: 600, transition: 'background 0.15s' }} onMouseEnter={e => e.currentTarget.style.background = optBg || 'rgba(255,255,255,0.1)'} onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>{optVal}</div>
+                                  )
+                                })}
+                              </div>
+                            )}
                           </div>
-                        )}
-                      </div>
+                        )
+                      })()}
                       {/* Custom Inputs - fill remaining grid cells */}
                       {getSelectedAccountCustomInputs().map(input => {
                         const isOpen = customDropdownOpen[input.id] || false
