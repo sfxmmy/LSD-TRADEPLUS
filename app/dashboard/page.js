@@ -2178,13 +2178,13 @@ export default function DashboardPage() {
                           onClick={(e) => { e.stopPropagation(); if (recentNote) setShowExpandedNote(recentNote) }}
                           style={{
                             position: 'absolute',
-                            top: '16px',
+                            top: '0',
                             left: '50%',
-                            right: '16px',
+                            right: '0',
                             background: 'transparent',
                             border: '1px solid #1a1a22',
                             borderRadius: '8px',
-                            padding: '6px 12px',
+                            padding: '4px 12px',
                             cursor: recentNote ? 'pointer' : 'default',
                             transition: 'all 0.2s'
                           }}
