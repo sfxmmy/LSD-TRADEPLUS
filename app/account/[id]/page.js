@@ -4435,7 +4435,7 @@ export default function AccountPage() {
             {/* Header */}
             <div style={{ padding: '20px 24px', borderBottom: '1px solid #1a1a22', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
               <div>
-                <h2 style={{ fontSize: '18px', fontWeight: 700, color: '#fff', margin: 0 }}>Column Settings</h2>
+                <h2 style={{ fontSize: '18px', fontWeight: 700, color: '#fff', margin: 0 }}>Edit Inputs</h2>
                 <p style={{ fontSize: '12px', color: '#666', margin: '4px 0 0 0' }}>Customize fields and styling for trade entries</p>
               </div>
               <button onClick={() => setShowEditInputs(false)} style={{ width: '32px', height: '32px', background: '#141418', border: '1px solid #2a2a35', borderRadius: '6px', color: '#888', fontSize: '16px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>×</button>
