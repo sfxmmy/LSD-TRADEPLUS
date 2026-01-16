@@ -2192,41 +2192,32 @@ export default function DashboardPage() {
                           onClick={(e) => { e.stopPropagation(); if (recentNote) setShowExpandedNote(recentNote) }}
                           style={{
                             position: 'absolute',
-                            top: '16px',
+                            top: '12px',
                             left: '50%',
-                            right: '16px',
+                            right: '12px',
                             background: 'transparent',
                             border: '1px solid #1a1a22',
                             borderRadius: '8px',
-                            padding: '4px 12px',
+                            padding: '8px 12px',
                             cursor: recentNote ? 'pointer' : 'default',
                             transition: 'all 0.2s'
                           }}
                           onMouseEnter={e => { if (recentNote) { e.currentTarget.style.borderColor = '#2a2a35'; e.currentTarget.style.background = 'rgba(255,255,255,0.02)' } }}
                           onMouseLeave={e => { e.currentTarget.style.borderColor = '#1a1a22'; e.currentTarget.style.background = 'transparent' }}
                         >
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '2px' }}>
-                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#666" strokeWidth="2">
+                          <div style={{ display: 'flex', alignItems: 'flex-start', gap: '8px' }}>
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#666" strokeWidth="2" style={{ flexShrink: 0, marginTop: '2px' }}>
                               <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/>
                             </svg>
-                            <span style={{ fontSize: '11px', color: '#888', textTransform: 'uppercase', fontWeight: 600 }}>Recent Note</span>
+                            <div style={{ flex: 1, fontSize: '12px', color: recentNote ? '#888' : '#444', lineHeight: 1.4, overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
+                              <span style={{ fontSize: '11px', color: '#888', textTransform: 'uppercase', fontWeight: 600 }}>RECENT NOTE: </span>
+                              {recentNote ? recentNote.text : 'No notes yet'}
+                            </div>
                             {recentNote && (
-                              <span style={{ fontSize: '10px', color: '#444', marginLeft: 'auto' }}>
+                              <span style={{ fontSize: '10px', color: '#444', flexShrink: 0, whiteSpace: 'nowrap' }}>
                                 {recentNote.type === 'custom' ? recentNote.title : new Date(recentNote.date).toLocaleDateString()}
                               </span>
                             )}
-                          </div>
-                          <div style={{
-                            fontSize: '12px',
-                            color: recentNote ? '#888' : '#444',
-                            overflow: 'hidden',
-                            textOverflow: 'ellipsis',
-                            display: '-webkit-box',
-                            WebkitLineClamp: 2,
-                            WebkitBoxOrient: 'vertical',
-                            lineHeight: 1.4
-                          }}>
-                            {recentNote ? recentNote.text : 'No notes yet'}
                           </div>
                         </div>
                       </div>
