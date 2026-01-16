@@ -1895,10 +1895,10 @@ export default function DashboardPage() {
         <a href="/" style={{ fontSize: isMobile ? '28px' : '42px', fontWeight: 700, textDecoration: 'none', letterSpacing: '-0.5px' }}>
           <span style={{ color: '#22c55e' }}>TRADE</span><span style={{ color: '#fff' }}>SAVE</span><span style={{ color: '#22c55e' }}>+</span>
         </a>
-        {!isMobile && <div style={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)', display: 'flex', alignItems: 'center', gap: '16px' }}>
-          <button onClick={() => setActiveDashboard('accounts')} style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontSize: '32px', fontWeight: 700, letterSpacing: '-0.5px', color: activeDashboard === 'accounts' ? '#fff' : '#666', transition: 'color 0.2s' }}>ACCOUNTS DASHBOARD</button>
-          <span style={{ color: '#333', fontSize: '32px', fontWeight: 300 }}>|</span>
-          <button onClick={() => setActiveDashboard('backtesting')} style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontSize: '32px', fontWeight: 700, letterSpacing: '-0.5px', color: activeDashboard === 'backtesting' ? '#fff' : '#666', transition: 'color 0.2s' }}>BACKTESTING DASHBOARD</button>
+        {!isMobile && <div style={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)', display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <button onClick={() => setActiveDashboard('accounts')} style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontSize: '20px', fontWeight: 700, letterSpacing: '-0.5px', color: activeDashboard === 'accounts' ? '#fff' : '#666', transition: 'color 0.2s' }}>ACCOUNTS DASHBOARD</button>
+          <span style={{ color: '#333', fontSize: '20px', fontWeight: 300 }}>|</span>
+          <button onClick={() => setActiveDashboard('backtesting')} style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontSize: '20px', fontWeight: 700, letterSpacing: '-0.5px', color: activeDashboard === 'backtesting' ? '#fff' : '#666', transition: 'color 0.2s' }}>BACKTESTING DASHBOARD</button>
         </div>}
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
           {/* View Toggle - Grid/List */}
