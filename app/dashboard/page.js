@@ -3262,9 +3262,15 @@ export default function DashboardPage() {
         ) : (
           /* Mobile View OR No Accounts - Show Welcome Screen */
           <div style={{ textAlign: 'center', padding: isMobile ? '40px 20px' : '80px 40px', background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '10px' }}>
-            <h2 style={{ fontSize: isMobile ? '20px' : '24px', marginBottom: '12px' }}>Welcome to TRADESAVE+</h2>
-            <p style={{ color: '#999', marginBottom: '28px', fontSize: isMobile ? '14px' : '16px' }}>Create your first trading journal to get started</p>
-            <button onClick={() => setShowModal(true)} style={{ padding: isMobile ? '12px 20px' : '14px 28px', background: '#22c55e', border: 'none', borderRadius: '6px', color: '#fff', fontWeight: 600, fontSize: isMobile ? '14px' : '16px', cursor: 'pointer' }}>+ Create Your First Journal</button>
+            <h2 style={{ fontSize: isMobile ? '20px' : '24px', marginBottom: '12px' }}>
+              {activeDashboard === 'backtesting' ? 'Backtesting Dashboard' : 'Welcome to TRADESAVE+'}
+            </h2>
+            <p style={{ color: '#999', marginBottom: '28px', fontSize: isMobile ? '14px' : '16px' }}>
+              {activeDashboard === 'backtesting' ? 'Start collecting your backtesting data now' : 'Create your first trading journal to get started'}
+            </p>
+            <button onClick={() => setShowModal(true)} style={{ padding: isMobile ? '12px 20px' : '14px 28px', background: '#22c55e', border: 'none', borderRadius: '6px', color: '#fff', fontWeight: 600, fontSize: isMobile ? '14px' : '16px', cursor: 'pointer' }}>
+              {activeDashboard === 'backtesting' ? '+ Create Backtest Journal' : '+ Create Your First Journal'}
+            </button>
           </div>
         )}
 
