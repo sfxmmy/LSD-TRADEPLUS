@@ -103,6 +103,7 @@ export default function DashboardPage() {
   const router = useRouter()
   const [user, setUser] = useState(null)
   const [accounts, setAccounts] = useState([])
+  const [activeDashboard, setActiveDashboard] = useState('accounts') // 'accounts' or 'backtesting'
   const [trades, setTrades] = useState({})
   const [loading, setLoading] = useState(true)
   const [showModal, setShowModal] = useState(false)
@@ -194,6 +195,7 @@ export default function DashboardPage() {
   const [savingInput, setSavingInput] = useState(false)
   // Chart hover state
   const [hoverData, setHoverData] = useState(null)
+  const [listGraphHover, setListGraphHover] = useState(null) // { accountId, index, x, y, value, date }
   // Button tooltip state
   const [buttonTooltip, setButtonTooltip] = useState(null) // { text: string, x: number, y: number, showBelow?: boolean }
   const tooltipTimerRef = useRef(null)
@@ -324,10 +326,11 @@ export default function DashboardPage() {
     setDragOverJournal(null)
   }
 
-  // Get sorted accounts based on journal order
+  // Get sorted accounts based on journal order (uses filteredAccounts for current dashboard)
   const getSortedAccounts = () => {
-    if (journalOrder.length === 0) return accounts
-    return [...accounts].sort((a, b) => {
+    const accs = accounts.filter(acc => (acc.dashboard_type || 'accounts') === activeDashboard)
+    if (journalOrder.length === 0) return accs
+    return [...accs].sort((a, b) => {
       const aIdx = journalOrder.indexOf(a.id)
       const bIdx = journalOrder.indexOf(b.id)
       if (aIdx === -1 && bIdx === -1) return 0
@@ -458,7 +461,8 @@ export default function DashboardPage() {
       max_dd_pct: maxDdPct ? parseFloat(maxDdPct) : null,
       max_dd_type: maxDdType,
       max_dd_trailing_stops_at: maxDdTrailingStopsAt,
-      max_dd_locks_at_pct: maxDdLocksAtPct ? parseFloat(maxDdLocksAtPct) : null
+      max_dd_locks_at_pct: maxDdLocksAtPct ? parseFloat(maxDdLocksAtPct) : null,
+      dashboard_type: activeDashboard
     }).select().single()
     if (error) { alert('Error: ' + error.message); setCreating(false); return }
     setAccounts([...accounts, data])
@@ -777,7 +781,8 @@ export default function DashboardPage() {
         user_id: user.id,
         name: importJournalName.trim(),
         starting_balance: parseFloat(importStartingBalance) || 0,
-        custom_inputs: customInputs.length > 0 ? JSON.stringify(customInputs) : null
+        custom_inputs: customInputs.length > 0 ? JSON.stringify(customInputs) : null,
+        dashboard_type: activeDashboard
       }).select().single()
       if (accountError) throw accountError
       // Process and insert trades
@@ -1139,17 +1144,25 @@ export default function DashboardPage() {
     setTransferFromJournal('')
   }
 
-  // Set default account when accounts load
+  // Set default account when accounts load or dashboard changes
   useEffect(() => {
-    if (accounts.length > 0 && !quickTradeAccount) {
-      setQuickTradeAccount(accounts[0].id)
+    const dashboardAccounts = accounts.filter(acc => (acc.dashboard_type || 'accounts') === activeDashboard)
+    if (dashboardAccounts.length > 0) {
+      // If current quickTradeAccount is not in this dashboard, switch to first one
+      const currentInDashboard = dashboardAccounts.some(a => a.id === quickTradeAccount)
+      if (!currentInDashboard) {
+        setQuickTradeAccount(dashboardAccounts[0].id)
+      }
     }
-  }, [accounts])
+  }, [accounts, activeDashboard])
+
+  // Filter accounts based on active dashboard (existing accounts without dashboard_type default to 'accounts')
+  const filteredAccounts = accounts.filter(acc => (acc.dashboard_type || 'accounts') === activeDashboard)
 
   // Get all trades across all accounts
   function getAllTrades() {
     const all = []
-    accounts.forEach(acc => {
+    filteredAccounts.forEach(acc => {
       const accTrades = trades[acc.id] || []
       accTrades.forEach(t => all.push({ ...t, accountName: acc.name, accountId: acc.id }))
     })
@@ -1168,7 +1181,7 @@ export default function DashboardPage() {
     const grossProfit = allTrades.filter(t => parseFloat(t.pnl) > 0).reduce((sum, t) => sum + parseFloat(t.pnl), 0)
     const grossLoss = Math.abs(allTrades.filter(t => parseFloat(t.pnl) < 0).reduce((sum, t) => sum + parseFloat(t.pnl), 0))
     const profitFactor = grossLoss > 0 ? (grossProfit / grossLoss).toFixed(2) : grossProfit > 0 ? '∞' : '-'
-    const totalStartingBalance = accounts.reduce((sum, acc) => sum + (parseFloat(acc.starting_balance) || 0), 0)
+    const totalStartingBalance = filteredAccounts.reduce((sum, acc) => sum + (parseFloat(acc.starting_balance) || 0), 0)
     const currentBalance = totalStartingBalance + totalPnl
     const avgWin = wins > 0 ? (grossProfit / wins) : 0
     const avgLoss = losses > 0 ? (grossLoss / losses) : 0
@@ -1882,7 +1895,11 @@ export default function DashboardPage() {
         <a href="/" style={{ fontSize: isMobile ? '28px' : '42px', fontWeight: 700, textDecoration: 'none', letterSpacing: '-0.5px' }}>
           <span style={{ color: '#22c55e' }}>TRADE</span><span style={{ color: '#fff' }}>SAVE</span><span style={{ color: '#22c55e' }}>+</span>
         </a>
-        {!isMobile && <div style={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)', fontSize: '32px', fontWeight: 700, letterSpacing: '-0.5px', color: '#fff' }}>JOURNAL DASHBOARD</div>}
+        {!isMobile && <div style={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)', display: 'flex', alignItems: 'center', gap: '16px' }}>
+          <button onClick={() => setActiveDashboard('accounts')} style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontSize: '32px', fontWeight: 700, letterSpacing: '-0.5px', color: activeDashboard === 'accounts' ? '#fff' : '#666', transition: 'color 0.2s' }}>ACCOUNTS DASHBOARD</button>
+          <span style={{ color: '#333', fontSize: '32px', fontWeight: 300 }}>|</span>
+          <button onClick={() => setActiveDashboard('backtesting')} style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontSize: '32px', fontWeight: 700, letterSpacing: '-0.5px', color: activeDashboard === 'backtesting' ? '#fff' : '#666', transition: 'color 0.2s' }}>BACKTESTING DASHBOARD</button>
+        </div>}
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
           {/* View Toggle - Grid/List */}
           <div style={{ display: 'flex', background: '#0a0a0f', borderRadius: '6px', overflow: 'hidden', border: '1px solid #1a1a22' }}>
@@ -1905,7 +1922,7 @@ export default function DashboardPage() {
 
       <div style={{ maxWidth: '1800px', margin: '0 auto', padding: '12px', minHeight: 'calc(100vh - 80px)' }}>
         {/* Main Layout: LOG TRADE Sidebar (left) + Main Content (right 2/3) */}
-        {!isMobile && accounts.length > 0 ? (
+        {!isMobile && filteredAccounts.length > 0 ? (
           <div style={{ display: 'flex', gap: '12px', minWidth: 0 }}>
             {/* LOG TRADE Widget - Fixed Left Sidebar */}
             <div onClick={() => setSidebarExpanded(true)} style={{ width: '280px', flexShrink: 0, background: 'linear-gradient(135deg, #0f0f14 0%, #0a0a0f 100%)', border: '1px solid #1a1a22', borderRadius: '16px', padding: '20px', boxShadow: '0 4px 24px rgba(0,0,0,0.3)', alignSelf: 'flex-start', cursor: 'pointer' }}>
@@ -1932,7 +1949,7 @@ export default function DashboardPage() {
                     </button>
                     {journalDropdownOpen && (
                       <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, background: '#0d0d12', border: '1px solid rgba(34,197,94,0.3)', borderTop: 'none', borderRadius: '0 0 10px 10px', padding: '6px', zIndex: 10, display: 'flex', flexDirection: 'column', gap: '4px', boxShadow: '0 8px 24px rgba(0,0,0,0.4)' }}>
-                        {accounts.map(acc => {
+                        {filteredAccounts.map(acc => {
                           const isSelected = quickTradeAccount === acc.id
                           const accTrades = trades[acc.id] || []
                           const totalPnl = accTrades.reduce((sum, t) => sum + (parseFloat(t.pnl) || 0), 0)
@@ -2325,19 +2342,19 @@ export default function DashboardPage() {
                             background: 'transparent',
                             border: '1px solid #1a1a22',
                             borderRadius: '8px',
-                            padding: '8px 12px',
+                            padding: '8px 12px 12px 12px',
                             cursor: recentNote ? 'pointer' : 'default',
                             transition: 'all 0.2s'
                           }}
                           onMouseEnter={e => { if (recentNote) { e.currentTarget.style.borderColor = '#2a2a35'; e.currentTarget.style.background = 'rgba(255,255,255,0.02)' } }}
                           onMouseLeave={e => { e.currentTarget.style.borderColor = '#1a1a22'; e.currentTarget.style.background = 'transparent' }}
                         >
-                          <div style={{ display: 'flex', alignItems: 'flex-start', gap: '8px' }}>
+                          <div style={{ display: 'flex', alignItems: 'flex-start', gap: '6px' }}>
                             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#666" strokeWidth="2" style={{ flexShrink: 0, marginTop: '2px' }}>
                               <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/>
                             </svg>
                             <span style={{ fontSize: '11px', color: '#888', textTransform: 'uppercase', fontWeight: 600, flexShrink: 0, marginTop: '1px' }}>RECENT NOTE:</span>
-                            <div style={{ flex: 1, fontSize: '12px', color: recentNote ? '#888' : '#444', lineHeight: 1.4, overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
+                            <div style={{ flex: 1, fontSize: '12px', color: recentNote ? '#888' : '#444', fontWeight: 600, lineHeight: 1.4, overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
                               {recentNote ? recentNote.text : 'No notes yet'}
                             </div>
                             {recentNote && (
@@ -2991,7 +3008,7 @@ export default function DashboardPage() {
                 {/* Journal List View */}
                 {viewMode === 'list' && (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                  {accounts.map(account => {
+                  {filteredAccounts.map(account => {
                     const accTrades = trades[account.id] || []
                     const wins = accTrades.filter(t => t.outcome === 'win').length
                     const losses = accTrades.filter(t => t.outcome === 'loss').length
@@ -3047,61 +3064,125 @@ export default function DashboardPage() {
                             </div>
                           </div>
 
-                          {/* Stats Row */}
-                          <div style={{ display: 'flex', gap: '24px' }}>
-                            <div>
-                              <div style={{ fontSize: '10px', color: '#888', marginBottom: '2px' }}>PnL</div>
-                              <div style={{ fontSize: '13px', fontWeight: 600, color: totalPnl >= 0 ? '#22c55e' : '#ef4444' }}>{totalPnl >= 0 ? '+' : ''}${formatCurrency(totalPnl)}</div>
+                          {/* Stats Row - Inline format */}
+                          <div style={{ display: 'flex', gap: '20px', flexWrap: 'wrap' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                              <span style={{ fontSize: '11px', color: '#666' }}>PnL</span>
+                              <span style={{ fontSize: '13px', fontWeight: 600, color: totalPnl >= 0 ? '#22c55e' : '#ef4444' }}>{totalPnl >= 0 ? '+' : ''}${formatCurrency(totalPnl)}</span>
                             </div>
-                            <div>
-                              <div style={{ fontSize: '10px', color: '#888', marginBottom: '2px' }}>Trades</div>
-                              <div style={{ fontSize: '13px', fontWeight: 600, color: '#fff' }}>{accTrades.length}</div>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                              <span style={{ fontSize: '11px', color: '#666' }}>Trades</span>
+                              <span style={{ fontSize: '13px', fontWeight: 600, color: '#fff' }}>{accTrades.length}</span>
                             </div>
-                            <div>
-                              <div style={{ fontSize: '10px', color: '#888', marginBottom: '2px' }}>Winrate</div>
-                              <div style={{ fontSize: '13px', fontWeight: 600, color: winrate >= 50 ? '#22c55e' : '#ef4444' }}>{winrate}%</div>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                              <span style={{ fontSize: '11px', color: '#666' }}>Winrate</span>
+                              <span style={{ fontSize: '13px', fontWeight: 600, color: winrate >= 50 ? '#22c55e' : '#ef4444' }}>{winrate}%</span>
                             </div>
-                            <div>
-                              <div style={{ fontSize: '10px', color: '#888', marginBottom: '2px' }}>W/L</div>
-                              <div style={{ fontSize: '13px', fontWeight: 600, color: '#fff' }}>{wins}/{losses}</div>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                              <span style={{ fontSize: '11px', color: '#666' }}>W/L</span>
+                              <span style={{ fontSize: '13px', fontWeight: 600, color: '#fff' }}>{wins}/{losses}</span>
                             </div>
-                            <div>
-                              <div style={{ fontSize: '10px', color: '#888', marginBottom: '2px' }}>PF</div>
-                              <div style={{ fontSize: '13px', fontWeight: 600, color: profitFactor === '-' ? '#666' : profitFactor === '∞' ? '#22c55e' : parseFloat(profitFactor) >= 1 ? '#22c55e' : '#ef4444' }}>{profitFactor}</div>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                              <span style={{ fontSize: '11px', color: '#666' }}>PF</span>
+                              <span style={{ fontSize: '13px', fontWeight: 600, color: profitFactor === '-' ? '#666' : profitFactor === '∞' ? '#22c55e' : parseFloat(profitFactor) >= 1 ? '#22c55e' : '#ef4444' }}>{profitFactor}</span>
                             </div>
-                            <div>
-                              <div style={{ fontSize: '10px', color: '#888', marginBottom: '2px' }}>Avg W</div>
-                              <div style={{ fontSize: '13px', fontWeight: 600, color: '#22c55e' }}>${avgWin}</div>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                              <span style={{ fontSize: '11px', color: '#666' }}>Avg W</span>
+                              <span style={{ fontSize: '13px', fontWeight: 600, color: '#22c55e' }}>${avgWin}</span>
                             </div>
-                            <div>
-                              <div style={{ fontSize: '10px', color: '#888', marginBottom: '2px' }}>Avg L</div>
-                              <div style={{ fontSize: '13px', fontWeight: 600, color: '#ef4444' }}>-${avgLoss}</div>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                              <span style={{ fontSize: '11px', color: '#666' }}>Avg L</span>
+                              <span style={{ fontSize: '13px', fontWeight: 600, color: '#ef4444' }}>-${avgLoss}</span>
                             </div>
                           </div>
                         </div>
 
                         {/* Mini Graph + Buttons */}
                         <div onClick={e => e.stopPropagation()} style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-                          {/* Mini Sparkline Graph */}
-                          {balancePoints.length > 1 && (
-                            <div style={{ width: '80px', height: '32px' }}>
-                              <svg width="80" height="32" viewBox="0 0 80 32" preserveAspectRatio="none">
-                                {(() => {
-                                  const minVal = Math.min(...balancePoints)
-                                  const maxVal = Math.max(...balancePoints)
-                                  const range = maxVal - minVal || 1
-                                  const pts = balancePoints.map((v, i) => {
-                                    const x = (i / (balancePoints.length - 1)) * 80
-                                    const y = 32 - ((v - minVal) / range) * 28 - 2
-                                    return `${x},${y}`
-                                  }).join(' ')
-                                  const lastVal = balancePoints[balancePoints.length - 1]
-                                  const lineColor = lastVal >= startingBalance ? '#22c55e' : '#ef4444'
-                                  return <polyline points={pts} fill="none" stroke={lineColor} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                                })()}
-                              </svg>
-                            </div>
-                          )}
+                          {/* Mini Sparkline Graph with axis and tooltip */}
+                          {balancePoints.length > 1 && (() => {
+                            const minVal = Math.min(...balancePoints)
+                            const maxVal = Math.max(...balancePoints)
+                            const range = maxVal - minVal || 1
+                            const graphWidth = 120
+                            const graphHeight = 44
+                            const paddingLeft = 0
+                            const paddingBottom = 12
+                            const chartHeight = graphHeight - paddingBottom
+                            const lastVal = balancePoints[balancePoints.length - 1]
+                            const lineColor = lastVal >= startingBalance ? '#22c55e' : '#ef4444'
+                            // Get first and last dates for axis
+                            const firstDate = sortedTrades.length > 0 ? new Date(sortedTrades[0].date) : null
+                            const lastDate = sortedTrades.length > 0 ? new Date(sortedTrades[sortedTrades.length - 1].date) : null
+                            const formatAxisDate = (d) => d ? `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}` : ''
+
+                            return (
+                              <div style={{ position: 'relative', width: graphWidth, height: graphHeight }}>
+                                <svg
+                                  width={graphWidth}
+                                  height={graphHeight}
+                                  onMouseMove={(e) => {
+                                    const rect = e.currentTarget.getBoundingClientRect()
+                                    const x = e.clientX - rect.left
+                                    const idx = Math.round((x / graphWidth) * (balancePoints.length - 1))
+                                    if (idx >= 0 && idx < balancePoints.length) {
+                                      const tradeDate = idx === 0 ? 'Start' : sortedTrades[idx - 1]?.date || ''
+                                      setListGraphHover({
+                                        accountId: account.id,
+                                        index: idx,
+                                        x: e.clientX,
+                                        y: e.clientY,
+                                        value: balancePoints[idx],
+                                        date: tradeDate
+                                      })
+                                    }
+                                  }}
+                                  onMouseLeave={() => setListGraphHover(null)}
+                                  style={{ cursor: 'crosshair' }}
+                                >
+                                  {/* Grid line at starting balance */}
+                                  <line
+                                    x1={paddingLeft}
+                                    y1={chartHeight - ((startingBalance - minVal) / range) * (chartHeight - 4) - 2}
+                                    x2={graphWidth}
+                                    y2={chartHeight - ((startingBalance - minVal) / range) * (chartHeight - 4) - 2}
+                                    stroke="#333"
+                                    strokeWidth="1"
+                                    strokeDasharray="2,2"
+                                  />
+                                  {/* Line chart */}
+                                  <polyline
+                                    points={balancePoints.map((v, i) => {
+                                      const x = paddingLeft + (i / (balancePoints.length - 1)) * (graphWidth - paddingLeft)
+                                      const y = chartHeight - ((v - minVal) / range) * (chartHeight - 4) - 2
+                                      return `${x},${y}`
+                                    }).join(' ')}
+                                    fill="none"
+                                    stroke={lineColor}
+                                    strokeWidth="1.5"
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                  />
+                                  {/* Hover point */}
+                                  {listGraphHover && listGraphHover.accountId === account.id && (
+                                    <circle
+                                      cx={paddingLeft + (listGraphHover.index / (balancePoints.length - 1)) * (graphWidth - paddingLeft)}
+                                      cy={chartHeight - ((balancePoints[listGraphHover.index] - minVal) / range) * (chartHeight - 4) - 2}
+                                      r="3"
+                                      fill={lineColor}
+                                      stroke="#fff"
+                                      strokeWidth="1"
+                                    />
+                                  )}
+                                </svg>
+                                {/* X-axis labels */}
+                                <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, display: 'flex', justifyContent: 'space-between', fontSize: '8px', color: '#555' }}>
+                                  <span>{formatAxisDate(firstDate)}</span>
+                                  <span>{formatAxisDate(lastDate)}</span>
+                                </div>
+                              </div>
+                            )
+                          })()}
 
                           {/* Buttons */}
                           <a href={`/account/${account.id}`} style={{ padding: '8px 14px', background: '#0a0a0f', border: '2px solid rgba(34,197,94,0.3)', borderRadius: '8px', color: '#22c55e', fontWeight: 600, fontSize: '12px', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '6px', transition: 'all 0.2s' }} onMouseEnter={e => { e.currentTarget.style.background = 'rgba(34,197,94,0.08)'; e.currentTarget.style.border = '2px solid rgba(34,197,94,0.5)' }} onMouseLeave={e => { e.currentTarget.style.background = '#0a0a0f'; e.currentTarget.style.border = '2px solid rgba(34,197,94,0.3)' }}>
@@ -3152,6 +3233,29 @@ export default function DashboardPage() {
                     <span style={{ fontSize: '14px', fontWeight: 600, color: '#22c55e' }}>Add New Journal</span>
                   </div>
                 </div>
+                )}
+
+                {/* List Graph Tooltip */}
+                {listGraphHover && (
+                  <div style={{
+                    position: 'fixed',
+                    left: listGraphHover.x + 10,
+                    top: listGraphHover.y - 50,
+                    background: '#1a1a22',
+                    border: '1px solid #2a2a35',
+                    borderRadius: '6px',
+                    padding: '8px 12px',
+                    zIndex: 1000,
+                    pointerEvents: 'none',
+                    boxShadow: '0 4px 12px rgba(0,0,0,0.5)'
+                  }}>
+                    <div style={{ fontSize: '10px', color: '#888', marginBottom: '2px' }}>
+                      {listGraphHover.date === 'Start' ? 'Starting Balance' : listGraphHover.date}
+                    </div>
+                    <div style={{ fontSize: '14px', fontWeight: 600, color: listGraphHover.value >= 0 ? '#22c55e' : '#ef4444' }}>
+                      ${formatCurrency(listGraphHover.value)}
+                    </div>
+                  </div>
                 )}
               </div>
             </div>
@@ -3809,7 +3913,7 @@ export default function DashboardPage() {
                     gap: '6px',
                     boxShadow: '0 4px 15px rgba(0,0,0,0.4)'
                   }}>
-                    {accounts.map(acc => {
+                    {filteredAccounts.map(acc => {
                       const isSelected = quickTradeAccount === acc.id
                       const accTrades = trades[acc.id] || []
                       const totalPnl = accTrades.reduce((sum, t) => sum + (parseFloat(t.pnl) || 0), 0)
@@ -4164,7 +4268,7 @@ export default function DashboardPage() {
                         gap: '4px',
                         boxShadow: '0 4px 12px rgba(0,0,0,0.3)'
                       }}>
-                        {accounts.map(acc => {
+                        {filteredAccounts.map(acc => {
                           const isSelected = quickTradeAccount === acc.id
                           const accTrades = trades[acc.id] || []
                           const totalPnl = accTrades.reduce((sum, t) => sum + (parseFloat(t.pnl) || 0), 0)
@@ -4969,7 +5073,7 @@ export default function DashboardPage() {
         })()}
 
         {/* Mobile Floating Action Button */}
-        {isMobile && accounts.length > 0 && !showMobileTradeModal && (
+        {isMobile && filteredAccounts.length > 0 && !showMobileTradeModal && (
           <button
             onClick={() => setShowMobileTradeModal(true)}
             style={{

@@ -98,6 +98,8 @@ export default function AccountPage() {
   const [barHover, setBarHover] = useState(null)
   const [dailyPnlHover, setDailyPnlHover] = useState(null)
   const [hasNewInputs, setHasNewInputs] = useState(false)
+  const [draggedInput, setDraggedInput] = useState(null)
+  const [dragOverInput, setDragOverInput] = useState(null)
   const [isMobile, setIsMobile] = useState(false)
   const [showMobileMenu, setShowMobileMenu] = useState(false)
   const [deleteConfirmId, setDeleteConfirmId] = useState(null)
@@ -481,6 +483,46 @@ export default function AccountPage() {
     const n = [...inputs]
     n[i] = { ...n[i], hidden: false }
     setInputs(n)
+  }
+  // Input drag and drop handlers
+  function handleInputDragStart(e, index) {
+    setDraggedInput(index)
+    e.dataTransfer.effectAllowed = 'move'
+    e.dataTransfer.setData('text/plain', index)
+  }
+  function handleInputDragOver(e, index) {
+    e.preventDefault()
+    if (draggedInput !== null && draggedInput !== index) {
+      setDragOverInput(index)
+    }
+  }
+  function handleInputDragLeave() {
+    setDragOverInput(null)
+  }
+  function handleInputDrop(e, targetIndex) {
+    e.preventDefault()
+    if (draggedInput === null || draggedInput === targetIndex) {
+      setDraggedInput(null)
+      setDragOverInput(null)
+      return
+    }
+    // Reorder inputs
+    setInputs(prev => {
+      const newInputs = [...prev]
+      const visibleInputs = newInputs.filter(inp => !inp.hidden)
+      const hiddenInputs = newInputs.filter(inp => inp.hidden)
+      // Find actual indices in visible array
+      const draggedItem = visibleInputs[draggedInput]
+      visibleInputs.splice(draggedInput, 1)
+      visibleInputs.splice(targetIndex, 0, draggedItem)
+      return [...visibleInputs, ...hiddenInputs]
+    })
+    setDraggedInput(null)
+    setDragOverInput(null)
+  }
+  function handleInputDragEnd() {
+    setDraggedInput(null)
+    setDragOverInput(null)
   }
   function inputHasData(inputId) {
     // Check if any trades have data for this input
@@ -4521,7 +4563,8 @@ export default function AccountPage() {
             {/* Scrollable Content */}
             <div style={{ flex: 1, overflowY: 'auto', padding: '16px 24px' }}>
               {/* Column headers */}
-              <div style={{ display: 'grid', gridTemplateColumns: '28px 1fr 100px 80px 28px', gap: '10px', padding: '8px 12px', marginBottom: '8px', alignItems: 'center' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '20px 28px 1fr 100px 80px 28px', gap: '10px', padding: '8px 12px', marginBottom: '8px', alignItems: 'center' }}>
+                <span></span>
                 <span style={{ fontSize: '12px', color: '#888', fontWeight: 600 }}>On</span>
                 <span style={{ fontSize: '12px', color: '#888', fontWeight: 600 }}>Name</span>
                 <span style={{ fontSize: '12px', color: '#888', fontWeight: 600 }}>Type</span>
@@ -4531,11 +4574,35 @@ export default function AccountPage() {
 
               {/* Field rows */}
               <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', marginBottom: '16px' }}>
-                {inputs.map((input, i) => !input.hidden && (
-                  <div key={input.id} style={{ display: 'grid', gridTemplateColumns: '28px 1fr 100px 80px 28px', gap: '10px', padding: '10px 12px', background: input.enabled ? '#141418' : '#0d0d12', borderRadius: '8px', border: '1px solid #1a1a22', alignItems: 'center', opacity: input.enabled ? 1 : 0.6 }}>
-                    <input type="checkbox" checked={input.enabled} onChange={e => updateInput(i, 'enabled', e.target.checked)} style={{ width: '16px', height: '16px', accentColor: '#22c55e', cursor: 'pointer' }} />
-                    <input type="text" value={input.label} onChange={e => updateInput(i, 'label', e.target.value)} style={{ padding: '6px 8px', background: '#0a0a0e', border: '1px solid #2a2a35', borderRadius: '6px', color: '#fff', fontSize: '12px', width: '100%' }} placeholder="Field name" />
-                    <select value={input.type} onChange={e => updateInput(i, 'type', e.target.value)} style={{ padding: '6px 8px', background: '#0a0a0e', border: '1px solid #2a2a35', borderRadius: '6px', color: '#fff', fontSize: '11px', cursor: 'pointer' }}>
+                {inputs.filter(inp => !inp.hidden).map((input, visibleIdx) => {
+                  const originalIdx = inputs.findIndex(inp => inp.id === input.id)
+                  return (
+                  <div
+                    key={input.id}
+                    draggable
+                    onDragStart={e => handleInputDragStart(e, visibleIdx)}
+                    onDragOver={e => handleInputDragOver(e, visibleIdx)}
+                    onDragLeave={handleInputDragLeave}
+                    onDrop={e => handleInputDrop(e, visibleIdx)}
+                    onDragEnd={handleInputDragEnd}
+                    style={{
+                      display: 'grid',
+                      gridTemplateColumns: '20px 28px 1fr 100px 80px 28px',
+                      gap: '10px',
+                      padding: '10px 12px',
+                      background: input.enabled ? '#141418' : '#0d0d12',
+                      borderRadius: '8px',
+                      border: dragOverInput === visibleIdx ? '1px solid #9333ea' : '1px solid #1a1a22',
+                      alignItems: 'center',
+                      opacity: draggedInput === visibleIdx ? 0.5 : input.enabled ? 1 : 0.6,
+                      cursor: 'grab',
+                      transition: 'border-color 0.15s, opacity 0.15s'
+                    }}
+                  >
+                    <span style={{ color: '#555', fontSize: '12px', cursor: 'grab', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>⋮⋮</span>
+                    <input type="checkbox" checked={input.enabled} onChange={e => updateInput(originalIdx, 'enabled', e.target.checked)} style={{ width: '16px', height: '16px', accentColor: '#22c55e', cursor: 'pointer' }} />
+                    <input type="text" value={input.label} onChange={e => updateInput(originalIdx, 'label', e.target.value)} style={{ padding: '6px 8px', background: '#0a0a0e', border: '1px solid #2a2a35', borderRadius: '6px', color: '#fff', fontSize: '12px', width: '100%' }} placeholder="Field name" />
+                    <select value={input.type} onChange={e => updateInput(originalIdx, 'type', e.target.value)} style={{ padding: '6px 8px', background: '#0a0a0e', border: '1px solid #2a2a35', borderRadius: '6px', color: '#fff', fontSize: '11px', cursor: 'pointer' }}>
                       <option value="text">Text</option>
                       <option value="number">Number</option>
                       <option value="value">Value ($)</option>
@@ -4547,15 +4614,15 @@ export default function AccountPage() {
                       <option value="file">Image</option>
                     </select>
                     {input.type === 'number' || input.type === 'value' ? (
-                      <button onClick={() => openColorEditor(i)} style={{ padding: '6px 10px', background: '#0a0a0e', border: '1px solid #2a2a35', borderRadius: '6px', color: '#22c55e', fontSize: '11px', cursor: 'pointer' }}>Options</button>
+                      <button onClick={() => openColorEditor(originalIdx)} style={{ padding: '6px 10px', background: '#0a0a0e', border: '1px solid #2a2a35', borderRadius: '6px', color: '#22c55e', fontSize: '11px', cursor: 'pointer' }}>Options</button>
                     ) : input.type === 'select' ? (
-                      <button onClick={() => openOptionsEditor(i)} style={{ padding: '6px 10px', background: '#0a0a0e', border: '1px solid #2a2a35', borderRadius: '6px', color: '#22c55e', fontSize: '11px', cursor: 'pointer' }}>Options</button>
+                      <button onClick={() => openOptionsEditor(originalIdx)} style={{ padding: '6px 10px', background: '#0a0a0e', border: '1px solid #2a2a35', borderRadius: '6px', color: '#22c55e', fontSize: '11px', cursor: 'pointer' }}>Options</button>
                     ) : (
-                      <button onClick={() => openColorEditor(i)} style={{ padding: '6px 10px', background: '#0a0a0e', border: '1px solid #2a2a35', borderRadius: '6px', color: '#22c55e', fontSize: '11px', cursor: 'pointer' }}>Options</button>
+                      <button onClick={() => openColorEditor(originalIdx)} style={{ padding: '6px 10px', background: '#0a0a0e', border: '1px solid #2a2a35', borderRadius: '6px', color: '#22c55e', fontSize: '11px', cursor: 'pointer' }}>Options</button>
                     )}
-                    <button onClick={() => setDeleteInputConfirm({ index: i, label: input.label || input.id, id: input.id })} style={{ width: '28px', height: '28px', background: 'transparent', border: 'none', color: '#666', cursor: 'pointer', fontSize: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>×</button>
+                    <button onClick={() => setDeleteInputConfirm({ index: originalIdx, label: input.label || input.id, id: input.id })} style={{ width: '28px', height: '28px', background: 'transparent', border: 'none', color: '#666', cursor: 'pointer', fontSize: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>×</button>
                   </div>
-                ))}
+                )})}
               </div>
 
               {/* Add field button */}

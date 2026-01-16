@@ -108,6 +108,8 @@ CREATE TABLE IF NOT EXISTS accounts (
   consistency_enabled BOOLEAN DEFAULT FALSE,
   consistency_pct DECIMAL(5,2) DEFAULT 30,
   custom_inputs JSONB DEFAULT NULL,
+  -- Dashboard type: 'accounts' (default for existing) or 'backtesting'
+  dashboard_type TEXT DEFAULT 'accounts',
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
@@ -180,6 +182,10 @@ BEGIN
   END IF;
   IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'accounts' AND column_name = 'updated_at') THEN
     ALTER TABLE accounts ADD COLUMN updated_at TIMESTAMPTZ DEFAULT NOW();
+  END IF;
+  -- Dashboard type (accounts or backtesting) - existing accounts default to 'accounts'
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'accounts' AND column_name = 'dashboard_type') THEN
+    ALTER TABLE accounts ADD COLUMN dashboard_type TEXT DEFAULT 'accounts';
   END IF;
 END $$;
 
