@@ -716,8 +716,17 @@ export default function DashboardPage() {
                 trade[fieldId] = pnlValue
               }
             } else if (fieldId === 'rr') {
-              // RR can be null if not provided
-              const { value: rrValue } = parsePnlValue(strValue)
+              // RR can be null if not provided - handle formats like "1:3", "1/3", "1: 3", "3", "-1"
+              let rrValue = null
+              const ratioMatch = strValue.match(/^\s*[\d.]+\s*[:\\/]\s*([\d.]+)\s*$/)
+              if (ratioMatch) {
+                // Format like "1:3" or "1/3" - extract the reward part
+                rrValue = parseFloat(ratioMatch[1])
+              } else {
+                // Plain number format
+                const { value: parsed } = parsePnlValue(strValue)
+                rrValue = parsed
+              }
               trade[fieldId] = rrValue !== 0 ? rrValue : null
             } else if (fieldId === 'riskPercent') {
               // Store risk percent for potential PnL calculation
