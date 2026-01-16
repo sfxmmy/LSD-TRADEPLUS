@@ -6,7 +6,7 @@ import { createClient } from '@supabase/supabase-js'
 
 const defaultInputs = [
   { id: 'symbol', label: 'Symbol', type: 'text', required: true, enabled: true, fixed: true, color: '#22c55e' },
-  { id: 'pnl', label: 'PnL ($)', type: 'number', required: true, enabled: true, fixed: true, color: '#22c55e' },
+  { id: 'pnl', label: 'PnL ($)', type: 'number', required: false, enabled: true, fixed: true, color: '#22c55e' },
   { id: 'direction', label: 'Direction', type: 'select', options: [{value: 'long', textColor: '#22c55e', bgColor: 'rgba(34,197,94,0.15)'}, {value: 'short', textColor: '#ef4444', bgColor: 'rgba(239,68,68,0.15)'}], required: true, enabled: true, fixed: true, color: '#3b82f6' },
   { id: 'outcome', label: 'W/L', type: 'select', options: [{value: 'win', textColor: '#22c55e', bgColor: 'rgba(34,197,94,0.15)'}, {value: 'loss', textColor: '#ef4444', bgColor: 'rgba(239,68,68,0.15)'}, {value: 'be', textColor: '#f59e0b', bgColor: 'rgba(245,158,11,0.15)'}], required: true, enabled: true, fixed: true, color: '#22c55e' },
   { id: 'rr', label: 'RR', type: 'number', required: false, enabled: true, fixed: true, color: '#f59e0b' },
@@ -288,7 +288,7 @@ export default function AccountPage() {
 
   async function addTrade() {
     if (!tradeForm.symbol?.trim()) { alert('Please enter a symbol'); return }
-    if (!tradeForm.pnl || isNaN(parseFloat(tradeForm.pnl))) { alert('Please enter a valid PnL number'); return }
+    if (tradeForm.pnl && isNaN(parseFloat(tradeForm.pnl))) { alert('Please enter a valid PnL number'); return }
     if (tradeForm.rr && isNaN(parseFloat(tradeForm.rr))) { alert('Please enter a valid RR number'); return }
     setSaving(true)
     const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY)
@@ -366,7 +366,7 @@ export default function AccountPage() {
   async function updateTrade() {
     if (!editingTrade) return
     if (!tradeForm.symbol?.trim()) { alert('Please enter a symbol'); return }
-    if (!tradeForm.pnl || isNaN(parseFloat(tradeForm.pnl))) { alert('Please enter a valid PnL number'); return }
+    if (tradeForm.pnl && isNaN(parseFloat(tradeForm.pnl))) { alert('Please enter a valid PnL number'); return }
     setSaving(true)
     const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY)
 
@@ -1707,8 +1707,9 @@ export default function AccountPage() {
                   href={`/account/${acc.id}`}
                   style={{
                     display: 'flex',
-                    alignItems: 'center',
+                    alignItems: 'flex-start',
                     justifyContent: 'space-between',
+                    gap: '8px',
                     padding: '10px 12px',
                     background: isSelected ? 'rgba(34,197,94,0.1)' : '#0a0a0f',
                     border: `1px solid ${isSelected ? 'rgba(34,197,94,0.5)' : '#1a1a22'}`,
@@ -1720,18 +1721,19 @@ export default function AccountPage() {
                   onMouseEnter={e => { if (!isSelected) { e.currentTarget.style.borderColor = 'rgba(34,197,94,0.5)'; e.currentTarget.style.background = 'rgba(34,197,94,0.05)' } }}
                   onMouseLeave={e => { if (!isSelected) { e.currentTarget.style.borderColor = '#1a1a22'; e.currentTarget.style.background = '#0a0a0f' } }}
                 >
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <div style={{ display: 'flex', alignItems: 'flex-start', gap: '8px', flex: 1, minWidth: 0 }}>
                     <div style={{
                       width: '8px',
                       height: '8px',
                       borderRadius: '50%',
                       background: isSelected ? '#22c55e' : '#444',
                       boxShadow: isSelected ? '0 0 6px #22c55e' : 'none',
-                      flexShrink: 0
+                      flexShrink: 0,
+                      marginTop: '4px'
                     }} />
-                    <span style={{ fontSize: '12px', fontWeight: 600, color: isSelected ? '#22c55e' : '#888' }}>{acc.name}</span>
+                    <span style={{ fontSize: '12px', fontWeight: 600, color: isSelected ? '#22c55e' : '#888', wordBreak: 'break-word', lineHeight: '1.3' }}>{acc.name}</span>
                   </div>
-                  <span style={{ fontSize: '11px', color: isSelected ? '#22c55e' : '#666' }}>${Math.round(currentBalance).toLocaleString()}</span>
+                  <span style={{ fontSize: '11px', color: isSelected ? '#22c55e' : '#666', flexShrink: 0 }}>${Math.round(currentBalance).toLocaleString()}</span>
                 </a>
               )
             })}
