@@ -81,6 +81,24 @@ function formatCurrency(num) {
   return val.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
 }
 
+// Default inputs for Edit Inputs modal
+const defaultInputs = [
+  { id: 'symbol', label: 'Symbol', type: 'text', required: true, enabled: true, fixed: true, color: '#22c55e' },
+  { id: 'pnl', label: 'PnL ($)', type: 'number', required: true, enabled: true, fixed: true, color: '#22c55e' },
+  { id: 'direction', label: 'Direction', type: 'select', options: [{value: 'long', textColor: '#22c55e', bgColor: 'rgba(34,197,94,0.15)'}, {value: 'short', textColor: '#ef4444', bgColor: 'rgba(239,68,68,0.15)'}], required: true, enabled: true, fixed: true, color: '#3b82f6' },
+  { id: 'outcome', label: 'W/L', type: 'select', options: [{value: 'win', textColor: '#22c55e', bgColor: 'rgba(34,197,94,0.15)'}, {value: 'loss', textColor: '#ef4444', bgColor: 'rgba(239,68,68,0.15)'}, {value: 'be', textColor: '#f59e0b', bgColor: 'rgba(245,158,11,0.15)'}], required: true, enabled: true, fixed: true, color: '#22c55e' },
+  { id: 'rr', label: 'RR', type: 'number', required: false, enabled: true, fixed: true, color: '#f59e0b' },
+  { id: 'riskPercent', label: '% Risk', type: 'number', required: false, enabled: true, fixed: true, color: '#ef4444' },
+  { id: 'date', label: 'Date', type: 'date', required: true, enabled: true, fixed: true, color: '#8b5cf6' },
+  { id: 'time', label: 'Time', type: 'time', required: false, enabled: true, fixed: true, color: '#a855f7' },
+  { id: 'confidence', label: 'Confidence', type: 'select', options: [{value: 'High', textColor: '#22c55e', bgColor: 'rgba(34,197,94,0.15)'}, {value: 'Medium', textColor: '#f59e0b', bgColor: 'rgba(245,158,11,0.15)'}, {value: 'Low', textColor: '#ef4444', bgColor: 'rgba(239,68,68,0.15)'}], required: false, enabled: true, fixed: true, color: '#f59e0b' },
+  { id: 'rating', label: 'Rating', type: 'rating', required: false, enabled: true, fixed: true, color: '#fbbf24' },
+  { id: 'timeframe', label: 'Timeframe', type: 'select', options: [{value: '1m', textColor: '#06b6d4', bgColor: 'rgba(6,182,212,0.15)'}, {value: '5m', textColor: '#06b6d4', bgColor: 'rgba(6,182,212,0.15)'}, {value: '15m', textColor: '#06b6d4', bgColor: 'rgba(6,182,212,0.15)'}, {value: '30m', textColor: '#06b6d4', bgColor: 'rgba(6,182,212,0.15)'}, {value: '1H', textColor: '#06b6d4', bgColor: 'rgba(6,182,212,0.15)'}, {value: '4H', textColor: '#06b6d4', bgColor: 'rgba(6,182,212,0.15)'}, {value: 'Daily', textColor: '#06b6d4', bgColor: 'rgba(6,182,212,0.15)'}], required: false, enabled: true, fixed: true, color: '#06b6d4' },
+  { id: 'session', label: 'Session', type: 'select', options: [{value: 'London', textColor: '#3b82f6', bgColor: 'rgba(59,130,246,0.15)'}, {value: 'New York', textColor: '#22c55e', bgColor: 'rgba(34,197,94,0.15)'}, {value: 'Asian', textColor: '#f59e0b', bgColor: 'rgba(245,158,11,0.15)'}, {value: 'Overlap', textColor: '#a855f7', bgColor: 'rgba(168,85,247,0.15)'}], required: false, enabled: true, fixed: true, color: '#ec4899' },
+  { id: 'image', label: 'Image', type: 'file', required: false, enabled: true, fixed: true, color: '#64748b' },
+  { id: 'notes', label: 'Notes', type: 'textarea', required: false, enabled: true, fixed: true, color: '#64748b' },
+]
+
 export default function DashboardPage() {
   const router = useRouter()
   const [user, setUser] = useState(null)
@@ -201,6 +219,13 @@ export default function DashboardPage() {
   // Notes state (user-level)
   const [notes, setNotes] = useState({ daily: {}, weekly: {}, custom: [] })
   const [showExpandedNote, setShowExpandedNote] = useState(null)
+  // Edit Inputs modal states
+  const [editInputs, setEditInputs] = useState([]) // Local inputs state for editing
+  const [editingOptions, setEditingOptions] = useState(null)
+  const [optionsList, setOptionsList] = useState([])
+  const [editingColor, setEditingColor] = useState(null)
+  const [showRestoreDefaults, setShowRestoreDefaults] = useState(false)
+  const [transferFromJournal, setTransferFromJournal] = useState('')
 
   useEffect(() => {
     const checkMobile = () => setIsMobile(window.innerWidth < 768)
@@ -901,6 +926,76 @@ export default function DashboardPage() {
     const { error } = await supabase.from('accounts').update({ custom_inputs: JSON.stringify(updatedInputs) }).eq('id', quickTradeAccount)
     if (error) { alert('Error: ' + error.message); return }
     setAccounts(accounts.map(a => a.id === quickTradeAccount ? { ...a, custom_inputs: JSON.stringify(updatedInputs) } : a))
+  }
+
+  // Edit Inputs modal functions
+  function loadEditInputs() {
+    const selectedAccount = accounts.find(a => a.id === quickTradeAccount)
+    if (selectedAccount?.custom_inputs) {
+      try {
+        const savedInputs = JSON.parse(selectedAccount.custom_inputs)
+        // Merge with defaults to ensure all fields exist
+        const mergedInputs = defaultInputs.map(def => {
+          const saved = savedInputs.find(s => s.id === def.id)
+          return saved ? { ...def, ...saved } : def
+        })
+        const customInputs = savedInputs.filter(s => !defaultInputs.find(d => d.id === s.id))
+        setEditInputs([...mergedInputs, ...customInputs])
+      } catch { setEditInputs([...defaultInputs]) }
+    } else {
+      setEditInputs([...defaultInputs])
+    }
+  }
+  function updateEditInput(i, f, v) {
+    const n = [...editInputs]
+    n[i] = { ...n[i], [f]: v }
+    if (f === 'type' && v === 'select' && !n[i].options) n[i].options = []
+    setEditInputs(n)
+  }
+  function addNewEditInput() {
+    const colors = ['#22c55e', '#3b82f6', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#06b6d4', '#f97316']
+    const randomColor = colors[Math.floor(Math.random() * colors.length)]
+    setEditInputs([...editInputs, { id: `custom_${Date.now()}`, label: 'New Field', type: 'text', required: false, enabled: true, fixed: false, options: [], color: randomColor }])
+  }
+  function restoreEditInput(i) {
+    const n = [...editInputs]; n[i] = { ...n[i], hidden: false }; setEditInputs(n)
+  }
+  async function saveEditInputs() {
+    const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY)
+    const { error } = await supabase.from('accounts').update({ custom_inputs: JSON.stringify(editInputs) }).eq('id', quickTradeAccount)
+    if (error) { alert('Failed to save: ' + error.message); return }
+    setAccounts(accounts.map(a => a.id === quickTradeAccount ? { ...a, custom_inputs: JSON.stringify(editInputs) } : a))
+    setShowEditInputsModal(false)
+  }
+  function openEditOptionsEditor(i) {
+    setEditingOptions(i)
+    const opts = editInputs[i].options || []
+    setOptionsList(opts.map(o => {
+      if (typeof o === 'string') return { value: o, textColor: '#888', bgColor: null }
+      if (o.textColor) return { ...o }
+      const hex = (o.color || '#888888').replace('#', '')
+      const r = parseInt(hex.substr(0, 2), 16) || 136
+      const g = parseInt(hex.substr(2, 2), 16) || 136
+      const b = parseInt(hex.substr(4, 2), 16) || 136
+      return { value: o.value, textColor: o.color || '#888', bgColor: `rgba(${r},${g},${b},0.15)` }
+    }))
+  }
+  function saveEditOptions() {
+    if (editingOptions === null) return
+    const validOpts = optionsList.filter(o => o.value.trim())
+    updateEditInput(editingOptions, 'options', validOpts)
+    setEditingOptions(null); setOptionsList([])
+  }
+  function updateOptionValue(idx, val) { const n = [...optionsList]; n[idx] = { ...n[idx], value: val }; setOptionsList(n) }
+  function updateOptionTextColor(idx, col) { const n = [...optionsList]; n[idx] = { ...n[idx], textColor: col }; setOptionsList(n) }
+  function updateOptionBgColor(idx, col) { const n = [...optionsList]; n[idx] = { ...n[idx], bgColor: col }; setOptionsList(n) }
+  function openEditColorEditor(i) { setEditingColor(i) }
+  async function transferColumnsFromJournal(sourceId) {
+    if (!sourceId) return
+    const sourceAccount = accounts.find(a => a.id === sourceId)
+    const sourceInputs = sourceAccount?.custom_inputs ? JSON.parse(sourceAccount.custom_inputs) : defaultInputs
+    setEditInputs([...sourceInputs])
+    setTransferFromJournal('')
   }
 
   // Set default account when accounts load
@@ -3293,6 +3388,189 @@ export default function DashboardPage() {
           </div>
         )}
 
+        {/* Edit Inputs Modal */}
+        {showEditInputsModal && (
+          <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.9)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 200 }} onClick={() => setShowEditInputsModal(false)}>
+            <div style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '12px', width: '560px', maxWidth: '95vw', maxHeight: '90vh', display: 'flex', flexDirection: 'column' }} onClick={e => e.stopPropagation()}>
+              {/* Header */}
+              <div style={{ padding: '20px 24px', borderBottom: '1px solid #1a1a22', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <div>
+                  <h2 style={{ fontSize: '18px', fontWeight: 700, color: '#fff', margin: 0 }}>Edit Inputs</h2>
+                  <p style={{ fontSize: '12px', color: '#666', margin: '4px 0 0 0' }}>Customize fields and styling for trade entries</p>
+                </div>
+                <button onClick={() => setShowEditInputsModal(false)} style={{ width: '32px', height: '32px', background: '#141418', border: '1px solid #2a2a35', borderRadius: '6px', color: '#888', fontSize: '16px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>×</button>
+              </div>
+
+              {/* Scrollable Content */}
+              <div style={{ flex: 1, overflowY: 'auto', padding: '16px 24px' }}>
+                {/* Column headers */}
+                <div style={{ display: 'grid', gridTemplateColumns: '28px 1fr 100px 80px 28px', gap: '10px', padding: '8px 12px', marginBottom: '8px', alignItems: 'center' }}>
+                  <span style={{ fontSize: '12px', color: '#888', fontWeight: 600 }}>On</span>
+                  <span style={{ fontSize: '12px', color: '#888', fontWeight: 600 }}>Name</span>
+                  <span style={{ fontSize: '12px', color: '#888', fontWeight: 600 }}>Type</span>
+                  <span style={{ fontSize: '12px', color: '#888', fontWeight: 600 }}>Options</span>
+                  <span></span>
+                </div>
+
+                {/* Field rows */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', marginBottom: '16px' }}>
+                  {editInputs.map((input, i) => !input.hidden && (
+                    <div key={input.id} style={{ display: 'grid', gridTemplateColumns: '28px 1fr 100px 80px 28px', gap: '10px', padding: '10px 12px', background: input.enabled ? '#141418' : '#0d0d12', borderRadius: '8px', border: '1px solid #1a1a22', alignItems: 'center', opacity: input.enabled ? 1 : 0.6 }}>
+                      <input type="checkbox" checked={input.enabled} onChange={e => updateEditInput(i, 'enabled', e.target.checked)} style={{ width: '16px', height: '16px', accentColor: '#22c55e', cursor: 'pointer' }} />
+                      <input type="text" value={input.label} onChange={e => updateEditInput(i, 'label', e.target.value)} style={{ padding: '6px 8px', background: '#0a0a0e', border: '1px solid #2a2a35', borderRadius: '6px', color: '#fff', fontSize: '12px', width: '100%' }} placeholder="Field name" />
+                      <select value={input.type} onChange={e => updateEditInput(i, 'type', e.target.value)} style={{ padding: '6px 8px', background: '#0a0a0e', border: '1px solid #2a2a35', borderRadius: '6px', color: '#fff', fontSize: '11px', cursor: 'pointer' }}>
+                        <option value="text">Text</option>
+                        <option value="number">Number</option>
+                        <option value="value">Value ($)</option>
+                        <option value="select">Dropdown</option>
+                        <option value="textarea">Notes</option>
+                        <option value="rating">Rating</option>
+                        <option value="date">Date</option>
+                        <option value="time">Time</option>
+                        <option value="file">Image</option>
+                      </select>
+                      {input.type === 'select' ? (
+                        <button onClick={() => openEditOptionsEditor(i)} style={{ padding: '6px 10px', background: '#0a0a0e', border: '1px solid #2a2a35', borderRadius: '6px', color: '#22c55e', fontSize: '11px', cursor: 'pointer' }}>Options</button>
+                      ) : (
+                        <button onClick={() => openEditColorEditor(i)} style={{ padding: '6px 10px', background: '#0a0a0e', border: '1px solid #2a2a35', borderRadius: '6px', color: '#22c55e', fontSize: '11px', cursor: 'pointer' }}>Options</button>
+                      )}
+                      <button onClick={() => { const n = [...editInputs]; n[i] = { ...n[i], hidden: true }; setEditInputs(n) }} style={{ width: '28px', height: '28px', background: 'transparent', border: 'none', color: '#666', cursor: 'pointer', fontSize: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>×</button>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Add field button */}
+                <button onClick={addNewEditInput} style={{ width: '100%', padding: '12px', background: '#141418', border: '1px dashed #2a2a35', borderRadius: '8px', color: '#888', fontSize: '13px', cursor: 'pointer', marginBottom: '20px' }}>+ Add New Column</button>
+
+                {/* Hidden Fields */}
+                {editInputs.filter(inp => inp.hidden).length > 0 && (
+                  <div style={{ marginBottom: '20px', padding: '14px', background: '#0a0a0e', borderRadius: '8px', border: '1px solid #1a1a22' }}>
+                    <div style={{ fontSize: '11px', color: '#666', marginBottom: '10px', fontWeight: 600, textTransform: 'uppercase' }}>Hidden Columns (click to restore)</div>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                      {editInputs.map((inp, idx) => inp.hidden && (
+                        <button key={inp.id} onClick={() => restoreEditInput(idx)} style={{ padding: '8px 14px', background: '#141418', border: '1px solid #2a2a35', borderRadius: '6px', color: '#888', fontSize: '12px', cursor: 'pointer' }}>
+                          {inp.label} <span style={{ color: '#22c55e', marginLeft: '4px' }}>Restore</span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Transfer Section */}
+                {accounts.filter(a => a.id !== quickTradeAccount).length > 0 && (
+                  <div style={{ padding: '14px', background: '#0a0a0e', borderRadius: '8px', border: '1px solid #1a1a22' }}>
+                    <div style={{ fontSize: '11px', color: '#666', marginBottom: '10px', fontWeight: 600, textTransform: 'uppercase' }}>Copy Settings From Another Journal</div>
+                    <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                      <select value={transferFromJournal} onChange={e => setTransferFromJournal(e.target.value)} style={{ flex: 1, padding: '10px 12px', background: '#141418', border: '1px solid #2a2a35', borderRadius: '6px', color: '#fff', fontSize: '13px', cursor: 'pointer' }}>
+                        <option value="">Select journal...</option>
+                        {accounts.filter(a => a.id !== quickTradeAccount).map(a => (
+                          <option key={a.id} value={a.id}>{a.name}</option>
+                        ))}
+                      </select>
+                      <button onClick={() => transferColumnsFromJournal(transferFromJournal)} disabled={!transferFromJournal} style={{ padding: '10px 20px', background: transferFromJournal ? '#3b82f6' : '#1a1a22', border: 'none', borderRadius: '6px', color: transferFromJournal ? '#fff' : '#555', fontWeight: 600, fontSize: '13px', cursor: transferFromJournal ? 'pointer' : 'not-allowed' }}>Copy</button>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Sticky Footer */}
+              <div style={{ padding: '16px 28px 24px', borderTop: '1px solid #1a1a22', background: '#0d0d12', borderRadius: '0 0 12px 12px', display: 'flex', gap: '12px' }}>
+                <button onClick={() => setShowRestoreDefaults(true)} style={{ padding: '12px 16px', background: 'transparent', border: '1px solid #f59e0b', borderRadius: '8px', color: '#f59e0b', fontWeight: 600, fontSize: '13px', cursor: 'pointer' }}>Restore Defaults</button>
+                <button onClick={() => setShowEditInputsModal(false)} style={{ flex: 1, padding: '12px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '8px', color: '#888', fontWeight: 600, fontSize: '13px', cursor: 'pointer' }}>Cancel</button>
+                <button onClick={saveEditInputs} style={{ flex: 1, padding: '12px', background: '#22c55e', border: 'none', borderRadius: '8px', color: '#fff', fontWeight: 600, fontSize: '13px', cursor: 'pointer' }}>Save</button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Restore Defaults Confirmation */}
+        {showRestoreDefaults && (
+          <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.9)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 203 }} onClick={() => setShowRestoreDefaults(false)}>
+            <div style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '12px', padding: '24px', width: '400px' }} onClick={e => e.stopPropagation()}>
+              <h2 style={{ fontSize: '18px', fontWeight: 700, color: '#fff', marginBottom: '8px' }}>Restore Defaults?</h2>
+              <p style={{ fontSize: '13px', color: '#888', marginBottom: '20px' }}>This will reset all default field names and settings to their original values. Custom fields will not be affected.</p>
+              <div style={{ display: 'flex', gap: '12px' }}>
+                <button onClick={() => { const customFields = editInputs.filter(inp => !inp.fixed); setEditInputs([...defaultInputs, ...customFields]); setShowRestoreDefaults(false) }} style={{ flex: 1, padding: '12px', background: '#f59e0b', border: 'none', borderRadius: '8px', color: '#000', fontWeight: 600, fontSize: '13px', cursor: 'pointer' }}>Yes, Restore</button>
+                <button onClick={() => setShowRestoreDefaults(false)} style={{ flex: 1, padding: '12px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '8px', color: '#888', fontWeight: 600, fontSize: '13px', cursor: 'pointer' }}>Cancel</button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Options Editor Modal */}
+        {editingOptions !== null && (
+          <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.9)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 202 }} onClick={() => { setEditingOptions(null); setOptionsList([]) }}>
+            <div style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '12px', padding: '24px', width: '720px', maxWidth: '95vw', maxHeight: '80vh', overflowY: 'auto' }} onClick={e => e.stopPropagation()}>
+              <h2 style={{ fontSize: '18px', fontWeight: 700, marginBottom: '4px', color: '#fff' }}>Edit Options</h2>
+              <p style={{ fontSize: '12px', color: '#555', marginBottom: '16px' }}>Customize colors and styling for each option</p>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', marginBottom: '16px' }}>
+                {optionsList.map((opt, idx) => (
+                  <div key={idx} style={{ padding: '16px', background: '#0a0a0e', borderRadius: '10px', border: '1px solid #1a1a22' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '20px', marginBottom: '14px', flexWrap: 'wrap' }}>
+                      {/* Text color */}
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                        <div style={{ position: 'relative', width: '36px', height: '36px' }}>
+                          <div style={{ width: '36px', height: '36px', borderRadius: '8px', background: opt.textColor || '#fff', border: '2px solid #2a2a35', cursor: 'pointer' }} />
+                          <input type="color" value={opt.textColor || '#ffffff'} onChange={e => updateOptionTextColor(idx, e.target.value)} style={{ position: 'absolute', inset: 0, opacity: 0, width: '100%', height: '100%', cursor: 'pointer' }} />
+                        </div>
+                        <span style={{ fontSize: '12px', color: '#888' }}>Text</span>
+                      </div>
+                      {/* Background */}
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                        <select value={opt.bgColor ? 'custom' : 'none'} onChange={e => { if (e.target.value === 'none') updateOptionBgColor(idx, null); else updateOptionBgColor(idx, 'rgba(136,136,136,0.15)') }} style={{ padding: '8px 12px', background: '#141418', border: '1px solid #2a2a35', borderRadius: '6px', color: '#fff', fontSize: '12px', cursor: 'pointer' }}>
+                          <option value="none">No Background</option>
+                          <option value="custom">Custom Background</option>
+                        </select>
+                        {opt.bgColor && (
+                          <div style={{ position: 'relative', width: '36px', height: '36px' }}>
+                            <div style={{ width: '36px', height: '36px', borderRadius: '8px', background: opt.bgColor, border: '2px solid #2a2a35', cursor: 'pointer' }} />
+                            <input type="color" value={opt.bgColor?.startsWith('rgba') ? '#888888' : (opt.bgColor || '#888888')} onChange={e => { const hex = e.target.value.replace('#', ''); const r = parseInt(hex.substr(0,2), 16); const g = parseInt(hex.substr(2,2), 16); const b = parseInt(hex.substr(4,2), 16); updateOptionBgColor(idx, `rgba(${r},${g},${b},0.15)`) }} style={{ position: 'absolute', inset: 0, opacity: 0, width: '100%', height: '100%', cursor: 'pointer' }} />
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                      <input type="text" value={opt.value} onChange={e => updateOptionValue(idx, e.target.value)} placeholder="Option value" style={{ flex: 1, padding: '10px 12px', background: '#141418', border: '1px solid #2a2a35', borderRadius: '6px', color: '#fff', fontSize: '13px' }} />
+                      <div style={{ padding: '8px 16px', background: opt.bgColor || 'transparent', border: opt.bgColor ? 'none' : '1px solid #2a2a35', borderRadius: '6px', color: opt.textColor || '#fff', fontSize: '13px', fontWeight: 600, minWidth: '80px', textAlign: 'center' }}>{opt.value || 'Preview'}</div>
+                      <button onClick={() => setOptionsList(optionsList.filter((_, i) => i !== idx))} style={{ padding: '8px 12px', background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.3)', borderRadius: '6px', color: '#ef4444', fontSize: '12px', cursor: 'pointer' }}>Remove</button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <button onClick={() => setOptionsList([...optionsList, { value: '', textColor: '#888', bgColor: null }])} style={{ width: '100%', padding: '12px', background: '#141418', border: '1px dashed #2a2a35', borderRadius: '8px', color: '#888', fontSize: '13px', cursor: 'pointer', marginBottom: '16px' }}>+ Add Option</button>
+
+              <div style={{ display: 'flex', gap: '12px' }}>
+                <button onClick={() => { setEditingOptions(null); setOptionsList([]) }} style={{ flex: 1, padding: '12px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '8px', color: '#888', fontWeight: 600, fontSize: '13px', cursor: 'pointer' }}>Cancel</button>
+                <button onClick={saveEditOptions} style={{ flex: 1, padding: '12px', background: '#22c55e', border: 'none', borderRadius: '8px', color: '#fff', fontWeight: 600, fontSize: '13px', cursor: 'pointer' }}>Save Options</button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Color Editor Modal */}
+        {editingColor !== null && (
+          <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.9)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 202 }} onClick={() => setEditingColor(null)}>
+            <div style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '12px', padding: '24px', width: '320px' }} onClick={e => e.stopPropagation()}>
+              <h2 style={{ fontSize: '18px', fontWeight: 700, marginBottom: '16px', color: '#fff' }}>Field Options</h2>
+              <div style={{ marginBottom: '16px' }}>
+                <label style={{ display: 'block', fontSize: '12px', color: '#888', marginBottom: '8px' }}>Text Color</label>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <div style={{ position: 'relative', width: '48px', height: '48px' }}>
+                    <div style={{ width: '48px', height: '48px', borderRadius: '8px', background: editInputs[editingColor]?.textColor || '#fff', border: '2px solid #2a2a35', cursor: 'pointer' }} />
+                    <input type="color" value={editInputs[editingColor]?.textColor || '#ffffff'} onChange={e => updateEditInput(editingColor, 'textColor', e.target.value)} style={{ position: 'absolute', inset: 0, opacity: 0, width: '100%', height: '100%', cursor: 'pointer' }} />
+                  </div>
+                  <span style={{ color: editInputs[editingColor]?.textColor || '#fff', fontSize: '14px', fontWeight: 600 }}>Sample Text</span>
+                </div>
+              </div>
+              <div style={{ display: 'flex', gap: '12px' }}>
+                <button onClick={() => setEditingColor(null)} style={{ flex: 1, padding: '12px', background: '#22c55e', border: 'none', borderRadius: '8px', color: '#fff', fontWeight: 600, fontSize: '13px', cursor: 'pointer' }}>Done</button>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Delete Input Confirmation Modal */}
         {deleteInputConfirm && (
           <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.8)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 201 }} onClick={() => setDeleteInputConfirm(null)}>
@@ -3768,7 +4046,7 @@ export default function DashboardPage() {
                   </div>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <button onClick={() => window.location.href = `/account/${quickTradeAccount}?editColumns=true`} style={{ padding: '8px 14px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '8px', color: '#888', fontWeight: 600, fontSize: '13px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <button onClick={() => { loadEditInputs(); setShowEditInputsModal(true) }} style={{ padding: '8px 14px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '8px', color: '#888', fontWeight: 600, fontSize: '13px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}>
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" /><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" /></svg>
                     Edit Inputs
                   </button>
