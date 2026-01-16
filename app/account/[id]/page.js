@@ -1415,7 +1415,7 @@ export default function AccountPage() {
       {!isMobile && (
         <div style={{ position: 'fixed', top: '60px', left: '180px', right: 0, zIndex: 46, padding: '18px 12px 13px 12px', background: '#0a0a0f', borderBottom: '1px solid #1a1a22', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-            <span style={{ fontSize: '28px', fontWeight: 700, color: '#fff', lineHeight: 1 }}>{account?.name}</span>
+            <span style={{ fontSize: '28px', fontWeight: 700, color: '#fff', lineHeight: 1 }}>{viewMode === 'all' ? 'Overall Journal' : account?.name}</span>
             {activeTab === 'trades' && getTradesWithImages().length > 0 && (
               <button onClick={() => { setSlideshowIndex(0); setSlideshowMode(true) }} title="View all trade screenshots as a slideshow" style={{ height: '36px', padding: '0 20px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '6px', color: '#fff', fontSize: '13px', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', lineHeight: 1, transition: 'all 0.2s' }} onMouseEnter={e => { e.currentTarget.style.borderColor = '#3a3a45'; e.currentTarget.style.background = 'rgba(255,255,255,0.03)' }} onMouseLeave={e => { e.currentTarget.style.borderColor = '#2a2a35'; e.currentTarget.style.background = 'transparent' }}>
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
@@ -1458,7 +1458,7 @@ export default function AccountPage() {
       {/* Mobile Subheader */}
       {isMobile && (
         <div style={{ position: 'fixed', top: '53px', left: 0, right: 0, zIndex: 40, padding: '10px 16px', background: '#0a0a0f', borderBottom: '1px solid #1a1a22', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <span style={{ fontSize: '18px', fontWeight: 700, color: '#fff' }}>{account?.name}</span>
+          <span style={{ fontSize: '18px', fontWeight: 700, color: '#fff' }}>{viewMode === 'all' ? 'Overall Journal' : account?.name}</span>
           <button onClick={() => { setTradeForm({ date: new Date().toISOString().split('T')[0] }); setEditingTrade(null); setShowAddTrade(true) }} style={{ padding: '8px 16px', background: 'linear-gradient(135deg, #9333ea 0%, #7c3aed 100%)', border: 'none', borderRadius: '6px', color: '#fff', fontWeight: 600, fontSize: '12px', cursor: 'pointer', boxShadow: '0 0 15px rgba(147,51,234,0.5)' }}>+ ADD</button>
         </div>
       )}
@@ -1556,7 +1556,7 @@ export default function AccountPage() {
                       >
                         <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                           <div style={{ width: '5px', height: '5px', borderRadius: '50%', background: viewMode === 'all' ? '#fff' : '#444' }} />
-                          All Journals
+                          Overall Journal
                         </div>
                       </button>
                       <div style={{ position: 'relative' }} data-journal-dropdown>
@@ -4104,7 +4104,7 @@ export default function AccountPage() {
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#22c55e" strokeWidth="2"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
                 <span style={{ fontSize: '14px', color: '#fff', fontWeight: 600 }}>Filter Trades</span>
                 {viewMode === 'all' && allAccounts.length > 1 && (
-                  <span style={{ fontSize: '10px', color: '#3b82f6', background: 'rgba(59,130,246,0.15)', padding: '2px 6px', borderRadius: '4px' }}>All Journals</span>
+                  <span style={{ fontSize: '10px', color: '#3b82f6', background: 'rgba(59,130,246,0.15)', padding: '2px 6px', borderRadius: '4px' }}>Overall Journal</span>
                 )}
                 {viewMode === 'selected' && selectedJournalIds.size > 0 && (
                   <span style={{ fontSize: '10px', color: '#ef4444', background: 'rgba(239,68,68,0.15)', padding: '2px 6px', borderRadius: '4px' }}>Selected ({selectedJournalIds.size})</span>

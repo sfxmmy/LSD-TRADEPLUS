@@ -2178,9 +2178,9 @@ export default function DashboardPage() {
                           onClick={(e) => { e.stopPropagation(); if (recentNote) setShowExpandedNote(recentNote) }}
                           style={{
                             position: 'absolute',
-                            top: '0',
+                            top: '16px',
                             left: '50%',
-                            right: '0',
+                            right: '16px',
                             background: 'transparent',
                             border: '1px solid #1a1a22',
                             borderRadius: '8px',
@@ -2323,7 +2323,7 @@ export default function DashboardPage() {
                             return (
                               <div style={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
                                 <div style={{ display: 'flex', flex: 1, minHeight: '250px' }}>
-                                  <div style={{ width: '42px', flexShrink: 0, position: 'relative', borderRight: '1px solid #2a2a35', overflow: 'visible' }}>
+                                  <div style={{ width: '42px', flexShrink: 0, position: 'relative', borderRight: '1px solid #2a2a35', borderBottom: '1px solid transparent', overflow: 'visible' }}>
                                     {yLabels.map((v, i) => {
                                       const topPct = yLabels.length > 1 ? (i / (yLabels.length - 1)) * 100 : 0
                                       const isStart = v === startBal
@@ -2634,7 +2634,7 @@ export default function DashboardPage() {
                               <div style={{ display: 'flex', flexDirection: 'column', marginLeft: '-12px' }}>
                                 <div style={{ display: 'flex', height: '160px' }}>
                                   {/* Y-Axis with tick marks */}
-                                  <div style={{ width: '42px', flexShrink: 0, position: 'relative', borderRight: '1px solid #2a2a35', overflow: 'visible' }}>
+                                  <div style={{ width: '42px', flexShrink: 0, position: 'relative', borderRight: '1px solid #2a2a35', borderBottom: '1px solid transparent', overflow: 'visible' }}>
                                     {yLabels.map((v, i) => {
                                       const topPct = yLabels.length > 1 ? (i / (yLabels.length - 1)) * 100 : 0
                                       const isStart = v === startingBalance
@@ -4693,24 +4693,25 @@ export default function DashboardPage() {
                 </div>
 
                 {/* Graph */}
-                <div style={{ display: 'flex', height: '350px' }}>
-                  {/* Y-Axis Labels */}
-                  <div style={{ width: '60px', flexShrink: 0, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', paddingRight: '8px', paddingBottom: '24px' }}>
-                    {yLabels.map((v, i) => {
-                      const isStart = v === startingBalance
-                      return (
-                        <div key={i} style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '4px' }}>
-                          <span style={{ fontSize: '10px', color: '#666', lineHeight: 1, fontWeight: 400, textAlign: 'right' }}>
-                            {Math.abs(v) >= 1000 ? `$${(v / 1000).toFixed(1)}k` : `$${Math.round(v)}`}
-                          </span>
-                          <div style={{ width: '4px', height: '1px', background: isStart ? '#666' : '#444' }} />
-                        </div>
-                      )
-                    })}
-                  </div>
-
-                  {/* Graph Area */}
-                  <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', height: '350px' }}>
+                  {/* Chart row - Y-axis and chart area aligned */}
+                  <div style={{ flex: 1, display: 'flex' }}>
+                    {/* Y-Axis Labels */}
+                    <div style={{ width: '60px', flexShrink: 0, position: 'relative', paddingRight: '8px', borderBottom: '1px solid transparent' }}>
+                      {yLabels.map((v, i) => {
+                        const topPct = yLabels.length > 1 ? (i / (yLabels.length - 1)) * 100 : 0
+                        const isStart = v === startingBalance
+                        return (
+                          <Fragment key={i}>
+                            <span style={{ position: 'absolute', right: '12px', top: `${topPct}%`, transform: 'translateY(-50%)', fontSize: '10px', color: '#666', lineHeight: 1, fontWeight: 400, textAlign: 'right' }}>
+                              {Math.abs(v) >= 1000 ? `$${(v / 1000).toFixed(1)}k` : `$${Math.round(v)}`}
+                            </span>
+                            <div style={{ position: 'absolute', right: '8px', top: `${topPct}%`, width: '4px', borderTop: `1px solid ${isStart ? '#666' : '#444'}` }} />
+                          </Fragment>
+                        )
+                      })}
+                    </div>
+                    {/* Chart area */}
                     <div style={{ flex: 1, position: 'relative', borderLeft: '1px solid #2a2a35', borderBottom: '1px solid #2a2a35' }}
                       onMouseMove={(e) => {
                         if (chartPts.length < 2) return
@@ -4764,8 +4765,11 @@ export default function DashboardPage() {
                         </div>
                       )}
                     </div>
-                    {/* X-Axis Labels */}
-                    <div style={{ height: '24px', position: 'relative', marginLeft: '0' }}>
+                  </div>
+                  {/* X-Axis row */}
+                  <div style={{ display: 'flex' }}>
+                    <div style={{ width: '60px', flexShrink: 0 }} />
+                    <div style={{ flex: 1, height: '24px', position: 'relative' }}>
                       {xLabels.map((l, i) => (
                         <div key={i} style={{ position: 'absolute', left: `${l.pos}%`, transform: 'translateX(-50%)', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                           <div style={{ width: '1px', height: '4px', background: '#444' }} />
