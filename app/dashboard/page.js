@@ -223,6 +223,10 @@ export default function DashboardPage() {
   const [journalHover, setJournalHover] = useState(null)
   // Track which journals show objective lines (default: hidden)
   const [showObjectiveLines, setShowObjectiveLines] = useState({})
+  // Journal drag and drop reordering
+  const [journalOrder, setJournalOrder] = useState([])
+  const [draggedJournal, setDraggedJournal] = useState(null)
+  const [dragOverJournal, setDragOverJournal] = useState(null)
   // Custom dropdown open states for Log Trade modal
   const [directionDropdownOpen, setDirectionDropdownOpen] = useState(false)
   const [outcomeDropdownOpen, setOutcomeDropdownOpen] = useState(false)
@@ -249,6 +253,89 @@ export default function DashboardPage() {
   }, [])
 
   useEffect(() => { loadData() }, [])
+
+  // Load journal order from localStorage
+  useEffect(() => {
+    const savedOrder = localStorage.getItem('journalOrder')
+    if (savedOrder) {
+      try { setJournalOrder(JSON.parse(savedOrder)) } catch {}
+    }
+  }, [])
+
+  // Update journal order when accounts change (add new accounts to end)
+  useEffect(() => {
+    if (accounts.length > 0) {
+      setJournalOrder(prev => {
+        const existingIds = new Set(prev)
+        const newIds = accounts.map(a => a.id).filter(id => !existingIds.has(id))
+        if (newIds.length > 0) {
+          const updated = [...prev.filter(id => accounts.some(a => a.id === id)), ...newIds]
+          localStorage.setItem('journalOrder', JSON.stringify(updated))
+          return updated
+        }
+        // Remove deleted accounts from order
+        const filtered = prev.filter(id => accounts.some(a => a.id === id))
+        if (filtered.length !== prev.length) {
+          localStorage.setItem('journalOrder', JSON.stringify(filtered))
+          return filtered
+        }
+        return prev
+      })
+    }
+  }, [accounts])
+
+  // Handle journal drag and drop
+  const handleJournalDragStart = (e, accountId) => {
+    setDraggedJournal(accountId)
+    e.dataTransfer.effectAllowed = 'move'
+    e.dataTransfer.setData('text/plain', accountId)
+  }
+  const handleJournalDragOver = (e, accountId) => {
+    e.preventDefault()
+    if (draggedJournal && draggedJournal !== accountId) {
+      setDragOverJournal(accountId)
+    }
+  }
+  const handleJournalDragLeave = () => {
+    setDragOverJournal(null)
+  }
+  const handleJournalDrop = (e, targetId) => {
+    e.preventDefault()
+    if (!draggedJournal || draggedJournal === targetId) {
+      setDraggedJournal(null)
+      setDragOverJournal(null)
+      return
+    }
+    setJournalOrder(prev => {
+      const newOrder = [...prev]
+      const dragIdx = newOrder.indexOf(draggedJournal)
+      const targetIdx = newOrder.indexOf(targetId)
+      if (dragIdx === -1 || targetIdx === -1) return prev
+      newOrder.splice(dragIdx, 1)
+      newOrder.splice(targetIdx, 0, draggedJournal)
+      localStorage.setItem('journalOrder', JSON.stringify(newOrder))
+      return newOrder
+    })
+    setDraggedJournal(null)
+    setDragOverJournal(null)
+  }
+  const handleJournalDragEnd = () => {
+    setDraggedJournal(null)
+    setDragOverJournal(null)
+  }
+
+  // Get sorted accounts based on journal order
+  const getSortedAccounts = () => {
+    if (journalOrder.length === 0) return accounts
+    return [...accounts].sort((a, b) => {
+      const aIdx = journalOrder.indexOf(a.id)
+      const bIdx = journalOrder.indexOf(b.id)
+      if (aIdx === -1 && bIdx === -1) return 0
+      if (aIdx === -1) return 1
+      if (bIdx === -1) return -1
+      return aIdx - bIdx
+    })
+  }
 
   // Check if user has valid subscription
   // 'admin' = admin user (ssiagos@hotmail.com)
@@ -2492,7 +2579,7 @@ export default function DashboardPage() {
                 {/* Journal Cards Grid */}
                 {viewMode === 'cards' && (
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px' }}>
-                  {accounts.map(account => {
+                  {getSortedAccounts().map(account => {
                     const accTrades = trades[account.id] || []
                     const wins = accTrades.filter(t => t.outcome === 'win').length
                     const losses = accTrades.filter(t => t.outcome === 'loss').length
@@ -4469,11 +4556,11 @@ export default function DashboardPage() {
                   <div style={{ marginBottom: '20px' }}>
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '16px' }}>
                       <div>
-                        <label style={{ display: 'block', fontSize: '11px', color: '#777', marginBottom: '6px', textTransform: 'uppercase' }}>Journal Name</label>
+                        <label style={{ display: 'block', fontSize: '11px', color: '#888', marginBottom: '6px', textTransform: 'uppercase', fontWeight: 600 }}>Journal Name</label>
                         <input type="text" value={importJournalName} onChange={e => setImportJournalName(e.target.value)} placeholder="My Journal" style={{ width: '100%', padding: '10px 12px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '13px', boxSizing: 'border-box' }} />
                       </div>
                       <div>
-                        <label style={{ display: 'block', fontSize: '11px', color: '#777', marginBottom: '6px', textTransform: 'uppercase' }}>Starting Balance ($)</label>
+                        <label style={{ display: 'block', fontSize: '11px', color: '#888', marginBottom: '6px', textTransform: 'uppercase', fontWeight: 600 }}>Starting Balance ($)</label>
                         <input type="number" value={importStartingBalance} onChange={e => setImportStartingBalance(e.target.value)} placeholder="10000" style={{ width: '100%', padding: '10px 12px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '13px', boxSizing: 'border-box' }} />
                       </div>
                     </div>
@@ -4481,24 +4568,25 @@ export default function DashboardPage() {
                   <div style={{ fontSize: '11px', color: '#888', textTransform: 'uppercase', fontWeight: 600, marginBottom: '12px' }}>Map Your Columns</div>
                   <p style={{ color: '#888', fontSize: '12px', marginBottom: '12px' }}>Auto-detected fields are highlighted. Unmapped columns will be created as custom inputs.</p>
 
-                  {/* Warning if essential columns not mapped */}
-                  {(!Object.values(importMapping).includes('symbol') || (!Object.values(importMapping).includes('pnl') && !Object.values(importMapping).includes('rr'))) && (
+                  {/* Warning if symbol not mapped */}
+                  {!Object.values(importMapping).includes('symbol') && (
                     <div style={{ marginBottom: '16px', padding: '10px 12px', background: 'rgba(245,158,11,0.1)', border: '1px solid rgba(245,158,11,0.3)', borderRadius: '8px', display: 'flex', alignItems: 'flex-start', gap: '10px' }}>
                       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" strokeWidth="2" style={{ flexShrink: 0, marginTop: '1px' }}><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
                       <div style={{ fontSize: '12px', color: '#f59e0b' }}>
-                        <strong>Missing required columns:</strong>
-                        {!Object.values(importMapping).includes('symbol') && <span> Symbol/Pair</span>}
-                        {!Object.values(importMapping).includes('symbol') && !Object.values(importMapping).includes('pnl') && !Object.values(importMapping).includes('rr') && <span>,</span>}
-                        {!Object.values(importMapping).includes('pnl') && !Object.values(importMapping).includes('rr') && <span> PnL or RR</span>}
-                        <div style={{ color: '#b45309', fontSize: '11px', marginTop: '4px' }}>Please map these columns or your data may not display correctly.</div>
+                        <strong>Missing required column:</strong> Symbol/Pair
+                        <div style={{ color: '#b45309', fontSize: '11px', marginTop: '4px' }}>Please map this column or your data may not display correctly.</div>
                       </div>
                     </div>
                   )}
-                  {/* Info if PnL will be calculated from RR */}
-                  {!Object.values(importMapping).includes('pnl') && Object.values(importMapping).includes('rr') && (
+                  {/* Info if PnL will be calculated */}
+                  {!Object.values(importMapping).includes('pnl') && Object.values(importMapping).includes('symbol') && (
                     <div style={{ marginBottom: '16px', padding: '10px 12px', background: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.3)', borderRadius: '8px', display: 'flex', alignItems: 'center', gap: '10px' }}>
                       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#22c55e" strokeWidth="2"><circle cx="12" cy="12" r="10"/><polyline points="16 12 12 8 8 12"/><line x1="12" y1="16" x2="12" y2="8"/></svg>
-                      <span style={{ fontSize: '11px', color: '#22c55e' }}>PnL will be auto-calculated from RR × % Risk (defaults to 1% if not mapped)</span>
+                      <span style={{ fontSize: '11px', color: '#22c55e' }}>
+                        {Object.values(importMapping).includes('rr')
+                          ? 'PnL will be auto-calculated from RR × % Risk (defaults to 1% if not mapped)'
+                          : 'No PnL column mapped. PnL will be set to $0 and can be edited later.'}
+                      </span>
                     </div>
                   )}
 
