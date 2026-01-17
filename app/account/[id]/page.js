@@ -57,8 +57,12 @@ function formatPnl(value) {
 export default function AccountPage() {
   const params = useParams()
   const searchParams = useSearchParams()
-  const accountId = params.id
-  
+  const urlAccountId = params.id
+  const [activeAccountId, setActiveAccountId] = useState(urlAccountId)
+
+  // Use activeAccountId for all operations (allows instant switching without page reload)
+  const accountId = activeAccountId
+
   const [user, setUser] = useState(null)
   const [account, setAccount] = useState(null)
   const [allAccounts, setAllAccounts] = useState([])
@@ -198,6 +202,36 @@ export default function AccountPage() {
   }, [activeTab, trades])
 
   useEffect(() => { loadData() }, [])
+
+  // Auth state listener - detect session changes and handle sign-outs
+  useEffect(() => {
+    const supabase = getSupabase()
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'SIGNED_OUT' || !session) {
+        window.location.href = '/login'
+      }
+    })
+    return () => subscription.unsubscribe()
+  }, [])
+
+  // Handle instant account switching (when activeAccountId changes)
+  useEffect(() => {
+    if (!allAccounts.length || !allAccountsTrades) return
+    const newAccount = allAccounts.find(a => a.id === activeAccountId)
+    if (newAccount) {
+      setAccount(newAccount)
+      setTrades(allAccountsTrades[activeAccountId] || [])
+      // Update inputs from the new account
+      if (newAccount.custom_inputs) {
+        try { setInputs(JSON.parse(newAccount.custom_inputs)) } catch {}
+      } else {
+        setInputs(defaultInputs)
+      }
+      // Update URL without full reload
+      window.history.replaceState(null, '', `/account/${activeAccountId}`)
+    }
+  }, [activeAccountId, allAccounts, allAccountsTrades])
+
   useEffect(() => {
     const initial = {}
     inputs.forEach(inp => {
@@ -210,84 +244,90 @@ export default function AccountPage() {
   }, [inputs])
 
   async function loadData() {
-    const supabase = getSupabase()
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) { window.location.href = '/login'; return }
-    setUser(user)
-    const { data: accountData } = await supabase.from('accounts').select('*').eq('id', accountId).eq('user_id', user.id).single()
-    if (!accountData) { window.location.href = '/dashboard'; return }
-    setAccount(accountData)
-    const { data: allAccountsData } = await supabase.from('accounts').select('*').eq('user_id', user.id).order('created_at', { ascending: true })
-    setAllAccounts(allAccountsData || [])
-    // Load trades from all accounts for cumulative stats
-    if (allAccountsData?.length) {
-      const tradesMap = {}
-      for (const acc of allAccountsData) {
-        const { data: accTrades } = await supabase.from('trades').select('*').eq('account_id', acc.id).order('date', { ascending: true })
-        tradesMap[acc.id] = accTrades || []
+    try {
+      const supabase = getSupabase()
+      const { data: { user }, error: authError } = await supabase.auth.getUser()
+      if (authError || !user) { window.location.href = '/login'; return }
+      setUser(user)
+      const { data: accountData, error: accountError } = await supabase.from('accounts').select('*').eq('id', accountId).eq('user_id', user.id).single()
+      if (accountError || !accountData) { window.location.href = '/dashboard'; return }
+      setAccount(accountData)
+      const { data: allAccountsData } = await supabase.from('accounts').select('*').eq('user_id', user.id).order('created_at', { ascending: true })
+      setAllAccounts(allAccountsData || [])
+      // Load trades from all accounts for cumulative stats
+      if (allAccountsData?.length) {
+        const tradesMap = {}
+        for (const acc of allAccountsData) {
+          const { data: accTrades } = await supabase.from('trades').select('*').eq('account_id', acc.id).order('date', { ascending: true })
+          tradesMap[acc.id] = accTrades || []
+        }
+        setAllAccountsTrades(tradesMap)
       }
-      setAllAccountsTrades(tradesMap)
-    }
-    if (accountData.custom_inputs) {
-      try {
-        const parsed = JSON.parse(accountData.custom_inputs)
-        // Convert legacy inputs and merge with defaultInputs to ensure options with colors
-        const convertedInputs = parsed.map(inp => {
-          const defaultInput = defaultInputs.find(d => d.id === inp.id)
-          // For select types, ensure options with textColor/bgColor exist
-          if (inp.type === 'select') {
-            if (inp.options && inp.options.length > 0) {
-              const convertedOptions = inp.options.map((opt) => {
-                if (typeof opt === 'string') {
-                  // Legacy string option - find from defaults or use gray
-                  const defaultOpt = defaultInput?.options?.find(o => getOptVal(o).toLowerCase() === opt.toLowerCase())
-                  if (defaultOpt) return defaultOpt
-                  return { value: opt, textColor: '#888', bgColor: null }
-                }
-                // Object option - check if it has new format or legacy format
-                if (opt.textColor) return opt // Already new format
-                // Legacy {value, color} format - convert to new format
-                if (opt.color) {
-                  const defaultOpt = defaultInput?.options?.find(o => getOptVal(o).toLowerCase() === opt.value.toLowerCase())
-                  if (defaultOpt) return defaultOpt
-                  // Generate bgColor from color (hex to rgba)
-                  const hex = opt.color.replace('#', '')
-                  const r = parseInt(hex.substr(0, 2), 16)
-                  const g = parseInt(hex.substr(2, 2), 16)
-                  const b = parseInt(hex.substr(4, 2), 16)
-                  return { value: opt.value, textColor: opt.color, bgColor: `rgba(${r},${g},${b},0.15)` }
-                }
-                return opt
-              })
-              return { ...inp, options: convertedOptions }
-            } else if (defaultInput?.options) {
-              // No options saved, use default options with colors
-              return { ...inp, options: defaultInput.options }
+      if (accountData.custom_inputs) {
+        try {
+          const parsed = JSON.parse(accountData.custom_inputs)
+          // Convert legacy inputs and merge with defaultInputs to ensure options with colors
+          const convertedInputs = parsed.map(inp => {
+            const defaultInput = defaultInputs.find(d => d.id === inp.id)
+            // For select types, ensure options with textColor/bgColor exist
+            if (inp.type === 'select') {
+              if (inp.options && inp.options.length > 0) {
+                const convertedOptions = inp.options.map((opt) => {
+                  if (typeof opt === 'string') {
+                    // Legacy string option - find from defaults or use gray
+                    const defaultOpt = defaultInput?.options?.find(o => getOptVal(o).toLowerCase() === opt.toLowerCase())
+                    if (defaultOpt) return defaultOpt
+                    return { value: opt, textColor: '#888', bgColor: null }
+                  }
+                  // Object option - check if it has new format or legacy format
+                  if (opt.textColor) return opt // Already new format
+                  // Legacy {value, color} format - convert to new format
+                  if (opt.color) {
+                    const defaultOpt = defaultInput?.options?.find(o => getOptVal(o).toLowerCase() === opt.value.toLowerCase())
+                    if (defaultOpt) return defaultOpt
+                    // Generate bgColor from color (hex to rgba)
+                    const hex = opt.color.replace('#', '')
+                    const r = parseInt(hex.substr(0, 2), 16)
+                    const g = parseInt(hex.substr(2, 2), 16)
+                    const b = parseInt(hex.substr(4, 2), 16)
+                    return { value: opt.value, textColor: opt.color, bgColor: `rgba(${r},${g},${b},0.15)` }
+                  }
+                  return opt
+                })
+                return { ...inp, options: convertedOptions }
+              } else if (defaultInput?.options) {
+                // No options saved, use default options with colors
+                return { ...inp, options: defaultInput.options }
+              }
             }
-          }
-          return inp
-        })
+            return inp
+          })
 
-        // ALWAYS ensure all default inputs are present - merge saved with defaults
-        const mergedInputs = defaultInputs.map(def => {
-          const saved = convertedInputs.find(c => c.id === def.id)
-          return saved ? { ...def, ...saved, fixed: true } : def
-        })
-        // Add any custom (non-default) inputs
-        const customInputs = convertedInputs.filter(i => !defaultInputs.find(d => d.id === i.id))
-        setInputs([...mergedInputs, ...customInputs])
-        if (customInputs.length > 0) setHasNewInputs(true)
-      } catch {
-        // On parse error, use defaults
-        setInputs(defaultInputs)
+          // ALWAYS ensure all default inputs are present - merge saved with defaults
+          const mergedInputs = defaultInputs.map(def => {
+            const saved = convertedInputs.find(c => c.id === def.id)
+            return saved ? { ...def, ...saved, fixed: true } : def
+          })
+          // Add any custom (non-default) inputs
+          const customInputs = convertedInputs.filter(i => !defaultInputs.find(d => d.id === i.id))
+          setInputs([...mergedInputs, ...customInputs])
+          if (customInputs.length > 0) setHasNewInputs(true)
+        } catch {
+          // On parse error, use defaults
+          setInputs(defaultInputs)
+        }
       }
+      // Load notes from profiles (user-level, not account-level)
+      const { data: profileData } = await supabase.from('profiles').select('notes_data').eq('id', user.id).single()
+      if (profileData?.notes_data) { try { setNotes(JSON.parse(profileData.notes_data)) } catch {} }
+      const { data: tradesData } = await supabase.from('trades').select('*').eq('account_id', accountId).order('date', { ascending: false })
+      setTrades(tradesData || [])
+      setLoading(false)
+    } catch (err) {
+      console.error('Failed to load data:', err)
+      showToast('Session expired. Please sign in again.')
+      window.location.href = '/login'
     }
-    // Load notes from profiles (user-level, not account-level)
-    const { data: profileData } = await supabase.from('profiles').select('notes_data').eq('id', user.id).single()
-    if (profileData?.notes_data) { try { setNotes(JSON.parse(profileData.notes_data)) } catch {} }
-    const { data: tradesData } = await supabase.from('trades').select('*').eq('account_id', accountId).order('date', { ascending: false })
-    setTrades(tradesData || [])
-    setLoading(false)
   }
 
   async function addTrade() {
@@ -1770,9 +1810,9 @@ export default function AccountPage() {
               const totalPnl = accTrades.reduce((sum, t) => sum + (parseFloat(t.pnl) || 0), 0)
               const currentBalance = (parseFloat(acc.starting_balance) || 0) + totalPnl
               return (
-                <a
+                <div
                   key={acc.id}
-                  href={`/account/${acc.id}`}
+                  onClick={() => setActiveAccountId(acc.id)}
                   style={{
                     display: 'flex',
                     alignItems: 'flex-start',
@@ -1782,7 +1822,7 @@ export default function AccountPage() {
                     background: isSelected ? 'rgba(34,197,94,0.1)' : '#0a0a0f',
                     border: `1px solid ${isSelected ? 'rgba(34,197,94,0.5)' : '#1a1a22'}`,
                     borderRadius: '8px',
-                    textDecoration: 'none',
+                    cursor: 'pointer',
                     transition: 'all 0.15s ease',
                     boxShadow: isSelected ? '0 0 12px rgba(34,197,94,0.2), inset 0 0 20px rgba(34,197,94,0.05)' : 'none'
                   }}
@@ -1802,7 +1842,7 @@ export default function AccountPage() {
                     <span style={{ fontSize: '12px', fontWeight: 600, color: isSelected ? '#22c55e' : '#888', wordBreak: 'break-word', lineHeight: '1.3' }}>{acc.name}</span>
                   </div>
                   <span style={{ fontSize: '11px', color: isSelected ? '#22c55e' : '#666', flexShrink: 0 }}>${Math.round(currentBalance).toLocaleString()}</span>
-                </a>
+                </div>
               )
             })}
           </div>
