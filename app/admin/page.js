@@ -1,7 +1,7 @@
 'use client'
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { supabase } from '../../lib/supabase'
+import { getSupabase } from '@/lib/supabase'
 
 export default function AdminPage() {
   const router = useRouter()
@@ -20,6 +20,7 @@ export default function AdminPage() {
   }, [])
 
   const checkAdminAndLoad = async () => {
+    const supabase = getSupabase()
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) {
       router.push('/login')
@@ -44,16 +45,14 @@ export default function AdminPage() {
   }
 
   const loadUsers = async () => {
+    const supabase = getSupabase()
     // Fetch all profiles (admin can see all due to admin policy)
     const { data: profiles, error } = await supabase
       .from('profiles')
       .select('*')
       .order('created_at', { ascending: false })
 
-    if (error) {
-      console.error('Error loading users:', error)
-      return
-    }
+    if (error) return
 
     // Get account and trade counts for each user
     const usersWithStats = await Promise.all(profiles.map(async (profile) => {
@@ -101,6 +100,7 @@ export default function AdminPage() {
   }
 
   const loadUserAccounts = async (user) => {
+    const supabase = getSupabase()
     setSelectedUser(user)
     setSelectedAccount(null)
     setTrades([])
@@ -130,6 +130,7 @@ export default function AdminPage() {
   }
 
   const loadAccountTrades = async (account) => {
+    const supabase = getSupabase()
     setSelectedAccount(account)
 
     const { data } = await supabase
@@ -142,6 +143,7 @@ export default function AdminPage() {
   }
 
   const updateUserRole = async (userId, newStatus) => {
+    const supabase = getSupabase()
     const { error } = await supabase
       .from('profiles')
       .update({ subscription_status: newStatus })

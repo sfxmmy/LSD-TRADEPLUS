@@ -1,0 +1,402 @@
+# TRADESAVE+ Code Structure & Technical Debt Analysis
+
+> This document helps maintain context about the codebase structure, known issues, and refactoring priorities.
+> Last updated: January 2026
+
+---
+
+## Completed Refactoring (January 2026)
+
+### New Files Created
+
+| File | Purpose |
+|------|---------|
+| `lib/auth.js` | Shared `hasValidSubscription()` function - eliminates 4 duplicate copies |
+| `components/Toast.js` | Toast notification system with `showToast()` and `<ToastContainer />` |
+| `components/Modal.js` | Reusable `<Modal>` and `<ConfirmModal>` components |
+| `components/Header.js` | Reusable `<Header>`, `<Logo>`, and header button styles |
+
+### Changes Made
+
+1. **lib/auth.js** - Created shared auth utility
+   - `hasValidSubscription(profile)` - checks admin, subscribing, free subscription, free trial
+
+2. **Supabase Client** - All client pages now use `getSupabase()` from `lib/supabase.js`
+   - Replaced 24+ `createClient(process.env...)` calls
+   - API routes still use direct `createClient` (server-side with service role keys)
+
+3. **Console Logs Removed** - All `console.log/warn/error` removed from client pages
+   - Kept in API routes for server-side debugging
+
+4. **Toast System** - Replaced all 51 `alert()` calls with `showToast()`
+   - Added `<ToastContainer />` to: settings, pricing, dashboard, account pages
+   - Toast auto-dismisses after 4 seconds, supports success/warning/error types
+
+5. **CSS Design Tokens** - Added to `globals.css`:
+   - Colors: `--color-primary`, `--color-bg-*`, `--color-border-*`, `--color-text-*`
+   - Spacing: `--space-xs` through `--space-2xl`
+   - Typography: `--text-xs` through `--text-3xl`
+   - Border radius: `--radius-sm` through `--radius-xl`
+   - Z-index scale: `--z-dropdown`, `--z-modal`, `--z-tooltip`
+
+### Files Modified
+
+| File | Changes |
+|------|---------|
+| `app/dashboard/page.js` | Import auth/supabase/toast, replaced createClient, replaced alerts |
+| `app/account/[id]/page.js` | Import supabase/toast, replaced createClient, replaced alerts, removed console.logs |
+| `app/settings/page.js` | Import auth/supabase/toast, replaced createClient, replaced alerts |
+| `app/pricing/page.js` | Import auth/supabase/toast, replaced createClient, replaced alerts |
+| `app/login/page.js` | Import auth/supabase, replaced createClient, use hasValidSubscription |
+| `app/signup/page.js` | Import supabase, replaced createClient |
+| `app/page.js` | Import auth/supabase, replaced createClient |
+| `app/auth/callback/page.js` | Import auth/supabase, replaced createClient, use hasValidSubscription |
+| `app/discord-login/page.js` | Import supabase, replaced createClient |
+| `app/admin/page.js` | Import supabase, replaced createClient with getSupabase |
+| `app/globals.css` | Added CSS design tokens (60 lines of :root variables) |
+
+### Components Available for Future Use
+
+The new components follow the golden rule (exact style copies). Use for new code:
+
+```javascript
+// Toast
+import { ToastContainer, showToast } from '@/components/Toast'
+showToast('Error message')           // red error toast
+showToast('Success!', 'success')     // green success toast
+showToast('Warning', 'warning')      // orange warning toast
+
+// Modal
+import Modal, { ConfirmModal } from '@/components/Modal'
+<Modal isOpen={show} onClose={close} title="Title" width="420px">
+  Content here
+</Modal>
+
+// Header
+import Header, { Logo, headerButtonStyle } from '@/components/Header'
+<Header>
+  <a href="/dashboard" style={headerButtonStyle}>Back</a>
+</Header>
+```
+
+---
+
+## Overall Rating: 5.5/10
+
+The app is functional and feature-rich, but has significant architectural debt, code duplication, and maintainability issues.
+
+---
+
+## Architecture Overview
+
+| Metric | Value | Notes |
+|--------|-------|-------|
+| Total JS Lines | ~12,000 | High for this type of app |
+| Largest File | 6,190 lines | account/[id]/page.js |
+| Second Largest | 5,252 lines | dashboard/page.js |
+| Inline Styles | 2,129 | No CSS modules used |
+| useState Hooks | 150+ | In dashboard alone |
+| Test Files | 0 | No tests |
+| TypeScript | No | Plain JavaScript |
+
+---
+
+## File Structure
+
+```
+app/
+├── account/[id]/page.js    # 6,190 lines - Main trading journal UI
+├── dashboard/page.js       # 5,252 lines - Dashboard & account management
+├── admin/page.js           # 441 lines - Admin panel
+├── settings/page.js        # 445 lines - User settings
+├── login/page.js           # 194 lines - Login form
+├── signup/page.js          # 191 lines - Signup form
+├── pricing/page.js         # 155 lines - Pricing page
+├── page.js                 # 140 lines - Landing page
+├── auth/callback/page.js   # ~80 lines - OAuth callback
+├── discord-login/page.js   # ~78 lines - Discord OAuth
+├── globals.css             # 91 lines - Global styles only
+└── api/
+    ├── stripe/
+    │   ├── webhook/route.js      # 190 lines
+    │   ├── create-checkout/      # 89 lines
+    │   └── create-portal/        # 48 lines
+    ├── upload-image/route.js     # 77 lines
+    ├── auth/callback/route.js    # 135 lines
+    └── discord/check-member/     # 39 lines
+
+lib/
+├── supabase.js             # 43 lines - NOT USED by pages (they create own clients)
+└── stripe.js               # 8 lines
+
+schema.sql                  # 594 lines - Complete DB schema
+```
+
+---
+
+## Critical Issues
+
+### 1. Monolithic Files
+- `account/[id]/page.js` (6,190 lines) and `dashboard/page.js` (5,252 lines) contain ALL logic
+- No component extraction whatsoever
+- Makes debugging, testing, and collaboration extremely difficult
+
+### 2. Duplicated Code
+
+**`hasValidSubscription()` - 4 copies:**
+- dashboard/page.js:353
+- page.js:14
+- pricing/page.js:19
+- settings/page.js:23
+
+**`optionStyles` object - 2 copies:**
+- account/[id]/page.js (lines 9-36)
+- dashboard/page.js (lines 9-36)
+
+**`defaultInputs` array - 2 copies:**
+- account/[id]/page.js (lines 85-101)
+- dashboard/page.js (lines 85-101)
+
+**Supabase client creation - 24 occurrences:**
+- Pages create `createClient(process.env...)` instead of using lib/supabase.js
+
+### 3. Inline Styles (2,129 occurrences)
+Every element uses `style={{...}}` instead of CSS classes. Example:
+```javascript
+style={{ padding: '12px', background: '#22c55e', border: 'none', borderRadius: '8px', color: '#fff', fontWeight: 600, fontSize: '13px', cursor: 'pointer' }}
+```
+
+### 4. State Management Chaos
+Dashboard page has 150+ useState hooks. No Context, no state management library.
+
+---
+
+## Bandaids & Poor Practices
+
+| Issue | Count | Location |
+|-------|-------|----------|
+| `alert()` calls | 51 | Throughout app |
+| `console.log/warn/error` | 48 | Production code |
+| `window.location.href` | 23 | Instead of router |
+| Empty `catch {}` blocks | 1+ | dashboard/page.js:70 |
+| Hardcoded URLs | 1 | login/page.js:88 |
+
+---
+
+## UI Inconsistencies
+
+### Spacing/Padding
+- Header padding: Some pages use `4px 16px`, others `4px 40px`
+- CLAUDE.md specifies locked values that aren't always followed
+
+### Border Radius (no system)
+- `4px` - small elements
+- `6px` - some buttons
+- `8px` - most buttons
+- `12px` - modals
+- `16px` - cards
+
+### Font Sizes (random)
+`10px, 11px, 12px, 13px, 14px, 15px, 16px, 18px, 20px, 24px, 28px, 40px, 42px`
+
+### Colors
+- Primary green: `#22c55e`
+- Disabled green: `#166534` (sometimes `rgba(34,197,94,0.5)`)
+- Background: `#0a0a0f`, `#0d0d12`, `#14141a`, `#141418`
+- Border: `#1a1a22`, `#222230`, `#2a2a35`
+
+---
+
+## Schema Notes
+
+### Deprecated Columns (still in DB)
+```sql
+-- DEPRECATED: drawdown_type, trailing_mode, daily_dd_calc, max_dd_calc
+-- They exist in old accounts but new code uses max_dd_* and daily_dd_* fields
+drawdown_type TEXT DEFAULT 'static',
+trailing_mode TEXT DEFAULT 'eod',
+```
+
+### Legacy Field
+```sql
+-- Legacy max_drawdown field (kept for backwards compatibility)
+max_drawdown DECIMAL(5,2) DEFAULT NULL,
+```
+
+---
+
+## What's Working Well
+
+1. **Database Schema** - Well-designed, idempotent, proper RLS
+2. **Stripe Integration** - Proper webhook validation, fallbacks
+3. **Feature Set** - Custom fields, import/export, drawdown tracking
+4. **Security** - RLS policies, service role server-side only
+
+---
+
+## Locked Layout Values (from CLAUDE.md)
+
+**DO NOT MODIFY these account page values:**
+```
+Header padding: 4px 40px
+Subheader top: 60px
+Subheader padding: 17px 40px 13px 40px
+Sidebar top: 60px
+Sidebar padding: 12px
+Buttons container marginTop: 4px
+Buttons container gap: 12px
+Main content marginTop: 130px
+Trades tab height: calc(100vh - 130px)
+Table header th padding: 3px 12px 11px 12px
+```
+
+---
+
+## Safe Refactoring Rules
+
+When making changes to this codebase:
+
+1. **Never change dimensions/spacing without checking related elements**
+   - Button size changes affect container, adjacent elements, responsive breakpoints
+
+2. **Extract components without changing styles**
+   - Copy styles exactly as-is when extracting
+   - Test visually before and after
+
+3. **Create shared utilities incrementally**
+   - Replace one usage at a time
+   - Test each replacement
+
+4. **Don't refactor unrelated code**
+   - Only touch what's needed for the current task
+   - Resist urge to "clean up" nearby code
+
+---
+
+## Refactoring Priority
+
+### Phase 1: Non-UI Changes (Safe)
+- [ ] Create shared `hasValidSubscription()` utility
+- [ ] Use lib/supabase.js everywhere
+- [ ] Remove console.logs
+- [ ] Replace alert() with toast system
+- [ ] Add proper error handling
+
+### Phase 2: Component Extraction (Careful)
+- [ ] Extract shared Modal component
+- [ ] Extract shared Header component
+- [ ] Extract shared Button components
+- [ ] Extract form input components
+
+### Phase 3: Style System (Risky)
+- [ ] Create CSS variables for colors
+- [ ] Create CSS variables for spacing
+- [ ] Gradually migrate inline styles
+
+---
+
+## Known Quirks
+
+1. **JSON fields** - `custom_inputs` and `extra_data` store JSONB, sometimes double-parsed
+2. **Outcome values** - Can be 'win', 'loss', 'breakeven' or 'be' (inconsistent)
+3. **Direction values** - Can be 'long'/'short' or 'Long'/'Short' (case inconsistent)
+4. **Rating field** - Stored in extra_data, not a direct trade column
+
+---
+
+## Safe Refactoring Guide
+
+### The Golden Rule
+**Never change styles during refactoring. Only move code.**
+
+### Why UI Breaks Happen
+1. You change a button's padding from `12px` to `14px`
+2. The button is inside a flex container with `gap: 12px`
+3. The extra 4px (2px each side) pushes adjacent elements
+4. Something overflows or wraps unexpectedly
+
+### Before Changing ANY Dimension, Identify:
+- Parent container constraints (width, height, overflow)
+- Sibling elements (flex gap, margin)
+- Child elements (could overflow)
+- Responsive breakpoints (might break at mobile)
+
+---
+
+## Refactoring Phases
+
+### Phase 1: Safe Changes (Zero UI Risk)
+These touch **logic only**, not visuals:
+
+| Task | How |
+|------|-----|
+| Create shared `hasValidSubscription()` | New `lib/auth.js`, replace copies one by one |
+| Use existing Supabase utility | Replace `createClient()` with `getSupabase()` |
+| Remove console.logs | Just delete them |
+| Replace `alert()` with toast | Add toast library, replace incrementally |
+
+### Phase 2: Component Extraction (Copy Styles Exactly)
+When extracting components, **copy styles character-for-character**:
+
+```javascript
+// WRONG - changing styles during extraction
+function Button({ children }) {
+  return <button style={{ padding: '12px 24px' }}>{children}</button>  // Changed!
+}
+
+// RIGHT - exact copy of original
+function Button({ children }) {
+  return <button style={{ padding: '12px', background: '#22c55e', border: 'none', borderRadius: '8px', color: '#fff', fontWeight: 600, fontSize: '13px', cursor: 'pointer' }}>{children}</button>
+}
+```
+
+**Process:**
+1. Screenshot current UI
+2. Extract with **identical** inline styles
+3. Screenshot again
+4. Compare - only commit if identical
+
+### Phase 3: Style Variables (Incremental)
+Add CSS variables **without changing values**:
+
+```css
+:root {
+  --color-primary: #22c55e;
+  --color-primary-disabled: #166534;
+  --color-bg-dark: #0a0a0f;
+  --color-bg-card: #14141a;
+  --color-border: #1a1a22;
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+}
+```
+
+Replace **one occurrence at a time**, test each.
+
+---
+
+## Task Priority Order
+
+| # | Task | Risk | Status |
+|---|------|------|--------|
+| 1 | Create `lib/auth.js` with shared functions | None | [x] |
+| 2 | Replace Supabase client creation | None | [x] |
+| 3 | Remove console.logs | None | [x] |
+| 4 | Add toast system, replace alerts | Low | [x] |
+| 5 | Extract reusable Modal component | Medium | [x] |
+| 6 | Extract Header component | Medium | [x] |
+| 7 | Create design tokens in CSS | Medium | [x] |
+
+---
+
+## Claude Instructions
+
+When making changes to this codebase:
+
+1. **Read full component context first** - Not just the line to change
+2. **Identify related elements** - What else uses same container/spacing
+3. **Make minimal changes** - Only what's needed, nothing extra
+4. **Warn about risks** - Flag if change might affect other elements
+5. **Never "clean up" nearby code** - Only touch what's requested
+6. **Respect FINALISED markers** - Check file headers before editing

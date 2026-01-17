@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { createClient } from '@supabase/supabase-js'
+import { getSupabase } from '@/lib/supabase'
 
 export default function SignupPage() {
   const [email, setEmail] = useState('')
@@ -28,10 +28,7 @@ export default function SignupPage() {
     setLoading(true)
 
     try {
-      const supabase = createClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL,
-        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-      )
+      const supabase = getSupabase()
 
       const { data, error: signUpError } = await supabase.auth.signUp({
         email: email.trim(),
@@ -63,10 +60,7 @@ export default function SignupPage() {
 
   async function handleGoogleSignup() {
     try {
-      const supabase = createClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL,
-        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-      )
+      const supabase = getSupabase()
 
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',

@@ -2,8 +2,10 @@
 
 import { useState, useEffect, useRef, Fragment } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { createClient } from '@supabase/supabase-js'
 import * as XLSX from 'xlsx'
+import { hasValidSubscription } from '@/lib/auth'
+import { getSupabase } from '@/lib/supabase'
+import { ToastContainer, showToast } from '@/components/Toast'
 
 // Color mappings for select options (same as account page) - textColor and bgColor
 const optionStyles = {
@@ -347,27 +349,8 @@ export default function DashboardPage() {
 
   // Check if user has valid subscription
   // 'admin' = admin user (ssiagos@hotmail.com)
-  // 'subscribing' = paying subscriber
-  // 'free subscription' = free access without paying
-  // 'not subscribing' = no subscription, no access
-  function hasValidSubscription(profile) {
-    if (!profile) return false
-    const { subscription_status } = profile
-
-    // Admin has full access
-    if (subscription_status === 'admin') return true
-
-    // Active paying subscription
-    if (subscription_status === 'subscribing') return true
-
-    // Free subscription (giveaway, promo, etc.)
-    if (subscription_status === 'free subscription') return true
-
-    return false
-  }
-
   async function loadData() {
-    const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY)
+    const supabase = getSupabase()
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) { window.location.href = '/login'; return }
     const { data: profile } = await supabase.from('profiles').select('subscription_status, subscription_end').eq('id', user.id).single()
@@ -398,7 +381,7 @@ export default function DashboardPage() {
   // Load more trades for a specific account
   async function loadMoreTrades(accountId) {
     setLoadingMore(true)
-    const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY)
+    const supabase = getSupabase()
     const currentTrades = trades[accountId] || []
     const offset = currentTrades.length
     const { data: moreTrades } = await supabase.from('trades').select('*').eq('account_id', accountId).order('date', { ascending: false }).range(offset, offset + TRADES_PER_PAGE - 1)
@@ -417,15 +400,15 @@ export default function DashboardPage() {
   }
 
   async function handleSignOut() {
-    const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY)
+    const supabase = getSupabase()
     await supabase.auth.signOut()
     window.location.href = '/'
   }
 
   async function handleManageSubscription() {
-    const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY)
+    const supabase = getSupabase()
     const { data: { session } } = await supabase.auth.getSession()
-    if (!session) { alert('Please log in'); return }
+    if (!session) { showToast('Please log in'); return }
 
     try {
       const res = await fetch('/api/stripe/create-portal', {
@@ -436,10 +419,10 @@ export default function DashboardPage() {
       if (data.url) {
         window.location.href = data.url
       } else {
-        alert(data.error || 'Could not open subscription management')
+        showToast(data.error || 'Could not open subscription management')
       }
     } catch (err) {
-      alert('Error opening subscription portal')
+      showToast('Error opening subscription portal')
     }
   }
 
@@ -466,7 +449,7 @@ export default function DashboardPage() {
   async function createJournal() {
     if (!validateJournalForm()) return
     setCreating(true)
-    const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY)
+    const supabase = getSupabase()
     const { data, error } = await supabase.from('accounts').insert({
       user_id: user.id,
       name: name.trim(),
@@ -489,7 +472,7 @@ export default function DashboardPage() {
       max_dd_locks_at_pct: maxDdLocksAtPct ? parseFloat(maxDdLocksAtPct) : null,
       dashboard_type: activeDashboard
     }).select().single()
-    if (error) { alert('Error: ' + error.message); setCreating(false); return }
+    if (error) { showToast('Error: ' + error.message); setCreating(false); return }
     setAccounts([...accounts, data])
     setTrades({ ...trades, [data.id]: [] })
     setName(''); setBalance(''); setProfitTarget(''); setMaxDrawdown(''); setConsistencyEnabled(false); setConsistencyPct('30'); setDailyDdEnabled(false); setDailyDdPct(''); setDailyDdType('static'); setDailyDdLocksAt('start_balance'); setDailyDdLocksAtPct(''); setDailyDdResetTime('00:00'); setDailyDdResetTimezone('Europe/London'); setMaxDdEnabled(false); setMaxDdPct(''); setMaxDdType('static'); setMaxDdTrailingStopsAt('never'); setMaxDdLocksAtPct(''); setFormErrors({}); setShowModal(false); setCreating(false)
@@ -501,13 +484,13 @@ export default function DashboardPage() {
   }
 
   async function updateAccount(accountId) {
-    if (!editName.trim()) { alert('Journal name is required'); return }
-    if (editName.trim().length > 50) { alert('Journal name max 50 characters'); return }
-    if (editProfitTarget && parseFloat(editProfitTarget) > 999.99) { alert('Profit target max 999.99%'); return }
-    if (editConsistencyPct && parseFloat(editConsistencyPct) > 100) { alert('Consistency max 100%'); return }
-    if (editDailyDdPct && parseFloat(editDailyDdPct) > 999.99) { alert('Daily DD max 999.99%'); return }
-    if (editMaxDdPct && parseFloat(editMaxDdPct) > 999.99) { alert('Max DD max 999.99%'); return }
-    const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY)
+    if (!editName.trim()) { showToast('Journal name is required'); return }
+    if (editName.trim().length > 50) { showToast('Journal name max 50 characters'); return }
+    if (editProfitTarget && parseFloat(editProfitTarget) > 999.99) { showToast('Profit target max 999.99%'); return }
+    if (editConsistencyPct && parseFloat(editConsistencyPct) > 100) { showToast('Consistency max 100%'); return }
+    if (editDailyDdPct && parseFloat(editDailyDdPct) > 999.99) { showToast('Daily DD max 999.99%'); return }
+    if (editMaxDdPct && parseFloat(editMaxDdPct) > 999.99) { showToast('Max DD max 999.99%'); return }
+    const supabase = getSupabase()
     const { error } = await supabase.from('accounts').update({
       name: editName.trim(),
       profit_target: editProfitTarget ? parseFloat(editProfitTarget) : null,
@@ -527,7 +510,7 @@ export default function DashboardPage() {
       max_dd_trailing_stops_at: editMaxDdTrailingStopsAt,
       max_dd_locks_at_pct: editMaxDdLocksAtPct ? parseFloat(editMaxDdLocksAtPct) : null
     }).eq('id', accountId)
-    if (error) { alert('Failed to update journal: ' + error.message); return }
+    if (error) { showToast('Failed to update journal: ' + error.message); return }
     setAccounts(accounts.map(a => a.id === accountId ? {
       ...a,
       name: editName.trim(),
@@ -553,9 +536,9 @@ export default function DashboardPage() {
 
   async function deleteAccount(accountId) {
     if (deleteConfirm.toLowerCase() !== 'delete') return
-    const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY)
+    const supabase = getSupabase()
     const { error } = await supabase.from('accounts').delete().eq('id', accountId)
-    if (error) { alert('Failed to delete journal: ' + error.message); return }
+    if (error) { showToast('Failed to delete journal: ' + error.message); return }
     setAccounts(accounts.filter(a => a.id !== accountId))
     const newTrades = { ...trades }; delete newTrades[accountId]; setTrades(newTrades)
     setShowDeleteModal(null); setDeleteConfirm('')
@@ -776,7 +759,7 @@ export default function DashboardPage() {
     setImporting(true)
     setImportError('')
     try {
-      const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY)
+      const supabase = getSupabase()
       // Build custom_inputs from unmapped columns (as custom fields)
       // Use a copy of importMapping to avoid mutating state
       const finalMapping = { ...importMapping }
@@ -946,8 +929,8 @@ export default function DashboardPage() {
   // Upload image to Supabase Storage
   async function uploadQuickTradeImage(file) {
     if (!file || !user?.id || !quickTradeAccount) return null
-    if (file.size > 5 * 1024 * 1024) { alert('Image too large (max 5MB)'); return null }
-    if (!file.type.startsWith('image/')) { alert('Please upload an image file'); return null }
+    if (file.size > 5 * 1024 * 1024) { showToast('Image too large (max 5MB)'); return null }
+    if (!file.type.startsWith('image/')) { showToast('Please upload an image file'); return null }
     setUploadingImage(true)
     try {
       const formData = new FormData()
@@ -961,7 +944,7 @@ export default function DashboardPage() {
       return url
     } catch (err) {
       // Fallback to base64 for small files
-      if (file.size > 1 * 1024 * 1024) { alert('Upload failed. Try a smaller image.'); setUploadingImage(false); return null }
+      if (file.size > 1 * 1024 * 1024) { showToast('Upload failed. Try a smaller image.'); setUploadingImage(false); return null }
       return new Promise((resolve) => {
         const reader = new FileReader()
         reader.onloadend = () => { setQuickTradeImages(prev => [...prev, reader.result]); resolve(reader.result) }
@@ -975,11 +958,11 @@ export default function DashboardPage() {
   }
 
   async function submitQuickTrade() {
-    if (!quickTradeAccount) { alert('Please select a journal'); return }
-    if (!quickTradeSymbol?.trim()) { alert('Please enter a symbol'); return }
-    if (quickTradeSymbol.trim().length > 20) { alert('Symbol max 20 characters'); return }
-    if (!quickTradePnl || isNaN(parseFloat(quickTradePnl))) { alert('Please enter a valid PnL number'); return }
-    if (Math.abs(parseFloat(quickTradePnl)) > 9999999999.99) { alert('PnL max ±$9,999,999,999.99'); return }
+    if (!quickTradeAccount) { showToast('Please select a journal'); return }
+    if (!quickTradeSymbol?.trim()) { showToast('Please enter a symbol'); return }
+    if (quickTradeSymbol.trim().length > 20) { showToast('Symbol max 20 characters'); return }
+    if (!quickTradePnl || isNaN(parseFloat(quickTradePnl))) { showToast('Please enter a valid PnL number'); return }
+    if (Math.abs(parseFloat(quickTradePnl)) > 9999999999.99) { showToast('PnL max ±$9,999,999,999.99'); return }
     // Parse RR - accepts "2.5" or "1:2" format
     const parseRR = (rr) => {
       if (!rr) return null
@@ -991,10 +974,10 @@ export default function DashboardPage() {
       return isNaN(parseFloat(rr)) ? null : parseFloat(rr)
     }
     const parsedRR = parseRR(quickTradeRR)
-    if (quickTradeRR && parsedRR === null) { alert('Invalid RR. Use number (2.5) or ratio (1:2)'); return }
-    if (parsedRR && Math.abs(parsedRR) > 999.99) { alert('RR max ±999.99'); return }
+    if (quickTradeRR && parsedRR === null) { showToast('Invalid RR. Use number (2.5) or ratio (1:2)'); return }
+    if (parsedRR && Math.abs(parsedRR) > 999.99) { showToast('RR max ±999.99'); return }
     setSubmittingTrade(true)
-    const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY)
+    const supabase = getSupabase()
 
     // Build extra_data with all fields including rating
     // Convert custom input IDs to labels for readability
@@ -1030,7 +1013,7 @@ export default function DashboardPage() {
       notes: quickTradeNotes || null,
       extra_data: JSON.stringify(extraData)
     }).select().single()
-    if (error) { alert('Error: ' + error.message); setSubmittingTrade(false); return }
+    if (error) { showToast('Error: ' + error.message); setSubmittingTrade(false); return }
     // Add to local state
     setTrades(prev => ({
       ...prev,
@@ -1057,7 +1040,7 @@ export default function DashboardPage() {
   async function saveCustomInput() {
     if (!newInputLabel.trim() || !newInputOptions.trim() || !quickTradeAccount) return
     setSavingInput(true)
-    const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY)
+    const supabase = getSupabase()
     const selectedAccount = accounts.find(a => a.id === quickTradeAccount)
     let existingInputs = []
     try { existingInputs = JSON.parse(selectedAccount?.custom_inputs || '[]') } catch {}
@@ -1070,7 +1053,7 @@ export default function DashboardPage() {
     }
     const updatedInputs = [...existingInputs, newInput]
     const { error } = await supabase.from('accounts').update({ custom_inputs: JSON.stringify(updatedInputs) }).eq('id', quickTradeAccount)
-    if (error) { alert('Error: ' + error.message); setSavingInput(false); return }
+    if (error) { showToast('Error: ' + error.message); setSavingInput(false); return }
     setAccounts(accounts.map(a => a.id === quickTradeAccount ? { ...a, custom_inputs: JSON.stringify(updatedInputs) } : a))
     setNewInputLabel('')
     setNewInputOptions('')
@@ -1108,13 +1091,13 @@ export default function DashboardPage() {
   // Remove custom input from journal
   async function removeCustomInput(inputId) {
     if (!quickTradeAccount) return
-    const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY)
+    const supabase = getSupabase()
     const selectedAccount = accounts.find(a => a.id === quickTradeAccount)
     let existingInputs = []
     try { existingInputs = JSON.parse(selectedAccount?.custom_inputs || '[]') } catch {}
     const updatedInputs = existingInputs.filter(i => i.id !== inputId)
     const { error } = await supabase.from('accounts').update({ custom_inputs: JSON.stringify(updatedInputs) }).eq('id', quickTradeAccount)
-    if (error) { alert('Error: ' + error.message); return }
+    if (error) { showToast('Error: ' + error.message); return }
     setAccounts(accounts.map(a => a.id === quickTradeAccount ? { ...a, custom_inputs: JSON.stringify(updatedInputs) } : a))
   }
 
@@ -1151,9 +1134,9 @@ export default function DashboardPage() {
     const n = [...editInputs]; n[i] = { ...n[i], hidden: false }; setEditInputs(n)
   }
   async function saveEditInputs() {
-    const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY)
+    const supabase = getSupabase()
     const { error } = await supabase.from('accounts').update({ custom_inputs: JSON.stringify(editInputs) }).eq('id', quickTradeAccount)
-    if (error) { alert('Failed to save: ' + error.message); return }
+    if (error) { showToast('Failed to save: ' + error.message); return }
     setAccounts(accounts.map(a => a.id === quickTradeAccount ? { ...a, custom_inputs: JSON.stringify(editInputs) } : a))
     setShowEditInputsModal(false)
   }
@@ -5247,6 +5230,7 @@ export default function DashboardPage() {
           }} />
         </div>
       )}
+      <ToastContainer />
     </div>
   )
 }

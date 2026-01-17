@@ -1,7 +1,8 @@
 'use client'
 
 import { useState } from 'react'
-import { createClient } from '@supabase/supabase-js'
+import { getSupabase } from '@/lib/supabase'
+import { hasValidSubscription } from '@/lib/auth'
 
 export default function LoginPage() {
   const [email, setEmail] = useState('')
@@ -15,10 +16,7 @@ export default function LoginPage() {
     setLoading(true)
 
     try {
-      const supabase = createClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL,
-        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-      )
+      const supabase = getSupabase()
 
       const { data, error: authError } = await supabase.auth.signInWithPassword({
         email: email.trim(),
@@ -44,32 +42,13 @@ export default function LoginPage() {
         .eq('id', data.user.id)
         .single()
 
-      // Debug: log profile data
-      console.log('Profile data:', profile)
-      console.log('Profile error:', profileError)
-      console.log('Subscription status:', profile?.subscription_status)
-
-      // Check if user has valid subscription
-      // 'admin' = admin user, 'subscribing' = paying, 'free subscription' = free access, 'free trial' = 7-day trial
-      const hasAccess = (() => {
-        if (!profile) return false
-        if (profile.subscription_status === 'admin') return true
-        if (profile.subscription_status === 'subscribing') return true
-        if (profile.subscription_status === 'free subscription') return true
-        if (profile.subscription_status === 'free trial') return true
-        return false
-      })()
-
-      console.log('hasAccess:', hasAccess)
-
-      if (hasAccess) {
+      if (hasValidSubscription(profile)) {
         window.location.href = '/dashboard'
       } else {
         window.location.href = '/pricing'
       }
 
     } catch (err) {
-      console.error('Login error:', err)
       setError('An error occurred. Please try again.')
       setLoading(false)
     }
@@ -77,10 +56,7 @@ export default function LoginPage() {
 
   async function handleGoogleLogin() {
     try {
-      const supabase = createClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL,
-        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-      )
+      const supabase = getSupabase()
 
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',

@@ -2,7 +2,8 @@
 
 import { useState, useEffect, useRef, Fragment } from 'react'
 import { useParams, useSearchParams } from 'next/navigation'
-import { createClient } from '@supabase/supabase-js'
+import { getSupabase } from '@/lib/supabase'
+import { ToastContainer, showToast } from '@/components/Toast'
 
 const defaultInputs = [
   { id: 'symbol', label: 'Symbol', type: 'text', required: false, enabled: true, fixed: true, color: '#22c55e' },
@@ -209,7 +210,7 @@ export default function AccountPage() {
   }, [inputs])
 
   async function loadData() {
-    const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY)
+    const supabase = getSupabase()
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) { window.location.href = '/login'; return }
     setUser(user)
@@ -290,13 +291,13 @@ export default function AccountPage() {
   }
 
   async function addTrade() {
-    if (tradeForm.symbol && tradeForm.symbol.length > 20) { alert('Symbol max 20 characters'); return }
-    if (tradeForm.pnl && isNaN(parseFloat(tradeForm.pnl))) { alert('Please enter a valid PnL number'); return }
-    if (tradeForm.pnl && Math.abs(parseFloat(tradeForm.pnl)) > 9999999999.99) { alert('PnL max ±$9,999,999,999.99'); return }
-    if (tradeForm.rr && isNaN(parseFloat(tradeForm.rr))) { alert('Please enter a valid RR number'); return }
-    if (tradeForm.rr && Math.abs(parseFloat(tradeForm.rr)) > 999.99) { alert('RR max ±999.99'); return }
+    if (tradeForm.symbol && tradeForm.symbol.length > 20) { showToast('Symbol max 20 characters'); return }
+    if (tradeForm.pnl && isNaN(parseFloat(tradeForm.pnl))) { showToast('Please enter a valid PnL number'); return }
+    if (tradeForm.pnl && Math.abs(parseFloat(tradeForm.pnl)) > 9999999999.99) { showToast('PnL max ±$9,999,999,999.99'); return }
+    if (tradeForm.rr && isNaN(parseFloat(tradeForm.rr))) { showToast('Please enter a valid RR number'); return }
+    if (tradeForm.rr && Math.abs(parseFloat(tradeForm.rr)) > 999.99) { showToast('RR max ±999.99'); return }
     setSaving(true)
-    const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY)
+    const supabase = getSupabase()
 
     // Collect all custom field data (including image)
     // Use input ID as key for consistent access across pages
@@ -324,7 +325,7 @@ export default function AccountPage() {
       extra_data: JSON.stringify(extraData)
     }).select().single()
     
-    if (error) { alert('Error: ' + error.message); setSaving(false); return }
+    if (error) { showToast('Error: ' + error.message); setSaving(false); return }
     setTrades([data, ...trades])
     const initial = {}
     inputs.forEach(inp => {
@@ -339,9 +340,9 @@ export default function AccountPage() {
   }
 
   async function deleteTrade(tradeId) {
-    const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY)
+    const supabase = getSupabase()
     const { error } = await supabase.from('trades').delete().eq('id', tradeId)
-    if (error) { alert('Failed to delete trade: ' + error.message); return }
+    if (error) { showToast('Failed to delete trade: ' + error.message); return }
     setTrades(trades.filter(t => t.id !== tradeId))
   }
 
@@ -374,13 +375,13 @@ export default function AccountPage() {
 
   async function updateTrade() {
     if (!editingTrade) return
-    if (tradeForm.symbol && tradeForm.symbol.length > 20) { alert('Symbol max 20 characters'); return }
-    if (tradeForm.pnl && isNaN(parseFloat(tradeForm.pnl))) { alert('Please enter a valid PnL number'); return }
-    if (tradeForm.pnl && Math.abs(parseFloat(tradeForm.pnl)) > 9999999999.99) { alert('PnL max ±$9,999,999,999.99'); return }
-    if (tradeForm.rr && isNaN(parseFloat(tradeForm.rr))) { alert('Please enter a valid RR number'); return }
-    if (tradeForm.rr && Math.abs(parseFloat(tradeForm.rr)) > 999.99) { alert('RR max ±999.99'); return }
+    if (tradeForm.symbol && tradeForm.symbol.length > 20) { showToast('Symbol max 20 characters'); return }
+    if (tradeForm.pnl && isNaN(parseFloat(tradeForm.pnl))) { showToast('Please enter a valid PnL number'); return }
+    if (tradeForm.pnl && Math.abs(parseFloat(tradeForm.pnl)) > 9999999999.99) { showToast('PnL max ±$9,999,999,999.99'); return }
+    if (tradeForm.rr && isNaN(parseFloat(tradeForm.rr))) { showToast('Please enter a valid RR number'); return }
+    if (tradeForm.rr && Math.abs(parseFloat(tradeForm.rr)) > 999.99) { showToast('RR max ±999.99'); return }
     setSaving(true)
-    const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY)
+    const supabase = getSupabase()
 
     // Use input ID as key for consistent access across pages
     const extraData = {}
@@ -407,7 +408,7 @@ export default function AccountPage() {
       extra_data: JSON.stringify(extraData)
     }).eq('id', editingTrade.id).select().single()
 
-    if (error) { alert('Error: ' + error.message); setSaving(false); return }
+    if (error) { showToast('Error: ' + error.message); setSaving(false); return }
     setTrades(trades.map(t => t.id === editingTrade.id ? data : t))
     setEditingTrade(null)
     setShowAddTrade(false)
@@ -425,17 +426,17 @@ export default function AccountPage() {
       setInputs(copiedInputs)
       setTransferFromJournal('')
       // Auto-save to database so colors and all settings are immediately applied
-      const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY)
+      const supabase = getSupabase()
       await supabase.from('accounts').update({ custom_inputs: JSON.stringify(copiedInputs) }).eq('id', accountId)
     } catch (e) {
-      console.error('Error parsing source inputs:', e)
+      // Failed to parse source inputs
     }
   }
 
   async function saveInputs() {
-    const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY)
+    const supabase = getSupabase()
     const { error } = await supabase.from('accounts').update({ custom_inputs: JSON.stringify(inputs) }).eq('id', accountId)
-    if (error) { alert('Failed to save columns: ' + error.message); return }
+    if (error) { showToast('Failed to save columns: ' + error.message); return }
     const customInputs = inputs.filter(i => !defaultInputs.find(d => d.id === i.id))
     if (customInputs.length > 0) setHasNewInputs(true)
     setShowEditInputs(false)
@@ -443,28 +444,28 @@ export default function AccountPage() {
 
   async function saveNote() {
     if (!noteText.trim()) return
-    const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY)
+    const supabase = getSupabase()
     const newNotes = { ...notes }
     if (notesSubTab === 'daily') newNotes.daily = { ...newNotes.daily, [noteDate]: noteText }
     else if (notesSubTab === 'weekly') { const weekStart = getWeekStart(noteDate); newNotes.weekly = { ...newNotes.weekly, [weekStart]: noteText } }
     else newNotes.custom = [...(newNotes.custom || []), { title: customNoteTitle || 'Note', text: noteText, date: new Date().toISOString() }]
     // Save notes to profiles (user-level)
     const { error } = await supabase.from('profiles').update({ notes_data: JSON.stringify(newNotes) }).eq('id', user.id)
-    if (error) { alert('Failed to save note: ' + error.message); return }
+    if (error) { showToast('Failed to save note: ' + error.message); return }
     setNotes(newNotes)
     setNoteText('')
     setCustomNoteTitle('')
   }
 
   async function deleteNote(type, key) {
-    const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY)
+    const supabase = getSupabase()
     const newNotes = { ...notes }
     if (type === 'daily') delete newNotes.daily[key]
     else if (type === 'weekly') delete newNotes.weekly[key]
     else newNotes.custom = notes.custom.filter((_, i) => i !== key)
     // Save notes to profiles (user-level)
     const { error } = await supabase.from('profiles').update({ notes_data: JSON.stringify(newNotes) }).eq('id', user.id)
-    if (error) { alert('Failed to delete note: ' + error.message); return }
+    if (error) { showToast('Failed to delete note: ' + error.message); return }
     setNotes(newNotes)
   }
 
@@ -553,7 +554,7 @@ export default function AccountPage() {
     const input = inputs[i]
     if (!input) return
     // Remove data from all trades
-    const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY)
+    const supabase = getSupabase()
     for (const trade of trades) {
       const extra = getExtraData(trade)
       if (extra[input.id] !== undefined) {
@@ -643,9 +644,9 @@ export default function AccountPage() {
     setDragOverColumn(null)
   }
   async function saveInputsOrder(newInputs) {
-    const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY)
+    const supabase = getSupabase()
     const { error } = await supabase.from('accounts').update({ custom_inputs: JSON.stringify(newInputs) }).eq('id', accountId)
-    if (error) console.error('Failed to save column order:', error.message)
+    // Error handled silently - column order may not have saved
   }
   function toggleOptionBg(idx) {
     const n = [...optionsList]
@@ -669,56 +670,48 @@ export default function AccountPage() {
   const MAX_BASE64_SIZE = 1 * 1024 * 1024 // 1MB max for base64 fallback
 
   async function uploadImage(file, inputId) {
-    if (!file || !user?.id || !accountId) {
-      console.log('Upload skipped - missing:', { file: !!file, userId: user?.id, accountId })
-      return null
-    }
+    if (!file || !user?.id || !accountId) return null
 
     // Validate file size
     if (file.size > MAX_IMAGE_SIZE) {
-      alert(`Image too large (${(file.size / 1024 / 1024).toFixed(1)}MB). Maximum size is 5MB.`)
+      showToast(`Image too large (${(file.size / 1024 / 1024).toFixed(1)}MB). Maximum size is 5MB.`)
       return null
     }
 
     // Validate file type
     if (!file.type.startsWith('image/')) {
-      alert('Please upload an image file (JPEG, PNG, GIF, etc.)')
+      showToast('Please upload an image file (JPEG, PNG, GIF, etc.)')
       return null
     }
 
     setUploadingImage(true)
-    console.log('Starting upload...', { fileName: file.name, size: file.size, type: file.type })
     try {
       const formData = new FormData()
       formData.append('file', file)
       formData.append('userId', user.id)
       formData.append('accountId', accountId)
 
-      console.log('Calling /api/upload-image...')
       const response = await fetch('/api/upload-image', {
         method: 'POST',
         body: formData
       })
 
-      console.log('Response status:', response.status)
       if (!response.ok) {
         const errData = await response.json().catch(() => ({}))
-        console.error('Upload failed:', errData)
         throw new Error(errData.error || 'Storage upload failed')
       }
 
       const { url } = await response.json()
-      console.log('Upload success! URL:', url)
       setTradeForm(prev => ({ ...prev, [inputId]: url }))
       return url
     } catch (err) {
       // Fallback to base64 only for small files (to prevent database bloat)
       if (file.size > MAX_BASE64_SIZE) {
-        alert('Upload failed and image is too large for fallback storage. Please try a smaller image (under 1MB) or check your connection.')
+        showToast('Upload failed and image is too large for fallback storage. Please try a smaller image (under 1MB) or check your connection.')
         setUploadingImage(false)
         return null
       }
-      console.warn('Storage upload failed, using base64 fallback:', err.message)
+      // Use base64 fallback for small images
       return new Promise((resolve) => {
         const reader = new FileReader()
         reader.onloadend = () => {
@@ -798,7 +791,7 @@ export default function AccountPage() {
   // Delete selected
   async function deleteSelectedTrades() {
     if (selectedTrades.size === 0) return
-    const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY)
+    const supabase = getSupabase()
     for (const id of selectedTrades) await supabase.from('trades').delete().eq('id', id)
     setTrades(trades.filter(t => !selectedTrades.has(t.id)))
     exitSelectMode()
@@ -4266,7 +4259,7 @@ export default function AccountPage() {
                               type="checkbox"
                               checked={isResolved}
                               onChange={async () => {
-                                const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY)
+                                const supabase = getSupabase()
                                 const newExtra = { ...extra, mistakeResolved: !isResolved }
                                 await supabase.from('trades').update({ extra_data: JSON.stringify(newExtra) }).eq('id', trade.id)
                                 // Update local state - both trades and allAccountsTrades
@@ -6185,6 +6178,7 @@ export default function AccountPage() {
           }} />
         </div>
       )}
+      <ToastContainer />
     </div>
   )
 }

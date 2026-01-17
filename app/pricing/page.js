@@ -1,7 +1,9 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { createClient } from '@supabase/supabase-js'
+import { hasValidSubscription } from '@/lib/auth'
+import { getSupabase } from '@/lib/supabase'
+import { ToastContainer, showToast } from '@/components/Toast'
 
 export default function PricingPage() {
   const [user, setUser] = useState(null)
@@ -13,24 +15,9 @@ export default function PricingPage() {
     checkAuth()
   }, [])
 
-  // Check if user has valid subscription
-  // 'admin' = admin user, 'subscribing' = paying, 'free subscription' = free access
-  // 'not subscribing' = no subscription, no access
-  function hasValidSubscription(profile) {
-    if (!profile) return false
-    const { subscription_status } = profile
-    if (subscription_status === 'admin') return true
-    if (subscription_status === 'subscribing') return true
-    if (subscription_status === 'free subscription') return true
-    return false
-  }
-
   async function checkAuth() {
     try {
-      const supabase = createClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL,
-        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-      )
+      const supabase = getSupabase()
       const { data: { user } } = await supabase.auth.getUser()
       setUser(user)
 
@@ -43,7 +30,7 @@ export default function PricingPage() {
         setHasAccess(hasValidSubscription(profile))
       }
     } catch (err) {
-      console.error('Auth check:', err)
+      // Auth check failed silently
     }
     setLoading(false)
   }
@@ -57,14 +44,11 @@ export default function PricingPage() {
     setSubscribing(true)
 
     try {
-      const supabase = createClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL,
-        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-      )
+      const supabase = getSupabase()
       const { data: { session } } = await supabase.auth.getSession()
 
       if (!session) {
-        alert('Please log in to subscribe')
+        showToast('Please log in to subscribe')
         window.location.href = '/login'
         return
       }
@@ -81,11 +65,11 @@ export default function PricingPage() {
       if (data.url) {
         window.location.href = data.url
       } else {
-        alert('Error: ' + (data.error || 'Could not create checkout'))
+        showToast('Error: ' + (data.error || 'Could not create checkout'))
         setSubscribing(false)
       }
     } catch (err) {
-      alert('Error creating checkout')
+      showToast('Error creating checkout')
       setSubscribing(false)
     }
   }
@@ -150,6 +134,7 @@ export default function PricingPage() {
           </div>
         </div>
       </section>
+      <ToastContainer />
     </div>
   )
 }

@@ -1,7 +1,8 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { createClient } from '@supabase/supabase-js'
+import { hasValidSubscription } from '@/lib/auth'
+import { getSupabase } from '@/lib/supabase'
 
 export default function HomePage() {
   const [loading, setLoading] = useState(true)
@@ -10,22 +11,9 @@ export default function HomePage() {
     checkAuthAndRedirect()
   }, [])
 
-  // Check if user has valid subscription
-  function hasValidSubscription(profile) {
-    if (!profile) return false
-    const { subscription_status } = profile
-    if (subscription_status === 'admin') return true
-    if (subscription_status === 'subscribing') return true
-    if (subscription_status === 'free subscription') return true
-    return false
-  }
-
   async function checkAuthAndRedirect() {
     try {
-      const supabase = createClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL,
-        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-      )
+      const supabase = getSupabase()
       const { data: { user } } = await supabase.auth.getUser()
 
       if (user) {
@@ -42,7 +30,7 @@ export default function HomePage() {
         }
       }
     } catch (err) {
-      console.error('Auth check:', err)
+      // Auth check failed silently
     }
     setLoading(false)
   }

@@ -1,7 +1,9 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { createClient } from '@supabase/supabase-js'
+import { hasValidSubscription } from '@/lib/auth'
+import { getSupabase } from '@/lib/supabase'
+import { ToastContainer, showToast } from '@/components/Toast'
 
 export default function SettingsPage() {
   const [user, setUser] = useState(null)
@@ -19,22 +21,8 @@ export default function SettingsPage() {
     loadProfile()
   }, [])
 
-  // Check if user has valid subscription
-  function hasValidSubscription(profile) {
-    if (!profile) return false
-    const { subscription_status } = profile
-    if (subscription_status === 'admin') return true
-    if (subscription_status === 'subscribing') return true
-    if (subscription_status === 'free subscription') return true
-    if (subscription_status === 'free trial') return true
-    return false
-  }
-
   async function loadProfile() {
-    const supabase = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-    )
+    const supabase = getSupabase()
     const { data: { user } } = await supabase.auth.getUser()
 
     if (!user) {
@@ -59,10 +47,7 @@ export default function SettingsPage() {
     setSaving(true)
     setMessage('')
 
-    const supabase = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-    )
+    const supabase = getSupabase()
 
     const { error } = await supabase
       .from('profiles')
@@ -95,10 +80,7 @@ export default function SettingsPage() {
     setPasswordSaving(true)
     setPasswordMessage('')
 
-    const supabase = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-    )
+    const supabase = getSupabase()
 
     const { error } = await supabase.auth.updateUser({ password: newPassword })
 
@@ -113,14 +95,11 @@ export default function SettingsPage() {
   }
 
   async function handleManageSubscription() {
-    const supabase = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-    )
+    const supabase = getSupabase()
     const { data: { session } } = await supabase.auth.getSession()
 
     if (!session) {
-      alert('Please log in')
+      showToast('Please log in')
       return
     }
 
@@ -134,18 +113,15 @@ export default function SettingsPage() {
       if (data.url) {
         window.location.href = data.url
       } else {
-        alert(data.error || 'Could not open subscription management')
+        showToast(data.error || 'Could not open subscription management')
       }
     } catch (err) {
-      alert('Error opening subscription portal')
+      showToast('Error opening subscription portal')
     }
   }
 
   async function handleSignOut() {
-    const supabase = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-    )
+    const supabase = getSupabase()
     await supabase.auth.signOut()
     window.location.href = '/'
   }
@@ -440,6 +416,7 @@ export default function SettingsPage() {
           </button>
         </div>
       </div>
+      <ToastContainer />
     </div>
   )
 }

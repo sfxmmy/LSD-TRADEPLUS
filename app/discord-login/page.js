@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { createClient } from '@supabase/supabase-js'
+import { getSupabase } from '@/lib/supabase'
 
 export default function DiscordLoginPage() {
   const [loading, setLoading] = useState(false)
@@ -12,10 +12,7 @@ export default function DiscordLoginPage() {
     setError('')
 
     try {
-      const supabase = createClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL,
-        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-      )
+      const supabase = getSupabase()
 
       const { error: oauthError } = await supabase.auth.signInWithOAuth({
         provider: 'discord',

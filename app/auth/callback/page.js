@@ -1,21 +1,18 @@
 'use client'
 
 import { useEffect } from 'react'
-import { createClient } from '@supabase/supabase-js'
+import { getSupabase } from '@/lib/supabase'
+import { hasValidSubscription } from '@/lib/auth'
 
 export default function AuthCallbackPage() {
   useEffect(() => {
     async function handleCallback() {
-      const supabase = createClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL,
-        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-      )
+      const supabase = getSupabase()
 
       // Get the session from the URL hash (Supabase puts tokens there)
       const { data: { session }, error } = await supabase.auth.getSession()
 
       if (error) {
-        console.error('Auth callback error:', error)
         window.location.href = '/login?error=auth_failed'
         return
       }
@@ -45,11 +42,7 @@ export default function AuthCallbackPage() {
           .eq('id', session.user.id)
           .single()
 
-        // 'admin' = admin user, 'subscribing' = paying, 'free subscription' = free access
-        const hasAccess = profileData?.subscription_status === 'admin' ||
-                          profileData?.subscription_status === 'subscribing' ||
-                          profileData?.subscription_status === 'free subscription'
-        if (hasAccess) {
+        if (hasValidSubscription(profileData)) {
           window.location.href = '/dashboard'
         } else {
           window.location.href = '/pricing'
