@@ -97,6 +97,7 @@ const defaultInputs = [
   { id: 'session', label: 'Session', type: 'select', options: [{value: 'London', textColor: '#3b82f6', bgColor: 'rgba(59,130,246,0.15)'}, {value: 'New York', textColor: '#22c55e', bgColor: 'rgba(34,197,94,0.15)'}, {value: 'Asian', textColor: '#f59e0b', bgColor: 'rgba(245,158,11,0.15)'}, {value: 'Overlap', textColor: '#a855f7', bgColor: 'rgba(168,85,247,0.15)'}], required: false, enabled: true, fixed: true, color: '#ec4899' },
   { id: 'image', label: 'Image', type: 'file', required: false, enabled: true, fixed: true, color: '#64748b' },
   { id: 'notes', label: 'Notes', type: 'textarea', required: false, enabled: true, fixed: true, color: '#64748b' },
+  { id: 'mistake', label: 'Trade Mistake', type: 'textarea', required: false, enabled: true, fixed: true, color: '#ef4444' },
 ]
 
 export default function DashboardPage() {
@@ -115,6 +116,8 @@ export default function DashboardPage() {
   const [name, setName] = useState('')
   const [balance, setBalance] = useState('')
   const [journalType, setJournalType] = useState('overall')
+  // Form validation errors
+  const [formErrors, setFormErrors] = useState({})
   const [profitTarget, setProfitTarget] = useState('')
   const [profitTargetEnabled, setProfitTargetEnabled] = useState(false)
   const [maxDrawdown, setMaxDrawdown] = useState('')
@@ -183,6 +186,7 @@ export default function DashboardPage() {
   const [quickTradeTimeframe, setQuickTradeTimeframe] = useState('')
   const [quickTradeSession, setQuickTradeSession] = useState('')
   const [quickTradeNotes, setQuickTradeNotes] = useState('')
+  const [quickTradeMistake, setQuickTradeMistake] = useState('')
   const [quickTradeImages, setQuickTradeImages] = useState([]) // Array of image URLs/base64
   const [uploadingImage, setUploadingImage] = useState(false)
   const [submittingTrade, setSubmittingTrade] = useState(false)
@@ -439,8 +443,28 @@ export default function DashboardPage() {
     }
   }
 
+  // Validation constants
+  const MAX_NAME_LENGTH = 50
+  const MAX_BALANCE = 9999999999.99 // DECIMAL(12,2) max
+  const MAX_PERCENTAGE = 999.99 // DECIMAL(5,2) max
+
+  function validateJournalForm() {
+    const errors = {}
+    if (!name.trim()) errors.name = 'Journal name is required'
+    else if (name.trim().length > MAX_NAME_LENGTH) errors.name = `Max ${MAX_NAME_LENGTH} characters`
+    if (!balance) errors.balance = 'Starting balance is required'
+    else if (parseFloat(balance) < 0) errors.balance = 'Balance cannot be negative'
+    else if (parseFloat(balance) > MAX_BALANCE) errors.balance = 'Max balance is $9,999,999,999.99'
+    if (profitTarget && parseFloat(profitTarget) > MAX_PERCENTAGE) errors.profitTarget = 'Max 999.99%'
+    if (consistencyPct && parseFloat(consistencyPct) > 100) errors.consistencyPct = 'Max 100%'
+    if (dailyDdPct && parseFloat(dailyDdPct) > MAX_PERCENTAGE) errors.dailyDdPct = 'Max 999.99%'
+    if (maxDdPct && parseFloat(maxDdPct) > MAX_PERCENTAGE) errors.maxDdPct = 'Max 999.99%'
+    setFormErrors(errors)
+    return Object.keys(errors).length === 0
+  }
+
   async function createJournal() {
-    if (!name.trim() || !balance) return
+    if (!validateJournalForm()) return
     setCreating(true)
     const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY)
     const { data, error } = await supabase.from('accounts').insert({
@@ -468,11 +492,21 @@ export default function DashboardPage() {
     if (error) { alert('Error: ' + error.message); setCreating(false); return }
     setAccounts([...accounts, data])
     setTrades({ ...trades, [data.id]: [] })
-    setName(''); setBalance(''); setProfitTarget(''); setMaxDrawdown(''); setConsistencyEnabled(false); setConsistencyPct('30'); setDailyDdEnabled(false); setDailyDdPct(''); setDailyDdType('static'); setDailyDdLocksAt('start_balance'); setDailyDdLocksAtPct(''); setDailyDdResetTime('00:00'); setDailyDdResetTimezone('Europe/London'); setMaxDdEnabled(false); setMaxDdPct(''); setMaxDdType('static'); setMaxDdTrailingStopsAt('never'); setMaxDdLocksAtPct(''); setShowModal(false); setCreating(false)
+    setName(''); setBalance(''); setProfitTarget(''); setMaxDrawdown(''); setConsistencyEnabled(false); setConsistencyPct('30'); setDailyDdEnabled(false); setDailyDdPct(''); setDailyDdType('static'); setDailyDdLocksAt('start_balance'); setDailyDdLocksAtPct(''); setDailyDdResetTime('00:00'); setDailyDdResetTimezone('Europe/London'); setMaxDdEnabled(false); setMaxDdPct(''); setMaxDdType('static'); setMaxDdTrailingStopsAt('never'); setMaxDdLocksAtPct(''); setFormErrors({}); setShowModal(false); setCreating(false)
+  }
+
+  function closeCreateModal() {
+    setShowModal(false)
+    setFormErrors({})
   }
 
   async function updateAccount(accountId) {
-    if (!editName.trim()) return
+    if (!editName.trim()) { alert('Journal name is required'); return }
+    if (editName.trim().length > 50) { alert('Journal name max 50 characters'); return }
+    if (editProfitTarget && parseFloat(editProfitTarget) > 999.99) { alert('Profit target max 999.99%'); return }
+    if (editConsistencyPct && parseFloat(editConsistencyPct) > 100) { alert('Consistency max 100%'); return }
+    if (editDailyDdPct && parseFloat(editDailyDdPct) > 999.99) { alert('Daily DD max 999.99%'); return }
+    if (editMaxDdPct && parseFloat(editMaxDdPct) > 999.99) { alert('Max DD max 999.99%'); return }
     const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY)
     const { error } = await supabase.from('accounts').update({
       name: editName.trim(),
@@ -734,6 +768,9 @@ export default function DashboardPage() {
   async function processImport() {
     if (!user) { setImportError('You must be logged in to import'); return }
     if (!importJournalName.trim()) { setImportError('Please enter a journal name'); return }
+    if (importJournalName.trim().length > 50) { setImportError('Journal name max 50 characters'); return }
+    if (importStartingBalance && parseFloat(importStartingBalance) > 9999999999.99) { setImportError('Starting balance max $9,999,999,999.99'); return }
+    if (importStartingBalance && parseFloat(importStartingBalance) < 0) { setImportError('Starting balance cannot be negative'); return }
     if (importData.length === 0) { setImportError('No data to import'); return }
     if (importData.length > 5000) { setImportError('Maximum 5000 trades per import. Please split your file.'); return }
     setImporting(true)
@@ -940,7 +977,9 @@ export default function DashboardPage() {
   async function submitQuickTrade() {
     if (!quickTradeAccount) { alert('Please select a journal'); return }
     if (!quickTradeSymbol?.trim()) { alert('Please enter a symbol'); return }
+    if (quickTradeSymbol.trim().length > 20) { alert('Symbol max 20 characters'); return }
     if (!quickTradePnl || isNaN(parseFloat(quickTradePnl))) { alert('Please enter a valid PnL number'); return }
+    if (Math.abs(parseFloat(quickTradePnl)) > 9999999999.99) { alert('PnL max ±$9,999,999,999.99'); return }
     // Parse RR - accepts "2.5" or "1:2" format
     const parseRR = (rr) => {
       if (!rr) return null
@@ -953,6 +992,7 @@ export default function DashboardPage() {
     }
     const parsedRR = parseRR(quickTradeRR)
     if (quickTradeRR && parsedRR === null) { alert('Invalid RR. Use number (2.5) or ratio (1:2)'); return }
+    if (parsedRR && Math.abs(parsedRR) > 999.99) { alert('RR max ±999.99'); return }
     setSubmittingTrade(true)
     const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY)
 
@@ -975,6 +1015,8 @@ export default function DashboardPage() {
       rating: quickTradeRating || '',
       time: quickTradeTime || '',
       images: quickTradeImages.length > 0 ? quickTradeImages : undefined,
+      mistake: quickTradeMistake || '',
+      mistakeResolved: false,
     }
 
     const { data, error } = await supabase.from('trades').insert({
@@ -1005,6 +1047,7 @@ export default function DashboardPage() {
     setQuickTradeSession('')
     setQuickTradeTime('')
     setQuickTradeNotes('')
+    setQuickTradeMistake('')
     setQuickTradeImages([])
     setQuickTradeExtraData({})
     setSubmittingTrade(false)
@@ -3277,7 +3320,7 @@ export default function DashboardPage() {
 
         {/* Modals */}
         {showModal && (
-          <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.9)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100 }} onClick={() => setShowModal(false)}>
+          <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.9)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100 }} onClick={closeCreateModal}>
             <div style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '10px', padding: '28px', width: '420px', maxHeight: '90vh', overflowY: 'auto' }} onClick={e => e.stopPropagation()}>
               <h2 style={{ fontSize: '18px', fontWeight: 600, marginBottom: '20px' }}>Create New Journal</h2>
 
@@ -3296,8 +3339,16 @@ export default function DashboardPage() {
                 </div>
               </div>
 
-              <div style={{ marginBottom: '14px' }}><label style={{ display: 'block', fontSize: '11px', color: '#999', marginBottom: '6px', textTransform: 'uppercase' }}>Journal Name</label><input type="text" value={name} onChange={e => setName(e.target.value)} placeholder={journalType === 'propfirm' ? 'e.g. FTMO 10k Challenge' : 'e.g. Personal Trading'} autoFocus style={{ width: '100%', padding: '12px 14px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '14px', boxSizing: 'border-box' }} /></div>
-              <div style={{ marginBottom: journalType === 'propfirm' ? '14px' : '20px' }}><label style={{ display: 'block', fontSize: '11px', color: '#999', marginBottom: '6px', textTransform: 'uppercase' }}>Starting Balance ($)</label><input type="number" value={balance} onChange={e => setBalance(e.target.value)} placeholder="e.g. 10000" style={{ width: '100%', padding: '12px 14px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '14px', boxSizing: 'border-box' }} /></div>
+              <div style={{ marginBottom: '14px' }}>
+                <label style={{ display: 'block', fontSize: '11px', color: '#999', marginBottom: '6px', textTransform: 'uppercase' }}>Journal Name</label>
+                <input type="text" value={name} onChange={e => { setName(e.target.value); setFormErrors(prev => ({ ...prev, name: null })) }} placeholder={journalType === 'propfirm' ? 'e.g. FTMO 10k Challenge' : 'e.g. Personal Trading'} maxLength={50} autoFocus style={{ width: '100%', padding: '12px 14px', background: '#0a0a0f', border: formErrors.name ? '1px solid #ef4444' : '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '14px', boxSizing: 'border-box' }} />
+                {formErrors.name && <div style={{ color: '#ef4444', fontSize: '11px', marginTop: '4px' }}>{formErrors.name}</div>}
+              </div>
+              <div style={{ marginBottom: journalType === 'propfirm' ? '14px' : '20px' }}>
+                <label style={{ display: 'block', fontSize: '11px', color: '#999', marginBottom: '6px', textTransform: 'uppercase' }}>Starting Balance ($)</label>
+                <input type="number" value={balance} onChange={e => { setBalance(e.target.value); setFormErrors(prev => ({ ...prev, balance: null })) }} placeholder="e.g. 10000" style={{ width: '100%', padding: '12px 14px', background: '#0a0a0f', border: formErrors.balance ? '1px solid #ef4444' : '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '14px', boxSizing: 'border-box' }} />
+                {formErrors.balance && <div style={{ color: '#ef4444', fontSize: '11px', marginTop: '4px' }}>{formErrors.balance}</div>}
+              </div>
 
               {/* Prop Firm Rules - Only show for propfirm type */}
               {journalType === 'propfirm' && (
@@ -4168,6 +4219,12 @@ export default function DashboardPage() {
                 <textarea value={quickTradeNotes} onChange={e => setQuickTradeNotes(e.target.value)} placeholder="Trade notes..." rows={3} style={{ width: '100%', padding: '14px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '8px', color: '#fff', fontSize: '15px', resize: 'none', boxSizing: 'border-box' }} />
               </div>
 
+              {/* Trade Mistake */}
+              <div style={{ marginBottom: '16px' }}>
+                <label style={{ display: 'block', fontSize: '11px', color: '#ef4444', marginBottom: '6px', textTransform: 'uppercase', fontWeight: 600 }}>Trade Mistake</label>
+                <textarea value={quickTradeMistake} onChange={e => setQuickTradeMistake(e.target.value)} placeholder="What mistake did you make? (optional)" rows={2} style={{ width: '100%', padding: '14px', background: '#0a0a0f', border: '1px solid rgba(239,68,68,0.3)', borderRadius: '8px', color: '#fff', fontSize: '15px', resize: 'none', boxSizing: 'border-box' }} />
+              </div>
+
               {/* Custom Inputs */}
               {getSelectedAccountCustomInputs().length > 0 && (
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '16px' }}>
@@ -4580,7 +4637,13 @@ export default function DashboardPage() {
                     {/* Notes */}
                     <div style={{ flex: 1 }}>
                       <label style={{ display: 'block', fontSize: '12px', color: '#888', marginBottom: '6px', fontWeight: 600 }}>Notes</label>
-                      <textarea value={quickTradeNotes} onChange={e => setQuickTradeNotes(e.target.value)} placeholder="Trade notes..." rows={4} style={{ width: '100%', padding: '10px 12px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '8px', color: '#fff', fontSize: '14px', resize: 'none', boxSizing: 'border-box' }} />
+                      <textarea value={quickTradeNotes} onChange={e => setQuickTradeNotes(e.target.value)} placeholder="Trade notes..." rows={3} style={{ width: '100%', padding: '10px 12px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '8px', color: '#fff', fontSize: '14px', resize: 'none', boxSizing: 'border-box' }} />
+                    </div>
+
+                    {/* Trade Mistake */}
+                    <div style={{ flex: 1 }}>
+                      <label style={{ display: 'block', fontSize: '12px', color: '#ef4444', marginBottom: '6px', fontWeight: 600 }}>Trade Mistake</label>
+                      <textarea value={quickTradeMistake} onChange={e => setQuickTradeMistake(e.target.value)} placeholder="What went wrong? (optional)" rows={2} style={{ width: '100%', padding: '10px 12px', background: '#0a0a0f', border: '1px solid rgba(239,68,68,0.3)', borderRadius: '8px', color: '#fff', fontSize: '14px', resize: 'none', boxSizing: 'border-box' }} />
                     </div>
                   </div>
                 </div>

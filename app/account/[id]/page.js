@@ -19,6 +19,7 @@ const defaultInputs = [
   { id: 'session', label: 'Session', type: 'select', options: [{value: 'London', textColor: '#3b82f6', bgColor: 'rgba(59,130,246,0.15)'}, {value: 'New York', textColor: '#22c55e', bgColor: 'rgba(34,197,94,0.15)'}, {value: 'Asian', textColor: '#f59e0b', bgColor: 'rgba(245,158,11,0.15)'}, {value: 'Overlap', textColor: '#a855f7', bgColor: 'rgba(168,85,247,0.15)'}], required: false, enabled: true, fixed: true, color: '#ec4899' },
   { id: 'image', label: 'Image', type: 'file', required: false, enabled: true, fixed: true, color: '#64748b' },
   { id: 'notes', label: 'Notes', type: 'textarea', required: false, enabled: true, fixed: true, color: '#64748b' },
+  { id: 'mistake', label: 'Trade Mistake', type: 'textarea', required: false, enabled: true, fixed: true, color: '#ef4444' },
 ]
 
 // Helper functions for handling options - supports legacy {value, color} and new {value, textColor, bgColor}
@@ -289,8 +290,11 @@ export default function AccountPage() {
   }
 
   async function addTrade() {
+    if (tradeForm.symbol && tradeForm.symbol.length > 20) { alert('Symbol max 20 characters'); return }
     if (tradeForm.pnl && isNaN(parseFloat(tradeForm.pnl))) { alert('Please enter a valid PnL number'); return }
+    if (tradeForm.pnl && Math.abs(parseFloat(tradeForm.pnl)) > 9999999999.99) { alert('PnL max ±$9,999,999,999.99'); return }
     if (tradeForm.rr && isNaN(parseFloat(tradeForm.rr))) { alert('Please enter a valid RR number'); return }
+    if (tradeForm.rr && Math.abs(parseFloat(tradeForm.rr)) > 999.99) { alert('RR max ±999.99'); return }
     setSaving(true)
     const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY)
 
@@ -302,6 +306,10 @@ export default function AccountPage() {
         extraData[inp.id] = tradeForm[inp.id] || ''
       }
     })
+    // Initialize mistakeResolved if there's a mistake
+    if (tradeForm.mistake) {
+      extraData.mistakeResolved = false
+    }
     
     const { data, error } = await supabase.from('trades').insert({
       account_id: accountId,
@@ -366,7 +374,11 @@ export default function AccountPage() {
 
   async function updateTrade() {
     if (!editingTrade) return
+    if (tradeForm.symbol && tradeForm.symbol.length > 20) { alert('Symbol max 20 characters'); return }
     if (tradeForm.pnl && isNaN(parseFloat(tradeForm.pnl))) { alert('Please enter a valid PnL number'); return }
+    if (tradeForm.pnl && Math.abs(parseFloat(tradeForm.pnl)) > 9999999999.99) { alert('PnL max ±$9,999,999,999.99'); return }
+    if (tradeForm.rr && isNaN(parseFloat(tradeForm.rr))) { alert('Please enter a valid RR number'); return }
+    if (tradeForm.rr && Math.abs(parseFloat(tradeForm.rr)) > 999.99) { alert('RR max ±999.99'); return }
     setSaving(true)
     const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY)
 
@@ -377,6 +389,11 @@ export default function AccountPage() {
         extraData[inp.id] = tradeForm[inp.id] || ''
       }
     })
+    // Preserve mistakeResolved status, or initialize if adding new mistake
+    const existingExtra = getExtraData(editingTrade)
+    if (tradeForm.mistake) {
+      extraData.mistakeResolved = existingExtra.mistakeResolved || false
+    }
 
     const { data, error } = await supabase.from('trades').update({
       symbol: tradeForm.symbol?.toUpperCase(),
@@ -4121,55 +4138,135 @@ export default function AccountPage() {
         {/* NOTES TAB */}
         {activeTab === 'notes' && (
           <div style={{ padding: isMobile ? '0' : '8px 16px 16px 12px' }}>
-            <div style={{ display: 'flex', gap: '12px', marginBottom: '12px' }}>
-              {['daily', 'weekly', 'custom'].map(sub => (
-                <button key={sub} onClick={() => setNotesSubTab(sub)} style={{ padding: '12px 24px', background: notesSubTab === sub ? '#22c55e' : 'transparent', border: notesSubTab === sub ? 'none' : '1px solid #2a2a35', borderRadius: '8px', color: notesSubTab === sub ? '#fff' : '#888', fontSize: '14px', fontWeight: 600, cursor: 'pointer', textTransform: 'capitalize' }}>{sub}</button>
+            <div style={{ display: 'flex', gap: '12px', marginBottom: '12px', flexWrap: 'wrap' }}>
+              {['daily', 'weekly', 'custom', 'tradeNotes', 'tradeMistakes'].map(sub => (
+                <button key={sub} onClick={() => setNotesSubTab(sub)} style={{ padding: '12px 24px', background: notesSubTab === sub ? (sub === 'tradeMistakes' ? '#ef4444' : '#22c55e') : 'transparent', border: notesSubTab === sub ? 'none' : '1px solid #2a2a35', borderRadius: '8px', color: notesSubTab === sub ? '#fff' : '#888', fontSize: '14px', fontWeight: 600, cursor: 'pointer' }}>{sub === 'tradeNotes' ? 'Trade Notes' : sub === 'tradeMistakes' ? 'Trade Mistakes' : sub.charAt(0).toUpperCase() + sub.slice(1)}</button>
               ))}
             </div>
 
-            <div style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '12px', marginBottom: '12px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-                <span style={{ fontSize: '13px', color: '#999', textTransform: 'uppercase' }}>Write {notesSubTab} Note</span>
-                <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-                  {notesSubTab === 'custom' && <input type="text" placeholder="Note title..." value={customNoteTitle} onChange={e => setCustomNoteTitle(e.target.value)} maxLength={100} style={{ padding: '8px 12px', background: '#0a0a0e', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '13px', width: '160px' }} />}
-                  <input type="date" value={noteDate} onChange={e => setNoteDate(e.target.value)} style={{ padding: '8px 12px', background: '#0a0a0e', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '13px' }} />
+            {/* Write Note Section - only for daily/weekly/custom */}
+            {['daily', 'weekly', 'custom'].includes(notesSubTab) && (
+              <div style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '12px', marginBottom: '12px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+                  <span style={{ fontSize: '13px', color: '#999', textTransform: 'uppercase' }}>Write {notesSubTab} Note</span>
+                  <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+                    {notesSubTab === 'custom' && <input type="text" placeholder="Note title..." value={customNoteTitle} onChange={e => setCustomNoteTitle(e.target.value)} maxLength={100} style={{ padding: '8px 12px', background: '#0a0a0e', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '13px', width: '160px' }} />}
+                    <input type="date" value={noteDate} onChange={e => setNoteDate(e.target.value)} style={{ padding: '8px 12px', background: '#0a0a0e', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '13px' }} />
+                  </div>
+                </div>
+                <textarea value={noteText} onChange={e => setNoteText(e.target.value)} maxLength={10000} placeholder={`Write your ${notesSubTab} note...`} style={{ width: '100%', minHeight: '140px', padding: '14px', background: '#0a0a0e', border: '1px solid #1a1a22', borderRadius: '8px', color: '#fff', fontSize: '14px', lineHeight: '1.6', resize: 'vertical', boxSizing: 'border-box' }} />
+                <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '12px' }}>
+                  <button onClick={saveNote} disabled={!noteText.trim()} style={{ padding: '12px 24px', background: noteText.trim() ? '#22c55e' : '#1a1a22', border: 'none', borderRadius: '8px', color: noteText.trim() ? '#fff' : '#666', fontWeight: 600, fontSize: '14px', cursor: noteText.trim() ? 'pointer' : 'not-allowed' }}>Save Note</button>
                 </div>
               </div>
-              <textarea value={noteText} onChange={e => setNoteText(e.target.value)} maxLength={10000} placeholder={`Write your ${notesSubTab} note...`} style={{ width: '100%', minHeight: '140px', padding: '14px', background: '#0a0a0e', border: '1px solid #1a1a22', borderRadius: '8px', color: '#fff', fontSize: '14px', lineHeight: '1.6', resize: 'vertical', boxSizing: 'border-box' }} />
-              <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '12px' }}>
-                <button onClick={saveNote} disabled={!noteText.trim()} style={{ padding: '12px 24px', background: noteText.trim() ? '#22c55e' : '#1a1a22', border: 'none', borderRadius: '8px', color: noteText.trim() ? '#fff' : '#666', fontWeight: 600, fontSize: '14px', cursor: noteText.trim() ? 'pointer' : 'not-allowed' }}>Save Note</button>
-              </div>
-            </div>
+            )}
 
-            <div style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '12px' }}>
-              <span style={{ fontSize: '13px', color: '#999', textTransform: 'uppercase' }}>{notesSubTab} Notes</span>
-              <div style={{ marginTop: '12px', display: 'flex', flexDirection: 'column', gap: '12px', maxHeight: '500px', overflowY: 'auto' }}>
-                {notesSubTab === 'custom' ? (
-                  (notes.custom || []).length === 0 ? <div style={{ padding: '40px', textAlign: 'center', color: '#999' }}>No custom notes yet.</div> : (notes.custom || []).map((note, idx) => (
-                    <div key={idx} style={{ padding: '12px', background: '#0a0a0e', borderRadius: '8px', border: '1px solid #1a1a22' }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-                        <span style={{ fontSize: '14px', color: '#22c55e', fontWeight: 600 }}>{note.title}</span>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                          <span style={{ fontSize: '12px', color: '#999' }}>{new Date(note.date).toLocaleDateString()}</span>
-                          <button onClick={() => setDeleteNoteConfirm({ type: 'custom', key: idx })} style={{ background: 'transparent', border: 'none', color: '#999', cursor: 'pointer', fontSize: '16px' }}>×</button>
+            {/* Daily/Weekly/Custom Notes Display */}
+            {['daily', 'weekly', 'custom'].includes(notesSubTab) && (
+              <div style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '12px' }}>
+                <span style={{ fontSize: '13px', color: '#999', textTransform: 'uppercase' }}>{notesSubTab} Notes</span>
+                <div style={{ marginTop: '12px', display: 'flex', flexDirection: 'column', gap: '12px', maxHeight: '500px', overflowY: 'auto' }}>
+                  {notesSubTab === 'custom' ? (
+                    (notes.custom || []).length === 0 ? <div style={{ padding: '40px', textAlign: 'center', color: '#999' }}>No custom notes yet.</div> : (notes.custom || []).map((note, idx) => (
+                      <div key={idx} style={{ padding: '12px', background: '#0a0a0e', borderRadius: '8px', border: '1px solid #1a1a22' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+                          <span style={{ fontSize: '14px', color: '#22c55e', fontWeight: 600 }}>{note.title}</span>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                            <span style={{ fontSize: '12px', color: '#999' }}>{new Date(note.date).toLocaleDateString()}</span>
+                            <button onClick={() => setDeleteNoteConfirm({ type: 'custom', key: idx })} style={{ background: 'transparent', border: 'none', color: '#999', cursor: 'pointer', fontSize: '16px' }}>×</button>
+                          </div>
                         </div>
+                        <div style={{ fontSize: '14px', color: '#fff', lineHeight: '1.6', whiteSpace: 'pre-wrap' }}>{note.text}</div>
                       </div>
-                      <div style={{ fontSize: '14px', color: '#fff', lineHeight: '1.6', whiteSpace: 'pre-wrap' }}>{note.text}</div>
-                    </div>
-                  ))
-                ) : (
-                  Object.keys(notes[notesSubTab] || {}).length === 0 ? <div style={{ padding: '40px', textAlign: 'center', color: '#999' }}>No {notesSubTab} notes yet.</div> : Object.entries(notes[notesSubTab] || {}).sort((a, b) => new Date(b[0]) - new Date(a[0])).map(([date, text]) => (
-                    <div key={date} style={{ padding: '12px', background: '#0a0a0e', borderRadius: '8px', border: '1px solid #1a1a22' }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-                        <span style={{ fontSize: '14px', color: '#22c55e', fontWeight: 600 }}>{new Date(date).toLocaleDateString('en-GB', { weekday: 'short', day: '2-digit', month: 'short', year: 'numeric' })}</span>
-                        <button onClick={() => setDeleteNoteConfirm({ type: notesSubTab, key: date })} style={{ background: 'transparent', border: 'none', color: '#999', cursor: 'pointer', fontSize: '16px' }}>×</button>
+                    ))
+                  ) : (
+                    Object.keys(notes[notesSubTab] || {}).length === 0 ? <div style={{ padding: '40px', textAlign: 'center', color: '#999' }}>No {notesSubTab} notes yet.</div> : Object.entries(notes[notesSubTab] || {}).sort((a, b) => new Date(b[0]) - new Date(a[0])).map(([date, text]) => (
+                      <div key={date} style={{ padding: '12px', background: '#0a0a0e', borderRadius: '8px', border: '1px solid #1a1a22' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+                          <span style={{ fontSize: '14px', color: '#22c55e', fontWeight: 600 }}>{new Date(date).toLocaleDateString('en-GB', { weekday: 'short', day: '2-digit', month: 'short', year: 'numeric' })}</span>
+                          <button onClick={() => setDeleteNoteConfirm({ type: notesSubTab, key: date })} style={{ background: 'transparent', border: 'none', color: '#999', cursor: 'pointer', fontSize: '16px' }}>×</button>
+                        </div>
+                        <div style={{ fontSize: '14px', color: '#fff', lineHeight: '1.6', whiteSpace: 'pre-wrap' }}>{text}</div>
                       </div>
-                      <div style={{ fontSize: '14px', color: '#fff', lineHeight: '1.6', whiteSpace: 'pre-wrap' }}>{text}</div>
-                    </div>
-                  ))
-                )}
+                    ))
+                  )}
+                </div>
               </div>
-            </div>
+            )}
+
+            {/* Trade Notes Section */}
+            {notesSubTab === 'tradeNotes' && (
+              <div style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '12px' }}>
+                <span style={{ fontSize: '13px', color: '#999', textTransform: 'uppercase' }}>Trade Notes</span>
+                <div style={{ marginTop: '12px', display: 'flex', flexDirection: 'column', gap: '12px', maxHeight: '600px', overflowY: 'auto' }}>
+                  {(() => {
+                    const tradesWithNotes = trades.filter(t => t.notes && t.notes.trim()).sort((a, b) => new Date(b.date) - new Date(a.date))
+                    if (tradesWithNotes.length === 0) return <div style={{ padding: '40px', textAlign: 'center', color: '#999' }}>No trade notes yet. Add notes when logging trades.</div>
+                    return tradesWithNotes.map(trade => (
+                      <div key={trade.id} style={{ padding: '12px', background: '#0a0a0e', borderRadius: '8px', border: '1px solid #1a1a22' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                            <span style={{ fontSize: '14px', color: '#22c55e', fontWeight: 600 }}>{new Date(trade.date).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}</span>
+                            <span style={{ fontSize: '14px', color: '#fff', fontWeight: 600 }}>{trade.symbol}</span>
+                            <span style={{ padding: '3px 8px', borderRadius: '4px', fontSize: '11px', fontWeight: 600, background: trade.outcome === 'win' ? 'rgba(34,197,94,0.15)' : trade.outcome === 'loss' ? 'rgba(239,68,68,0.15)' : 'rgba(245,158,11,0.15)', color: trade.outcome === 'win' ? '#22c55e' : trade.outcome === 'loss' ? '#ef4444' : '#f59e0b' }}>{trade.outcome?.toUpperCase()}</span>
+                          </div>
+                          <span style={{ fontSize: '13px', fontWeight: 600, color: parseFloat(trade.pnl) >= 0 ? '#22c55e' : '#ef4444' }}>{parseFloat(trade.pnl) >= 0 ? '+' : ''}${parseFloat(trade.pnl || 0).toFixed(2)}</span>
+                        </div>
+                        <div style={{ fontSize: '14px', color: '#fff', lineHeight: '1.6', whiteSpace: 'pre-wrap' }}>{trade.notes}</div>
+                      </div>
+                    ))
+                  })()}
+                </div>
+              </div>
+            )}
+
+            {/* Trade Mistakes Section */}
+            {notesSubTab === 'tradeMistakes' && (
+              <div style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '12px' }}>
+                <span style={{ fontSize: '13px', color: '#ef4444', textTransform: 'uppercase' }}>Trade Mistakes</span>
+                <div style={{ marginTop: '12px', display: 'flex', flexDirection: 'column', gap: '12px', maxHeight: '600px', overflowY: 'auto' }}>
+                  {(() => {
+                    const tradesWithMistakes = trades.filter(t => {
+                      const extra = getExtraData(t)
+                      return extra.mistake && extra.mistake.trim()
+                    }).sort((a, b) => new Date(b.date) - new Date(a.date))
+                    if (tradesWithMistakes.length === 0) return <div style={{ padding: '40px', textAlign: 'center', color: '#999' }}>No trade mistakes logged yet. Add mistakes when logging trades to track areas for improvement.</div>
+                    return tradesWithMistakes.map(trade => {
+                      const extra = getExtraData(trade)
+                      const isResolved = extra.mistakeResolved === true
+                      return (
+                        <div key={trade.id} style={{ padding: '12px', background: '#0a0a0e', borderRadius: '8px', border: isResolved ? '1px solid #2a2a35' : '1px solid rgba(239,68,68,0.3)', opacity: isResolved ? 0.6 : 1 }}>
+                          <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
+                            <input
+                              type="checkbox"
+                              checked={isResolved}
+                              onChange={async () => {
+                                const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY)
+                                const newExtra = { ...extra, mistakeResolved: !isResolved }
+                                await supabase.from('trades').update({ extra_data: JSON.stringify(newExtra) }).eq('id', trade.id)
+                                setTrades(trades.map(t => t.id === trade.id ? { ...t, extra_data: JSON.stringify(newExtra) } : t))
+                              }}
+                              style={{ width: '18px', height: '18px', accentColor: '#22c55e', cursor: 'pointer', marginTop: '2px', flexShrink: 0 }}
+                            />
+                            <div style={{ flex: 1 }}>
+                              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                                  <span style={{ fontSize: '14px', color: '#ef4444', fontWeight: 600 }}>{new Date(trade.date).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}</span>
+                                  <span style={{ fontSize: '14px', color: isResolved ? '#666' : '#fff', fontWeight: 600 }}>{trade.symbol}</span>
+                                  <span style={{ padding: '3px 8px', borderRadius: '4px', fontSize: '11px', fontWeight: 600, background: trade.outcome === 'win' ? 'rgba(34,197,94,0.15)' : trade.outcome === 'loss' ? 'rgba(239,68,68,0.15)' : 'rgba(245,158,11,0.15)', color: trade.outcome === 'win' ? '#22c55e' : trade.outcome === 'loss' ? '#ef4444' : '#f59e0b' }}>{trade.outcome?.toUpperCase()}</span>
+                                </div>
+                                {isResolved && <span style={{ fontSize: '11px', color: '#22c55e', fontWeight: 600, padding: '2px 8px', background: 'rgba(34,197,94,0.15)', borderRadius: '4px' }}>RESOLVED</span>}
+                              </div>
+                              <div style={{ fontSize: '14px', color: isResolved ? '#666' : '#fff', lineHeight: '1.6', whiteSpace: 'pre-wrap', textDecoration: isResolved ? 'line-through' : 'none' }}>{extra.mistake}</div>
+                            </div>
+                          </div>
+                        </div>
+                      )
+                    })
+                  })()}
+                </div>
+              </div>
+            )}
           </div>
         )}
       </div>
@@ -4444,7 +4541,7 @@ export default function AccountPage() {
                       const currentColor = getColor(currentVal, currentOpt)
                       return (
                         <div key={input.id} style={input.type === 'select' ? { position: 'relative' } : {}}>
-                          <label style={{ display: 'block', fontSize: '12px', color: '#888', marginBottom: '6px', fontWeight: 600 }}>{input.label}</label>
+                          <label style={{ display: 'block', fontSize: '12px', color: input.id === 'mistake' ? '#ef4444' : '#888', marginBottom: '6px', fontWeight: 600 }}>{input.label}</label>
                           {input.type === 'select' ? (
                             <>
                               <button type="button" onClick={() => {
@@ -4531,7 +4628,7 @@ export default function AccountPage() {
                             </span>
                           </div>
                         ) : input.type === 'textarea' ? (
-                          <textarea value={tradeForm[input.id] || ''} onChange={e => setTradeForm({...tradeForm, [input.id]: e.target.value})} maxLength={5000} placeholder="Trade notes..." rows={4} style={{ width: '100%', padding: '10px 12px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '8px', color: '#fff', fontSize: '14px', boxSizing: 'border-box', resize: 'none', fontFamily: 'inherit' }} />
+                          <textarea value={tradeForm[input.id] || ''} onChange={e => setTradeForm({...tradeForm, [input.id]: e.target.value})} maxLength={5000} placeholder={input.id === 'mistake' ? 'What mistake did you make? (optional)' : 'Trade notes...'} rows={input.id === 'mistake' ? 2 : 4} style={{ width: '100%', padding: '10px 12px', background: '#0a0a0f', border: input.id === 'mistake' ? '1px solid rgba(239,68,68,0.3)' : '1px solid #1a1a22', borderRadius: '8px', color: '#fff', fontSize: '14px', boxSizing: 'border-box', resize: 'none', fontFamily: 'inherit' }} />
                         ) : null}
                       </div>
                     )
