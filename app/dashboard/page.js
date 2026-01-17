@@ -108,6 +108,7 @@ export default function DashboardPage() {
   const [user, setUser] = useState(null)
   const [accounts, setAccounts] = useState([])
   const [activeDashboard, setActiveDashboard] = useState(searchParams.get('dashboard') || 'accounts') // 'accounts' or 'backtesting'
+  const [switchingDashboard, setSwitchingDashboard] = useState(false)
   const [trades, setTrades] = useState({})
   const [loading, setLoading] = useState(true)
   const [showModal, setShowModal] = useState(false)
@@ -263,6 +264,17 @@ export default function DashboardPage() {
 
   useEffect(() => { loadData() }, [])
 
+  // Auth state listener - detect session changes and handle sign-outs
+  useEffect(() => {
+    const supabase = getSupabase()
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'SIGNED_OUT' || !session) {
+        window.location.href = '/login'
+      }
+    })
+    return () => subscription.unsubscribe()
+  }, [])
+
   // Load journal order from localStorage
   useEffect(() => {
     const savedOrder = localStorage.getItem('journalOrder')
@@ -350,32 +362,59 @@ export default function DashboardPage() {
   // Check if user has valid subscription
   // 'admin' = admin user (ssiagos@hotmail.com)
   async function loadData() {
-    const supabase = getSupabase()
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) { window.location.href = '/login'; return }
-    const { data: profile } = await supabase.from('profiles').select('subscription_status, subscription_end').eq('id', user.id).single()
-    if (!hasValidSubscription(profile)) { window.location.href = '/pricing'; return }
-    setUser(user)
-    const { data: accountsData } = await supabase.from('accounts').select('*').eq('user_id', user.id).order('created_at', { ascending: true })
-    setAccounts(accountsData || [])
-    if (accountsData?.length) {
-      const tradesMap = {}
-      const countsMap = {}
-      for (const acc of accountsData) {
-        // Get count first
-        const { count } = await supabase.from('trades').select('*', { count: 'exact', head: true }).eq('account_id', acc.id)
-        countsMap[acc.id] = count || 0
-        // Load all trades for charts (sorted ascending by date)
-        const { data: tradesData } = await supabase.from('trades').select('*').eq('account_id', acc.id).order('date', { ascending: true })
-        tradesMap[acc.id] = tradesData || []
+    try {
+      const supabase = getSupabase()
+      const { data: { user }, error: authError } = await supabase.auth.getUser()
+      if (authError || !user) { window.location.href = '/login'; return }
+      const { data: profile, error: profileError } = await supabase.from('profiles').select('subscription_status, subscription_end').eq('id', user.id).single()
+      if (profileError || !hasValidSubscription(profile)) { window.location.href = '/pricing'; return }
+      setUser(user)
+      const { data: accountsData } = await supabase.from('accounts').select('*').eq('user_id', user.id).order('created_at', { ascending: true })
+      setAccounts(accountsData || [])
+      if (accountsData?.length) {
+        const tradesMap = {}
+        const countsMap = {}
+        for (const acc of accountsData) {
+          // Get count first
+          const { count } = await supabase.from('trades').select('*', { count: 'exact', head: true }).eq('account_id', acc.id)
+          countsMap[acc.id] = count || 0
+          // Load all trades for charts (sorted ascending by date)
+          const { data: tradesData } = await supabase.from('trades').select('*').eq('account_id', acc.id).order('date', { ascending: true })
+          tradesMap[acc.id] = tradesData || []
+        }
+        setTrades(tradesMap)
+        setTradeCounts(countsMap)
       }
-      setTrades(tradesMap)
-      setTradeCounts(countsMap)
+      // Load notes from profiles (user-level)
+      const { data: profileData } = await supabase.from('profiles').select('notes_data').eq('id', user.id).single()
+      if (profileData?.notes_data) { try { setNotes(JSON.parse(profileData.notes_data)) } catch {} }
+      setLoading(false)
+    } catch (err) {
+      console.error('Failed to load data:', err)
+      showToast('Session expired. Please sign in again.')
+      window.location.href = '/login'
     }
-    // Load notes from profiles (user-level)
-    const { data: profileData } = await supabase.from('profiles').select('notes_data').eq('id', user.id).single()
-    if (profileData?.notes_data) { try { setNotes(JSON.parse(profileData.notes_data)) } catch {} }
-    setLoading(false)
+  }
+
+  // Safe dashboard switch - validates auth before switching
+  async function handleDashboardSwitch(type) {
+    if (switchingDashboard || type === activeDashboard) return
+    setSwitchingDashboard(true)
+    try {
+      const supabase = getSupabase()
+      const { data: { user }, error } = await supabase.auth.getUser()
+      if (error || !user) {
+        showToast('Session expired. Please sign in again.')
+        window.location.href = '/login'
+        return
+      }
+      setActiveDashboard(type)
+    } catch (err) {
+      showToast('Session expired. Please sign in again.')
+      window.location.href = '/login'
+    } finally {
+      setSwitchingDashboard(false)
+    }
   }
 
   // Load more trades for a specific account
@@ -1923,9 +1962,9 @@ export default function DashboardPage() {
           <span style={{ color: '#22c55e' }}>TRADE</span><span style={{ color: '#fff' }}>SAVE</span><span style={{ color: '#22c55e' }}>+</span>
         </a>
         {!isMobile && <div style={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)', display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <button onClick={() => setActiveDashboard('accounts')} style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontSize: '20px', fontWeight: 700, letterSpacing: '-0.5px', color: activeDashboard === 'accounts' ? '#fff' : '#666', transition: 'color 0.2s' }}>ACCOUNTS DASHBOARD</button>
+          <button onClick={() => handleDashboardSwitch('accounts')} disabled={switchingDashboard} style={{ background: 'none', border: 'none', padding: 0, cursor: switchingDashboard ? 'wait' : 'pointer', fontSize: '20px', fontWeight: 700, letterSpacing: '-0.5px', color: activeDashboard === 'accounts' ? '#fff' : '#666', opacity: switchingDashboard ? 0.6 : 1, transition: 'color 0.2s' }}>ACCOUNTS DASHBOARD</button>
           <span style={{ color: '#333', fontSize: '20px', fontWeight: 300 }}>|</span>
-          <button onClick={() => setActiveDashboard('backtesting')} style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontSize: '20px', fontWeight: 700, letterSpacing: '-0.5px', color: activeDashboard === 'backtesting' ? '#fff' : '#666', transition: 'color 0.2s' }}>BACKTESTING DASHBOARD</button>
+          <button onClick={() => handleDashboardSwitch('backtesting')} disabled={switchingDashboard} style={{ background: 'none', border: 'none', padding: 0, cursor: switchingDashboard ? 'wait' : 'pointer', fontSize: '20px', fontWeight: 700, letterSpacing: '-0.5px', color: activeDashboard === 'backtesting' ? '#fff' : '#666', opacity: switchingDashboard ? 0.6 : 1, transition: 'color 0.2s' }}>BACKTESTING DASHBOARD</button>
         </div>}
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
           {/* View Toggle - Grid/List */}
@@ -1967,12 +2006,12 @@ export default function DashboardPage() {
 
                   {/* Journal Select - Dropdown */}
                   <div onClick={e => e.stopPropagation()} style={{ marginBottom: '14px', position: 'relative' }}>
-                    <button onClick={() => setJournalDropdownOpen(!journalDropdownOpen)} style={{ width: '100%', padding: '10px 14px', background: 'rgba(34,197,94,0.08)', border: '1px solid rgba(34,197,94,0.3)', borderRadius: journalDropdownOpen ? '10px 10px 0 0' : '10px', color: '#22c55e', fontSize: '13px', fontWeight: 600, cursor: 'pointer', textAlign: 'left', display: 'flex', alignItems: 'center', justifyContent: 'space-between', transition: 'all 0.2s' }} onMouseEnter={e => { e.currentTarget.style.background = 'rgba(34,197,94,0.15)'; e.currentTarget.style.borderColor = 'rgba(34,197,94,0.5)' }} onMouseLeave={e => { e.currentTarget.style.background = 'rgba(34,197,94,0.08)'; e.currentTarget.style.borderColor = 'rgba(34,197,94,0.3)' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#22c55e', boxShadow: '0 0 4px #22c55e' }} />
-                        {accounts.find(a => a.id === quickTradeAccount)?.name || 'Select Journal'}
+                    <button onClick={() => setJournalDropdownOpen(!journalDropdownOpen)} style={{ width: '100%', padding: '10px 14px', background: 'rgba(34,197,94,0.08)', border: '1px solid rgba(34,197,94,0.3)', borderRadius: journalDropdownOpen ? '10px 10px 0 0' : '10px', color: '#22c55e', fontSize: '13px', fontWeight: 600, cursor: 'pointer', textAlign: 'left', display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '8px', transition: 'all 0.2s' }} onMouseEnter={e => { e.currentTarget.style.background = 'rgba(34,197,94,0.15)'; e.currentTarget.style.borderColor = 'rgba(34,197,94,0.5)' }} onMouseLeave={e => { e.currentTarget.style.background = 'rgba(34,197,94,0.08)'; e.currentTarget.style.borderColor = 'rgba(34,197,94,0.3)' }}>
+                      <div style={{ display: 'flex', alignItems: 'flex-start', gap: '8px', minWidth: 0, flex: 1 }}>
+                        <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#22c55e', boxShadow: '0 0 4px #22c55e', flexShrink: 0, marginTop: '5px' }} />
+                        <span style={{ wordBreak: 'break-word' }}>{accounts.find(a => a.id === quickTradeAccount)?.name || 'Select Journal'}</span>
                       </div>
-                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ transform: journalDropdownOpen ? 'rotate(180deg)' : 'rotate(0)', transition: 'transform 0.2s' }}><path d="M6 9l6 6 6-6"/></svg>
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ transform: journalDropdownOpen ? 'rotate(180deg)' : 'rotate(0)', transition: 'transform 0.2s', flexShrink: 0, marginTop: '3px' }}><path d="M6 9l6 6 6-6"/></svg>
                     </button>
                     {journalDropdownOpen && (
                       <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, background: '#0d0d12', border: '1px solid rgba(34,197,94,0.3)', borderTop: 'none', borderRadius: '0 0 10px 10px', padding: '6px', zIndex: 10, display: 'flex', flexDirection: 'column', gap: '4px', boxShadow: '0 8px 24px rgba(0,0,0,0.4)' }}>
@@ -1982,12 +2021,12 @@ export default function DashboardPage() {
                           const totalPnl = accTrades.reduce((sum, t) => sum + (parseFloat(t.pnl) || 0), 0)
                           return (
                             <button key={acc.id} onClick={() => { setQuickTradeAccount(acc.id); setJournalDropdownOpen(false) }} style={{ width: '100%', padding: '10px 12px', background: isSelected ? 'rgba(34,197,94,0.12)' : '#0a0a0f', border: `1px solid ${isSelected ? 'rgba(34,197,94,0.4)' : '#1a1a22'}`, borderRadius: '8px', color: isSelected ? '#22c55e' : '#999', fontSize: '12px', fontWeight: 600, cursor: 'pointer', textAlign: 'left', transition: 'all 0.15s' }}>
-                              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                  <div style={{ width: '5px', height: '5px', borderRadius: '50%', background: isSelected ? '#22c55e' : '#444' }} />
-                                  {acc.name}
+                              <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '8px', flexWrap: 'wrap' }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: 0, flex: '1 1 auto' }}>
+                                  <div style={{ width: '5px', height: '5px', borderRadius: '50%', background: isSelected ? '#22c55e' : '#444', flexShrink: 0 }} />
+                                  <span style={{ wordBreak: 'break-word' }}>{acc.name}</span>
                                 </div>
-                                <span style={{ fontSize: '11px', color: totalPnl >= 0 ? '#22c55e' : '#ef4444' }}>{totalPnl >= 0 ? '+' : ''}${formatCurrency(totalPnl)}</span>
+                                <span style={{ fontSize: '11px', color: totalPnl >= 0 ? '#22c55e' : '#ef4444', flexShrink: 0 }}>{totalPnl >= 0 ? '+' : ''}${formatCurrency(totalPnl)}</span>
                               </div>
                             </button>
                           )
@@ -3932,11 +3971,11 @@ export default function DashboardPage() {
                     boxShadow: '0 0 15px rgba(34,197,94,0.15)'
                   }}
                 >
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                    <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#22c55e', boxShadow: '0 0 8px #22c55e' }} />
-                    {accounts.find(a => a.id === quickTradeAccount)?.name || 'Select Journal'}
+                  <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px', minWidth: 0, flex: 1 }}>
+                    <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#22c55e', boxShadow: '0 0 8px #22c55e', flexShrink: 0, marginTop: '3px' }} />
+                    <span style={{ wordBreak: 'break-word' }}>{accounts.find(a => a.id === quickTradeAccount)?.name || 'Select Journal'}</span>
                   </div>
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ transform: journalDropdownOpen ? 'rotate(180deg)' : 'rotate(0)', transition: 'transform 0.2s' }}>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ transform: journalDropdownOpen ? 'rotate(180deg)' : 'rotate(0)', transition: 'transform 0.2s', flexShrink: 0, marginTop: '3px' }}>
                     <path d="M6 9l6 6 6-6"/>
                   </svg>
                 </button>
@@ -3981,18 +4020,19 @@ export default function DashboardPage() {
                             boxShadow: isSelected ? '0 0 12px rgba(34,197,94,0.2), inset 0 0 20px rgba(34,197,94,0.05)' : 'none'
                           }}
                         >
-                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                          <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '8px', flexWrap: 'wrap' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', minWidth: 0, flex: '1 1 auto' }}>
                               <div style={{
                                 width: '8px',
                                 height: '8px',
                                 borderRadius: '50%',
                                 background: isSelected ? '#22c55e' : '#444',
-                                boxShadow: isSelected ? '0 0 6px #22c55e' : 'none'
+                                boxShadow: isSelected ? '0 0 6px #22c55e' : 'none',
+                                flexShrink: 0
                               }} />
-                              {acc.name}
+                              <span style={{ wordBreak: 'break-word' }}>{acc.name}</span>
                             </div>
-                            <span style={{ fontSize: '13px', color: totalPnl >= 0 ? '#22c55e' : '#ef4444' }}>
+                            <span style={{ fontSize: '13px', color: totalPnl >= 0 ? '#22c55e' : '#ef4444', flexShrink: 0 }}>
                               {totalPnl >= 0 ? '+' : ''}${formatCurrency(totalPnl)}
                             </span>
                           </div>
@@ -4292,13 +4332,14 @@ export default function DashboardPage() {
                         cursor: 'pointer',
                         textAlign: 'left',
                         display: 'flex',
-                        alignItems: 'center',
-                        gap: '10px'
+                        alignItems: 'flex-start',
+                        gap: '10px',
+                        maxWidth: '300px'
                       }}
                     >
-                      <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#22c55e', boxShadow: '0 0 6px #22c55e' }} />
-                      {accounts.find(a => a.id === quickTradeAccount)?.name || 'Select Journal'}
-                      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ transform: journalDropdownOpen ? 'rotate(180deg)' : 'rotate(0)', transition: 'transform 0.2s' }}>
+                      <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#22c55e', boxShadow: '0 0 6px #22c55e', flexShrink: 0, marginTop: '5px' }} />
+                      <span style={{ wordBreak: 'break-word', flex: 1 }}>{accounts.find(a => a.id === quickTradeAccount)?.name || 'Select Journal'}</span>
+                      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ transform: journalDropdownOpen ? 'rotate(180deg)' : 'rotate(0)', transition: 'transform 0.2s', flexShrink: 0, marginTop: '4px' }}>
                         <path d="M6 9l6 6 6-6"/>
                       </svg>
                     </button>
@@ -4340,12 +4381,12 @@ export default function DashboardPage() {
                                 textAlign: 'left'
                               }}
                             >
-                              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                  <div style={{ width: '5px', height: '5px', borderRadius: '50%', background: isSelected ? '#22c55e' : '#444' }} />
-                                  {acc.name}
+                              <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '8px', flexWrap: 'wrap' }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: 0, flex: '1 1 auto' }}>
+                                  <div style={{ width: '5px', height: '5px', borderRadius: '50%', background: isSelected ? '#22c55e' : '#444', flexShrink: 0 }} />
+                                  <span style={{ wordBreak: 'break-word' }}>{acc.name}</span>
                                 </div>
-                                <span style={{ fontSize: '11px', color: totalPnl >= 0 ? '#22c55e' : '#ef4444' }}>
+                                <span style={{ fontSize: '11px', color: totalPnl >= 0 ? '#22c55e' : '#ef4444', flexShrink: 0 }}>
                                   {totalPnl >= 0 ? '+' : ''}${formatCurrency(totalPnl)}
                                 </span>
                               </div>
