@@ -417,7 +417,7 @@ export default function AccountPage() {
 
   async function transferColumnsFromJournal(sourceAccountId) {
     if (!sourceAccountId) return
-    const sourceAccount = allAccounts.find(a => a.id === sourceAccountId)
+    const sourceAccount = sameTypeAccounts.find(a => a.id === sourceAccountId)
     if (!sourceAccount) return
     try {
       const sourceInputs = sourceAccount.custom_inputs ? JSON.parse(sourceAccount.custom_inputs) : defaultInputs
@@ -797,15 +797,19 @@ export default function AccountPage() {
     setTrades(prev => prev.filter(t => !idsToDelete.has(t.id)))
     exitSelectMode()
   }
-  // Get slideshow images - uses filtered trades based on journal selection
+  // Get slideshow images - uses filtered trades based on journal selection (filtered by dashboard type)
   function getSlideshowImages() {
     // Use baseTradesToFilter to respect journal selection (All Journals / Selected / This Journal)
     const baseTarget = (() => {
-      if (viewMode === 'all' && allAccounts.length > 1) {
-        return Object.values(allAccountsTrades).flat()
-      } else if (viewMode === 'selected' && selectedJournalIds.size > 0) {
+      if (viewMode === 'all' && sameTypeAccounts.length > 1) {
+        // Only include trades from accounts of the same dashboard type
         return Object.entries(allAccountsTrades)
-          .filter(([accId]) => selectedJournalIds.has(accId))
+          .filter(([accId]) => sameTypeAccountIds.has(accId))
+          .flatMap(([, t]) => t)
+      } else if (viewMode === 'selected' && selectedJournalIds.size > 0) {
+        // Only include selected accounts that are also of the same dashboard type
+        return Object.entries(allAccountsTrades)
+          .filter(([accId]) => selectedJournalIds.has(accId) && sameTypeAccountIds.has(accId))
           .flatMap(([, t]) => t)
       }
       return trades
@@ -814,12 +818,13 @@ export default function AccountPage() {
     return target.map(t => { const e = getExtraData(t); return { trade: t, image: e.image || e.Image } }).filter(x => x.image)
   }
 
-  // Calculate cumulative stats across all or selected accounts
+  // Calculate cumulative stats across all or selected accounts (filtered by dashboard type)
   function getCumulativeStats() {
     const allTrades = []
+    // Only include accounts of the same dashboard type
     const accountsToUse = viewMode === 'selected' && selectedJournalIds.size > 0
-      ? allAccounts.filter(acc => selectedJournalIds.has(acc.id))
-      : allAccounts
+      ? sameTypeAccounts.filter(acc => selectedJournalIds.has(acc.id))
+      : sameTypeAccounts
     accountsToUse.forEach(acc => {
       const accTrades = allAccountsTrades[acc.id] || []
       accTrades.forEach(t => allTrades.push({ ...t, accountName: acc.name, startingBalance: acc.starting_balance }))
@@ -853,13 +858,23 @@ export default function AccountPage() {
     </div>
   )
 
-  // Get base trades based on view mode
+  // Filter accounts to only show same dashboard type (accounts vs backtesting)
+  const currentDashboardType = account?.dashboard_type || 'accounts'
+  const sameTypeAccounts = allAccounts.filter(a => (a.dashboard_type || 'accounts') === currentDashboardType)
+  const sameTypeAccountIds = new Set(sameTypeAccounts.map(a => a.id))
+
+  // Get base trades based on view mode (filtered by dashboard type)
   const baseTradesToFilter = (() => {
-    if (viewMode === 'all' && allAccounts.length > 1) {
-      return Object.values(allAccountsTrades).flat().sort((a, b) => new Date(b.date) - new Date(a.date))
-    } else if (viewMode === 'selected' && selectedJournalIds.size > 0) {
+    if (viewMode === 'all' && sameTypeAccounts.length > 1) {
+      // Only include trades from accounts of the same dashboard type
       return Object.entries(allAccountsTrades)
-        .filter(([accId]) => selectedJournalIds.has(accId))
+        .filter(([accId]) => sameTypeAccountIds.has(accId))
+        .flatMap(([, t]) => t)
+        .sort((a, b) => new Date(b.date) - new Date(a.date))
+    } else if (viewMode === 'selected' && selectedJournalIds.size > 0) {
+      // Only include selected accounts that are also of the same dashboard type
+      return Object.entries(allAccountsTrades)
+        .filter(([accId]) => selectedJournalIds.has(accId) && sameTypeAccountIds.has(accId))
         .flatMap(([, t]) => t)
         .sort((a, b) => new Date(b.date) - new Date(a.date))
     }
@@ -921,16 +936,16 @@ export default function AccountPage() {
   }
   const streaks = getStreaks()
 
-  // Merge inputs from all accounts when viewing all journals
+  // Merge inputs from all accounts when viewing all journals (same dashboard type only)
   const mergedInputsForAllJournals = (() => {
-    if (!showCumulativeStats || allAccounts.length <= 1) return inputs
+    if (!showCumulativeStats || sameTypeAccounts.length <= 1) return inputs
 
     // Start with current account inputs
     const merged = [...inputs]
     const existingIds = new Set(inputs.map(i => i.id))
 
-    // Add custom inputs from other accounts
-    allAccounts.forEach(acc => {
+    // Add custom inputs from other accounts of the same dashboard type
+    sameTypeAccounts.forEach(acc => {
       if (acc.id === accountId || !acc.custom_inputs) return
       try {
         const accInputs = JSON.parse(acc.custom_inputs)
@@ -1493,7 +1508,7 @@ export default function AccountPage() {
                 if (activeTab === 'statistics') {
                   if (viewMode === 'all') return 'Overall Statistics'
                   if (viewMode === 'selected' && selectedJournalIds.size > 0) {
-                    const names = allAccounts.filter(a => selectedJournalIds.has(a.id)).map(a => a.name)
+                    const names = sameTypeAccounts.filter(a => selectedJournalIds.has(a.id)).map(a => a.name)
                     return names.join(', ') + ' Statistics'
                   }
                   return (account?.name || '') + ' Statistics'
@@ -1502,7 +1517,7 @@ export default function AccountPage() {
                 // Trades tab (default)
                 if (viewMode === 'all') return 'Overall Journal'
                 if (viewMode === 'selected' && selectedJournalIds.size > 0) {
-                  const names = allAccounts.filter(a => selectedJournalIds.has(a.id)).map(a => a.name)
+                  const names = sameTypeAccounts.filter(a => selectedJournalIds.has(a.id)).map(a => a.name)
                   return names.join(', ') + ' Journal'
                 }
                 return (account?.name || '') + ' Journal'
@@ -1567,7 +1582,7 @@ export default function AccountPage() {
       {/* Mobile Subheader */}
       {isMobile && (
         <div style={{ position: 'fixed', top: '53px', left: 0, right: 0, zIndex: 40, padding: '10px 16px', background: '#0a0a0f', borderBottom: '1px solid #1a1a22', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <span style={{ fontSize: '14px', fontWeight: 700, color: '#fff', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '200px' }}>{activeTab === 'notes' ? 'Notes' : activeTab === 'statistics' ? (viewMode === 'all' ? 'Overall Statistics' : viewMode === 'selected' && selectedJournalIds.size > 0 ? allAccounts.filter(a => selectedJournalIds.has(a.id)).map(a => a.name).join(', ') + ' Statistics' : (account?.name || '') + ' Statistics') : (viewMode === 'all' ? 'Overall Journal' : viewMode === 'selected' && selectedJournalIds.size > 0 ? allAccounts.filter(a => selectedJournalIds.has(a.id)).map(a => a.name).join(', ') : account?.name)}</span>
+          <span style={{ fontSize: '14px', fontWeight: 700, color: '#fff', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '200px' }}>{activeTab === 'notes' ? 'Notes' : activeTab === 'statistics' ? (viewMode === 'all' ? 'Overall Statistics' : viewMode === 'selected' && selectedJournalIds.size > 0 ? sameTypeAccounts.filter(a => selectedJournalIds.has(a.id)).map(a => a.name).join(', ') + ' Statistics' : (account?.name || '') + ' Statistics') : (viewMode === 'all' ? 'Overall Journal' : viewMode === 'selected' && selectedJournalIds.size > 0 ? sameTypeAccounts.filter(a => selectedJournalIds.has(a.id)).map(a => a.name).join(', ') : account?.name)}</span>
           <button onClick={() => { setTradeForm({ date: new Date().toISOString().split('T')[0] }); setEditingTrade(null); setShowAddTrade(true) }} style={{ padding: '8px 16px', background: 'linear-gradient(135deg, #9333ea 0%, #7c3aed 100%)', border: 'none', borderRadius: '6px', color: '#fff', fontWeight: 600, fontSize: '12px', cursor: 'pointer', boxShadow: '0 0 15px rgba(147,51,234,0.5)' }}>+ ADD</button>
         </div>
       )}
@@ -1651,7 +1666,7 @@ export default function AccountPage() {
                       This Journal
                     </div>
                   </button>
-                  {allAccounts.length > 1 && (
+                  {sameTypeAccounts.length > 1 && (
                     <>
                       <button
                         onClick={() => { setViewMode('all'); setShowCumulativeStats(true); setShowJournalDropdown(false) }}
@@ -1707,7 +1722,7 @@ export default function AccountPage() {
                         </button>
                         {showJournalDropdown && (
                           <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, marginTop: '4px', background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '6px', zIndex: 100, maxHeight: '200px', overflowY: 'auto' }}>
-                            {allAccounts.map(acc => (
+                            {sameTypeAccounts.map(acc => (
                               <label key={acc.id} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 10px', cursor: 'pointer', borderBottom: '1px solid #1a1a22' }}>
                                 <input
                                   type="checkbox"
@@ -1748,8 +1763,8 @@ export default function AccountPage() {
             <span style={{ fontSize: '10px', color: '#666', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px' }}>Journal Select</span>
             <div style={{ flex: 1, height: '1px', background: '#2a2a35' }} />
           </div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', maxHeight: allAccounts.length > 2 ? '120px' : 'none', overflowY: allAccounts.length > 2 ? 'auto' : 'visible' }}>
-            {allAccounts.map((acc) => {
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', maxHeight: sameTypeAccounts.length > 2 ? '120px' : 'none', overflowY: sameTypeAccounts.length > 2 ? 'auto' : 'visible' }}>
+            {sameTypeAccounts.map((acc) => {
               const isSelected = acc.id === accountId
               const accTrades = allAccountsTrades[acc.id] || []
               const totalPnl = accTrades.reduce((sum, t) => sum + (parseFloat(t.pnl) || 0), 0)
@@ -2163,7 +2178,7 @@ export default function AccountPage() {
           const bAvgRR = baseTrades.length > 0 ? (baseTrades.reduce((s, t) => s + (parseFloat(t.rr) || 0), 0) / baseTrades.length).toFixed(1) : '0'
 
           // Get stats based on toggle - either this journal, all journals, or selected journals (disabled when viewing selected trades)
-          const cumStats = (viewMode === 'all' || viewMode === 'selected') && allAccounts.length > 1 && !viewingSelectedStats ? getCumulativeStats() : null
+          const cumStats = (viewMode === 'all' || viewMode === 'selected') && sameTypeAccounts.length > 1 && !viewingSelectedStats ? getCumulativeStats() : null
           const displayTotalPnl = cumStats ? cumStats.totalPnl : bPnl
           const displayTrades = cumStats ? cumStats.allTrades : baseTrades
           const displayWinrate = cumStats ? cumStats.winrate : bWinrate
@@ -3856,8 +3871,8 @@ export default function AccountPage() {
               {/* Multi-Account Prop Firm Stats */}
               {viewMode !== 'this' && (() => {
                 const accountsToShow = viewMode === 'selected' && selectedJournalIds.size > 0
-                  ? allAccounts.filter(acc => selectedJournalIds.has(acc.id))
-                  : allAccounts
+                  ? sameTypeAccounts.filter(acc => selectedJournalIds.has(acc.id))
+                  : sameTypeAccounts
                 const propFirmAccounts = accountsToShow.filter(acc => acc.profit_target || acc.max_drawdown || acc.consistency_enabled || acc.daily_dd_enabled || acc.max_dd_enabled)
                 if (propFirmAccounts.length === 0) return null
 
@@ -4196,12 +4211,12 @@ export default function AccountPage() {
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', maxHeight: '600px', overflowY: 'auto' }}>
                   {(() => {
-                    // Get trades based on view mode
+                    // Get trades based on view mode (filtered by dashboard type)
                     let tradesToShow = trades
                     if (showCumulativeStats && viewMode === 'overall') {
-                      tradesToShow = Object.values(allAccountsTrades).flat()
+                      tradesToShow = Object.entries(allAccountsTrades).filter(([accId]) => sameTypeAccountIds.has(accId)).flatMap(([, t]) => t)
                     } else if (showCumulativeStats && viewMode === 'selected' && selectedJournalIds.size > 0) {
-                      tradesToShow = Object.entries(allAccountsTrades).filter(([accId]) => selectedJournalIds.has(accId)).flatMap(([, t]) => t)
+                      tradesToShow = Object.entries(allAccountsTrades).filter(([accId]) => selectedJournalIds.has(accId) && sameTypeAccountIds.has(accId)).flatMap(([, t]) => t)
                     }
                     const tradesWithNotes = tradesToShow.filter(t => t.notes && t.notes.trim()).sort((a, b) => new Date(b.date) - new Date(a.date))
                     if (tradesWithNotes.length === 0) return <div style={{ padding: '40px', textAlign: 'center', color: '#999' }}>No trade notes yet. Add notes when logging trades.</div>
@@ -4239,9 +4254,9 @@ export default function AccountPage() {
                     // Get trades based on view mode
                     let tradesToShow = trades
                     if (showCumulativeStats && viewMode === 'overall') {
-                      tradesToShow = Object.values(allAccountsTrades).flat()
+                      tradesToShow = Object.entries(allAccountsTrades).filter(([accId]) => sameTypeAccountIds.has(accId)).flatMap(([, t]) => t)
                     } else if (showCumulativeStats && viewMode === 'selected' && selectedJournalIds.size > 0) {
-                      tradesToShow = Object.entries(allAccountsTrades).filter(([accId]) => selectedJournalIds.has(accId)).flatMap(([, t]) => t)
+                      tradesToShow = Object.entries(allAccountsTrades).filter(([accId]) => selectedJournalIds.has(accId) && sameTypeAccountIds.has(accId)).flatMap(([, t]) => t)
                     }
                     const tradesWithMistakes = tradesToShow.filter(t => {
                       const extra = getExtraData(t)
@@ -4300,8 +4315,8 @@ export default function AccountPage() {
 
       {/* FILTERS MODAL */}
       {showFilters && (() => {
-        // Get inputs based on whether viewing all journals or single journal
-        const filterInputs = showCumulativeStats && allAccounts.length > 1 ? mergedInputsForAllJournals : inputs
+        // Get inputs based on whether viewing all journals or single journal (same dashboard type only)
+        const filterInputs = showCumulativeStats && sameTypeAccounts.length > 1 ? mergedInputsForAllJournals : inputs
         // Get custom inputs that can be filtered (exclude fixed fields that are already in the UI)
         const customFilterInputs = filterInputs.filter(i =>
           i.enabled && !i.hidden &&
@@ -4345,7 +4360,7 @@ export default function AccountPage() {
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#22c55e" strokeWidth="2"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
                 <span style={{ fontSize: '14px', color: '#fff', fontWeight: 600 }}>Filter Trades</span>
-                {viewMode === 'all' && allAccounts.length > 1 && (
+                {viewMode === 'all' && sameTypeAccounts.length > 1 && (
                   <span style={{ fontSize: '10px', color: '#3b82f6', background: 'rgba(59,130,246,0.15)', padding: '2px 6px', borderRadius: '4px' }}>Overall Journal</span>
                 )}
                 {viewMode === 'selected' && selectedJournalIds.size > 0 && (
@@ -4768,8 +4783,8 @@ export default function AccountPage() {
                 </div>
               )}
 
-              {/* Transfer Section */}
-              {allAccounts.filter(a => a.id !== accountId).length > 0 && (
+              {/* Transfer Section - only show journals of the same dashboard type */}
+              {sameTypeAccounts.filter(a => a.id !== accountId).length > 0 && (
                 <div style={{ padding: '14px', background: '#0a0a0e', borderRadius: '8px', border: '1px solid #1a1a22' }}>
                   <div style={{ fontSize: '11px', color: '#666', marginBottom: '10px', fontWeight: 600, textTransform: 'uppercase' }}>Copy Settings From Another Journal</div>
                   <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
@@ -4779,7 +4794,7 @@ export default function AccountPage() {
                       style={{ flex: 1, padding: '10px 12px', background: '#141418', border: '1px solid #2a2a35', borderRadius: '6px', color: '#fff', fontSize: '13px', cursor: 'pointer' }}
                     >
                       <option value="">Select journal...</option>
-                      {allAccounts.filter(a => a.id !== accountId).map(a => (
+                      {sameTypeAccounts.filter(a => a.id !== accountId).map(a => (
                         <option key={a.id} value={a.id}>{a.name}</option>
                       ))}
                     </select>
