@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef, Fragment } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { createClient } from '@supabase/supabase-js'
 import * as XLSX from 'xlsx'
 
@@ -101,9 +101,10 @@ const defaultInputs = [
 
 export default function DashboardPage() {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const [user, setUser] = useState(null)
   const [accounts, setAccounts] = useState([])
-  const [activeDashboard, setActiveDashboard] = useState('accounts') // 'accounts' or 'backtesting'
+  const [activeDashboard, setActiveDashboard] = useState(searchParams.get('dashboard') || 'accounts') // 'accounts' or 'backtesting'
   const [trades, setTrades] = useState({})
   const [loading, setLoading] = useState(true)
   const [showModal, setShowModal] = useState(false)
@@ -1913,7 +1914,7 @@ export default function DashboardPage() {
             </button>
           </div>
           <button onClick={() => setShowModal(true)} style={{ padding: '8px 16px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '6px', color: '#fff', fontSize: '13px', fontWeight: 600, cursor: 'pointer', transition: 'all 0.2s' }} onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; e.currentTarget.style.borderColor = '#3a3a45'; const rect = e.currentTarget.getBoundingClientRect(); showTooltipDelayed('Create a new trading journal', rect.left + rect.width / 2, rect.top) }} onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.borderColor = '#2a2a35'; hideTooltip() }}>{isMobile ? '+ Add' : '+ Add Journal'}</button>
-          <button onClick={() => { setShowImportModal(true); setImportStep(1); setImportFile(null); setImportData([]); setImportHeaders([]); setImportMapping({}); setImportJournalName(''); setImportStartingBalance(''); setImportError('') }} style={{ padding: '8px 16px', background: 'linear-gradient(135deg, #9333ea 0%, #7c3aed 100%)', border: 'none', borderRadius: '6px', color: '#fff', fontSize: '13px', fontWeight: 600, cursor: 'pointer', boxShadow: '0 0 15px rgba(147,51,234,0.3)', transition: 'all 0.2s' }} onMouseEnter={e => { e.currentTarget.style.boxShadow = '0 0 20px rgba(147,51,234,0.5)'; e.currentTarget.style.transform = 'translateY(-1px)'; const rect = e.currentTarget.getBoundingClientRect(); showTooltipDelayed('Import trades from CSV or Excel', rect.left + rect.width / 2, rect.top) }} onMouseLeave={e => { e.currentTarget.style.boxShadow = '0 0 15px rgba(147,51,234,0.3)'; e.currentTarget.style.transform = 'translateY(0)'; hideTooltip() }}>{isMobile ? 'Import' : 'Import Journal'}</button>
+          <button onClick={() => { setShowImportModal(true); setImportStep(1); setImportFile(null); setImportData([]); setImportHeaders([]); setImportMapping({}); setImportJournalName(''); setImportStartingBalance(''); setImportError('') }} style={{ padding: '8px 16px', background: 'linear-gradient(135deg, #9333ea 0%, #7c3aed 100%)', border: 'none', borderRadius: '6px', color: '#fff', fontSize: '13px', fontWeight: 600, cursor: 'pointer', boxShadow: '0 0 15px rgba(147,51,234,0.3), inset 0 1px 0 rgba(255,255,255,0.2), inset 0 -1px 0 rgba(0,0,0,0.2)', transition: 'all 0.2s' }} onMouseEnter={e => { e.currentTarget.style.boxShadow = '0 0 20px rgba(147,51,234,0.5), inset 0 1px 0 rgba(255,255,255,0.3), inset 0 -1px 0 rgba(0,0,0,0.2)'; e.currentTarget.style.transform = 'translateY(-1px)'; const rect = e.currentTarget.getBoundingClientRect(); showTooltipDelayed('Import trades from CSV or Excel', rect.left + rect.width / 2, rect.top) }} onMouseLeave={e => { e.currentTarget.style.boxShadow = '0 0 15px rgba(147,51,234,0.3), inset 0 1px 0 rgba(255,255,255,0.2), inset 0 -1px 0 rgba(0,0,0,0.2)'; e.currentTarget.style.transform = 'translateY(0)'; hideTooltip() }}>{isMobile ? 'Import' : 'Import Journal'}</button>
           <a href="/settings" style={{ padding: '8px 16px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '6px', color: '#fff', fontWeight: 600, fontSize: '13px', textDecoration: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', transition: 'all 0.2s' }} onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; e.currentTarget.style.borderColor = '#3a3a45'; const rect = e.currentTarget.getBoundingClientRect(); showTooltipDelayed('Account settings', rect.left + rect.width / 2, rect.top) }} onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.borderColor = '#2a2a35'; hideTooltip() }}>
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
           </a>
@@ -2328,7 +2329,7 @@ export default function DashboardPage() {
                           <div style={{ fontSize: '13px', color: '#666', marginBottom: '2px' }}>Overall Stats</div>
                           <div style={{ display: 'flex', alignItems: 'baseline', gap: '12px' }}>
                             <span style={{ fontSize: '24px', fontWeight: 700, color: isProfitable ? '#22c55e' : '#ef4444' }}>${formatCurrency(totalBalance)}</span>
-                            <span style={{ fontSize: '12px', color: '#555' }}><span style={{ fontWeight: 600, color: '#888' }}>${formatCurrency(stats.totalStartingBalance)}</span> INITIAL BALANCE</span>
+                            <span style={{ fontSize: '12px', color: '#666' }}><span style={{ fontWeight: 600, color: '#888' }}>${formatCurrency(stats.totalStartingBalance)}</span> INITIAL BALANCE</span>
                           </div>
                         </div>
                         {/* Recent Note - positioned at top right */}
@@ -2667,7 +2668,7 @@ export default function DashboardPage() {
                               <div style={{ fontSize: '13px', color: '#666', marginBottom: '2px' }}>{account.name}</div>
                               <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px' }}>
                                 <span style={{ fontSize: '24px', fontWeight: 700, color: isProfitable ? '#22c55e' : '#ef4444' }}>${formatCurrency(currentBalance)}</span>
-                                <span style={{ fontSize: '11px', color: '#555' }}><span style={{ fontWeight: 600, color: '#888' }}>${formatCurrency(startingBalance)}</span> INITIAL</span>
+                                <span style={{ fontSize: '11px', color: '#666' }}><span style={{ fontWeight: 600, color: '#888' }}>${formatCurrency(startingBalance)}</span> INITIAL BALANCE</span>
                               </div>
                             </div>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
@@ -3060,7 +3061,7 @@ export default function DashboardPage() {
                             <div style={{ fontSize: '11px', color: '#666', marginBottom: '2px' }}>{account.name}</div>
                             <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px' }}>
                               <span style={{ fontSize: '20px', fontWeight: 700, color: isProfitable ? '#22c55e' : '#ef4444' }}>${formatCurrency(currentBalance)}</span>
-                              <span style={{ fontSize: '10px', color: '#555' }}><span style={{ fontWeight: 600, color: '#888' }}>${formatCurrency(startingBalance)}</span> INITIAL</span>
+                              <span style={{ fontSize: '10px', color: '#666' }}><span style={{ fontWeight: 600, color: '#888' }}>${formatCurrency(startingBalance)}</span> INITIAL BALANCE</span>
                             </div>
                           </div>
 
@@ -3176,7 +3177,7 @@ export default function DashboardPage() {
                                   )}
                                 </svg>
                                 {/* X-axis labels */}
-                                <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, display: 'flex', justifyContent: 'space-between', fontSize: '8px', color: '#555' }}>
+                                <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, display: 'flex', justifyContent: 'space-between', fontSize: '8px', color: '#666' }}>
                                   <span>{formatAxisDate(firstDate)}</span>
                                   <span>{formatAxisDate(lastDate)}</span>
                                 </div>

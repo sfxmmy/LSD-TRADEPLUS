@@ -1421,8 +1421,10 @@ export default function AccountPage() {
         <a href="/" style={{ fontSize: isMobile ? '28px' : '42px', fontWeight: 700, textDecoration: 'none', letterSpacing: '-0.5px' }}><span style={{ color: '#22c55e' }}>TRADE</span><span style={{ color: '#fff' }}>SAVE</span><span style={{ color: '#22c55e' }}>+</span></a>
         {!isMobile && (
           <>
-            <div style={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)' }}>
-              <span style={{ fontSize: '32px', fontWeight: 700, color: '#fff' }}>{tabTitles[activeTab]}</span>
+            <div style={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)', display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <a href="/dashboard?dashboard=accounts" style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontSize: '20px', fontWeight: 700, letterSpacing: '-0.5px', color: (account?.dashboard_type || 'accounts') === 'accounts' ? '#fff' : '#666', textDecoration: 'none', transition: 'color 0.2s' }}>ACCOUNTS DASHBOARD</a>
+              <span style={{ color: '#333', fontSize: '20px', fontWeight: 300 }}>|</span>
+              <a href="/dashboard?dashboard=backtesting" style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontSize: '20px', fontWeight: 700, letterSpacing: '-0.5px', color: (account?.dashboard_type || 'accounts') === 'backtesting' ? '#fff' : '#666', textDecoration: 'none', transition: 'color 0.2s' }}>BACKTESTING DASHBOARD</a>
             </div>
             <div style={{ display: 'flex', gap: '8px' }}>
               <a href="/dashboard" style={{ padding: '10px 20px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '6px', color: '#fff', fontSize: '14px', fontWeight: 600, textDecoration: 'none', cursor: 'pointer' }}>← Dashboard</a>
