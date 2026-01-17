@@ -150,7 +150,7 @@ export default function AccountPage() {
   }
   const hideTooltip = () => {
     if (tooltipTimerRef.current) clearTimeout(tooltipTimerRef.current)
-    hideTooltip()
+    setButtonTooltip(null)
   }
 
   useEffect(() => {
@@ -326,7 +326,7 @@ export default function AccountPage() {
     }).select().single()
     
     if (error) { showToast('Error: ' + error.message); setSaving(false); return }
-    setTrades([data, ...trades])
+    setTrades(prev => [data, ...prev])
     const initial = {}
     inputs.forEach(inp => {
       if (inp.type === 'date') initial[inp.id] = new Date().toISOString().split('T')[0]
@@ -343,7 +343,7 @@ export default function AccountPage() {
     const supabase = getSupabase()
     const { error } = await supabase.from('trades').delete().eq('id', tradeId)
     if (error) { showToast('Failed to delete trade: ' + error.message); return }
-    setTrades(trades.filter(t => t.id !== tradeId))
+    setTrades(prev => prev.filter(t => t.id !== tradeId))
   }
 
   function startEditTrade(trade) {
@@ -409,7 +409,7 @@ export default function AccountPage() {
     }).eq('id', editingTrade.id).select().single()
 
     if (error) { showToast('Error: ' + error.message); setSaving(false); return }
-    setTrades(trades.map(t => t.id === editingTrade.id ? data : t))
+    setTrades(prev => prev.map(t => t.id === editingTrade.id ? data : t))
     setEditingTrade(null)
     setShowAddTrade(false)
     setSaving(false)
@@ -792,8 +792,9 @@ export default function AccountPage() {
   async function deleteSelectedTrades() {
     if (selectedTrades.size === 0) return
     const supabase = getSupabase()
-    for (const id of selectedTrades) await supabase.from('trades').delete().eq('id', id)
-    setTrades(trades.filter(t => !selectedTrades.has(t.id)))
+    const idsToDelete = new Set(selectedTrades)
+    for (const id of idsToDelete) await supabase.from('trades').delete().eq('id', id)
+    setTrades(prev => prev.filter(t => !idsToDelete.has(t.id)))
     exitSelectMode()
   }
   // Get slideshow images - uses filtered trades based on journal selection
@@ -4264,7 +4265,7 @@ export default function AccountPage() {
                                 await supabase.from('trades').update({ extra_data: JSON.stringify(newExtra) }).eq('id', trade.id)
                                 // Update local state - both trades and allAccountsTrades
                                 if (trade.account_id === accountId) {
-                                  setTrades(trades.map(t => t.id === trade.id ? { ...t, extra_data: JSON.stringify(newExtra) } : t))
+                                  setTrades(prev => prev.map(t => t.id === trade.id ? { ...t, extra_data: JSON.stringify(newExtra) } : t))
                                 }
                                 setAllAccountsTrades(prev => ({
                                   ...prev,

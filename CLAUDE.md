@@ -50,4 +50,41 @@ These values are LOCKED. Do not change them under any circumstances:
 - To shift content without moving borders: adjust top/bottom padding asymmetrically while keeping total the same
 
 # Schema and SQL stuff
-- All SQL has to be done in the schema file - I want one file that handles it all. 
+- All SQL has to be done in the schema file - I want one file that handles it all.
+
+# Shared Utilities & Components
+
+## Use These Instead of Duplicating Code
+
+### Constants (`lib/constants.js`)
+```javascript
+import { optionStyles, defaultInputs, knownImportFields } from '@/lib/constants'
+```
+
+### Utility Functions (`lib/utils.js`)
+```javascript
+import { formatCurrency, formatPnl, getOptVal, getOptTextColor, parseFlexibleDate, getExtraData, calcWinRate } from '@/lib/utils'
+```
+
+### Custom Hooks (`lib/hooks.js`)
+```javascript
+import { useIsMobile, useTooltip, useClickOutside, useDebounce } from '@/lib/hooks'
+```
+
+### Shared Components
+| Component | Import |
+|-----------|--------|
+| Loading | `import { LoadingScreen } from '@/components/LoadingScreen'` |
+| Tooltips | `import { DataTooltip, ButtonTooltip } from '@/components/Tooltip'` |
+| Stars | `import { RatingStars, RatingDisplay } from '@/components/RatingStars'` |
+| Dropdown | `import { CustomDropdown } from '@/components/CustomDropdown'` |
+| Images | `import { ImageUploader } from '@/components/ImageUploader'` |
+| Charts | `import { EquityCurve, MiniEquityCurve } from '@/components/EquityCurve'` |
+| Stats | `import { StatCard, StatCardGrid } from '@/components/StatCard'` |
+
+## Refactoring Approach
+- **DO NOT** refactor the main page.js files all at once
+- **DO** use shared utilities when adding NEW features or fixing bugs
+- **DO** extract components only when you need to edit that section
+- **DO** leave working code alone - refactoring for its own sake risks breaking things
+- The foundation exists in `lib/` and `components/` - use it incrementally

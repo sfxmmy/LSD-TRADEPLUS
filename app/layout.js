@@ -1,4 +1,5 @@
 import './globals.css'
+import { ErrorBoundaryWrapper } from './error-boundary-wrapper'
 
 export const metadata = {
   title: 'TRADESAVE+ | Trading Journal',
@@ -8,7 +9,11 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
-      <body>{children}</body>
+      <body>
+        <ErrorBoundaryWrapper>
+          {children}
+        </ErrorBoundaryWrapper>
+      </body>
     </html>
   )
 }

@@ -1,8 +1,15 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import Stripe from 'stripe'
+import { rateLimiters } from '@/lib/rate-limit'
 
 export async function POST(request) {
+  // Rate limit: 3 checkout attempts per minute
+  const rateLimitResult = rateLimiters.checkout(request)
+  if (!rateLimitResult.success) {
+    return rateLimitResult.response
+  }
+
   try {
     // Get site URL - fallback to production URL if env var not set
     const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://tradesaveplus.com'

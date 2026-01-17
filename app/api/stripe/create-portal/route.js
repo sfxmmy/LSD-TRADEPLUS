@@ -1,8 +1,15 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import Stripe from 'stripe'
+import { rateLimiters } from '@/lib/rate-limit'
 
 export async function POST(request) {
+  // Rate limit: 3 portal requests per minute
+  const rateLimitResult = rateLimiters.checkout(request)
+  if (!rateLimitResult.success) {
+    return rateLimitResult.response
+  }
+
   try {
     // Get auth token from Authorization header
     const authHeader = request.headers.get('Authorization')
@@ -30,12 +37,11 @@ export async function POST(request) {
 
     const { data: profile } = await serviceSupabase
       .from('profiles')
-      .select('customer_id, stripe_customer_id')
+      .select('customer_id')
       .eq('id', user.id)
       .single()
 
-    // Check both field names for compatibility
-    const customerId = profile?.customer_id || profile?.stripe_customer_id
+    const customerId = profile?.customer_id
     if (!customerId) {
       return NextResponse.json({ error: 'No subscription found' }, { status: 400 })
     }

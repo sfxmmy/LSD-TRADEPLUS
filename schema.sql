@@ -1,7 +1,8 @@
 -- =====================================================
--- TRADESAVE+ DATABASE SCHEMA v4
+-- TRADESAVE+ DATABASE SCHEMA v5
 -- Run this ENTIRE script in Supabase SQL Editor
 -- Safe to run multiple times (idempotent)
+-- Last updated: January 2026
 -- =====================================================
 
 -- =====================================================
@@ -74,6 +75,20 @@ END $$;
 -- 'past_due'         = Payment failed (NO access until resolved)
 -- =====================================================
 
+-- Add CHECK constraint for subscription_status (safe to run multiple times)
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_constraint WHERE conname = 'profiles_subscription_status_check'
+  ) THEN
+    ALTER TABLE profiles ADD CONSTRAINT profiles_subscription_status_check
+    CHECK (subscription_status IN ('admin', 'subscribing', 'free trial', 'free subscription', 'not subscribing', 'past_due'));
+  END IF;
+EXCEPTION WHEN OTHERS THEN
+  -- Constraint may already exist with different name, ignore
+  NULL;
+END $$;
+
 -- =====================================================
 -- ACCOUNTS TABLE (Trading Journals)
 -- Each user can have multiple trading journals
@@ -84,12 +99,15 @@ CREATE TABLE IF NOT EXISTS accounts (
   name TEXT NOT NULL,
   starting_balance DECIMAL(12,2) DEFAULT 0,
   profit_target DECIMAL(5,2) DEFAULT NULL,
-  -- Legacy max_drawdown field (kept for backwards compatibility with old accounts)
-  max_drawdown DECIMAL(5,2) DEFAULT NULL,
-  -- DEPRECATED: drawdown_type, trailing_mode, daily_dd_calc, max_dd_calc are no longer used
-  -- They exist in old accounts but new code uses the new max_dd_* and daily_dd_* fields
-  drawdown_type TEXT DEFAULT 'static',
-  trailing_mode TEXT DEFAULT 'eod',
+  -- =========================================================
+  -- LEGACY FIELDS (kept for backwards compatibility)
+  -- Old accounts created before Jan 2025 may use these.
+  -- New accounts use max_dd_* and daily_dd_* fields instead.
+  -- Code has fallback: max_dd_enabled ? max_dd_pct : max_drawdown
+  -- =========================================================
+  max_drawdown DECIMAL(5,2) DEFAULT NULL,        -- Old: single DD percentage
+  drawdown_type TEXT DEFAULT 'static',           -- Old: 'static' or 'trailing'
+  trailing_mode TEXT DEFAULT 'eod',              -- Old: 'eod' or 'realtime'
   -- Daily Drawdown settings (orange line)
   daily_dd_enabled BOOLEAN DEFAULT FALSE,
   daily_dd_pct DECIMAL(5,2) DEFAULT NULL,
@@ -109,7 +127,7 @@ CREATE TABLE IF NOT EXISTS accounts (
   consistency_pct DECIMAL(5,2) DEFAULT 30,
   custom_inputs JSONB DEFAULT NULL,
   -- Dashboard type: 'accounts' (default for existing) or 'backtesting'
-  dashboard_type TEXT DEFAULT 'accounts',
+  dashboard_type TEXT DEFAULT 'accounts' CHECK (dashboard_type IN ('accounts', 'backtesting')),
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
@@ -447,14 +465,25 @@ CREATE TRIGGER update_notes_updated_at
 -- =====================================================
 -- INDEXES FOR PERFORMANCE
 -- =====================================================
+
+-- Primary lookup indexes
 CREATE INDEX IF NOT EXISTS idx_accounts_user_id ON accounts(user_id);
 CREATE INDEX IF NOT EXISTS idx_trades_account_id ON trades(account_id);
-CREATE INDEX IF NOT EXISTS idx_trades_date ON trades(date);
 CREATE INDEX IF NOT EXISTS idx_notes_account_id ON notes(account_id);
+
+-- Date-based queries (common for filtering/sorting)
+CREATE INDEX IF NOT EXISTS idx_trades_date ON trades(date);
 CREATE INDEX IF NOT EXISTS idx_notes_date ON notes(date);
+
+-- Profile lookups
 CREATE INDEX IF NOT EXISTS idx_profiles_email ON profiles(email);
 CREATE INDEX IF NOT EXISTS idx_profiles_customer ON profiles(customer_id);
 CREATE INDEX IF NOT EXISTS idx_profiles_subscription ON profiles(subscription_status);
+
+-- Composite indexes for common query patterns
+CREATE INDEX IF NOT EXISTS idx_trades_account_date ON trades(account_id, date DESC);
+CREATE INDEX IF NOT EXISTS idx_notes_account_date ON notes(account_id, date DESC);
+CREATE INDEX IF NOT EXISTS idx_accounts_user_dashboard ON accounts(user_id, dashboard_type);
 
 -- =====================================================
 -- ADMIN VIEWS (for easy browsing in admin panel)
@@ -591,3 +620,35 @@ CREATE POLICY "Public read access for trade images"
 ON storage.objects FOR SELECT
 TO public
 USING (bucket_id = 'trade-images');
+
+-- =====================================================
+-- SCHEMA CHANGELOG
+-- =====================================================
+-- v5 (January 2026)
+--   - Added CHECK constraint for subscription_status
+--   - Added CHECK constraint for dashboard_type
+--   - Added composite indexes for common query patterns
+--   - Improved documentation for legacy fields
+--   - Cleaned up deprecated field comments
+--
+-- v4 (2025)
+--   - Added dashboard_type column to accounts
+--   - Added time column to trades for daily DD reset
+--   - Added daily_dd_* and max_dd_* fields for new drawdown system
+--   - Added consistency_enabled and consistency_pct fields
+--   - Removed deprecated trade_extras table
+--
+-- v3 (2024)
+--   - Added notes table for journal entries
+--   - Added custom_inputs JSONB to accounts
+--   - Added extra_data JSONB to trades
+--   - Added admin views for admin panel
+--
+-- v2 (2024)
+--   - Added subscription fields to profiles
+--   - Added storage bucket for trade images
+--   - Added RLS policies for data isolation
+--
+-- v1 (2024)
+--   - Initial schema: profiles, accounts, trades
+-- =====================================================

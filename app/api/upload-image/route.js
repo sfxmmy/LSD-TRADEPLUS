@@ -1,7 +1,14 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
+import { rateLimiters } from '@/lib/rate-limit'
 
 export async function POST(request) {
+  // Rate limit: 20 uploads per minute
+  const rateLimitResult = rateLimiters.upload(request)
+  if (!rateLimitResult.success) {
+    return rateLimitResult.response
+  }
+
   try {
     // Check environment variables
     if (!process.env.NEXT_PUBLIC_SUPABASE_URL) {

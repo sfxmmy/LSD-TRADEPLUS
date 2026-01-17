@@ -2,26 +2,51 @@
 
 import { useState } from 'react'
 import { getSupabase } from '@/lib/supabase'
+import { validateEmail, validatePassword, validatePasswordMatch } from '@/lib/validation'
 
 export default function SignupPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
   const [error, setError] = useState('')
+  const [fieldErrors, setFieldErrors] = useState({})
   const [loading, setLoading] = useState(false)
   const [success, setSuccess] = useState(false)
+
+  // Real-time validation on blur
+  function handleEmailBlur() {
+    const result = validateEmail(email)
+    setFieldErrors(prev => ({ ...prev, email: result.valid ? null : result.error }))
+  }
+
+  function handlePasswordBlur() {
+    const result = validatePassword(password, { minLength: 6 })
+    setFieldErrors(prev => ({ ...prev, password: result.valid ? null : result.error }))
+  }
+
+  function handleConfirmBlur() {
+    const result = validatePasswordMatch(password, confirmPassword)
+    setFieldErrors(prev => ({ ...prev, confirmPassword: result.valid ? null : result.error }))
+  }
 
   async function handleSignup(e) {
     e.preventDefault()
     setError('')
+    setFieldErrors({})
 
-    if (password !== confirmPassword) {
-      setError('Passwords do not match')
-      return
-    }
+    // Validate all fields
+    const emailResult = validateEmail(email)
+    const passwordResult = validatePassword(password, { minLength: 6 })
+    const matchResult = validatePasswordMatch(password, confirmPassword)
 
-    if (password.length < 6) {
-      setError('Password must be at least 6 characters')
+    const errors = {}
+    if (!emailResult.valid) errors.email = emailResult.error
+    if (!passwordResult.valid) errors.password = passwordResult.error
+    if (!matchResult.valid) errors.confirmPassword = matchResult.error
+
+    if (Object.keys(errors).length > 0) {
+      setFieldErrors(errors)
+      setError(Object.values(errors)[0]) // Show first error at top
       return
     }
 
@@ -160,15 +185,69 @@ export default function SignupPage() {
           <form onSubmit={handleSignup}>
             <div style={{ marginBottom: '16px' }}>
               <label style={{ display: 'block', fontSize: '12px', color: '#999', marginBottom: '8px', textTransform: 'uppercase' }}>Email</label>
-              <input type="email" value={email} onChange={e => setEmail(e.target.value)} required placeholder="your@email.com" style={{ width: '100%', padding: '12px', background: '#0a0a0f', border: '1px solid #222230', borderRadius: '8px', color: '#fff', fontSize: '15px', boxSizing: 'border-box' }} />
+              <input
+                type="email"
+                value={email}
+                onChange={e => setEmail(e.target.value)}
+                onBlur={handleEmailBlur}
+                required
+                placeholder="your@email.com"
+                style={{
+                  width: '100%',
+                  padding: '12px',
+                  background: '#0a0a0f',
+                  border: fieldErrors.email ? '1px solid #ef4444' : '1px solid #222230',
+                  borderRadius: '8px',
+                  color: '#fff',
+                  fontSize: '15px',
+                  boxSizing: 'border-box'
+                }}
+              />
+              {fieldErrors.email && <p style={{ color: '#ef4444', fontSize: '12px', marginTop: '4px', marginBottom: 0 }}>{fieldErrors.email}</p>}
             </div>
             <div style={{ marginBottom: '16px' }}>
               <label style={{ display: 'block', fontSize: '12px', color: '#999', marginBottom: '8px', textTransform: 'uppercase' }}>Password</label>
-              <input type="password" value={password} onChange={e => setPassword(e.target.value)} required placeholder="••••••••" style={{ width: '100%', padding: '12px', background: '#0a0a0f', border: '1px solid #222230', borderRadius: '8px', color: '#fff', fontSize: '15px', boxSizing: 'border-box' }} />
+              <input
+                type="password"
+                value={password}
+                onChange={e => setPassword(e.target.value)}
+                onBlur={handlePasswordBlur}
+                required
+                placeholder="••••••••"
+                style={{
+                  width: '100%',
+                  padding: '12px',
+                  background: '#0a0a0f',
+                  border: fieldErrors.password ? '1px solid #ef4444' : '1px solid #222230',
+                  borderRadius: '8px',
+                  color: '#fff',
+                  fontSize: '15px',
+                  boxSizing: 'border-box'
+                }}
+              />
+              {fieldErrors.password && <p style={{ color: '#ef4444', fontSize: '12px', marginTop: '4px', marginBottom: 0 }}>{fieldErrors.password}</p>}
             </div>
             <div style={{ marginBottom: '24px' }}>
               <label style={{ display: 'block', fontSize: '12px', color: '#999', marginBottom: '8px', textTransform: 'uppercase' }}>Confirm Password</label>
-              <input type="password" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} required placeholder="••••••••" style={{ width: '100%', padding: '12px', background: '#0a0a0f', border: '1px solid #222230', borderRadius: '8px', color: '#fff', fontSize: '15px', boxSizing: 'border-box' }} />
+              <input
+                type="password"
+                value={confirmPassword}
+                onChange={e => setConfirmPassword(e.target.value)}
+                onBlur={handleConfirmBlur}
+                required
+                placeholder="••••••••"
+                style={{
+                  width: '100%',
+                  padding: '12px',
+                  background: '#0a0a0f',
+                  border: fieldErrors.confirmPassword ? '1px solid #ef4444' : '1px solid #222230',
+                  borderRadius: '8px',
+                  color: '#fff',
+                  fontSize: '15px',
+                  boxSizing: 'border-box'
+                }}
+              />
+              {fieldErrors.confirmPassword && <p style={{ color: '#ef4444', fontSize: '12px', marginTop: '4px', marginBottom: 0 }}>{fieldErrors.confirmPassword}</p>}
             </div>
             <button type="submit" disabled={loading} style={{ width: '100%', padding: '14px', background: loading ? '#166534' : '#22c55e', border: 'none', borderRadius: '8px', color: '#fff', fontWeight: 600, fontSize: '16px', cursor: loading ? 'not-allowed' : 'pointer' }}>
               {loading ? 'Creating account...' : 'Create Account'}

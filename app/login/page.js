@@ -3,16 +3,43 @@
 import { useState } from 'react'
 import { getSupabase } from '@/lib/supabase'
 import { hasValidSubscription } from '@/lib/auth'
+import { validateEmail, validateRequired } from '@/lib/validation'
 
 export default function LoginPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
+  const [fieldErrors, setFieldErrors] = useState({})
   const [loading, setLoading] = useState(false)
+
+  function handleEmailBlur() {
+    const result = validateEmail(email)
+    setFieldErrors(prev => ({ ...prev, email: result.valid ? null : result.error }))
+  }
+
+  function handlePasswordBlur() {
+    const result = validateRequired(password, 'Password')
+    setFieldErrors(prev => ({ ...prev, password: result.valid ? null : result.error }))
+  }
 
   async function handleLogin(e) {
     e.preventDefault()
     setError('')
+    setFieldErrors({})
+
+    // Validate
+    const emailResult = validateEmail(email)
+    const passwordResult = validateRequired(password, 'Password')
+
+    const errors = {}
+    if (!emailResult.valid) errors.email = emailResult.error
+    if (!passwordResult.valid) errors.password = passwordResult.error
+
+    if (Object.keys(errors).length > 0) {
+      setFieldErrors(errors)
+      return
+    }
+
     setLoading(true)
 
     try {
@@ -135,10 +162,21 @@ export default function LoginPage() {
                 type="email"
                 value={email}
                 onChange={e => setEmail(e.target.value)}
+                onBlur={handleEmailBlur}
                 required
                 placeholder="your@email.com"
-                style={{ width: '100%', padding: '12px', background: '#0a0a0f', border: '1px solid #222230', borderRadius: '8px', color: '#fff', fontSize: '15px', boxSizing: 'border-box' }}
+                style={{
+                  width: '100%',
+                  padding: '12px',
+                  background: '#0a0a0f',
+                  border: fieldErrors.email ? '1px solid #ef4444' : '1px solid #222230',
+                  borderRadius: '8px',
+                  color: '#fff',
+                  fontSize: '15px',
+                  boxSizing: 'border-box'
+                }}
               />
+              {fieldErrors.email && <p style={{ color: '#ef4444', fontSize: '12px', marginTop: '4px', marginBottom: 0 }}>{fieldErrors.email}</p>}
             </div>
             <div style={{ marginBottom: '24px' }}>
               <label style={{ display: 'block', fontSize: '12px', color: '#999', marginBottom: '8px', textTransform: 'uppercase' }}>Password</label>
@@ -146,10 +184,21 @@ export default function LoginPage() {
                 type="password"
                 value={password}
                 onChange={e => setPassword(e.target.value)}
+                onBlur={handlePasswordBlur}
                 required
                 placeholder="••••••••"
-                style={{ width: '100%', padding: '12px', background: '#0a0a0f', border: '1px solid #222230', borderRadius: '8px', color: '#fff', fontSize: '15px', boxSizing: 'border-box' }}
+                style={{
+                  width: '100%',
+                  padding: '12px',
+                  background: '#0a0a0f',
+                  border: fieldErrors.password ? '1px solid #ef4444' : '1px solid #222230',
+                  borderRadius: '8px',
+                  color: '#fff',
+                  fontSize: '15px',
+                  boxSizing: 'border-box'
+                }}
               />
+              {fieldErrors.password && <p style={{ color: '#ef4444', fontSize: '12px', marginTop: '4px', marginBottom: 0 }}>{fieldErrors.password}</p>}
             </div>
             <button
               type="submit"

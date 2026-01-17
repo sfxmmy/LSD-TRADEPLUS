@@ -12,9 +12,21 @@
 | File | Purpose |
 |------|---------|
 | `lib/auth.js` | Shared `hasValidSubscription()` function - eliminates 4 duplicate copies |
+| `lib/constants.js` | Shared constants: `optionStyles`, `defaultInputs`, validation, timezones |
+| `lib/utils.js` | 25+ utility functions for formatting, parsing, calculations |
+| `lib/hooks.js` | Custom React hooks: `useIsMobile`, `useTooltip`, `useClickOutside`, etc. |
 | `components/Toast.js` | Toast notification system with `showToast()` and `<ToastContainer />` |
 | `components/Modal.js` | Reusable `<Modal>` and `<ConfirmModal>` components |
 | `components/Header.js` | Reusable `<Header>`, `<Logo>`, and header button styles |
+| `components/LoadingScreen.js` | TRADESAVE+ branded loading screen |
+| `components/Tooltip.js` | `DataTooltip`, `ButtonTooltip`, `ChartTooltip`, `BarTooltip` |
+| `components/RatingStars.js` | Star rating input and display components |
+| `components/CustomDropdown.js` | Styled dropdown with color support for options |
+| `components/ImageUploader.js` | Multi-image upload with preview |
+| `components/EquityCurve.js` | SVG equity chart with prop firm DD lines, hover tooltips |
+| `components/StatCard.js` | `StatCard`, `StatCardGrid`, `MiniStat`, `StatWithProgress`, `StatComparison` |
+| `app/dashboard/components/` | Dashboard page extracted components folder |
+| `app/account/[id]/components/` | Account page extracted components folder |
 
 ### Changes Made
 
@@ -77,6 +89,61 @@ import Header, { Logo, headerButtonStyle } from '@/components/Header'
 <Header>
   <a href="/dashboard" style={headerButtonStyle}>Back</a>
 </Header>
+
+// Shared Constants
+import { optionStyles, defaultInputs, knownImportFields } from '@/lib/constants'
+
+// Utility Functions
+import {
+  formatCurrency, formatPnl, getOptVal, getOptTextColor,
+  parseFlexibleDate, parsePnlValue, getExtraData, calcWinRate
+} from '@/lib/utils'
+
+// Custom Hooks
+import { useIsMobile, useTooltip, useClickOutside, useDebounce } from '@/lib/hooks'
+
+// Loading Screen
+import { LoadingScreen } from '@/components/LoadingScreen'
+<LoadingScreen /> // Shows TRADESAVE+ branded spinner
+
+// Tooltips
+import { DataTooltip, ButtonTooltip, ChartTooltip, BarTooltip } from '@/components/Tooltip'
+<DataTooltip text="Tooltip content" position={mousePos} visible={show} />
+<ButtonTooltip text="Hover help" position={mousePos} visible={show} />
+
+// Rating Stars
+import { RatingStars, RatingDisplay } from '@/components/RatingStars'
+<RatingStars value={rating} onChange={setRating} />
+<RatingDisplay value={4} />
+
+// Custom Dropdown
+import { CustomDropdown } from '@/components/CustomDropdown'
+<CustomDropdown
+  value={selected}
+  options={options}
+  onChange={setSelected}
+  placeholder="Select..."
+/>
+
+// Image Uploader
+import { ImageUploader } from '@/components/ImageUploader'
+<ImageUploader
+  images={images}
+  onUpload={handleUpload}
+  onRemove={handleRemove}
+/>
+
+// Equity Curve
+import { EquityCurve, MiniEquityCurve } from '@/components/EquityCurve'
+<EquityCurve trades={trades} account={account} height={300} />
+<MiniEquityCurve trades={trades} width={200} height={80} />
+
+// Stat Cards
+import { StatCard, StatCardGrid, MiniStat, StatWithProgress, StatComparison } from '@/components/StatCard'
+<StatCardGrid columns={4}>
+  <StatCard label="Win Rate" value="65%" color="#22c55e" trend="up" trendValue="+5%" />
+  <StatCard label="Total P&L" value="$1,234" />
+</StatCardGrid>
 ```
 
 ---
@@ -230,8 +297,15 @@ The app is functional and feature-rich, but has significant architectural debt, 
 
 ```
 app/
-├── account/[id]/page.js    # 6,190 lines - Main trading journal UI
-├── dashboard/page.js       # 5,252 lines - Dashboard & account management
+├── account/[id]/
+│   ├── page.js             # 6,190 lines - Main trading journal UI (to be refactored)
+│   └── components/         # NEW - Extracted components folder
+│       └── index.js        # Component exports
+├── dashboard/
+│   ├── page.js             # 5,252 lines - Dashboard & account management (to be refactored)
+│   └── components/         # NEW - Extracted components folder
+│       ├── index.js        # Component exports
+│       └── JournalCard.js  # ~400 lines - Journal widget with mini equity curve
 ├── admin/page.js           # 441 lines - Admin panel
 ├── settings/page.js        # 445 lines - User settings
 ├── login/page.js           # 194 lines - Login form
@@ -253,12 +327,22 @@ app/
 lib/
 ├── supabase.js             # 43 lines - getSupabase() singleton for all client pages
 ├── auth.js                 # 35 lines - hasValidSubscription() shared auth utility
+├── constants.js            # NEW ~100 lines - optionStyles, defaultInputs, validation
+├── utils.js                # NEW ~280 lines - 25+ utility functions
+├── hooks.js                # NEW ~120 lines - Custom React hooks
 └── stripe.js               # 8 lines
 
 components/
 ├── Toast.js                # 66 lines - showToast() and ToastContainer
 ├── Modal.js                # 173 lines - Modal and ConfirmModal components
-└── Header.js               # 115 lines - Header, Logo, button styles
+├── Header.js               # 115 lines - Header, Logo, button styles
+├── LoadingScreen.js        # NEW ~25 lines - Branded loading screen
+├── Tooltip.js              # NEW ~100 lines - Multiple tooltip components
+├── RatingStars.js          # NEW ~70 lines - Star rating input/display
+├── CustomDropdown.js       # NEW ~150 lines - Styled dropdown with colors
+├── ImageUploader.js        # NEW ~180 lines - Multi-image upload
+├── EquityCurve.js          # NEW ~400 lines - Full and mini equity charts
+└── StatCard.js             # NEW ~150 lines - Stat display components
 
 schema.sql                  # 594 lines - Complete DB schema
 ```
@@ -280,13 +364,14 @@ schema.sql                  # 594 lines - Complete DB schema
 **✅ FIXED - Supabase client creation:**
 - All pages now use `getSupabase()` from `lib/supabase.js`
 
-**⚠️ Remaining - `optionStyles` object - 2 copies:**
-- account/[id]/page.js (lines 9-36)
-- dashboard/page.js (lines 9-36)
+**✅ FIXED - `optionStyles` object:**
+- Now in `lib/constants.js` - single source of truth
 
-**⚠️ Remaining - `defaultInputs` array - 2 copies:**
-- account/[id]/page.js (lines 85-101)
-- dashboard/page.js (lines 85-101)
+**✅ FIXED - `defaultInputs` array:**
+- Now in `lib/constants.js` - single source of truth
+
+**✅ FIXED - Utility functions (formatCurrency, getOptVal, etc.):**
+- Now in `lib/utils.js` - 25+ functions extracted
 
 ### 3. Inline Styles (2,129 occurrences)
 Every element uses `style={{...}}` instead of CSS classes. Example:

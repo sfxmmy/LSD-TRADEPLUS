@@ -1,5 +1,7 @@
 'use client'
 
+import { useEffect, useRef } from 'react'
+
 /**
  * Reusable Modal Component
  *
@@ -28,6 +30,56 @@ export default function Modal({
   blur = false,
   padding = '24px'
 }) {
+  const modalRef = useRef(null)
+  const previousActiveElement = useRef(null)
+
+  // Handle ESC key and focus trapping
+  useEffect(() => {
+    if (!isOpen) return
+
+    // Save currently focused element
+    previousActiveElement.current = document.activeElement
+
+    // Focus the modal
+    if (modalRef.current) {
+      modalRef.current.focus()
+    }
+
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') {
+        onClose()
+        return
+      }
+
+      // Focus trapping
+      if (e.key === 'Tab' && modalRef.current) {
+        const focusableElements = modalRef.current.querySelectorAll(
+          'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+        )
+        const firstElement = focusableElements[0]
+        const lastElement = focusableElements[focusableElements.length - 1]
+
+        if (e.shiftKey && document.activeElement === firstElement) {
+          e.preventDefault()
+          lastElement?.focus()
+        } else if (!e.shiftKey && document.activeElement === lastElement) {
+          e.preventDefault()
+          firstElement?.focus()
+        }
+      }
+    }
+
+    document.addEventListener('keydown', handleKeyDown)
+
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown)
+      // Restore focus when modal closes
+      if (previousActiveElement.current) {
+        previousActiveElement.current.focus()
+      }
+    }
+  }, [isOpen, onClose])
+
   if (!isOpen) return null
 
   return (
@@ -43,8 +95,14 @@ export default function Modal({
         ...(blur && { backdropFilter: 'blur(4px)' })
       }}
       onClick={onClose}
+      role="presentation"
     >
       <div
+        ref={modalRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={title ? 'modal-title' : undefined}
+        tabIndex={-1}
         style={{
           background: '#0d0d12',
           border: '1px solid #1a1a22',
@@ -54,12 +112,13 @@ export default function Modal({
           maxWidth,
           maxHeight,
           overflowY: 'auto',
-          boxShadow: '0 20px 60px rgba(0,0,0,0.5)'
+          boxShadow: '0 20px 60px rgba(0,0,0,0.5)',
+          outline: 'none'
         }}
         onClick={e => e.stopPropagation()}
       >
         {title && (
-          <h2 style={{ fontSize: '18px', fontWeight: 600, marginBottom: '20px', color: '#fff' }}>
+          <h2 id="modal-title" style={{ fontSize: '18px', fontWeight: 600, marginBottom: '20px', color: '#fff' }}>
             {title}
           </h2>
         )}
@@ -101,6 +160,22 @@ export function ConfirmModal({
   cancelText = 'Cancel',
   danger = false
 }) {
+  const modalRef = useRef(null)
+
+  // Handle ESC key
+  useEffect(() => {
+    if (!isOpen) return
+
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') onClose()
+    }
+
+    document.addEventListener('keydown', handleKeyDown)
+    if (modalRef.current) modalRef.current.focus()
+
+    return () => document.removeEventListener('keydown', handleKeyDown)
+  }, [isOpen, onClose])
+
   if (!isOpen) return null
 
   return (
@@ -115,23 +190,31 @@ export function ConfirmModal({
         zIndex: 100
       }}
       onClick={onClose}
+      role="presentation"
     >
       <div
+        ref={modalRef}
+        role="alertdialog"
+        aria-modal="true"
+        aria-labelledby="confirm-title"
+        aria-describedby={message ? 'confirm-message' : undefined}
+        tabIndex={-1}
         style={{
           background: '#0d0d12',
           border: '1px solid #1a1a22',
           borderRadius: '12px',
           padding: '24px',
           width: '90%',
-          maxWidth: '380px'
+          maxWidth: '380px',
+          outline: 'none'
         }}
         onClick={e => e.stopPropagation()}
       >
-        <h3 style={{ fontSize: '18px', marginBottom: '8px', color: danger ? '#ef4444' : '#fff' }}>
+        <h3 id="confirm-title" style={{ fontSize: '18px', marginBottom: '8px', color: danger ? '#ef4444' : '#fff' }}>
           {title}
         </h3>
         {message && (
-          <p style={{ color: '#999', fontSize: '14px', marginBottom: '20px' }}>
+          <p id="confirm-message" style={{ color: '#999', fontSize: '14px', marginBottom: '20px' }}>
             {message}
           </p>
         )}
@@ -141,9 +224,9 @@ export function ConfirmModal({
             style={{
               padding: '10px 20px',
               background: 'transparent',
-              border: '1px solid #333',
+              border: '1px solid #444',
               borderRadius: '8px',
-              color: '#999',
+              color: '#ccc',
               fontSize: '14px',
               cursor: 'pointer'
             }}

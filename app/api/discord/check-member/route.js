@@ -1,6 +1,13 @@
 import { NextResponse } from 'next/server'
+import { rateLimiters } from '@/lib/rate-limit'
 
 export async function POST(request) {
+  // Rate limit: 5 auth-related requests per minute
+  const rateLimitResult = rateLimiters.auth(request)
+  if (!rateLimitResult.success) {
+    return rateLimitResult.response
+  }
+
   try {
     const { accessToken } = await request.json()
     

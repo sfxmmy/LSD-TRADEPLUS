@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 
 // Global toast state using module-level variable
 let toastListeners = []
@@ -16,25 +16,46 @@ export function showToast(message, type = 'error') {
 // Toast container component - add this to your pages
 export function ToastContainer() {
   const [toasts, setToasts] = useState([])
+  const timersRef = useRef(new Map())
 
   useEffect(() => {
     const listener = (toast) => {
       setToasts(prev => [...prev, toast])
-      // Auto-remove after 4 seconds
-      setTimeout(() => {
+      // Track timer for cleanup
+      const timerId = setTimeout(() => {
         setToasts(prev => prev.filter(t => t.id !== toast.id))
+        timersRef.current.delete(toast.id)
       }, 4000)
+      timersRef.current.set(toast.id, timerId)
     }
     toastListeners.push(listener)
+
     return () => {
+      // Clean up listener
       toastListeners = toastListeners.filter(l => l !== listener)
+      // Clean up all pending timers
+      timersRef.current.forEach(timerId => clearTimeout(timerId))
+      timersRef.current.clear()
     }
   }, [])
+
+  const removeToast = (id) => {
+    // Clear timer when manually removing
+    if (timersRef.current.has(id)) {
+      clearTimeout(timersRef.current.get(id))
+      timersRef.current.delete(id)
+    }
+    setToasts(prev => prev.filter(t => t.id !== id))
+  }
 
   if (toasts.length === 0) return null
 
   return (
-    <div style={{ position: 'fixed', top: '20px', right: '20px', zIndex: 9999, display: 'flex', flexDirection: 'column', gap: '8px' }}>
+    <div
+      style={{ position: 'fixed', top: '20px', right: '20px', zIndex: 9999, display: 'flex', flexDirection: 'column', gap: '8px' }}
+      role="alert"
+      aria-live="polite"
+    >
       {toasts.map(toast => (
         <div
           key={toast.id}
@@ -47,9 +68,10 @@ export function ToastContainer() {
             fontWeight: 500,
             boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
             maxWidth: '350px',
+            cursor: 'pointer',
             animation: 'slideIn 0.2s ease-out'
           }}
-          onClick={() => setToasts(prev => prev.filter(t => t.id !== toast.id))}
+          onClick={() => removeToast(toast.id)}
         >
           {toast.message}
         </div>

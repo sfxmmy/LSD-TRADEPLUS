@@ -473,8 +473,8 @@ export default function DashboardPage() {
       dashboard_type: activeDashboard
     }).select().single()
     if (error) { showToast('Error: ' + error.message); setCreating(false); return }
-    setAccounts([...accounts, data])
-    setTrades({ ...trades, [data.id]: [] })
+    setAccounts(prev => [...prev, data])
+    setTrades(prev => ({ ...prev, [data.id]: [] }))
     setName(''); setBalance(''); setProfitTarget(''); setMaxDrawdown(''); setConsistencyEnabled(false); setConsistencyPct('30'); setDailyDdEnabled(false); setDailyDdPct(''); setDailyDdType('static'); setDailyDdLocksAt('start_balance'); setDailyDdLocksAtPct(''); setDailyDdResetTime('00:00'); setDailyDdResetTimezone('Europe/London'); setMaxDdEnabled(false); setMaxDdPct(''); setMaxDdType('static'); setMaxDdTrailingStopsAt('never'); setMaxDdLocksAtPct(''); setFormErrors({}); setShowModal(false); setCreating(false)
   }
 
@@ -914,9 +914,9 @@ export default function DashboardPage() {
         }
       }
       // Update local state with actual inserted trades (with DB IDs)
-      setAccounts([...accounts, accountData])
-      setTrades({ ...trades, [accountData.id]: insertedTrades.sort((a, b) => new Date(a.date) - new Date(b.date)) })
-      setTradeCounts({ ...tradeCounts, [accountData.id]: insertedTrades.length })
+      setAccounts(prev => [...prev, accountData])
+      setTrades(prev => ({ ...prev, [accountData.id]: insertedTrades.sort((a, b) => new Date(a.date) - new Date(b.date)) }))
+      setTradeCounts(prev => ({ ...prev, [accountData.id]: insertedTrades.length }))
       setShowImportModal(false)
       setImporting(false)
       // Brief success indication (modal closes, user sees new journal)
