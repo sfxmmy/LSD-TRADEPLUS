@@ -81,6 +81,131 @@ import Header, { Logo, headerButtonStyle } from '@/components/Header'
 
 ---
 
+## How to Write New Code
+
+### Required Imports for Client Pages
+
+```javascript
+'use client'
+
+// Supabase - ALWAYS use getSupabase(), never createClient()
+import { getSupabase } from '@/lib/supabase'
+
+// Auth - for checking subscription status
+import { hasValidSubscription } from '@/lib/auth'
+
+// Toast - for user feedback (replaces alert())
+import { ToastContainer, showToast } from '@/components/Toast'
+```
+
+### Supabase Usage Pattern
+
+```javascript
+// ✅ CORRECT - use getSupabase() in each function
+async function loadData() {
+  const supabase = getSupabase()
+  const { data } = await supabase.from('trades').select('*')
+}
+
+// ❌ WRONG - don't use createClient directly in pages
+import { createClient } from '@supabase/supabase-js'
+const supabase = createClient(process.env...)  // NO!
+```
+
+### Toast Pattern (User Feedback)
+
+```javascript
+// Add ToastContainer once at the end of your page component
+return (
+  <div>
+    {/* ... page content ... */}
+    <ToastContainer />
+  </div>
+)
+
+// Use showToast() for feedback
+showToast('Something went wrong')              // error (default)
+showToast('Trade saved successfully', 'success')
+showToast('Please check your input', 'warning')
+```
+
+### Auth Check Pattern
+
+```javascript
+// Check subscription before allowing access
+const { data: profile } = await supabase
+  .from('profiles')
+  .select('subscription_status')
+  .eq('id', user.id)
+  .single()
+
+if (hasValidSubscription(profile)) {
+  // Allow access
+} else {
+  window.location.href = '/pricing'
+}
+```
+
+### File Organization
+
+| Type | Location | Example |
+|------|----------|---------|
+| Pages | `app/[name]/page.js` | `app/settings/page.js` |
+| API Routes | `app/api/[name]/route.js` | `app/api/stripe/webhook/route.js` |
+| Shared Components | `components/[Name].js` | `components/Toast.js` |
+| Utilities | `lib/[name].js` | `lib/auth.js` |
+| Database | `schema.sql` | Single file for all SQL |
+
+### API Routes (Server-Side)
+
+API routes are different - they CAN use `createClient` directly with service role:
+
+```javascript
+// In app/api/*/route.js - this is correct
+import { createClient } from '@supabase/supabase-js'
+
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL,
+  process.env.SUPABASE_SERVICE_ROLE_KEY  // Server-only key
+)
+```
+
+### Console Logs
+
+```javascript
+// ❌ Client pages - NO console.log
+console.log('debug')  // Remove these
+
+// ✅ API routes - OK for debugging
+console.error('Webhook error:', err)  // Keep these
+```
+
+### CSS Design Tokens
+
+Use CSS variables from `globals.css` for new code:
+
+```javascript
+// ✅ PREFERRED for new code
+style={{ background: 'var(--color-primary)' }}
+style={{ padding: 'var(--space-md)' }}
+style={{ borderRadius: 'var(--radius-md)' }}
+
+// ⚠️ EXISTING CODE - leave as-is unless specifically refactoring
+style={{ background: '#22c55e' }}  // Don't change working code
+```
+
+### Naming Conventions
+
+| Type | Convention | Example |
+|------|------------|---------|
+| Components | PascalCase | `ToastContainer`, `ConfirmModal` |
+| Functions | camelCase | `getSupabase`, `hasValidSubscription` |
+| Files (components) | PascalCase.js | `Toast.js`, `Modal.js` |
+| Files (utilities) | lowercase.js | `auth.js`, `supabase.js` |
+| CSS variables | kebab-case | `--color-primary`, `--space-md` |
+
+---
+
 ## Overall Rating: 5.5/10
 
 The app is functional and feature-rich, but has significant architectural debt, code duplication, and maintainability issues.
@@ -126,8 +251,14 @@ app/
     └── discord/check-member/     # 39 lines
 
 lib/
-├── supabase.js             # 43 lines - NOT USED by pages (they create own clients)
+├── supabase.js             # 43 lines - getSupabase() singleton for all client pages
+├── auth.js                 # 35 lines - hasValidSubscription() shared auth utility
 └── stripe.js               # 8 lines
+
+components/
+├── Toast.js                # 66 lines - showToast() and ToastContainer
+├── Modal.js                # 173 lines - Modal and ConfirmModal components
+└── Header.js               # 115 lines - Header, Logo, button styles
 
 schema.sql                  # 594 lines - Complete DB schema
 ```
@@ -143,22 +274,19 @@ schema.sql                  # 594 lines - Complete DB schema
 
 ### 2. Duplicated Code
 
-**`hasValidSubscription()` - 4 copies:**
-- dashboard/page.js:353
-- page.js:14
-- pricing/page.js:19
-- settings/page.js:23
+**✅ FIXED - `hasValidSubscription()`:**
+- Now in `lib/auth.js` - single source of truth
 
-**`optionStyles` object - 2 copies:**
+**✅ FIXED - Supabase client creation:**
+- All pages now use `getSupabase()` from `lib/supabase.js`
+
+**⚠️ Remaining - `optionStyles` object - 2 copies:**
 - account/[id]/page.js (lines 9-36)
 - dashboard/page.js (lines 9-36)
 
-**`defaultInputs` array - 2 copies:**
+**⚠️ Remaining - `defaultInputs` array - 2 copies:**
 - account/[id]/page.js (lines 85-101)
 - dashboard/page.js (lines 85-101)
-
-**Supabase client creation - 24 occurrences:**
-- Pages create `createClient(process.env...)` instead of using lib/supabase.js
 
 ### 3. Inline Styles (2,129 occurrences)
 Every element uses `style={{...}}` instead of CSS classes. Example:
@@ -173,13 +301,15 @@ Dashboard page has 150+ useState hooks. No Context, no state management library.
 
 ## Bandaids & Poor Practices
 
-| Issue | Count | Location |
-|-------|-------|----------|
-| `alert()` calls | 51 | Throughout app |
-| `console.log/warn/error` | 48 | Production code |
-| `window.location.href` | 23 | Instead of router |
-| Empty `catch {}` blocks | 1+ | dashboard/page.js:70 |
-| Hardcoded URLs | 1 | login/page.js:88 |
+| Issue | Count | Status |
+|-------|-------|--------|
+| `alert()` calls | 51 | ✅ FIXED - replaced with showToast() |
+| `console.log/warn/error` | 48 | ✅ FIXED - removed from client pages |
+| `createClient()` duplication | 24 | ✅ FIXED - now use getSupabase() |
+| `hasValidSubscription()` copies | 4 | ✅ FIXED - now in lib/auth.js |
+| `window.location.href` | 23 | ⚠️ Remaining - could use Next.js router |
+| Empty `catch {}` blocks | 1+ | ⚠️ Remaining - dashboard/page.js |
+| Hardcoded URLs | 1 | ⚠️ Remaining - login/page.js |
 
 ---
 
