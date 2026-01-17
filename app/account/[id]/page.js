@@ -1650,10 +1650,10 @@ export default function AccountPage() {
             </button>
           ))}
 
-          {/* Stats View Selector - hide on notes tab since notes are user-level */}
-          {activeTab !== 'notes' && (
+          {/* Stats View Selector - hide on notes tab except for trade notes/mistakes */}
+          {(activeTab !== 'notes' || ['tradeNotes', 'tradeMistakes'].includes(notesSubTab)) && (
           <div style={{ marginBottom: '8px', padding: '10px', background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px' }}>
-            <div style={{ fontSize: '10px', color: '#666', textTransform: 'uppercase', marginBottom: '8px', letterSpacing: '0.5px', fontWeight: 600, textAlign: 'center' }}>Viewing {activeTab === 'trades' ? 'Trades' : 'Stats'} For</div>
+            <div style={{ fontSize: '10px', color: '#666', textTransform: 'uppercase', marginBottom: '8px', letterSpacing: '0.5px', fontWeight: 600, textAlign: 'center' }}>Viewing {activeTab === 'trades' ? 'Trades' : activeTab === 'notes' ? 'Notes' : 'Stats'} For</div>
 
               {/* Show "Selected Trades" indicator when viewing selected */}
               {viewingSelectedStats && (
