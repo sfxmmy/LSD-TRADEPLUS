@@ -5,6 +5,123 @@
 
 ---
 
+## Production Readiness (January 2026)
+
+### New Production Features Added
+
+| Feature | Files | Purpose |
+|---------|-------|---------|
+| **Sentry Error Tracking** | `instrumentation.js`, `instrumentation-client.js` | Automatic error capture, session replay |
+| **Error Boundaries** | `components/ErrorBoundary.js`, `app/error.js`, `app/global-error.js` | Prevents white-screen crashes |
+| **Rate Limiting** | `lib/rate-limit.js` | Protects API routes from abuse |
+| **Form Validation** | `lib/validation.js` | Comprehensive input validation utilities |
+| **Schema v5** | `schema.sql` | CHECK constraints, composite indexes, better docs |
+
+### Sentry Setup
+
+```javascript
+// Client-side error tracking with session replay
+// Config: instrumentation-client.js
+// - 10% session replay sampling (100% on errors)
+// - Filters browser extensions, network errors, expected auth errors
+// - Disabled on localhost
+
+// Server-side error tracking
+// Config: instrumentation.js
+// - Tracks API route errors
+// - Edge runtime support
+```
+
+**Required env var:** `NEXT_PUBLIC_SENTRY_DSN`
+
+### Error Boundaries
+
+```javascript
+// App-level error boundary (wraps entire app)
+import { ErrorBoundary } from '@/components/ErrorBoundary'
+
+// Section-level boundary (for individual components)
+import { SectionErrorBoundary } from '@/components/ErrorBoundary'
+<SectionErrorBoundary name="trades-table" message="Failed to load trades">
+  <TradesTable />
+</SectionErrorBoundary>
+
+// Next.js route error pages
+// app/error.js - catches route errors
+// app/global-error.js - catches root layout errors
+```
+
+### Rate Limiting
+
+```javascript
+import { rateLimiters } from '@/lib/rate-limit'
+
+// Pre-configured limiters:
+rateLimiters.auth(request)     // 5 req/min - login, discord check
+rateLimiters.checkout(request) // 3 req/min - stripe checkout/portal
+rateLimiters.upload(request)   // 20 req/min - image uploads
+rateLimiters.api(request)      // 60 req/min - general API
+
+// Applied to:
+// - /api/stripe/create-checkout
+// - /api/stripe/create-portal
+// - /api/upload-image
+// - /api/discord/check-member
+```
+
+### Form Validation
+
+```javascript
+import {
+  validateEmail,
+  validatePassword,
+  validatePasswordMatch,
+  validateSymbol,
+  validatePnL,
+  validateRiskReward,
+  validateCurrency,
+  validateDate,
+  validateForm
+} from '@/lib/validation'
+
+// Example usage
+const result = validateEmail(email)
+if (!result.valid) {
+  setError(result.error) // "Please enter a valid email address"
+}
+
+// Multi-field validation
+const { valid, errors, values } = validateForm({
+  email: { value: email, validator: validateEmail },
+  password: { value: password, validator: validatePassword, options: { minLength: 8 } }
+})
+```
+
+### Schema v5 Changes
+
+```sql
+-- CHECK constraint for subscription_status
+CHECK (subscription_status IN ('admin', 'subscribing', 'free trial',
+       'free subscription', 'not subscribing', 'past_due'))
+
+-- CHECK constraint for dashboard_type
+CHECK (dashboard_type IN ('accounts', 'backtesting'))
+
+-- New composite indexes for performance
+idx_trades_account_date ON trades(account_id, date DESC)
+idx_notes_account_date ON notes(account_id, date DESC)
+idx_accounts_user_dashboard ON accounts(user_id, dashboard_type)
+```
+
+### Bandaids Fixed
+
+| Issue | Fix |
+|-------|-----|
+| `stripe_customer_id` check in create-portal | Removed - field doesn't exist in schema |
+| Legacy field documentation | Improved comments explaining fallback logic |
+
+---
+
 ## Completed Refactoring (January 2026)
 
 ### New Files Created
@@ -327,24 +444,29 @@ app/
 lib/
 ├── supabase.js             # 43 lines - getSupabase() singleton for all client pages
 ├── auth.js                 # 35 lines - hasValidSubscription() shared auth utility
-├── constants.js            # NEW ~100 lines - optionStyles, defaultInputs, validation
-├── utils.js                # NEW ~280 lines - 25+ utility functions
-├── hooks.js                # NEW ~120 lines - Custom React hooks
+├── constants.js            # ~100 lines - optionStyles, defaultInputs, validation
+├── utils.js                # ~280 lines - 25+ utility functions
+├── hooks.js                # ~120 lines - Custom React hooks
+├── validation.js           # NEW ~300 lines - Form validation utilities
+├── rate-limit.js           # NEW ~130 lines - API rate limiting middleware
 └── stripe.js               # 8 lines
 
 components/
 ├── Toast.js                # 66 lines - showToast() and ToastContainer
 ├── Modal.js                # 173 lines - Modal and ConfirmModal components
 ├── Header.js               # 115 lines - Header, Logo, button styles
-├── LoadingScreen.js        # NEW ~25 lines - Branded loading screen
-├── Tooltip.js              # NEW ~100 lines - Multiple tooltip components
-├── RatingStars.js          # NEW ~70 lines - Star rating input/display
-├── CustomDropdown.js       # NEW ~150 lines - Styled dropdown with colors
-├── ImageUploader.js        # NEW ~180 lines - Multi-image upload
-├── EquityCurve.js          # NEW ~400 lines - Full and mini equity charts
-└── StatCard.js             # NEW ~150 lines - Stat display components
+├── ErrorBoundary.js        # NEW ~180 lines - React error boundaries
+├── LoadingScreen.js        # ~25 lines - Branded loading screen
+├── Tooltip.js              # ~100 lines - Multiple tooltip components
+├── RatingStars.js          # ~70 lines - Star rating input/display
+├── CustomDropdown.js       # ~150 lines - Styled dropdown with colors
+├── ImageUploader.js        # ~180 lines - Multi-image upload
+├── EquityCurve.js          # ~400 lines - Full and mini equity charts
+└── StatCard.js             # ~150 lines - Stat display components
 
-schema.sql                  # 594 lines - Complete DB schema
+instrumentation.js          # NEW - Sentry server/edge init
+instrumentation-client.js   # NEW - Sentry browser init
+schema.sql                  # 655 lines - Complete DB schema (v5)
 ```
 
 ---
