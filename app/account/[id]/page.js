@@ -4197,24 +4197,38 @@ export default function AccountPage() {
             {/* Trade Notes Section */}
             {notesSubTab === 'tradeNotes' && (
               <div style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '12px' }}>
-                <span style={{ fontSize: '13px', color: '#999', textTransform: 'uppercase' }}>Trade Notes</span>
-                <div style={{ marginTop: '12px', display: 'flex', flexDirection: 'column', gap: '12px', maxHeight: '600px', overflowY: 'auto' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+                  <span style={{ fontSize: '13px', color: '#999', textTransform: 'uppercase' }}>Trade Notes {showCumulativeStats && viewMode === 'overall' ? '(All Journals)' : showCumulativeStats && viewMode === 'selected' && selectedJournalIds.size > 0 ? '(Selected Journals)' : ''}</span>
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', maxHeight: '600px', overflowY: 'auto' }}>
                   {(() => {
-                    const tradesWithNotes = trades.filter(t => t.notes && t.notes.trim()).sort((a, b) => new Date(b.date) - new Date(a.date))
+                    // Get trades based on view mode
+                    let tradesToShow = trades
+                    if (showCumulativeStats && viewMode === 'overall') {
+                      tradesToShow = Object.values(allAccountsTrades).flat()
+                    } else if (showCumulativeStats && viewMode === 'selected' && selectedJournalIds.size > 0) {
+                      tradesToShow = Object.entries(allAccountsTrades).filter(([accId]) => selectedJournalIds.has(accId)).flatMap(([, t]) => t)
+                    }
+                    const tradesWithNotes = tradesToShow.filter(t => t.notes && t.notes.trim()).sort((a, b) => new Date(b.date) - new Date(a.date))
                     if (tradesWithNotes.length === 0) return <div style={{ padding: '40px', textAlign: 'center', color: '#999' }}>No trade notes yet. Add notes when logging trades.</div>
-                    return tradesWithNotes.map(trade => (
-                      <div key={trade.id} style={{ padding: '12px', background: '#0a0a0e', borderRadius: '8px', border: '1px solid #1a1a22' }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                            <span style={{ fontSize: '14px', color: '#22c55e', fontWeight: 600 }}>{new Date(trade.date).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}</span>
-                            <span style={{ fontSize: '14px', color: '#fff', fontWeight: 600 }}>{trade.symbol}</span>
-                            <span style={{ padding: '3px 8px', borderRadius: '4px', fontSize: '11px', fontWeight: 600, background: trade.outcome === 'win' ? 'rgba(34,197,94,0.15)' : trade.outcome === 'loss' ? 'rgba(239,68,68,0.15)' : 'rgba(245,158,11,0.15)', color: trade.outcome === 'win' ? '#22c55e' : trade.outcome === 'loss' ? '#ef4444' : '#f59e0b' }}>{trade.outcome?.toUpperCase()}</span>
+                    const showJournalName = showCumulativeStats && (viewMode === 'overall' || (viewMode === 'selected' && selectedJournalIds.size > 1))
+                    return tradesWithNotes.map(trade => {
+                      const journalName = showJournalName ? allAccounts.find(a => a.id === trade.account_id)?.name : null
+                      return (
+                        <div key={trade.id} style={{ padding: '12px', background: '#0a0a0e', borderRadius: '8px', border: '1px solid #1a1a22' }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
+                              <span style={{ fontSize: '14px', color: '#22c55e', fontWeight: 600 }}>{new Date(trade.date).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}</span>
+                              <span style={{ fontSize: '14px', color: '#fff', fontWeight: 600 }}>{trade.symbol}</span>
+                              <span style={{ padding: '3px 8px', borderRadius: '4px', fontSize: '11px', fontWeight: 600, background: trade.outcome === 'win' ? 'rgba(34,197,94,0.15)' : trade.outcome === 'loss' ? 'rgba(239,68,68,0.15)' : 'rgba(245,158,11,0.15)', color: trade.outcome === 'win' ? '#22c55e' : trade.outcome === 'loss' ? '#ef4444' : '#f59e0b' }}>{trade.outcome?.toUpperCase()}</span>
+                              {journalName && <span style={{ fontSize: '11px', color: '#666', padding: '2px 6px', background: '#1a1a22', borderRadius: '4px' }}>{journalName}</span>}
+                            </div>
+                            <span style={{ fontSize: '13px', fontWeight: 600, color: parseFloat(trade.pnl) >= 0 ? '#22c55e' : '#ef4444' }}>{parseFloat(trade.pnl) >= 0 ? '+' : ''}${parseFloat(trade.pnl || 0).toFixed(2)}</span>
                           </div>
-                          <span style={{ fontSize: '13px', fontWeight: 600, color: parseFloat(trade.pnl) >= 0 ? '#22c55e' : '#ef4444' }}>{parseFloat(trade.pnl) >= 0 ? '+' : ''}${parseFloat(trade.pnl || 0).toFixed(2)}</span>
+                          <div style={{ fontSize: '14px', color: '#fff', lineHeight: '1.6', whiteSpace: 'pre-wrap' }}>{trade.notes}</div>
                         </div>
-                        <div style={{ fontSize: '14px', color: '#fff', lineHeight: '1.6', whiteSpace: 'pre-wrap' }}>{trade.notes}</div>
-                      </div>
-                    ))
+                      )
+                    })
                   })()}
                 </div>
               </div>
@@ -4223,17 +4237,28 @@ export default function AccountPage() {
             {/* Trade Mistakes Section */}
             {notesSubTab === 'tradeMistakes' && (
               <div style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '8px', padding: '12px' }}>
-                <span style={{ fontSize: '13px', color: '#ef4444', textTransform: 'uppercase' }}>Trade Mistakes</span>
-                <div style={{ marginTop: '12px', display: 'flex', flexDirection: 'column', gap: '12px', maxHeight: '600px', overflowY: 'auto' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+                  <span style={{ fontSize: '13px', color: '#ef4444', textTransform: 'uppercase' }}>Trade Mistakes {showCumulativeStats && viewMode === 'overall' ? '(All Journals)' : showCumulativeStats && viewMode === 'selected' && selectedJournalIds.size > 0 ? '(Selected Journals)' : ''}</span>
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', maxHeight: '600px', overflowY: 'auto' }}>
                   {(() => {
-                    const tradesWithMistakes = trades.filter(t => {
+                    // Get trades based on view mode
+                    let tradesToShow = trades
+                    if (showCumulativeStats && viewMode === 'overall') {
+                      tradesToShow = Object.values(allAccountsTrades).flat()
+                    } else if (showCumulativeStats && viewMode === 'selected' && selectedJournalIds.size > 0) {
+                      tradesToShow = Object.entries(allAccountsTrades).filter(([accId]) => selectedJournalIds.has(accId)).flatMap(([, t]) => t)
+                    }
+                    const tradesWithMistakes = tradesToShow.filter(t => {
                       const extra = getExtraData(t)
                       return extra.mistake && extra.mistake.trim()
                     }).sort((a, b) => new Date(b.date) - new Date(a.date))
                     if (tradesWithMistakes.length === 0) return <div style={{ padding: '40px', textAlign: 'center', color: '#999' }}>No trade mistakes logged yet. Add mistakes when logging trades to track areas for improvement.</div>
+                    const showJournalName = showCumulativeStats && (viewMode === 'overall' || (viewMode === 'selected' && selectedJournalIds.size > 1))
                     return tradesWithMistakes.map(trade => {
                       const extra = getExtraData(trade)
                       const isResolved = extra.mistakeResolved === true
+                      const journalName = showJournalName ? allAccounts.find(a => a.id === trade.account_id)?.name : null
                       return (
                         <div key={trade.id} style={{ padding: '12px', background: '#0a0a0e', borderRadius: '8px', border: isResolved ? '1px solid #2a2a35' : '1px solid rgba(239,68,68,0.3)', opacity: isResolved ? 0.6 : 1 }}>
                           <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
@@ -4244,16 +4269,24 @@ export default function AccountPage() {
                                 const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY)
                                 const newExtra = { ...extra, mistakeResolved: !isResolved }
                                 await supabase.from('trades').update({ extra_data: JSON.stringify(newExtra) }).eq('id', trade.id)
-                                setTrades(trades.map(t => t.id === trade.id ? { ...t, extra_data: JSON.stringify(newExtra) } : t))
+                                // Update local state - both trades and allAccountsTrades
+                                if (trade.account_id === accountId) {
+                                  setTrades(trades.map(t => t.id === trade.id ? { ...t, extra_data: JSON.stringify(newExtra) } : t))
+                                }
+                                setAllAccountsTrades(prev => ({
+                                  ...prev,
+                                  [trade.account_id]: (prev[trade.account_id] || []).map(t => t.id === trade.id ? { ...t, extra_data: JSON.stringify(newExtra) } : t)
+                                }))
                               }}
                               style={{ width: '18px', height: '18px', accentColor: '#22c55e', cursor: 'pointer', marginTop: '2px', flexShrink: 0 }}
                             />
                             <div style={{ flex: 1 }}>
                               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
                                   <span style={{ fontSize: '14px', color: '#ef4444', fontWeight: 600 }}>{new Date(trade.date).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}</span>
                                   <span style={{ fontSize: '14px', color: isResolved ? '#666' : '#fff', fontWeight: 600 }}>{trade.symbol}</span>
                                   <span style={{ padding: '3px 8px', borderRadius: '4px', fontSize: '11px', fontWeight: 600, background: trade.outcome === 'win' ? 'rgba(34,197,94,0.15)' : trade.outcome === 'loss' ? 'rgba(239,68,68,0.15)' : 'rgba(245,158,11,0.15)', color: trade.outcome === 'win' ? '#22c55e' : trade.outcome === 'loss' ? '#ef4444' : '#f59e0b' }}>{trade.outcome?.toUpperCase()}</span>
+                                  {journalName && <span style={{ fontSize: '11px', color: '#666', padding: '2px 6px', background: '#1a1a22', borderRadius: '4px' }}>{journalName}</span>}
                                 </div>
                                 {isResolved && <span style={{ fontSize: '11px', color: '#22c55e', fontWeight: 600, padding: '2px 8px', background: 'rgba(34,197,94,0.15)', borderRadius: '4px' }}>RESOLVED</span>}
                               </div>

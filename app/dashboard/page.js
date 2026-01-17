@@ -2372,10 +2372,18 @@ export default function DashboardPage() {
                           <div style={{ fontSize: '13px', color: '#666', marginBottom: '2px' }}>Overall Stats</div>
                           <div style={{ display: 'flex', alignItems: 'baseline', gap: '12px' }}>
                             <span style={{ fontSize: '24px', fontWeight: 700, color: isProfitable ? '#22c55e' : '#ef4444' }}>${formatCurrency(totalBalance)}</span>
-                            <span style={{ fontSize: '12px', color: '#666' }}><span style={{ fontWeight: 600, color: '#888' }}>${formatCurrency(stats.totalStartingBalance)}</span> INITIAL BALANCE</span>
+                            <span style={{ fontSize: '12px', color: '#666', whiteSpace: 'nowrap' }}><span style={{ fontWeight: 600, color: '#888' }}>${formatCurrency(stats.totalStartingBalance)}</span> INITIAL BALANCE</span>
                           </div>
                         </div>
                         {/* Recent Note - positioned at top right */}
+                        {/* RECENT NOTE label outside the box */}
+                        <div style={{ position: 'absolute', top: '12px', left: '50%', display: 'flex', alignItems: 'flex-start', gap: '6px', transform: 'translateX(calc(-100% - 8px))', padding: '8px 0' }}>
+                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#666" strokeWidth="2" style={{ flexShrink: 0, marginTop: '2px' }}>
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/>
+                          </svg>
+                          <span style={{ fontSize: '11px', color: '#888', textTransform: 'uppercase', fontWeight: 600, flexShrink: 0, marginTop: '1px' }}>RECENT NOTE:</span>
+                        </div>
+                        {/* Note content box */}
                         <div
                           onClick={(e) => { e.stopPropagation(); if (recentNote) setShowExpandedNote(recentNote) }}
                           style={{
@@ -2394,10 +2402,6 @@ export default function DashboardPage() {
                           onMouseLeave={e => { e.currentTarget.style.borderColor = '#1a1a22'; e.currentTarget.style.background = 'transparent' }}
                         >
                           <div style={{ display: 'flex', alignItems: 'flex-start', gap: '6px' }}>
-                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#666" strokeWidth="2" style={{ flexShrink: 0, marginTop: '2px' }}>
-                              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/>
-                            </svg>
-                            <span style={{ fontSize: '11px', color: '#888', textTransform: 'uppercase', fontWeight: 600, flexShrink: 0, marginTop: '1px' }}>RECENT NOTE:</span>
                             <div style={{ flex: 1, fontSize: '12px', color: recentNote ? '#888' : '#444', fontWeight: 600, lineHeight: 1.4, overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
                               {recentNote ? recentNote.text : 'No notes yet'}
                             </div>
@@ -2711,7 +2715,7 @@ export default function DashboardPage() {
                               <div style={{ fontSize: '13px', color: '#666', marginBottom: '2px' }}>{account.name}</div>
                               <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px' }}>
                                 <span style={{ fontSize: '24px', fontWeight: 700, color: isProfitable ? '#22c55e' : '#ef4444' }}>${formatCurrency(currentBalance)}</span>
-                                <span style={{ fontSize: '11px', color: '#666' }}><span style={{ fontWeight: 600, color: '#888' }}>${formatCurrency(startingBalance)}</span> INITIAL BALANCE</span>
+                                <span style={{ fontSize: '11px', color: '#666', whiteSpace: 'nowrap' }}><span style={{ fontWeight: 600, color: '#888' }}>${formatCurrency(startingBalance)}</span> INITIAL BALANCE</span>
                               </div>
                             </div>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
@@ -2725,7 +2729,7 @@ export default function DashboardPage() {
                                   onMouseLeave={e => { if (!showObjectiveLines[account.id]) { e.currentTarget.style.color = '#666'; e.currentTarget.style.borderColor = 'transparent' } }}
                                 >
                                   <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
-                                  <span>Show Objectives</span>
+                                  <span style={{ whiteSpace: 'nowrap' }}>Show Objectives</span>
                                 </button>
                               )}
                               {/* Edit button */}
@@ -3104,7 +3108,7 @@ export default function DashboardPage() {
                             <div style={{ fontSize: '11px', color: '#666', marginBottom: '2px' }}>{account.name}</div>
                             <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px' }}>
                               <span style={{ fontSize: '20px', fontWeight: 700, color: isProfitable ? '#22c55e' : '#ef4444' }}>${formatCurrency(currentBalance)}</span>
-                              <span style={{ fontSize: '10px', color: '#666' }}><span style={{ fontWeight: 600, color: '#888' }}>${formatCurrency(startingBalance)}</span> INITIAL BALANCE</span>
+                              <span style={{ fontSize: '10px', color: '#666', whiteSpace: 'nowrap' }}><span style={{ fontWeight: 600, color: '#888' }}>${formatCurrency(startingBalance)}</span> INITIAL BALANCE</span>
                             </div>
                           </div>
 
