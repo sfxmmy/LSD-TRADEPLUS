@@ -1655,7 +1655,7 @@ export default function AccountPage() {
 
       {/* FIXED SUBHEADER - starts at sidebar edge */}
       {!isMobile && (
-        <div style={{ position: 'fixed', top: '68px', left: '180px', right: 0, zIndex: 46, padding: '14px 12px 10px 12px', background: '#0a0a0f', borderBottom: '1px solid #1a1a22', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div style={{ position: 'fixed', top: '68px', left: '180px', right: 0, zIndex: 46, padding: '12px 12px 12px 12px', background: '#0a0a0f', borderBottom: '1px solid #1a1a22', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '16px', flex: 1, minWidth: 0 }}>
             {(() => {
               const getTitle = () => {
@@ -1748,7 +1748,7 @@ export default function AccountPage() {
       {/* FIXED SIDEBAR - desktop only, starts under header */}
       {!isMobile && (
         <div style={{ position: 'fixed', top: '68px', left: 0, bottom: 0, width: '180px', padding: '12px', background: '#0a0a0f', zIndex: 45, display: 'flex', flexDirection: 'column', borderRight: '1px solid #1a1a22' }}>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginTop: '4px' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginTop: '0px' }}>
           {['trades', 'statistics', 'notes'].map((tab) => (
             <button
               key={tab}
@@ -2400,7 +2400,7 @@ export default function AccountPage() {
           const displayAvgRating = displayTrades.length > 0 ? (displayTrades.reduce((s, t) => s + (parseInt(getExtraData(t).rating) || 0), 0) / displayTrades.length).toFixed(1) : '0'
 
           return (
-          <div style={{ padding: isMobile ? '0' : '8px 12px 0 12px' }}>
+          <div style={{ padding: isMobile ? '0' : '16px 12px 0 12px' }}>
             {/* Stats View Indicator Banner */}
             {viewingSelectedStats && selectedTrades.size > 0 ? (
               <div style={{ marginBottom: '12px', padding: '12px 16px', background: `rgba(${themeColorRgb},0.1)`, border: '1px solid #22c55e', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', boxShadow: '0 0 12px rgba(34,197,94,0.15)' }}>
@@ -4314,7 +4314,7 @@ export default function AccountPage() {
 
         {/* NOTES TAB */}
         {activeTab === 'notes' && (
-          <div style={{ padding: isMobile ? '0' : '8px 16px 16px 12px' }}>
+          <div style={{ padding: isMobile ? '0' : '16px 16px 16px 12px' }}>
             <div style={{ display: 'flex', gap: '12px', marginBottom: '12px', flexWrap: 'wrap' }}>
               {['daily', 'weekly', 'custom', 'tradeNotes', 'tradeMistakes'].map(sub => (
                 <button key={sub} onClick={() => setNotesSubTab(sub)} style={{ padding: '12px 24px', background: notesSubTab === sub ? (sub === 'tradeMistakes' ? '#ef4444' : '#22c55e') : 'transparent', border: notesSubTab === sub ? 'none' : '1px solid #2a2a35', borderRadius: '8px', color: notesSubTab === sub ? '#fff' : '#888', fontSize: '14px', fontWeight: 600, cursor: 'pointer' }}>{sub === 'tradeNotes' ? 'Trade Notes' : sub === 'tradeMistakes' ? 'Trade Mistakes' : sub.charAt(0).toUpperCase() + sub.slice(1)}</button>
