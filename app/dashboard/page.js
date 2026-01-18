@@ -3065,11 +3065,11 @@ export default function DashboardPage() {
 
                         {/* Buttons - Compact */}
                         <div onClick={e => e.stopPropagation()} style={{ padding: '12px 16px 16px', display: 'flex', gap: '8px' }}>
-                          <a href={`/account/${account.id}`} style={{ flex: 1, padding: '10px', background: '#0a0a0f', border: '2px solid rgba(34,197,94,0.3)', borderRadius: '10px', color: '#22c55e', fontWeight: 600, fontSize: '14px', textAlign: 'center', textDecoration: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', transition: 'all 0.2s' }} onMouseEnter={e => { e.currentTarget.style.background = 'rgba(34,197,94,0.08)'; e.currentTarget.style.border = '2px solid rgba(34,197,94,0.5)' }} onMouseLeave={e => { e.currentTarget.style.background = '#0a0a0f'; e.currentTarget.style.border = '2px solid rgba(34,197,94,0.3)' }}>
+                          <a href={`/account/${account.id}`} style={{ flex: 1, padding: '10px', background: '#0a0a0f', border: `2px solid rgba(${themeColorRgb},0.3)`, borderRadius: '10px', color: themeColor, fontWeight: 600, fontSize: '14px', textAlign: 'center', textDecoration: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', transition: 'all 0.2s' }} onMouseEnter={e => { e.currentTarget.style.background = `rgba(${themeColorRgb},0.08)`; e.currentTarget.style.border = `2px solid rgba(${themeColorRgb},0.5)` }} onMouseLeave={e => { e.currentTarget.style.background = '#0a0a0f'; e.currentTarget.style.border = `2px solid rgba(${themeColorRgb},0.3)` }}>
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg>
                             Enter Journal
                           </a>
-                          <a href={`/account/${account.id}?tab=statistics`} style={{ padding: '10px 14px', background: '#0a0a0f', border: '2px solid rgba(34,197,94,0.3)', borderRadius: '10px', color: '#22c55e', fontWeight: 600, fontSize: '14px', textAlign: 'center', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '8px', transition: 'all 0.2s' }} onMouseEnter={e => { e.currentTarget.style.background = 'rgba(34,197,94,0.08)'; e.currentTarget.style.border = '2px solid rgba(34,197,94,0.5)' }} onMouseLeave={e => { e.currentTarget.style.background = '#0a0a0f'; e.currentTarget.style.border = '2px solid rgba(34,197,94,0.3)' }}>
+                          <a href={`/account/${account.id}?tab=statistics`} style={{ padding: '10px 14px', background: '#0a0a0f', border: `2px solid rgba(${themeColorRgb},0.3)`, borderRadius: '10px', color: themeColor, fontWeight: 600, fontSize: '14px', textAlign: 'center', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '8px', transition: 'all 0.2s' }} onMouseEnter={e => { e.currentTarget.style.background = `rgba(${themeColorRgb},0.08)`; e.currentTarget.style.border = `2px solid rgba(${themeColorRgb},0.5)` }} onMouseLeave={e => { e.currentTarget.style.background = '#0a0a0f'; e.currentTarget.style.border = `2px solid rgba(${themeColorRgb},0.3)` }}>
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 20V10M12 20V4M6 20v-6"/></svg>
                             Stats
                           </a>
@@ -3101,15 +3101,15 @@ export default function DashboardPage() {
                       width: '80px',
                       height: '80px',
                       borderRadius: '50%',
-                      background: 'rgba(34, 197, 94, 0.15)',
+                      background: `rgba(${themeColorRgb}, 0.15)`,
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
                       marginBottom: '16px'
                     }}>
-                      <span style={{ fontSize: '40px', color: '#22c55e', fontWeight: 300 }}>+</span>
+                      <span style={{ fontSize: '40px', color: themeColor, fontWeight: 300 }}>+</span>
                     </div>
-                    <span style={{ fontSize: '16px', fontWeight: 600, color: '#22c55e' }}>Add Journal</span>
+                    <span style={{ fontSize: '16px', fontWeight: 600, color: themeColor }}>Add Journal</span>
                     <span style={{ fontSize: '12px', color: '#666', marginTop: '4px' }}>Create a new trading account</span>
                   </div>
                 </div>
@@ -3295,16 +3295,16 @@ export default function DashboardPage() {
                           })()}
 
                           {/* Buttons */}
-                          <a href={`/account/${account.id}`} style={{ padding: '8px 14px', background: '#0a0a0f', border: '2px solid rgba(34,197,94,0.3)', borderRadius: '8px', color: '#22c55e', fontWeight: 600, fontSize: '12px', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '6px', transition: 'all 0.2s' }} onMouseEnter={e => { e.currentTarget.style.background = 'rgba(34,197,94,0.08)'; e.currentTarget.style.border = '2px solid rgba(34,197,94,0.5)' }} onMouseLeave={e => { e.currentTarget.style.background = '#0a0a0f'; e.currentTarget.style.border = '2px solid rgba(34,197,94,0.3)' }}>
+                          <a href={`/account/${account.id}`} style={{ padding: '8px 14px', background: '#0a0a0f', border: `2px solid rgba(${themeColorRgb},0.3)`, borderRadius: '8px', color: themeColor, fontWeight: 600, fontSize: '12px', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '6px', transition: 'all 0.2s' }} onMouseEnter={e => { e.currentTarget.style.background = `rgba(${themeColorRgb},0.08)`; e.currentTarget.style.border = `2px solid rgba(${themeColorRgb},0.5)` }} onMouseLeave={e => { e.currentTarget.style.background = '#0a0a0f'; e.currentTarget.style.border = `2px solid rgba(${themeColorRgb},0.3)` }}>
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg>
                             Enter
                           </a>
-                          <a href={`/account/${account.id}?tab=statistics`} style={{ padding: '8px 14px', background: '#0a0a0f', border: '2px solid rgba(34,197,94,0.3)', borderRadius: '8px', color: '#22c55e', fontWeight: 600, fontSize: '12px', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '6px', transition: 'all 0.2s' }} onMouseEnter={e => { e.currentTarget.style.background = 'rgba(34,197,94,0.08)'; e.currentTarget.style.border = '2px solid rgba(34,197,94,0.5)' }} onMouseLeave={e => { e.currentTarget.style.background = '#0a0a0f'; e.currentTarget.style.border = '2px solid rgba(34,197,94,0.3)' }}>
+                          <a href={`/account/${account.id}?tab=statistics`} style={{ padding: '8px 14px', background: '#0a0a0f', border: `2px solid rgba(${themeColorRgb},0.3)`, borderRadius: '8px', color: themeColor, fontWeight: 600, fontSize: '12px', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '6px', transition: 'all 0.2s' }} onMouseEnter={e => { e.currentTarget.style.background = `rgba(${themeColorRgb},0.08)`; e.currentTarget.style.border = `2px solid rgba(${themeColorRgb},0.5)` }} onMouseLeave={e => { e.currentTarget.style.background = '#0a0a0f'; e.currentTarget.style.border = `2px solid rgba(${themeColorRgb},0.3)` }}>
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 20V10M12 20V4M6 20v-6"/></svg>
                             Stats
                           </a>
-                          <button onClick={(e) => { e.stopPropagation(); setEditName(account.name); setEditProfitTarget(account.profit_target || ''); setEditMaxDrawdown(account.max_drawdown || ''); setEditConsistencyEnabled(account.consistency_enabled || false); setEditConsistencyPct(account.consistency_pct || '30'); setEditDailyDdEnabled(account.daily_dd_enabled || false); setEditDailyDdPct(account.daily_dd_pct || ''); setEditDailyDdType(account.daily_dd_type || 'static'); setEditDailyDdLocksAt(account.daily_dd_locks_at || 'start_balance'); setEditDailyDdLocksAtPct(account.daily_dd_locks_at_pct || ''); setEditDailyDdResetTime(account.daily_dd_reset_time || '00:00'); setEditDailyDdResetTimezone(account.daily_dd_reset_timezone || 'Europe/London'); setEditMaxDdEnabled(account.max_dd_enabled || false); setEditMaxDdPct(account.max_dd_pct || ''); setEditMaxDdType(account.max_dd_type || 'static'); setEditMaxDdTrailingStopsAt(account.max_dd_trailing_stops_at || 'never'); setEditMaxDdLocksAtPct(account.max_dd_locks_at_pct || ''); setShowEditModal(account.id) }} style={{ padding: '8px', background: '#0a0a0f', border: '2px solid rgba(34,197,94,0.3)', borderRadius: '8px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.2s' }} onMouseEnter={e => { e.currentTarget.style.background = 'rgba(34,197,94,0.08)'; e.currentTarget.style.border = '2px solid rgba(34,197,94,0.5)' }} onMouseLeave={e => { e.currentTarget.style.background = '#0a0a0f'; e.currentTarget.style.border = '2px solid rgba(34,197,94,0.3)' }}>
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#22c55e" strokeWidth="2"><circle cx="12" cy="12" r="1"/><circle cx="12" cy="5" r="1"/><circle cx="12" cy="19" r="1"/></svg>
+                          <button onClick={(e) => { e.stopPropagation(); setEditName(account.name); setEditProfitTarget(account.profit_target || ''); setEditMaxDrawdown(account.max_drawdown || ''); setEditConsistencyEnabled(account.consistency_enabled || false); setEditConsistencyPct(account.consistency_pct || '30'); setEditDailyDdEnabled(account.daily_dd_enabled || false); setEditDailyDdPct(account.daily_dd_pct || ''); setEditDailyDdType(account.daily_dd_type || 'static'); setEditDailyDdLocksAt(account.daily_dd_locks_at || 'start_balance'); setEditDailyDdLocksAtPct(account.daily_dd_locks_at_pct || ''); setEditDailyDdResetTime(account.daily_dd_reset_time || '00:00'); setEditDailyDdResetTimezone(account.daily_dd_reset_timezone || 'Europe/London'); setEditMaxDdEnabled(account.max_dd_enabled || false); setEditMaxDdPct(account.max_dd_pct || ''); setEditMaxDdType(account.max_dd_type || 'static'); setEditMaxDdTrailingStopsAt(account.max_dd_trailing_stops_at || 'never'); setEditMaxDdLocksAtPct(account.max_dd_locks_at_pct || ''); setShowEditModal(account.id) }} style={{ padding: '8px', background: '#0a0a0f', border: `2px solid rgba(${themeColorRgb},0.3)`, borderRadius: '8px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.2s' }} onMouseEnter={e => { e.currentTarget.style.background = `rgba(${themeColorRgb},0.08)`; e.currentTarget.style.border = `2px solid rgba(${themeColorRgb},0.5)` }} onMouseLeave={e => { e.currentTarget.style.background = '#0a0a0f'; e.currentTarget.style.border = `2px solid rgba(${themeColorRgb},0.3)` }}>
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={themeColor} strokeWidth="2"><circle cx="12" cy="12" r="1"/><circle cx="12" cy="5" r="1"/><circle cx="12" cy="19" r="1"/></svg>
                           </button>
                         </div>
                       </div>
@@ -4819,18 +4819,6 @@ export default function DashboardPage() {
               {/* Step 2: Column Mapping */}
               {importStep === 2 && (
                 <div>
-                  <div style={{ marginBottom: '20px' }}>
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '16px' }}>
-                      <div>
-                        <label style={{ display: 'block', fontSize: '11px', color: '#888', marginBottom: '6px', textTransform: 'uppercase', fontWeight: 600 }}>Journal Name</label>
-                        <input type="text" value={importJournalName} onChange={e => setImportJournalName(e.target.value)} placeholder="My Journal" style={{ width: '100%', padding: '10px 12px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '13px', boxSizing: 'border-box' }} />
-                      </div>
-                      <div>
-                        <label style={{ display: 'block', fontSize: '11px', color: '#888', marginBottom: '6px', textTransform: 'uppercase', fontWeight: 600 }}>Starting Balance ($)</label>
-                        <input type="number" value={importStartingBalance} onChange={e => setImportStartingBalance(e.target.value)} placeholder="10000" style={{ width: '100%', padding: '10px 12px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '13px', boxSizing: 'border-box' }} />
-                      </div>
-                    </div>
-                  </div>
                   <div style={{ fontSize: '11px', color: '#888', textTransform: 'uppercase', fontWeight: 600, marginBottom: '12px' }}>Map Your Columns</div>
                   <p style={{ color: '#888', fontSize: '12px', marginBottom: '12px' }}>Auto-detected fields are highlighted. Unmapped columns will be created as custom inputs.</p>
 
@@ -4864,29 +4852,6 @@ export default function DashboardPage() {
                     </div>
                   )}
 
-                  {/* Warning if PnL mapped but looks like percentages and no starting balance */}
-                  {Object.values(importMapping).includes('pnl') && !importStartingBalance && (() => {
-                    const pnlColIdx = Object.entries(importMapping).find(([_, v]) => v === 'pnl')?.[0]
-                    if (pnlColIdx !== undefined) {
-                      const samplePnls = importData.slice(0, 20).map(row => row[parseInt(pnlColIdx)]).filter(v => v != null)
-                      const hasPercent = samplePnls.some(v => String(v).includes('%'))
-                      const allSmall = samplePnls.length > 0 && samplePnls.every(v => {
-                        const num = parseFloat(String(v).replace(/[^0-9.\-]/g, ''))
-                        return !isNaN(num) && Math.abs(num) < 20
-                      })
-                      if (hasPercent || allSmall) {
-                        return (
-                          <div style={{ marginBottom: '16px', padding: '10px 12px', background: 'rgba(245,158,11,0.1)', border: '1px solid rgba(245,158,11,0.3)', borderRadius: '8px', display: 'flex', alignItems: 'flex-start', gap: '10px' }}>
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" strokeWidth="2" style={{ flexShrink: 0, marginTop: '2px' }}><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-                            <span style={{ fontSize: '11px', color: '#f59e0b' }}>
-                              <strong>PnL values look like percentages.</strong> Enter a Starting Balance above to convert % to $ amounts, or values will be used as-is.
-                            </span>
-                          </div>
-                        )
-                      }
-                    }
-                    return null
-                  })()}
                   <div style={{ maxHeight: '300px', overflow: 'auto', marginBottom: '20px' }}>
                     {importHeaders.map((header, idx) => (
                       <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '10px 12px', background: importMapping[idx] ? 'rgba(147,51,234,0.05)' : '#0a0a0f', border: `1px solid ${importMapping[idx] ? 'rgba(147,51,234,0.3)' : '#1a1a22'}`, borderRadius: '8px', marginBottom: '8px' }}>
@@ -4921,18 +4886,7 @@ export default function DashboardPage() {
               {/* Step 3: Preview & Import */}
               {importStep === 3 && (
                 <div>
-                  <div style={{ marginBottom: '16px', padding: '12px 16px', background: 'rgba(147,51,234,0.1)', border: '1px solid rgba(147,51,234,0.3)', borderRadius: '8px' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '16px', fontSize: '13px' }}>
-                      <span style={{ color: '#9333ea', fontWeight: 600 }}>{importJournalName}</span>
-                      <span style={{ color: '#666' }}>•</span>
-                      <span style={{ color: '#888' }}>{importData.length} trades</span>
-                      {importStartingBalance && <>
-                        <span style={{ color: '#666' }}>•</span>
-                        <span style={{ color: '#888' }}>Starting: ${parseFloat(importStartingBalance).toLocaleString()}</span>
-                      </>}
-                    </div>
-                  </div>
-                  <div style={{ fontSize: '11px', color: '#888', textTransform: 'uppercase', fontWeight: 600, marginBottom: '8px' }}>Preview (first 5 rows)</div>
+                  <div style={{ fontSize: '11px', color: '#888', textTransform: 'uppercase', fontWeight: 600, marginBottom: '8px' }}>Preview ({importData.length} trades, first 5 shown)</div>
                   <div style={{ overflow: 'auto', marginBottom: '20px', border: '1px solid #1a1a22', borderRadius: '8px' }}>
                     <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '12px' }}>
                       <thead style={{ position: 'sticky', top: 0, zIndex: 1 }}>
@@ -4955,6 +4909,20 @@ export default function DashboardPage() {
                       </tbody>
                     </table>
                   </div>
+
+                  {/* Journal Setup */}
+                  <div style={{ fontSize: '11px', color: '#888', textTransform: 'uppercase', fontWeight: 600, marginBottom: '12px' }}>Journal Setup</div>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '20px' }}>
+                    <div>
+                      <label style={{ display: 'block', fontSize: '11px', color: '#888', marginBottom: '6px', textTransform: 'uppercase', fontWeight: 600 }}>Journal Name *</label>
+                      <input type="text" value={importJournalName} onChange={e => setImportJournalName(e.target.value)} placeholder="My Journal" style={{ width: '100%', padding: '10px 12px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '13px', boxSizing: 'border-box' }} />
+                    </div>
+                    <div>
+                      <label style={{ display: 'block', fontSize: '11px', color: '#888', marginBottom: '6px', textTransform: 'uppercase', fontWeight: 600 }}>Starting Balance ($)</label>
+                      <input type="number" value={importStartingBalance} onChange={e => setImportStartingBalance(e.target.value)} placeholder="10000" style={{ width: '100%', padding: '10px 12px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '13px', boxSizing: 'border-box' }} />
+                    </div>
+                  </div>
+
                   <div style={{ display: 'flex', gap: '12px' }}>
                     <button onClick={() => setImportStep(2)} style={{ flex: 1, padding: '12px', background: 'transparent', border: '1px solid #1a1a22', borderRadius: '8px', color: '#888', fontWeight: 600, fontSize: '14px', cursor: 'pointer' }}>Back</button>
                     <button onClick={processImport} disabled={importing || !importJournalName.trim()} style={{ flex: 1, padding: '12px', background: (importing || !importJournalName.trim()) ? '#1a1a22' : 'linear-gradient(135deg, #9333ea 0%, #7c3aed 100%)', border: 'none', borderRadius: '8px', color: (importing || !importJournalName.trim()) ? '#666' : '#fff', fontWeight: 600, fontSize: '14px', cursor: (importing || !importJournalName.trim()) ? 'not-allowed' : 'pointer', boxShadow: (importing || !importJournalName.trim()) ? 'none' : '0 0 15px rgba(147,51,234,0.3)' }}>

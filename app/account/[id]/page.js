@@ -1805,7 +1805,7 @@ export default function AccountPage() {
                     style={{
                       width: '100%',
                       padding: '8px 10px',
-                      background: viewMode === 'this' ? '#22c55e' : 'transparent',
+                      background: viewMode === 'this' ? themeColor : 'transparent',
                       border: viewMode === 'this' ? 'none' : '1px solid #1a1a22',
                       borderRadius: '6px',
                       color: viewMode === 'this' ? '#fff' : '#666',
@@ -1813,7 +1813,7 @@ export default function AccountPage() {
                       fontWeight: 600,
                       cursor: 'pointer',
                       textAlign: 'left',
-                      boxShadow: viewMode === 'this' ? '0 0 12px rgba(34,197,94,0.5), 0 0 24px rgba(34,197,94,0.3)' : 'none',
+                      boxShadow: viewMode === 'this' ? `0 0 12px rgba(${themeColorRgb},0.5), 0 0 24px rgba(${themeColorRgb},0.3)` : 'none',
                       transition: 'all 0.2s'
                     }}
                     onMouseEnter={e => { if (viewMode !== 'this') { e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; e.currentTarget.style.borderColor = '#2a2a35'; e.currentTarget.style.color = '#888' } }}
@@ -1945,16 +1945,16 @@ export default function AccountPage() {
                     justifyContent: 'space-between',
                     gap: '8px',
                     padding: '10px 12px',
-                    background: isSelected ? 'rgba(34,197,94,0.1)' : '#0a0a0f',
-                    border: isDragOver ? '2px dashed #9333ea' : isDragging ? '2px solid #9333ea' : `1px solid ${isSelected ? 'rgba(34,197,94,0.5)' : '#1a1a22'}`,
+                    background: isSelected ? `rgba(${themeColorRgb},0.1)` : '#0a0a0f',
+                    border: isDragOver ? '2px dashed #9333ea' : isDragging ? '2px solid #9333ea' : `1px solid ${isSelected ? `rgba(${themeColorRgb},0.5)` : '#1a1a22'}`,
                     borderRadius: '8px',
                     cursor: draggedJournal ? 'grabbing' : 'grab',
                     transition: 'border 0.2s, opacity 0.2s, transform 0.2s',
-                    boxShadow: isSelected ? '0 0 12px rgba(34,197,94,0.2), inset 0 0 20px rgba(34,197,94,0.05)' : 'none',
+                    boxShadow: isSelected ? `0 0 12px rgba(${themeColorRgb},0.2), inset 0 0 20px rgba(${themeColorRgb},0.05)` : 'none',
                     opacity: isDragging ? 0.5 : 1,
                     transform: isDragOver ? 'scale(1.02)' : 'scale(1)'
                   }}
-                  onMouseEnter={e => { if (!isSelected && !draggedJournal) { e.currentTarget.style.borderColor = 'rgba(34,197,94,0.5)'; e.currentTarget.style.background = 'rgba(34,197,94,0.05)' } }}
+                  onMouseEnter={e => { if (!isSelected && !draggedJournal) { e.currentTarget.style.borderColor = `rgba(${themeColorRgb},0.5)`; e.currentTarget.style.background = `rgba(${themeColorRgb},0.05)` } }}
                   onMouseLeave={e => { if (!isSelected && !draggedJournal && !isDragOver) { e.currentTarget.style.borderColor = '#1a1a22'; e.currentTarget.style.background = '#0a0a0f' } }}
                 >
                   <div style={{ display: 'flex', alignItems: 'flex-start', gap: '8px', flex: 1, minWidth: 0 }}>
@@ -1962,8 +1962,8 @@ export default function AccountPage() {
                       width: '8px',
                       height: '8px',
                       borderRadius: '50%',
-                      background: isSelected ? '#22c55e' : '#444',
-                      boxShadow: isSelected ? '0 0 6px #22c55e' : 'none',
+                      background: isSelected ? themeColor : '#444',
+                      boxShadow: isSelected ? `0 0 6px ${themeColor}` : 'none',
                       flexShrink: 0,
                       marginTop: '4px'
                     }} />

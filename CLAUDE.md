@@ -142,3 +142,73 @@ When editing shared UI patterns, **the same changes should be applied to both pa
 | Option colors | `optionStyles` object | Same `optionStyles` object |
 
 **Rule:** If you edit a UI pattern in one page, check if the same pattern exists in the other page and apply matching changes.
+
+# Accounts vs Backtesting Journals
+
+## Understanding the Two Types
+The app has two journal types that share **identical functionality** but serve different purposes:
+
+1. **Accounts Journals** (`dashboard_type: 'accounts'`)
+   - For live trading with real money
+   - Theme color: Green (`#22c55e`)
+   - Shown under "ACCOUNTS DASHBOARD"
+
+2. **Backtesting Journals** (`dashboard_type: 'backtesting'`)
+   - For paper trading and strategy testing
+   - Theme color: Blue (`#3b82f6`)
+   - Shown under "BACKTESTING DASHBOARD"
+
+## Code Sync Requirement
+**CRITICAL:** Both journal types use the exact same code paths. They are functionally identical - the only differences are:
+- The `dashboard_type` field in the database
+- The theme color used for UI accents
+- Which dashboard tab they appear under
+
+When making changes:
+- **DO** apply the same changes to both Accounts and Backtesting code paths
+- **DO** use the `themeColor` variable (already defined based on dashboard_type) for dynamic coloring
+- **DO NOT** create separate logic for accounts vs backtesting unless explicitly required
+- **DO NOT** add features to one type without adding to the other
+
+## Theme Color Variables
+Both dashboard and account pages define these variables near the top:
+
+```javascript
+// Dashboard page (uses activeDashboard state)
+const themeColor = activeDashboard === 'backtesting' ? '#3b82f6' : '#22c55e'
+const themeColorRgb = activeDashboard === 'backtesting' ? '59,130,246' : '34,197,94'
+const themeColorDark = activeDashboard === 'backtesting' ? '#2563eb' : '#16a34a'
+
+// Account page (uses currentDashboardType from account)
+const themeColor = currentDashboardType === 'backtesting' ? '#3b82f6' : '#22c55e'
+const themeColorRgb = currentDashboardType === 'backtesting' ? '59,130,246' : '34,197,94'
+const themeColorDark = currentDashboardType === 'backtesting' ? '#2563eb' : '#16a34a'
+```
+
+### Usage Examples
+```jsx
+// Solid color
+color: themeColor
+background: themeColor
+
+// RGBA with opacity
+background: `rgba(${themeColorRgb},0.1)`
+border: `1px solid rgba(${themeColorRgb},0.3)`
+boxShadow: `0 0 12px rgba(${themeColorRgb},0.5)`
+
+// Gradient
+background: `linear-gradient(135deg, ${themeColor} 0%, ${themeColorDark} 100%)`
+```
+
+### Elements That Use Theme Color
+- Tab buttons (active state)
+- Journal selector items (selected state, indicator dots)
+- "This Journal" / view mode buttons
+- Enter Journal, Stats buttons
+- Add Journal card
+- LOG TRADE button
+- Quick action buttons (See Overall Journal, etc.)
+- Input focus borders
+- Drag indicators
+
+**Rule:** If you add a feature or fix a bug for Accounts journals, the same change automatically applies to Backtesting journals (and vice versa) because they share the same code.
