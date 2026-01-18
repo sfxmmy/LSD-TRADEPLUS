@@ -1966,13 +1966,13 @@ export default function DashboardPage() {
     <div style={{ minHeight: '100vh', background: '#0a0a0f' }}>
       {/* Header */}
       <header style={{ padding: '4px 16px', height: '68px', boxSizing: 'border-box', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #1a1a22', flexWrap: isMobile ? 'wrap' : 'nowrap', gap: '12px' }}>
-        <a href="/" style={{ display: 'flex', alignItems: 'center', textDecoration: 'none', height: isMobile ? '32px' : '50px' }}>
+        <a href="/" style={{ display: 'flex', alignItems: 'center', textDecoration: 'none', height: isMobile ? '32px' : '60px' }}>
           <img src="/logo.svg" alt="TradeSave+" style={{ height: '100%', width: 'auto' }} />
         </a>
         {!isMobile && <div style={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)', display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <button onClick={() => handleDashboardSwitch('accounts')} disabled={switchingDashboard} style={{ background: 'none', border: 'none', padding: 0, cursor: switchingDashboard ? 'wait' : 'pointer', fontSize: '28px', fontWeight: 700, letterSpacing: '-0.5px', color: activeDashboard === 'accounts' ? '#fff' : '#666', opacity: switchingDashboard ? 0.6 : 1, transition: 'color 0.2s', display: 'flex', alignItems: 'center', gap: '10px' }}><span style={{ width: '10px', height: '10px', borderRadius: '50%', background: activeDashboard === 'accounts' ? '#22c55e' : '#666', transition: 'background 0.2s' }}></span>ACCOUNTS DASHBOARD</button>
+          <button onClick={() => handleDashboardSwitch('accounts')} disabled={switchingDashboard} style={{ background: 'none', border: 'none', padding: 0, cursor: switchingDashboard ? 'wait' : 'pointer', fontSize: '28px', fontWeight: 700, letterSpacing: '-0.5px', color: activeDashboard === 'accounts' ? '#fff' : '#666', opacity: switchingDashboard ? 0.6 : 1, transition: 'color 0.2s' }}>ACCOUNTS DASHBOARD</button>
           <span style={{ color: '#333', fontSize: '28px', fontWeight: 300 }}>|</span>
-          <button onClick={() => handleDashboardSwitch('backtesting')} disabled={switchingDashboard} style={{ background: 'none', border: 'none', padding: 0, cursor: switchingDashboard ? 'wait' : 'pointer', fontSize: '28px', fontWeight: 700, letterSpacing: '-0.5px', color: activeDashboard === 'backtesting' ? '#fff' : '#666', opacity: switchingDashboard ? 0.6 : 1, transition: 'color 0.2s', display: 'flex', alignItems: 'center', gap: '10px' }}>BACKTESTING DASHBOARD<span style={{ width: '10px', height: '10px', borderRadius: '50%', background: activeDashboard === 'backtesting' ? '#3b82f6' : '#666', transition: 'background 0.2s' }}></span></button>
+          <button onClick={() => handleDashboardSwitch('backtesting')} disabled={switchingDashboard} style={{ background: 'none', border: 'none', padding: 0, cursor: switchingDashboard ? 'wait' : 'pointer', fontSize: '28px', fontWeight: 700, letterSpacing: '-0.5px', color: activeDashboard === 'backtesting' ? '#fff' : '#666', opacity: switchingDashboard ? 0.6 : 1, transition: 'color 0.2s' }}>BACKTESTING DASHBOARD</button>
         </div>}
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
           {/* View Toggle - Grid/List */}
@@ -2098,12 +2098,12 @@ export default function DashboardPage() {
                       return (
                         <div style={{ position: 'relative' }}>
                           <label style={{ display: 'block', fontSize: '12px', color: '#888', marginBottom: '6px', fontWeight: 600 }}>Direction</label>
-                          <button type="button" onClick={() => { setDirectionDropdownOpen(!directionDropdownOpen); setOutcomeDropdownOpen(false); setConfidenceDropdownOpen(false); setTimeframeDropdownOpen(false); setSessionDropdownOpen(false); setCustomDropdownOpen({}) }} style={{ width: '100%', padding: '10px 12px', background: quickTradeDirection ? (dirStyles.bgColor || '#0a0a0f') : '#0a0a0f', border: directionDropdownOpen ? '1px solid #22c55e' : quickTradeDirection ? `1px solid ${dirStyles.borderColor || dirStyles.textColor + '80' || '#1a1a22'}` : '1px solid #1a1a22', borderRadius: directionDropdownOpen ? '8px 8px 0 0' : '8px', color: quickTradeDirection ? (dirStyles.textColor || '#fff') : '#888', fontSize: '14px', boxSizing: 'border-box', cursor: 'pointer', textAlign: 'left', display: 'flex', justifyContent: 'space-between', alignItems: 'center', transition: 'all 0.2s' }} onMouseEnter={e => { if (!directionDropdownOpen && !quickTradeDirection) e.currentTarget.style.borderColor = '#2a2a35' }} onMouseLeave={e => { if (!directionDropdownOpen && !quickTradeDirection) e.currentTarget.style.borderColor = '#1a1a22' }}>
+                          <button type="button" onClick={() => { setDirectionDropdownOpen(!directionDropdownOpen); setOutcomeDropdownOpen(false); setConfidenceDropdownOpen(false); setTimeframeDropdownOpen(false); setSessionDropdownOpen(false); setCustomDropdownOpen({}) }} style={{ width: '100%', padding: '10px 12px', background: quickTradeDirection ? (dirStyles.bgColor || '#0a0a0f') : '#0a0a0f', border: directionDropdownOpen ? `1px solid ${themeColor}` : quickTradeDirection ? `1px solid ${dirStyles.borderColor || dirStyles.textColor + '80' || '#1a1a22'}` : '1px solid #1a1a22', borderRadius: directionDropdownOpen ? '8px 8px 0 0' : '8px', color: quickTradeDirection ? (dirStyles.textColor || '#fff') : '#888', fontSize: '14px', boxSizing: 'border-box', cursor: 'pointer', textAlign: 'left', display: 'flex', justifyContent: 'space-between', alignItems: 'center', transition: 'all 0.2s' }} onMouseEnter={e => { if (!directionDropdownOpen && !quickTradeDirection) e.currentTarget.style.borderColor = '#2a2a35' }} onMouseLeave={e => { if (!directionDropdownOpen && !quickTradeDirection) e.currentTarget.style.borderColor = '#1a1a22' }}>
                             <span>{displayVal ? getOptVal(displayVal) : (quickTradeDirection || '-')}</span>
                             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ transform: directionDropdownOpen ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }}><path d="M6 9l6 6 6-6" /></svg>
                           </button>
                           {directionDropdownOpen && (
-                            <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, background: '#0a0a0f', border: '1px solid #22c55e', borderTop: 'none', borderRadius: '0 0 8px 8px', zIndex: 100, overflow: 'hidden' }}>
+                            <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, background: '#0a0a0f', border: `1px solid ${themeColor}`, borderTop: 'none', borderRadius: '0 0 8px 8px', zIndex: 100, overflow: 'hidden' }}>
                               <div onClick={() => { setQuickTradeDirection(''); setDirectionDropdownOpen(false) }} style={{ padding: '10px 12px', cursor: 'pointer', color: '#888', fontSize: '14px', transition: 'background 0.15s' }} onMouseEnter={e => e.currentTarget.style.background = '#1a1a22'} onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>-</div>
                               {dirOptions.map(opt => {
                                 const optVal = getOptVal(opt)
@@ -2125,12 +2125,12 @@ export default function DashboardPage() {
                       return (
                         <div style={{ position: 'relative' }}>
                           <label style={{ display: 'block', fontSize: '12px', color: '#888', marginBottom: '6px', fontWeight: 600 }}>Outcome</label>
-                          <button type="button" onClick={() => { setOutcomeDropdownOpen(!outcomeDropdownOpen); setDirectionDropdownOpen(false); setConfidenceDropdownOpen(false); setTimeframeDropdownOpen(false); setSessionDropdownOpen(false); setCustomDropdownOpen({}) }} style={{ width: '100%', padding: '10px 12px', background: quickTradeOutcome ? (outStyles.bgColor || '#0a0a0f') : '#0a0a0f', border: outcomeDropdownOpen ? '1px solid #22c55e' : quickTradeOutcome ? `1px solid ${outStyles.borderColor || outStyles.textColor + '80' || '#1a1a22'}` : '1px solid #1a1a22', borderRadius: outcomeDropdownOpen ? '8px 8px 0 0' : '8px', color: quickTradeOutcome ? (outStyles.textColor || '#fff') : '#888', fontSize: '14px', boxSizing: 'border-box', cursor: 'pointer', textAlign: 'left', display: 'flex', justifyContent: 'space-between', alignItems: 'center', transition: 'all 0.2s' }} onMouseEnter={e => { if (!outcomeDropdownOpen && !quickTradeOutcome) e.currentTarget.style.borderColor = '#2a2a35' }} onMouseLeave={e => { if (!outcomeDropdownOpen && !quickTradeOutcome) e.currentTarget.style.borderColor = '#1a1a22' }}>
+                          <button type="button" onClick={() => { setOutcomeDropdownOpen(!outcomeDropdownOpen); setDirectionDropdownOpen(false); setConfidenceDropdownOpen(false); setTimeframeDropdownOpen(false); setSessionDropdownOpen(false); setCustomDropdownOpen({}) }} style={{ width: '100%', padding: '10px 12px', background: quickTradeOutcome ? (outStyles.bgColor || '#0a0a0f') : '#0a0a0f', border: outcomeDropdownOpen ? `1px solid ${themeColor}` : quickTradeOutcome ? `1px solid ${outStyles.borderColor || outStyles.textColor + '80' || '#1a1a22'}` : '1px solid #1a1a22', borderRadius: outcomeDropdownOpen ? '8px 8px 0 0' : '8px', color: quickTradeOutcome ? (outStyles.textColor || '#fff') : '#888', fontSize: '14px', boxSizing: 'border-box', cursor: 'pointer', textAlign: 'left', display: 'flex', justifyContent: 'space-between', alignItems: 'center', transition: 'all 0.2s' }} onMouseEnter={e => { if (!outcomeDropdownOpen && !quickTradeOutcome) e.currentTarget.style.borderColor = '#2a2a35' }} onMouseLeave={e => { if (!outcomeDropdownOpen && !quickTradeOutcome) e.currentTarget.style.borderColor = '#1a1a22' }}>
                             <span>{displayVal ? getOptVal(displayVal) : (quickTradeOutcome || '-')}</span>
                             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ transform: outcomeDropdownOpen ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }}><path d="M6 9l6 6 6-6" /></svg>
                           </button>
                           {outcomeDropdownOpen && (
-                            <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, background: '#0a0a0f', border: '1px solid #22c55e', borderTop: 'none', borderRadius: '0 0 8px 8px', zIndex: 100, overflow: 'hidden' }}>
+                            <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, background: '#0a0a0f', border: `1px solid ${themeColor}`, borderTop: 'none', borderRadius: '0 0 8px 8px', zIndex: 100, overflow: 'hidden' }}>
                               <div onClick={() => { setQuickTradeOutcome(''); setOutcomeDropdownOpen(false) }} style={{ padding: '10px 12px', cursor: 'pointer', color: '#888', fontSize: '14px', transition: 'background 0.15s' }} onMouseEnter={e => e.currentTarget.style.background = '#1a1a22'} onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>-</div>
                               {outOptions.map(opt => {
                                 const optVal = getOptVal(opt)
@@ -2168,12 +2168,12 @@ export default function DashboardPage() {
                       return (
                         <div style={{ position: 'relative' }}>
                           <label style={{ display: 'block', fontSize: '12px', color: '#888', marginBottom: '6px', fontWeight: 600 }}>Confidence</label>
-                          <button type="button" onClick={() => { setConfidenceDropdownOpen(!confidenceDropdownOpen); setDirectionDropdownOpen(false); setOutcomeDropdownOpen(false); setTimeframeDropdownOpen(false); setSessionDropdownOpen(false); setCustomDropdownOpen({}) }} style={{ width: '100%', padding: '10px 12px', background: quickTradeConfidence ? (confStyles.bgColor || '#0a0a0f') : '#0a0a0f', border: confidenceDropdownOpen ? '1px solid #22c55e' : quickTradeConfidence ? `1px solid ${confStyles.borderColor || confStyles.textColor + '80' || '#1a1a22'}` : '1px solid #1a1a22', borderRadius: confidenceDropdownOpen ? '8px 8px 0 0' : '8px', color: quickTradeConfidence ? (confStyles.textColor || '#fff') : '#888', fontSize: '14px', boxSizing: 'border-box', cursor: 'pointer', textAlign: 'left', display: 'flex', justifyContent: 'space-between', alignItems: 'center', transition: 'all 0.2s' }} onMouseEnter={e => { if (!confidenceDropdownOpen && !quickTradeConfidence) e.currentTarget.style.borderColor = '#2a2a35' }} onMouseLeave={e => { if (!confidenceDropdownOpen && !quickTradeConfidence) e.currentTarget.style.borderColor = '#1a1a22' }}>
+                          <button type="button" onClick={() => { setConfidenceDropdownOpen(!confidenceDropdownOpen); setDirectionDropdownOpen(false); setOutcomeDropdownOpen(false); setTimeframeDropdownOpen(false); setSessionDropdownOpen(false); setCustomDropdownOpen({}) }} style={{ width: '100%', padding: '10px 12px', background: quickTradeConfidence ? (confStyles.bgColor || '#0a0a0f') : '#0a0a0f', border: confidenceDropdownOpen ? `1px solid ${themeColor}` : quickTradeConfidence ? `1px solid ${confStyles.borderColor || confStyles.textColor + '80' || '#1a1a22'}` : '1px solid #1a1a22', borderRadius: confidenceDropdownOpen ? '8px 8px 0 0' : '8px', color: quickTradeConfidence ? (confStyles.textColor || '#fff') : '#888', fontSize: '14px', boxSizing: 'border-box', cursor: 'pointer', textAlign: 'left', display: 'flex', justifyContent: 'space-between', alignItems: 'center', transition: 'all 0.2s' }} onMouseEnter={e => { if (!confidenceDropdownOpen && !quickTradeConfidence) e.currentTarget.style.borderColor = '#2a2a35' }} onMouseLeave={e => { if (!confidenceDropdownOpen && !quickTradeConfidence) e.currentTarget.style.borderColor = '#1a1a22' }}>
                             <span>{displayVal ? getOptVal(displayVal) : (quickTradeConfidence || '-')}</span>
                             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ transform: confidenceDropdownOpen ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }}><path d="M6 9l6 6 6-6" /></svg>
                           </button>
                           {confidenceDropdownOpen && (
-                            <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, background: '#0a0a0f', border: '1px solid #22c55e', borderTop: 'none', borderRadius: '0 0 8px 8px', zIndex: 100, overflow: 'hidden' }}>
+                            <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, background: '#0a0a0f', border: `1px solid ${themeColor}`, borderTop: 'none', borderRadius: '0 0 8px 8px', zIndex: 100, overflow: 'hidden' }}>
                               <div onClick={() => { setQuickTradeConfidence(''); setConfidenceDropdownOpen(false) }} style={{ padding: '10px 12px', cursor: 'pointer', color: '#888', fontSize: '14px', transition: 'background 0.15s' }} onMouseEnter={e => e.currentTarget.style.background = '#1a1a22'} onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>-</div>
                               {confOptions.map(opt => {
                                 const optVal = getOptVal(opt)
@@ -2195,12 +2195,12 @@ export default function DashboardPage() {
                       return (
                         <div style={{ position: 'relative' }}>
                           <label style={{ display: 'block', fontSize: '12px', color: '#888', marginBottom: '6px', fontWeight: 600 }}>Timeframe</label>
-                          <button type="button" onClick={() => { setTimeframeDropdownOpen(!timeframeDropdownOpen); setDirectionDropdownOpen(false); setOutcomeDropdownOpen(false); setConfidenceDropdownOpen(false); setSessionDropdownOpen(false); setCustomDropdownOpen({}) }} style={{ width: '100%', padding: '10px 12px', background: quickTradeTimeframe ? (tfStyles.bgColor || '#0a0a0f') : '#0a0a0f', border: timeframeDropdownOpen ? '1px solid #22c55e' : quickTradeTimeframe ? `1px solid ${tfStyles.borderColor || tfStyles.textColor + '80' || '#1a1a22'}` : '1px solid #1a1a22', borderRadius: timeframeDropdownOpen ? '8px 8px 0 0' : '8px', color: quickTradeTimeframe ? (tfStyles.textColor || '#fff') : '#888', fontSize: '14px', boxSizing: 'border-box', cursor: 'pointer', textAlign: 'left', display: 'flex', justifyContent: 'space-between', alignItems: 'center', transition: 'all 0.2s' }} onMouseEnter={e => { if (!timeframeDropdownOpen && !quickTradeTimeframe) e.currentTarget.style.borderColor = '#2a2a35' }} onMouseLeave={e => { if (!timeframeDropdownOpen && !quickTradeTimeframe) e.currentTarget.style.borderColor = '#1a1a22' }}>
+                          <button type="button" onClick={() => { setTimeframeDropdownOpen(!timeframeDropdownOpen); setDirectionDropdownOpen(false); setOutcomeDropdownOpen(false); setConfidenceDropdownOpen(false); setSessionDropdownOpen(false); setCustomDropdownOpen({}) }} style={{ width: '100%', padding: '10px 12px', background: quickTradeTimeframe ? (tfStyles.bgColor || '#0a0a0f') : '#0a0a0f', border: timeframeDropdownOpen ? `1px solid ${themeColor}` : quickTradeTimeframe ? `1px solid ${tfStyles.borderColor || tfStyles.textColor + '80' || '#1a1a22'}` : '1px solid #1a1a22', borderRadius: timeframeDropdownOpen ? '8px 8px 0 0' : '8px', color: quickTradeTimeframe ? (tfStyles.textColor || '#fff') : '#888', fontSize: '14px', boxSizing: 'border-box', cursor: 'pointer', textAlign: 'left', display: 'flex', justifyContent: 'space-between', alignItems: 'center', transition: 'all 0.2s' }} onMouseEnter={e => { if (!timeframeDropdownOpen && !quickTradeTimeframe) e.currentTarget.style.borderColor = '#2a2a35' }} onMouseLeave={e => { if (!timeframeDropdownOpen && !quickTradeTimeframe) e.currentTarget.style.borderColor = '#1a1a22' }}>
                             <span>{displayVal ? getOptVal(displayVal) : (quickTradeTimeframe || '-')}</span>
                             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ transform: timeframeDropdownOpen ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }}><path d="M6 9l6 6 6-6" /></svg>
                           </button>
                           {timeframeDropdownOpen && (
-                            <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, background: '#0a0a0f', border: '1px solid #22c55e', borderTop: 'none', borderRadius: '0 0 8px 8px', zIndex: 100, overflow: 'hidden' }}>
+                            <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, background: '#0a0a0f', border: `1px solid ${themeColor}`, borderTop: 'none', borderRadius: '0 0 8px 8px', zIndex: 100, overflow: 'hidden' }}>
                               <div onClick={() => { setQuickTradeTimeframe(''); setTimeframeDropdownOpen(false) }} style={{ padding: '10px 12px', cursor: 'pointer', color: '#888', fontSize: '14px', transition: 'background 0.15s' }} onMouseEnter={e => e.currentTarget.style.background = '#1a1a22'} onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>-</div>
                               {tfOptions.map(opt => {
                                 const optVal = getOptVal(opt)
@@ -2226,12 +2226,12 @@ export default function DashboardPage() {
                       return (
                         <div style={{ position: 'relative' }}>
                           <label style={{ display: 'block', fontSize: '12px', color: '#888', marginBottom: '6px', fontWeight: 600 }}>Session</label>
-                          <button type="button" onClick={() => { setSessionDropdownOpen(!sessionDropdownOpen); setDirectionDropdownOpen(false); setOutcomeDropdownOpen(false); setConfidenceDropdownOpen(false); setTimeframeDropdownOpen(false); setCustomDropdownOpen({}) }} style={{ width: '100%', padding: '10px 12px', background: quickTradeSession ? (sessStyles.bgColor || '#0a0a0f') : '#0a0a0f', border: sessionDropdownOpen ? '1px solid #22c55e' : quickTradeSession ? `1px solid ${sessStyles.borderColor || sessStyles.textColor + '80' || '#1a1a22'}` : '1px solid #1a1a22', borderRadius: sessionDropdownOpen ? '8px 8px 0 0' : '8px', color: quickTradeSession ? (sessStyles.textColor || '#fff') : '#888', fontSize: '14px', boxSizing: 'border-box', cursor: 'pointer', textAlign: 'left', display: 'flex', justifyContent: 'space-between', alignItems: 'center', transition: 'all 0.2s' }} onMouseEnter={e => { if (!sessionDropdownOpen && !quickTradeSession) e.currentTarget.style.borderColor = '#2a2a35' }} onMouseLeave={e => { if (!sessionDropdownOpen && !quickTradeSession) e.currentTarget.style.borderColor = '#1a1a22' }}>
+                          <button type="button" onClick={() => { setSessionDropdownOpen(!sessionDropdownOpen); setDirectionDropdownOpen(false); setOutcomeDropdownOpen(false); setConfidenceDropdownOpen(false); setTimeframeDropdownOpen(false); setCustomDropdownOpen({}) }} style={{ width: '100%', padding: '10px 12px', background: quickTradeSession ? (sessStyles.bgColor || '#0a0a0f') : '#0a0a0f', border: sessionDropdownOpen ? `1px solid ${themeColor}` : quickTradeSession ? `1px solid ${sessStyles.borderColor || sessStyles.textColor + '80' || '#1a1a22'}` : '1px solid #1a1a22', borderRadius: sessionDropdownOpen ? '8px 8px 0 0' : '8px', color: quickTradeSession ? (sessStyles.textColor || '#fff') : '#888', fontSize: '14px', boxSizing: 'border-box', cursor: 'pointer', textAlign: 'left', display: 'flex', justifyContent: 'space-between', alignItems: 'center', transition: 'all 0.2s' }} onMouseEnter={e => { if (!sessionDropdownOpen && !quickTradeSession) e.currentTarget.style.borderColor = '#2a2a35' }} onMouseLeave={e => { if (!sessionDropdownOpen && !quickTradeSession) e.currentTarget.style.borderColor = '#1a1a22' }}>
                             <span>{displayVal ? getOptVal(displayVal) : (quickTradeSession || '-')}</span>
                             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ transform: sessionDropdownOpen ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }}><path d="M6 9l6 6 6-6" /></svg>
                           </button>
                           {sessionDropdownOpen && (
-                            <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, background: '#0a0a0f', border: '1px solid #22c55e', borderTop: 'none', borderRadius: '0 0 8px 8px', zIndex: 100, overflow: 'hidden' }}>
+                            <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, background: '#0a0a0f', border: `1px solid ${themeColor}`, borderTop: 'none', borderRadius: '0 0 8px 8px', zIndex: 100, overflow: 'hidden' }}>
                               <div onClick={() => { setQuickTradeSession(''); setSessionDropdownOpen(false) }} style={{ padding: '10px 12px', cursor: 'pointer', color: '#888', fontSize: '14px', transition: 'background 0.15s' }} onMouseEnter={e => e.currentTarget.style.background = '#1a1a22'} onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>-</div>
                               {sessOptions.map(opt => {
                                 const optVal = getOptVal(opt)
@@ -2254,12 +2254,12 @@ export default function DashboardPage() {
                       return (
                         <div key={input.id} style={{ position: 'relative' }}>
                           <label style={{ display: 'block', fontSize: '12px', color: '#888', marginBottom: '6px', fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{input.label || input.id}</label>
-                          <button type="button" onClick={() => { setCustomDropdownOpen(prev => ({ ...Object.fromEntries(Object.keys(prev).map(k => [k, false])), [input.id]: !isOpen })); setDirectionDropdownOpen(false); setOutcomeDropdownOpen(false); setConfidenceDropdownOpen(false); setTimeframeDropdownOpen(false); setSessionDropdownOpen(false) }} style={{ width: '100%', padding: '10px 12px', background: '#0a0a0f', border: isOpen ? '1px solid #22c55e' : '1px solid #1a1a22', borderRadius: isOpen ? '8px 8px 0 0' : '8px', color: currentVal ? currentColor : '#888', fontSize: '14px', boxSizing: 'border-box', cursor: 'pointer', textAlign: 'left', display: 'flex', justifyContent: 'space-between', alignItems: 'center', transition: 'all 0.2s' }} onMouseEnter={e => { if (!isOpen && !currentVal) e.currentTarget.style.borderColor = '#2a2a35' }} onMouseLeave={e => { if (!isOpen && !currentVal) e.currentTarget.style.borderColor = '#1a1a22' }}>
+                          <button type="button" onClick={() => { setCustomDropdownOpen(prev => ({ ...Object.fromEntries(Object.keys(prev).map(k => [k, false])), [input.id]: !isOpen })); setDirectionDropdownOpen(false); setOutcomeDropdownOpen(false); setConfidenceDropdownOpen(false); setTimeframeDropdownOpen(false); setSessionDropdownOpen(false) }} style={{ width: '100%', padding: '10px 12px', background: '#0a0a0f', border: isOpen ? `1px solid ${themeColor}` : '1px solid #1a1a22', borderRadius: isOpen ? '8px 8px 0 0' : '8px', color: currentVal ? currentColor : '#888', fontSize: '14px', boxSizing: 'border-box', cursor: 'pointer', textAlign: 'left', display: 'flex', justifyContent: 'space-between', alignItems: 'center', transition: 'all 0.2s' }} onMouseEnter={e => { if (!isOpen && !currentVal) e.currentTarget.style.borderColor = '#2a2a35' }} onMouseLeave={e => { if (!isOpen && !currentVal) e.currentTarget.style.borderColor = '#1a1a22' }}>
                             <span>{currentVal || '-'}</span>
                             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }}><path d="M6 9l6 6 6-6" /></svg>
                           </button>
                           {isOpen && (
-                            <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, background: '#0a0a0f', border: '1px solid #22c55e', borderTop: 'none', borderRadius: '0 0 8px 8px', zIndex: 100, overflow: 'hidden', maxHeight: '200px', overflowY: 'auto' }}>
+                            <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, background: '#0a0a0f', border: `1px solid ${themeColor}`, borderTop: 'none', borderRadius: '0 0 8px 8px', zIndex: 100, overflow: 'hidden', maxHeight: '200px', overflowY: 'auto' }}>
                               <div onClick={() => { setQuickTradeExtraData(prev => ({ ...prev, [input.id]: '' })); setCustomDropdownOpen({}) }} style={{ padding: '10px 12px', cursor: 'pointer', color: '#888', fontSize: '14px', transition: 'background 0.15s' }} onMouseEnter={e => e.currentTarget.style.background = '#1a1a22'} onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>-</div>
                               {(input.options || []).map(opt => {
                                 const optVal = getOptVal(opt)
@@ -2296,8 +2296,8 @@ export default function DashboardPage() {
                               onMouseMove={(e) => { const rect = e.currentTarget.getBoundingClientRect(); const x = e.clientX - rect.left; setHoverRating(x < rect.width / 2 ? star - 0.5 : star) }}
                               onClick={(e) => { const rect = e.currentTarget.getBoundingClientRect(); const x = e.clientX - rect.left; const newRating = x < rect.width / 2 ? star - 0.5 : star; setQuickTradeRating(parseFloat(quickTradeRating) === newRating ? '' : String(newRating)) }}>
                               <span style={{ position: 'absolute', color: '#2a2a35', fontSize: '20px', lineHeight: 1 }}>★</span>
-                              {isHalfStar && <span style={{ position: 'absolute', color: '#22c55e', fontSize: '20px', lineHeight: 1, width: '48%', overflow: 'hidden' }}>★</span>}
-                              {isFullStar && <span style={{ position: 'absolute', color: '#22c55e', fontSize: '20px', lineHeight: 1 }}>★</span>}
+                              {isHalfStar && <span style={{ position: 'absolute', color: themeColor, fontSize: '20px', lineHeight: 1, width: '48%', overflow: 'hidden' }}>★</span>}
+                              {isFullStar && <span style={{ position: 'absolute', color: themeColor, fontSize: '20px', lineHeight: 1 }}>★</span>}
                             </div>
                           )
                         })}
@@ -3378,7 +3378,7 @@ export default function DashboardPage() {
             <p style={{ color: '#999', marginBottom: '28px', fontSize: isMobile ? '14px' : '16px' }}>
               {activeDashboard === 'backtesting' ? 'Start collecting your backtesting data now' : 'Create your first trading journal to get started'}
             </p>
-            <button onClick={() => setShowModal(true)} style={{ padding: isMobile ? '12px 20px' : '14px 28px', background: '#22c55e', border: 'none', borderRadius: '6px', color: '#fff', fontWeight: 600, fontSize: isMobile ? '14px' : '16px', cursor: 'pointer' }}>
+            <button onClick={() => setShowModal(true)} style={{ padding: isMobile ? '12px 20px' : '14px 28px', background: themeColor, border: 'none', borderRadius: '6px', color: '#fff', fontWeight: 600, fontSize: isMobile ? '14px' : '16px', cursor: 'pointer' }}>
               {activeDashboard === 'backtesting' ? '+ Create Backtest Journal' : '+ Create Your First Journal'}
             </button>
           </div>
@@ -3420,13 +3420,13 @@ export default function DashboardPage() {
               {journalType === 'propfirm' && (
                 <>
                   {/* Profit Target & Consistency */}
-                  <div style={{ background: '#0a0a0f', border: '1px solid #22c55e', borderRadius: '10px', padding: '14px', marginBottom: '14px' }}>
+                  <div style={{ background: '#0a0a0f', border: `1px solid ${themeColor}`, borderRadius: '10px', padding: '14px', marginBottom: '14px' }}>
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: profitTargetEnabled ? '12px' : '0' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#22c55e' }} />
-                        <span style={{ fontSize: '11px', color: '#22c55e', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px' }}>Objectives</span>
+                        <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: themeColor }} />
+                        <span style={{ fontSize: '11px', color: themeColor, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px' }}>Objectives</span>
                       </div>
-                      <input type="checkbox" checked={profitTargetEnabled} onChange={e => setProfitTargetEnabled(e.target.checked)} style={{ width: '16px', height: '16px', accentColor: '#22c55e', cursor: 'pointer' }} />
+                      <input type="checkbox" checked={profitTargetEnabled} onChange={e => setProfitTargetEnabled(e.target.checked)} style={{ width: '16px', height: '16px', accentColor: themeColor, cursor: 'pointer' }} />
                     </div>
                     {profitTargetEnabled && (
                       <>
@@ -3436,7 +3436,7 @@ export default function DashboardPage() {
                         </div>
                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 10px', background: '#0d0d12', borderRadius: '6px', border: '1px solid #1a1a22' }}>
                           <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
-                            <input type="checkbox" checked={consistencyEnabled} onChange={e => setConsistencyEnabled(e.target.checked)} style={{ width: '16px', height: '16px', accentColor: '#22c55e', cursor: 'pointer' }} />
+                            <input type="checkbox" checked={consistencyEnabled} onChange={e => setConsistencyEnabled(e.target.checked)} style={{ width: '16px', height: '16px', accentColor: themeColor, cursor: 'pointer' }} />
                             <span style={{ fontSize: '12px', color: '#999' }}>Consistency Rule</span>
                           </label>
                           <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
@@ -3558,7 +3558,7 @@ export default function DashboardPage() {
                 </>
               )}
 
-              <div style={{ display: 'flex', gap: '12px' }}><button onClick={createJournal} disabled={creating || !name.trim() || !balance} style={{ flex: 1, padding: '12px', background: '#22c55e', border: 'none', borderRadius: '6px', color: '#fff', fontWeight: 600, fontSize: '14px', cursor: 'pointer', opacity: (creating || !name.trim() || !balance) ? 0.5 : 1 }}>{creating ? 'Creating...' : 'Create'}</button><button onClick={() => { setShowModal(false); setName(''); setBalance(''); setJournalType('overall'); setProfitTarget(''); setMaxDrawdown(''); setConsistencyEnabled(false); setDailyDdEnabled(false); setMaxDdEnabled(false) }} style={{ flex: 1, padding: '12px', background: 'transparent', border: '1px solid #1a1a22', borderRadius: '6px', color: '#999', fontWeight: 600, fontSize: '14px', cursor: 'pointer' }}>Cancel</button></div>
+              <div style={{ display: 'flex', gap: '12px' }}><button onClick={createJournal} disabled={creating || !name.trim() || !balance} style={{ flex: 1, padding: '12px', background: themeColor, border: 'none', borderRadius: '6px', color: '#fff', fontWeight: 600, fontSize: '14px', cursor: 'pointer', opacity: (creating || !name.trim() || !balance) ? 0.5 : 1 }}>{creating ? 'Creating...' : 'Create'}</button><button onClick={() => { setShowModal(false); setName(''); setBalance(''); setJournalType('overall'); setProfitTarget(''); setMaxDrawdown(''); setConsistencyEnabled(false); setDailyDdEnabled(false); setMaxDdEnabled(false) }} style={{ flex: 1, padding: '12px', background: 'transparent', border: '1px solid #1a1a22', borderRadius: '6px', color: '#999', fontWeight: 600, fontSize: '14px', cursor: 'pointer' }}>Cancel</button></div>
             </div>
           </div>
         )}
@@ -3575,10 +3575,10 @@ export default function DashboardPage() {
               </div>
 
               {/* Prop Firm Section */}
-              <div style={{ background: '#141418', border: '1px solid #22c55e', borderRadius: '10px', padding: '16px', marginBottom: '20px' }}>
+              <div style={{ background: '#141418', border: `1px solid ${themeColor}`, borderRadius: '10px', padding: '16px', marginBottom: '20px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '14px' }}>
-                  <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#22c55e' }} />
-                  <span style={{ fontSize: '12px', color: '#22c55e', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px' }}>Prop Firm Rules</span>
+                  <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: themeColor }} />
+                  <span style={{ fontSize: '12px', color: themeColor, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px' }}>Prop Firm Rules</span>
                 </div>
 
                 <div style={{ marginBottom: '14px' }}>
@@ -3588,7 +3588,7 @@ export default function DashboardPage() {
 
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 12px', background: '#0d0d12', borderRadius: '6px', border: '1px solid #2a2a35' }}>
                   <label style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer' }}>
-                    <input type="checkbox" checked={editConsistencyEnabled} onChange={e => setEditConsistencyEnabled(e.target.checked)} style={{ width: '18px', height: '18px', accentColor: '#22c55e', cursor: 'pointer' }} />
+                    <input type="checkbox" checked={editConsistencyEnabled} onChange={e => setEditConsistencyEnabled(e.target.checked)} style={{ width: '18px', height: '18px', accentColor: themeColor, cursor: 'pointer' }} />
                     <span style={{ fontSize: '13px', color: '#ccc' }}>Consistency Rule</span>
                   </label>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -3726,7 +3726,7 @@ export default function DashboardPage() {
 
               {/* Action Buttons */}
               <div style={{ display: 'flex', gap: '12px', marginBottom: '12px' }}>
-                <button onClick={() => updateAccount(showEditModal)} disabled={!editName.trim()} style={{ flex: 1, padding: '14px', background: '#22c55e', border: 'none', borderRadius: '8px', color: '#fff', fontWeight: 600, fontSize: '14px', cursor: 'pointer', opacity: !editName.trim() ? 0.5 : 1, transition: 'opacity 0.2s' }}>Save Changes</button>
+                <button onClick={() => updateAccount(showEditModal)} disabled={!editName.trim()} style={{ flex: 1, padding: '14px', background: themeColor, border: 'none', borderRadius: '8px', color: '#fff', fontWeight: 600, fontSize: '14px', cursor: 'pointer', opacity: !editName.trim() ? 0.5 : 1, transition: 'opacity 0.2s' }}>Save Changes</button>
                 <button onClick={() => { setShowEditModal(null); setEditName(''); setEditProfitTarget(''); setEditMaxDrawdown('') }} style={{ flex: 1, padding: '14px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '8px', color: '#888', fontWeight: 600, fontSize: '14px', cursor: 'pointer' }}>Cancel</button>
               </div>
               <button onClick={() => { setShowDeleteModal(showEditModal); setShowEditModal(null) }} style={{ width: '100%', padding: '12px', background: 'rgba(239, 68, 68, 0.1)', border: '1px solid #ef4444', borderRadius: '8px', color: '#ef4444', fontWeight: 500, fontSize: '13px', cursor: 'pointer' }}>Delete Journal</button>
@@ -3765,7 +3765,7 @@ export default function DashboardPage() {
                 <input type="text" value={newInputOptions} onChange={e => setNewInputOptions(e.target.value)} placeholder="e.g. Breakout, Pullback, Reversal" style={{ width: '100%', padding: '12px 14px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '6px', color: '#fff', fontSize: '14px', boxSizing: 'border-box' }} />
               </div>
               <div style={{ display: 'flex', gap: '12px' }}>
-                <button onClick={saveCustomInput} disabled={savingInput || !newInputLabel.trim() || !newInputOptions.trim()} style={{ flex: 1, padding: '12px', background: '#22c55e', border: 'none', borderRadius: '6px', color: '#fff', fontWeight: 600, fontSize: '14px', cursor: 'pointer', opacity: (savingInput || !newInputLabel.trim() || !newInputOptions.trim()) ? 0.5 : 1 }}>{savingInput ? 'Saving...' : 'Add Input'}</button>
+                <button onClick={saveCustomInput} disabled={savingInput || !newInputLabel.trim() || !newInputOptions.trim()} style={{ flex: 1, padding: '12px', background: themeColor, border: 'none', borderRadius: '6px', color: '#fff', fontWeight: 600, fontSize: '14px', cursor: 'pointer', opacity: (savingInput || !newInputLabel.trim() || !newInputOptions.trim()) ? 0.5 : 1 }}>{savingInput ? 'Saving...' : 'Add Input'}</button>
                 <button onClick={() => { setShowAddInputModal(false); setNewInputLabel(''); setNewInputOptions('') }} style={{ flex: 1, padding: '12px', background: 'transparent', border: '1px solid #1a1a22', borderRadius: '6px', color: '#888', fontWeight: 600, fontSize: '14px', cursor: 'pointer' }}>Cancel</button>
               </div>
             </div>
@@ -3800,7 +3800,7 @@ export default function DashboardPage() {
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', marginBottom: '16px' }}>
                   {editInputs.map((input, i) => !input.hidden && (
                     <div key={input.id} style={{ display: 'grid', gridTemplateColumns: '28px 1fr 100px 80px 28px', gap: '10px', padding: '10px 12px', background: input.enabled ? '#141418' : '#0d0d12', borderRadius: '8px', border: '1px solid #1a1a22', alignItems: 'center', opacity: input.enabled ? 1 : 0.6 }}>
-                      <input type="checkbox" checked={input.enabled} onChange={e => updateEditInput(i, 'enabled', e.target.checked)} style={{ width: '16px', height: '16px', accentColor: '#22c55e', cursor: 'pointer' }} />
+                      <input type="checkbox" checked={input.enabled} onChange={e => updateEditInput(i, 'enabled', e.target.checked)} style={{ width: '16px', height: '16px', accentColor: themeColor, cursor: 'pointer' }} />
                       <input type="text" value={input.label} onChange={e => updateEditInput(i, 'label', e.target.value)} style={{ padding: '6px 8px', background: '#0a0a0e', border: '1px solid #2a2a35', borderRadius: '6px', color: '#fff', fontSize: '12px', width: '100%' }} placeholder="Field name" />
                       <select value={input.type} onChange={e => updateEditInput(i, 'type', e.target.value)} style={{ padding: '6px 8px', background: '#0a0a0e', border: '1px solid #2a2a35', borderRadius: '6px', color: '#fff', fontSize: '11px', cursor: 'pointer' }}>
                         <option value="text">Text</option>
@@ -3861,7 +3861,7 @@ export default function DashboardPage() {
               <div style={{ padding: '16px 28px 24px', borderTop: '1px solid #1a1a22', background: '#0d0d12', borderRadius: '0 0 12px 12px', display: 'flex', gap: '12px' }}>
                 <button onClick={() => setShowRestoreDefaults(true)} style={{ padding: '12px 16px', background: 'transparent', border: '1px solid #f59e0b', borderRadius: '8px', color: '#f59e0b', fontWeight: 600, fontSize: '13px', cursor: 'pointer' }}>Restore Defaults</button>
                 <button onClick={() => setShowEditInputsModal(false)} style={{ flex: 1, padding: '12px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '8px', color: '#888', fontWeight: 600, fontSize: '13px', cursor: 'pointer' }}>Cancel</button>
-                <button onClick={saveEditInputs} style={{ flex: 1, padding: '12px', background: '#22c55e', border: 'none', borderRadius: '8px', color: '#fff', fontWeight: 600, fontSize: '13px', cursor: 'pointer' }}>Save</button>
+                <button onClick={saveEditInputs} style={{ flex: 1, padding: '12px', background: themeColor, border: 'none', borderRadius: '8px', color: '#fff', fontWeight: 600, fontSize: '13px', cursor: 'pointer' }}>Save</button>
               </div>
             </div>
           </div>
@@ -3927,7 +3927,7 @@ export default function DashboardPage() {
 
               <div style={{ display: 'flex', gap: '12px' }}>
                 <button onClick={() => { setEditingOptions(null); setOptionsList([]) }} style={{ flex: 1, padding: '12px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '8px', color: '#888', fontWeight: 600, fontSize: '13px', cursor: 'pointer' }}>Cancel</button>
-                <button onClick={saveEditOptions} style={{ flex: 1, padding: '12px', background: '#22c55e', border: 'none', borderRadius: '8px', color: '#fff', fontWeight: 600, fontSize: '13px', cursor: 'pointer' }}>Save Options</button>
+                <button onClick={saveEditOptions} style={{ flex: 1, padding: '12px', background: themeColor, border: 'none', borderRadius: '8px', color: '#fff', fontWeight: 600, fontSize: '13px', cursor: 'pointer' }}>Save Options</button>
               </div>
             </div>
           </div>
@@ -3949,7 +3949,7 @@ export default function DashboardPage() {
                 </div>
               </div>
               <div style={{ display: 'flex', gap: '12px' }}>
-                <button onClick={() => setEditingColor(null)} style={{ flex: 1, padding: '12px', background: '#22c55e', border: 'none', borderRadius: '8px', color: '#fff', fontWeight: 600, fontSize: '13px', cursor: 'pointer' }}>Done</button>
+                <button onClick={() => setEditingColor(null)} style={{ flex: 1, padding: '12px', background: themeColor, border: 'none', borderRadius: '8px', color: '#fff', fontWeight: 600, fontSize: '13px', cursor: 'pointer' }}>Done</button>
               </div>
             </div>
           </div>
@@ -4012,7 +4012,7 @@ export default function DashboardPage() {
                   }}
                 >
                   <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px', minWidth: 0, flex: 1 }}>
-                    <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#22c55e', boxShadow: '0 0 8px #22c55e', flexShrink: 0, marginTop: '3px' }} />
+                    <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: themeColor, boxShadow: `0 0 8px ${themeColor}`, flexShrink: 0, marginTop: '3px' }} />
                     <span style={{ wordBreak: 'break-word' }}>{accounts.find(a => a.id === quickTradeAccount)?.name || 'Select Journal'}</span>
                   </div>
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ transform: journalDropdownOpen ? 'rotate(180deg)' : 'rotate(0)', transition: 'transform 0.2s', flexShrink: 0, marginTop: '3px' }}>
@@ -4104,12 +4104,12 @@ export default function DashboardPage() {
                   return (
                     <div style={{ position: 'relative' }}>
                       <label style={{ display: 'block', fontSize: '11px', color: '#888', marginBottom: '6px', textTransform: 'uppercase', fontWeight: 600 }}>Direction</label>
-                      <button type="button" onClick={() => { setDirectionDropdownOpen(!directionDropdownOpen); setOutcomeDropdownOpen(false); setConfidenceDropdownOpen(false); setTimeframeDropdownOpen(false); setSessionDropdownOpen(false) }} style={{ width: '100%', padding: '14px', background: quickTradeDirection ? (dirStyles.bgColor || '#0a0a0f') : '#0a0a0f', border: directionDropdownOpen ? '1px solid #22c55e' : quickTradeDirection ? `1px solid ${dirStyles.borderColor || dirStyles.textColor + '80' || '#1a1a22'}` : '1px solid #1a1a22', borderRadius: directionDropdownOpen ? '8px 8px 0 0' : '8px', color: quickTradeDirection ? (dirStyles.textColor || '#fff') : '#888', fontSize: '15px', boxSizing: 'border-box', cursor: 'pointer', textAlign: 'left', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <button type="button" onClick={() => { setDirectionDropdownOpen(!directionDropdownOpen); setOutcomeDropdownOpen(false); setConfidenceDropdownOpen(false); setTimeframeDropdownOpen(false); setSessionDropdownOpen(false) }} style={{ width: '100%', padding: '14px', background: quickTradeDirection ? (dirStyles.bgColor || '#0a0a0f') : '#0a0a0f', border: directionDropdownOpen ? `1px solid ${themeColor}` : quickTradeDirection ? `1px solid ${dirStyles.borderColor || dirStyles.textColor + '80' || '#1a1a22'}` : '1px solid #1a1a22', borderRadius: directionDropdownOpen ? '8px 8px 0 0' : '8px', color: quickTradeDirection ? (dirStyles.textColor || '#fff') : '#888', fontSize: '15px', boxSizing: 'border-box', cursor: 'pointer', textAlign: 'left', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                         <span>{displayVal ? getOptVal(displayVal) : (quickTradeDirection || '-')}</span>
                         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ transform: directionDropdownOpen ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }}><path d="M6 9l6 6 6-6" /></svg>
                       </button>
                       {directionDropdownOpen && (
-                        <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, background: '#0a0a0f', border: '1px solid #22c55e', borderTop: 'none', borderRadius: '0 0 8px 8px', zIndex: 100, overflow: 'hidden' }}>
+                        <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, background: '#0a0a0f', border: `1px solid ${themeColor}`, borderTop: 'none', borderRadius: '0 0 8px 8px', zIndex: 100, overflow: 'hidden' }}>
                           <div onClick={() => { setQuickTradeDirection(''); setDirectionDropdownOpen(false) }} style={{ padding: '14px', cursor: 'pointer', color: '#888', fontSize: '15px', transition: 'background 0.15s' }} onMouseEnter={e => e.currentTarget.style.background = '#1a1a22'} onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>-</div>
                           {dirOptions.map(opt => {
                             const optVal = getOptVal(opt)
@@ -4131,12 +4131,12 @@ export default function DashboardPage() {
                   return (
                     <div style={{ position: 'relative' }}>
                       <label style={{ display: 'block', fontSize: '11px', color: '#888', marginBottom: '6px', textTransform: 'uppercase', fontWeight: 600 }}>Outcome</label>
-                      <button type="button" onClick={() => { setOutcomeDropdownOpen(!outcomeDropdownOpen); setDirectionDropdownOpen(false); setConfidenceDropdownOpen(false); setTimeframeDropdownOpen(false); setSessionDropdownOpen(false) }} style={{ width: '100%', padding: '14px', background: quickTradeOutcome ? (outStyles.bgColor || '#0a0a0f') : '#0a0a0f', border: outcomeDropdownOpen ? '1px solid #22c55e' : quickTradeOutcome ? `1px solid ${outStyles.borderColor || outStyles.textColor + '80' || '#1a1a22'}` : '1px solid #1a1a22', borderRadius: outcomeDropdownOpen ? '8px 8px 0 0' : '8px', color: quickTradeOutcome ? (outStyles.textColor || '#fff') : '#888', fontSize: '15px', boxSizing: 'border-box', cursor: 'pointer', textAlign: 'left', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <button type="button" onClick={() => { setOutcomeDropdownOpen(!outcomeDropdownOpen); setDirectionDropdownOpen(false); setConfidenceDropdownOpen(false); setTimeframeDropdownOpen(false); setSessionDropdownOpen(false) }} style={{ width: '100%', padding: '14px', background: quickTradeOutcome ? (outStyles.bgColor || '#0a0a0f') : '#0a0a0f', border: outcomeDropdownOpen ? `1px solid ${themeColor}` : quickTradeOutcome ? `1px solid ${outStyles.borderColor || outStyles.textColor + '80' || '#1a1a22'}` : '1px solid #1a1a22', borderRadius: outcomeDropdownOpen ? '8px 8px 0 0' : '8px', color: quickTradeOutcome ? (outStyles.textColor || '#fff') : '#888', fontSize: '15px', boxSizing: 'border-box', cursor: 'pointer', textAlign: 'left', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                         <span>{displayVal ? getOptVal(displayVal) : (quickTradeOutcome || '-')}</span>
                         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ transform: outcomeDropdownOpen ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }}><path d="M6 9l6 6 6-6" /></svg>
                       </button>
                       {outcomeDropdownOpen && (
-                        <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, background: '#0a0a0f', border: '1px solid #22c55e', borderTop: 'none', borderRadius: '0 0 8px 8px', zIndex: 100, overflow: 'hidden' }}>
+                        <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, background: '#0a0a0f', border: `1px solid ${themeColor}`, borderTop: 'none', borderRadius: '0 0 8px 8px', zIndex: 100, overflow: 'hidden' }}>
                           <div onClick={() => { setQuickTradeOutcome(''); setOutcomeDropdownOpen(false) }} style={{ padding: '14px', cursor: 'pointer', color: '#888', fontSize: '15px', transition: 'background 0.15s' }} onMouseEnter={e => e.currentTarget.style.background = '#1a1a22'} onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>-</div>
                           {outOptions.map(opt => {
                             const optVal = getOptVal(opt)
@@ -4180,12 +4180,12 @@ export default function DashboardPage() {
                   return (
                     <div style={{ position: 'relative' }}>
                       <label style={{ display: 'block', fontSize: '11px', color: '#888', marginBottom: '6px', textTransform: 'uppercase', fontWeight: 600 }}>Confidence</label>
-                      <button type="button" onClick={() => { setConfidenceDropdownOpen(!confidenceDropdownOpen); setDirectionDropdownOpen(false); setOutcomeDropdownOpen(false); setTimeframeDropdownOpen(false); setSessionDropdownOpen(false) }} style={{ width: '100%', padding: '14px', background: quickTradeConfidence ? (confStyles.bgColor || '#0a0a0f') : '#0a0a0f', border: confidenceDropdownOpen ? '1px solid #22c55e' : quickTradeConfidence ? `1px solid ${confStyles.borderColor || confStyles.textColor + '80' || '#1a1a22'}` : '1px solid #1a1a22', borderRadius: confidenceDropdownOpen ? '8px 8px 0 0' : '8px', color: quickTradeConfidence ? (confStyles.textColor || '#fff') : '#888', fontSize: '15px', cursor: 'pointer', textAlign: 'left', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <button type="button" onClick={() => { setConfidenceDropdownOpen(!confidenceDropdownOpen); setDirectionDropdownOpen(false); setOutcomeDropdownOpen(false); setTimeframeDropdownOpen(false); setSessionDropdownOpen(false) }} style={{ width: '100%', padding: '14px', background: quickTradeConfidence ? (confStyles.bgColor || '#0a0a0f') : '#0a0a0f', border: confidenceDropdownOpen ? `1px solid ${themeColor}` : quickTradeConfidence ? `1px solid ${confStyles.borderColor || confStyles.textColor + '80' || '#1a1a22'}` : '1px solid #1a1a22', borderRadius: confidenceDropdownOpen ? '8px 8px 0 0' : '8px', color: quickTradeConfidence ? (confStyles.textColor || '#fff') : '#888', fontSize: '15px', cursor: 'pointer', textAlign: 'left', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                         <span>{displayVal ? getOptVal(displayVal) : (quickTradeConfidence || '-')}</span>
                         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ transform: confidenceDropdownOpen ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }}><path d="M6 9l6 6 6-6" /></svg>
                       </button>
                       {confidenceDropdownOpen && (
-                        <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, background: '#0a0a0f', border: '1px solid #22c55e', borderTop: 'none', borderRadius: '0 0 8px 8px', zIndex: 100, overflow: 'hidden' }}>
+                        <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, background: '#0a0a0f', border: `1px solid ${themeColor}`, borderTop: 'none', borderRadius: '0 0 8px 8px', zIndex: 100, overflow: 'hidden' }}>
                           <div onClick={() => { setQuickTradeConfidence(''); setConfidenceDropdownOpen(false) }} style={{ padding: '14px', cursor: 'pointer', color: '#888', fontSize: '15px', transition: 'background 0.15s' }} onMouseEnter={e => e.currentTarget.style.background = '#1a1a22'} onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>-</div>
                           {confOptions.map(opt => {
                             const optVal = getOptVal(opt)
@@ -4207,12 +4207,12 @@ export default function DashboardPage() {
                   return (
                     <div style={{ position: 'relative' }}>
                       <label style={{ display: 'block', fontSize: '11px', color: '#888', marginBottom: '6px', textTransform: 'uppercase', fontWeight: 600 }}>Timeframe</label>
-                      <button type="button" onClick={() => { setTimeframeDropdownOpen(!timeframeDropdownOpen); setDirectionDropdownOpen(false); setOutcomeDropdownOpen(false); setConfidenceDropdownOpen(false); setSessionDropdownOpen(false) }} style={{ width: '100%', padding: '14px', background: quickTradeTimeframe ? (tfStyles.bgColor || '#0a0a0f') : '#0a0a0f', border: timeframeDropdownOpen ? '1px solid #22c55e' : quickTradeTimeframe ? `1px solid ${tfStyles.borderColor || tfStyles.textColor + '80' || '#1a1a22'}` : '1px solid #1a1a22', borderRadius: timeframeDropdownOpen ? '8px 8px 0 0' : '8px', color: quickTradeTimeframe ? (tfStyles.textColor || '#fff') : '#888', fontSize: '15px', cursor: 'pointer', textAlign: 'left', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <button type="button" onClick={() => { setTimeframeDropdownOpen(!timeframeDropdownOpen); setDirectionDropdownOpen(false); setOutcomeDropdownOpen(false); setConfidenceDropdownOpen(false); setSessionDropdownOpen(false) }} style={{ width: '100%', padding: '14px', background: quickTradeTimeframe ? (tfStyles.bgColor || '#0a0a0f') : '#0a0a0f', border: timeframeDropdownOpen ? `1px solid ${themeColor}` : quickTradeTimeframe ? `1px solid ${tfStyles.borderColor || tfStyles.textColor + '80' || '#1a1a22'}` : '1px solid #1a1a22', borderRadius: timeframeDropdownOpen ? '8px 8px 0 0' : '8px', color: quickTradeTimeframe ? (tfStyles.textColor || '#fff') : '#888', fontSize: '15px', cursor: 'pointer', textAlign: 'left', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                         <span>{displayVal ? getOptVal(displayVal) : (quickTradeTimeframe || '-')}</span>
                         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ transform: timeframeDropdownOpen ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }}><path d="M6 9l6 6 6-6" /></svg>
                       </button>
                       {timeframeDropdownOpen && (
-                        <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, background: '#0a0a0f', border: '1px solid #22c55e', borderTop: 'none', borderRadius: '0 0 8px 8px', zIndex: 100, overflow: 'hidden' }}>
+                        <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, background: '#0a0a0f', border: `1px solid ${themeColor}`, borderTop: 'none', borderRadius: '0 0 8px 8px', zIndex: 100, overflow: 'hidden' }}>
                           <div onClick={() => { setQuickTradeTimeframe(''); setTimeframeDropdownOpen(false) }} style={{ padding: '14px', cursor: 'pointer', color: '#888', fontSize: '15px', transition: 'background 0.15s' }} onMouseEnter={e => e.currentTarget.style.background = '#1a1a22'} onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>-</div>
                           {tfOptions.map(opt => {
                             const optVal = getOptVal(opt)
@@ -4234,12 +4234,12 @@ export default function DashboardPage() {
                   return (
                     <div style={{ position: 'relative' }}>
                       <label style={{ display: 'block', fontSize: '11px', color: '#888', marginBottom: '6px', textTransform: 'uppercase', fontWeight: 600 }}>Session</label>
-                      <button type="button" onClick={() => { setSessionDropdownOpen(!sessionDropdownOpen); setDirectionDropdownOpen(false); setOutcomeDropdownOpen(false); setConfidenceDropdownOpen(false); setTimeframeDropdownOpen(false) }} style={{ width: '100%', padding: '14px', background: quickTradeSession ? (sessStyles.bgColor || '#0a0a0f') : '#0a0a0f', border: sessionDropdownOpen ? '1px solid #22c55e' : quickTradeSession ? `1px solid ${sessStyles.borderColor || sessStyles.textColor + '80' || '#1a1a22'}` : '1px solid #1a1a22', borderRadius: sessionDropdownOpen ? '8px 8px 0 0' : '8px', color: quickTradeSession ? (sessStyles.textColor || '#fff') : '#888', fontSize: '15px', cursor: 'pointer', textAlign: 'left', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <button type="button" onClick={() => { setSessionDropdownOpen(!sessionDropdownOpen); setDirectionDropdownOpen(false); setOutcomeDropdownOpen(false); setConfidenceDropdownOpen(false); setTimeframeDropdownOpen(false) }} style={{ width: '100%', padding: '14px', background: quickTradeSession ? (sessStyles.bgColor || '#0a0a0f') : '#0a0a0f', border: sessionDropdownOpen ? `1px solid ${themeColor}` : quickTradeSession ? `1px solid ${sessStyles.borderColor || sessStyles.textColor + '80' || '#1a1a22'}` : '1px solid #1a1a22', borderRadius: sessionDropdownOpen ? '8px 8px 0 0' : '8px', color: quickTradeSession ? (sessStyles.textColor || '#fff') : '#888', fontSize: '15px', cursor: 'pointer', textAlign: 'left', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                         <span>{displayVal ? getOptVal(displayVal) : (quickTradeSession || '-')}</span>
                         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ transform: sessionDropdownOpen ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }}><path d="M6 9l6 6 6-6" /></svg>
                       </button>
                       {sessionDropdownOpen && (
-                        <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, background: '#0a0a0f', border: '1px solid #22c55e', borderTop: 'none', borderRadius: '0 0 8px 8px', zIndex: 100, overflow: 'hidden' }}>
+                        <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, background: '#0a0a0f', border: `1px solid ${themeColor}`, borderTop: 'none', borderRadius: '0 0 8px 8px', zIndex: 100, overflow: 'hidden' }}>
                           <div onClick={() => { setQuickTradeSession(''); setSessionDropdownOpen(false) }} style={{ padding: '14px', cursor: 'pointer', color: '#888', fontSize: '15px', transition: 'background 0.15s' }} onMouseEnter={e => e.currentTarget.style.background = '#1a1a22'} onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>-</div>
                           {sessOptions.map(opt => {
                             const optVal = getOptVal(opt)
@@ -4377,7 +4377,7 @@ export default function DashboardPage() {
                         maxWidth: '300px'
                       }}
                     >
-                      <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#22c55e', boxShadow: '0 0 6px #22c55e', flexShrink: 0, marginTop: '5px' }} />
+                      <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: themeColor, boxShadow: `0 0 6px ${themeColor}`, flexShrink: 0, marginTop: '5px' }} />
                       <span style={{ wordBreak: 'break-word', flex: 1 }}>{accounts.find(a => a.id === quickTradeAccount)?.name || 'Select Journal'}</span>
                       <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ transform: journalDropdownOpen ? 'rotate(180deg)' : 'rotate(0)', transition: 'transform 0.2s', flexShrink: 0, marginTop: '4px' }}>
                         <path d="M6 9l6 6 6-6"/>
@@ -4476,7 +4476,7 @@ export default function DashboardPage() {
                               <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ transform: directionDropdownOpen ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }}><path d="M6 9l6 6 6-6" /></svg>
                             </button>
                             {directionDropdownOpen && (
-                              <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, background: '#0a0a0f', border: '1px solid #22c55e', borderTop: 'none', borderRadius: '0 0 8px 8px', zIndex: 100, overflow: 'hidden' }}>
+                              <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, background: '#0a0a0f', border: `1px solid ${themeColor}`, borderTop: 'none', borderRadius: '0 0 8px 8px', zIndex: 100, overflow: 'hidden' }}>
                                 <div onClick={() => { setQuickTradeDirection(''); setDirectionDropdownOpen(false) }} style={{ padding: '10px 12px', cursor: 'pointer', color: '#888', fontSize: '14px', transition: 'background 0.15s' }} onMouseEnter={e => e.currentTarget.style.background = '#1a1a22'} onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>-</div>
                                 {dirOptions.map(opt => {
                                   const optVal = getOptVal(opt)
@@ -4504,7 +4504,7 @@ export default function DashboardPage() {
                               <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ transform: outcomeDropdownOpen ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }}><path d="M6 9l6 6 6-6" /></svg>
                             </button>
                             {outcomeDropdownOpen && (
-                              <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, background: '#0a0a0f', border: '1px solid #22c55e', borderTop: 'none', borderRadius: '0 0 8px 8px', zIndex: 100, overflow: 'hidden' }}>
+                              <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, background: '#0a0a0f', border: `1px solid ${themeColor}`, borderTop: 'none', borderRadius: '0 0 8px 8px', zIndex: 100, overflow: 'hidden' }}>
                                 <div onClick={() => { setQuickTradeOutcome(''); setOutcomeDropdownOpen(false) }} style={{ padding: '10px 12px', cursor: 'pointer', color: '#888', fontSize: '14px', transition: 'background 0.15s' }} onMouseEnter={e => e.currentTarget.style.background = '#1a1a22'} onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>-</div>
                                 {outOptions.map(opt => {
                                   const optVal = getOptVal(opt)
@@ -4542,7 +4542,7 @@ export default function DashboardPage() {
                               <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ transform: confidenceDropdownOpen ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }}><path d="M6 9l6 6 6-6" /></svg>
                             </button>
                             {confidenceDropdownOpen && (
-                              <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, background: '#0a0a0f', border: '1px solid #22c55e', borderTop: 'none', borderRadius: '0 0 8px 8px', zIndex: 100, overflow: 'hidden' }}>
+                              <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, background: '#0a0a0f', border: `1px solid ${themeColor}`, borderTop: 'none', borderRadius: '0 0 8px 8px', zIndex: 100, overflow: 'hidden' }}>
                                 <div onClick={() => { setQuickTradeConfidence(''); setConfidenceDropdownOpen(false) }} style={{ padding: '10px 12px', cursor: 'pointer', color: '#888', fontSize: '14px', transition: 'background 0.15s' }} onMouseEnter={e => e.currentTarget.style.background = '#1a1a22'} onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>-</div>
                                 {confOptions.map(opt => {
                                   const optVal = getOptVal(opt)
@@ -4570,7 +4570,7 @@ export default function DashboardPage() {
                               <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ transform: timeframeDropdownOpen ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }}><path d="M6 9l6 6 6-6" /></svg>
                             </button>
                             {timeframeDropdownOpen && (
-                              <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, background: '#0a0a0f', border: '1px solid #22c55e', borderTop: 'none', borderRadius: '0 0 8px 8px', zIndex: 100, overflow: 'hidden' }}>
+                              <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, background: '#0a0a0f', border: `1px solid ${themeColor}`, borderTop: 'none', borderRadius: '0 0 8px 8px', zIndex: 100, overflow: 'hidden' }}>
                                 <div onClick={() => { setQuickTradeTimeframe(''); setTimeframeDropdownOpen(false) }} style={{ padding: '10px 12px', cursor: 'pointer', color: '#888', fontSize: '14px', transition: 'background 0.15s' }} onMouseEnter={e => e.currentTarget.style.background = '#1a1a22'} onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>-</div>
                                 {tfOptions.map(opt => {
                                   const optVal = getOptVal(opt)
@@ -4598,7 +4598,7 @@ export default function DashboardPage() {
                               <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ transform: sessionDropdownOpen ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }}><path d="M6 9l6 6 6-6" /></svg>
                             </button>
                             {sessionDropdownOpen && (
-                              <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, background: '#0a0a0f', border: '1px solid #22c55e', borderTop: 'none', borderRadius: '0 0 8px 8px', zIndex: 100, overflow: 'hidden' }}>
+                              <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, background: '#0a0a0f', border: `1px solid ${themeColor}`, borderTop: 'none', borderRadius: '0 0 8px 8px', zIndex: 100, overflow: 'hidden' }}>
                                 <div onClick={() => { setQuickTradeSession(''); setSessionDropdownOpen(false) }} style={{ padding: '10px 12px', cursor: 'pointer', color: '#888', fontSize: '14px', transition: 'background 0.15s' }} onMouseEnter={e => e.currentTarget.style.background = '#1a1a22'} onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>-</div>
                                 {sessOptions.map(opt => {
                                   const optVal = getOptVal(opt)
@@ -4622,12 +4622,12 @@ export default function DashboardPage() {
                         return (
                           <div key={input.id} style={{ position: 'relative' }}>
                             <label style={{ display: 'block', fontSize: '12px', color: '#888', marginBottom: '6px', fontWeight: 600 }}>{input.label || input.id}</label>
-                            <button type="button" onClick={() => { setCustomDropdownOpen(prev => ({ ...Object.fromEntries(Object.keys(prev).map(k => [k, false])), [input.id]: !isOpen })); setDirectionDropdownOpen(false); setOutcomeDropdownOpen(false); setConfidenceDropdownOpen(false); setTimeframeDropdownOpen(false); setSessionDropdownOpen(false) }} style={{ width: '100%', padding: '10px 12px', background: '#0a0a0f', border: isOpen ? '1px solid #22c55e' : '1px solid #1a1a22', borderRadius: isOpen ? '8px 8px 0 0' : '8px', color: currentVal ? currentColor : '#888', fontSize: '14px', cursor: 'pointer', textAlign: 'left', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <button type="button" onClick={() => { setCustomDropdownOpen(prev => ({ ...Object.fromEntries(Object.keys(prev).map(k => [k, false])), [input.id]: !isOpen })); setDirectionDropdownOpen(false); setOutcomeDropdownOpen(false); setConfidenceDropdownOpen(false); setTimeframeDropdownOpen(false); setSessionDropdownOpen(false) }} style={{ width: '100%', padding: '10px 12px', background: '#0a0a0f', border: isOpen ? `1px solid ${themeColor}` : '1px solid #1a1a22', borderRadius: isOpen ? '8px 8px 0 0' : '8px', color: currentVal ? currentColor : '#888', fontSize: '14px', cursor: 'pointer', textAlign: 'left', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                               <span>{currentVal || '-'}</span>
                               <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }}><path d="M6 9l6 6 6-6" /></svg>
                             </button>
                             {isOpen && (
-                              <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, background: '#0a0a0f', border: '1px solid #22c55e', borderTop: 'none', borderRadius: '0 0 8px 8px', zIndex: 100, overflow: 'hidden', maxHeight: '200px', overflowY: 'auto' }}>
+                              <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, background: '#0a0a0f', border: `1px solid ${themeColor}`, borderTop: 'none', borderRadius: '0 0 8px 8px', zIndex: 100, overflow: 'hidden', maxHeight: '200px', overflowY: 'auto' }}>
                                 <div onClick={() => { setQuickTradeExtraData(prev => ({ ...prev, [input.id]: '' })); setCustomDropdownOpen({}) }} style={{ padding: '10px 12px', cursor: 'pointer', color: '#888', fontSize: '14px', transition: 'background 0.15s' }} onMouseEnter={e => e.currentTarget.style.background = '#1a1a22'} onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>-</div>
                                 {(input.options || []).map(opt => {
                                   const optVal = getOptVal(opt)

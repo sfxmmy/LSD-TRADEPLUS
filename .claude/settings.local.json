@@ -38,7 +38,10 @@
       "Bash(git show:*)",
       "Bash(dir:*)",
       "Bash(tree:*)",
-      "Bash(find:*)"
+      "Bash(find:*)",
+      "Bash(wait:*)",
+      "Bash(Remove-Item -Path \"c:\\\\Users\\\\Asus\\\\Desktop\\\\trading-journal\\\\logos\\\\svg\\\\*.svg\" -Force)",
+      "Bash(del /Q \"c:\\\\Users\\\\Asus\\\\Desktop\\\\trading-journal\\\\logos\\\\svg\\\\*.svg\")"
     ]
   }
 }

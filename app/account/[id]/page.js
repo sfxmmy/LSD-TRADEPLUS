@@ -1562,7 +1562,7 @@ export default function AccountPage() {
 
       {/* FIXED HEADER - same structure as dashboard */}
       <header style={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 50, padding: '4px 16px', height: '68px', boxSizing: 'border-box', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#0a0a0f', borderBottom: '1px solid #1a1a22' }}>
-        <a href="/" style={{ display: 'flex', alignItems: 'center', textDecoration: 'none', height: isMobile ? '32px' : '50px' }}><img src="/logo.svg" alt="TradeSave+" style={{ height: '100%', width: 'auto' }} /></a>
+        <a href="/" style={{ display: 'flex', alignItems: 'center', textDecoration: 'none', height: isMobile ? '32px' : '60px' }}><img src="/logo.svg" alt="TradeSave+" style={{ height: '100%', width: 'auto' }} /></a>
         {!isMobile && (
           <>
             <div style={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)', display: 'flex', alignItems: 'center', gap: '12px' }}>
@@ -1573,7 +1573,7 @@ export default function AccountPage() {
                     if (accountsJournal) setActiveAccountId(accountsJournal.id)
                   }
                 }}
-                style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontSize: '28px', fontWeight: 700, letterSpacing: '-0.5px', color: (account?.dashboard_type || 'accounts') === 'accounts' ? '#fff' : '#666', transition: 'color 0.2s', display: 'flex', alignItems: 'center', gap: '10px' }}><span style={{ width: '10px', height: '10px', borderRadius: '50%', background: (account?.dashboard_type || 'accounts') === 'accounts' ? '#22c55e' : '#666', transition: 'background 0.2s' }}></span>ACCOUNTS {activeTab === 'trades' ? 'JOURNAL' : activeTab === 'statistics' ? 'STATISTICS' : 'NOTES'}</span>
+                style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontSize: '28px', fontWeight: 700, letterSpacing: '-0.5px', color: (account?.dashboard_type || 'accounts') === 'accounts' ? '#fff' : '#666', transition: 'color 0.2s' }}>ACCOUNTS {activeTab === 'trades' ? 'JOURNAL' : activeTab === 'statistics' ? 'STATISTICS' : 'NOTES'}</span>
               <span style={{ color: '#333', fontSize: '28px', fontWeight: 300 }}>|</span>
               <span
                 onClick={() => {
@@ -1582,7 +1582,7 @@ export default function AccountPage() {
                     if (backtestingJournal) setActiveAccountId(backtestingJournal.id)
                   }
                 }}
-                style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontSize: '28px', fontWeight: 700, letterSpacing: '-0.5px', color: (account?.dashboard_type || 'accounts') === 'backtesting' ? '#fff' : '#666', transition: 'color 0.2s', display: 'flex', alignItems: 'center', gap: '10px' }}>BACKTESTING {activeTab === 'trades' ? 'JOURNAL' : activeTab === 'statistics' ? 'STATISTICS' : 'NOTES'}<span style={{ width: '10px', height: '10px', borderRadius: '50%', background: (account?.dashboard_type || 'accounts') === 'backtesting' ? '#3b82f6' : '#666', transition: 'background 0.2s' }}></span></span>
+                style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontSize: '28px', fontWeight: 700, letterSpacing: '-0.5px', color: (account?.dashboard_type || 'accounts') === 'backtesting' ? '#fff' : '#666', transition: 'color 0.2s' }}>BACKTESTING {activeTab === 'trades' ? 'JOURNAL' : activeTab === 'statistics' ? 'STATISTICS' : 'NOTES'}</span>
             </div>
             <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
               <a href={`/dashboard?dashboard=${account?.dashboard_type || 'accounts'}`} style={{ padding: '10px 20px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '6px', color: '#fff', fontSize: '14px', fontWeight: 600, textDecoration: 'none', cursor: 'pointer', transition: 'all 0.2s' }} onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; e.currentTarget.style.borderColor = '#3a3a45' }} onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.borderColor = '#2a2a35' }}>← Dashboard</a>
@@ -2403,10 +2403,10 @@ export default function AccountPage() {
           <div style={{ padding: isMobile ? '0' : '12px 12px 0 12px' }}>
             {/* Stats View Indicator Banner */}
             {viewingSelectedStats && selectedTrades.size > 0 ? (
-              <div style={{ marginBottom: '12px', padding: '12px 16px', background: `rgba(${themeColorRgb},0.1)`, border: '1px solid #22c55e', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', boxShadow: '0 0 12px rgba(34,197,94,0.15)' }}>
+              <div style={{ marginBottom: '12px', padding: '12px 16px', background: `rgba(${themeColorRgb},0.1)`, border: `1px solid ${themeColor}`, borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', boxShadow: `0 0 12px rgba(${themeColorRgb},0.15)` }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                   <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: themeColor, boxShadow: `0 0 8px ${themeColor}` }} />
-                  <span style={{ fontSize: '13px', fontWeight: 600, color: '#22c55e' }}>VIEWING {selectedTrades.size} SELECTED TRADES</span>
+                  <span style={{ fontSize: '13px', fontWeight: 600, color: themeColor }}>VIEWING {selectedTrades.size} SELECTED TRADES</span>
                 </div>
                 <button onClick={() => setViewingSelectedStats(false)} style={{ padding: '6px 12px', background: '#1a1a22', border: 'none', borderRadius: '6px', color: '#fff', fontSize: '12px', cursor: 'pointer' }}>View Journal Stats</button>
               </div>
@@ -2573,7 +2573,7 @@ export default function AccountPage() {
                                       </label>
                                     ))}
                                     <div style={{ borderTop: '1px solid #2a2a35', marginTop: '6px', paddingTop: '6px', display: 'flex', gap: '6px' }}>
-                                      <button onClick={() => setSelectedCurveLines(lines.reduce((acc, l) => ({ ...acc, [l.name]: true }), {}))} style={{ flex: 1, padding: '3px 6px', background: '#22c55e', border: 'none', borderRadius: '4px', color: '#fff', fontSize: '10px', cursor: 'pointer' }}>All</button>
+                                      <button onClick={() => setSelectedCurveLines(lines.reduce((acc, l) => ({ ...acc, [l.name]: true }), {}))} style={{ flex: 1, padding: '3px 6px', background: themeColor, border: 'none', borderRadius: '4px', color: '#fff', fontSize: '10px', cursor: 'pointer' }}>All</button>
                                       <button onClick={() => setSelectedCurveLines(lines.reduce((acc, l) => ({ ...acc, [l.name]: false }), {}))} style={{ flex: 1, padding: '3px 6px', background: '#1a1a22', border: '1px solid #2a2a35', borderRadius: '4px', color: '#999', fontSize: '10px', cursor: 'pointer' }}>None</button>
                                     </div>
                                   </div>
@@ -4696,7 +4696,7 @@ export default function AccountPage() {
               )}
               <div style={{ display: 'flex', gap: '8px' }}>
                 <button onClick={() => setDraftFilters({ dateFrom: '', dateTo: '', outcome: '', direction: '', symbol: '', session: '', timeframe: '', confidence: '', rr: '', rating: '', quickSelect: '', custom: {} })} style={{ flex: 1, padding: '10px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '6px', color: '#888', fontSize: '13px', cursor: 'pointer' }}>Clear All</button>
-                <button onClick={() => { setFilters({...draftFilters}); setShowFilters(false) }} style={{ flex: 1, padding: '10px', background: '#22c55e', border: 'none', borderRadius: '6px', color: '#fff', fontWeight: 600, fontSize: '13px', cursor: 'pointer' }}>Apply Filters</button>
+                <button onClick={() => { setFilters({...draftFilters}); setShowFilters(false) }} style={{ flex: 1, padding: '10px', background: themeColor, border: 'none', borderRadius: '6px', color: '#fff', fontWeight: 600, fontSize: '13px', cursor: 'pointer' }}>Apply Filters</button>
               </div>
             </div>
           </div>
@@ -4758,12 +4758,12 @@ export default function AccountPage() {
                                 if (input.id === 'direction') { setDirectionDropdownOpen(!directionDropdownOpen); setOutcomeDropdownOpen(false); setCustomDropdownOpen({}) }
                                 else if (input.id === 'outcome') { setOutcomeDropdownOpen(!outcomeDropdownOpen); setDirectionDropdownOpen(false); setCustomDropdownOpen({}) }
                                 else { setCustomDropdownOpen(prev => ({ ...Object.fromEntries(Object.keys(prev).map(k => [k, false])), [input.id]: !isDropdownOpen })); setDirectionDropdownOpen(false); setOutcomeDropdownOpen(false) }
-                              }} style={{ width: '100%', padding: '10px 12px', background: '#0a0a0f', border: isDropdownOpen ? '1px solid #22c55e' : '1px solid #1a1a22', borderRadius: isDropdownOpen ? '8px 8px 0 0' : '8px', color: currentColor, fontSize: '14px', boxSizing: 'border-box', cursor: 'pointer', textAlign: 'left', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                              }} style={{ width: '100%', padding: '10px 12px', background: '#0a0a0f', border: isDropdownOpen ? `1px solid ${themeColor}` : '1px solid #1a1a22', borderRadius: isDropdownOpen ? '8px 8px 0 0' : '8px', color: currentColor, fontSize: '14px', boxSizing: 'border-box', cursor: 'pointer', textAlign: 'left', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                 <span>{currentVal ? (currentOpt ? getOptVal(currentOpt) : currentVal) : '-'}</span>
                                 <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ transform: isDropdownOpen ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }}><path d="M6 9l6 6 6-6" /></svg>
                               </button>
                               {isDropdownOpen && (
-                                <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, background: '#0a0a0f', border: '1px solid #22c55e', borderTop: 'none', borderRadius: '0 0 8px 8px', zIndex: 100, overflow: 'hidden', maxHeight: '200px', overflowY: 'auto' }}>
+                                <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, background: '#0a0a0f', border: `1px solid ${themeColor}`, borderTop: 'none', borderRadius: '0 0 8px 8px', zIndex: 100, overflow: 'hidden', maxHeight: '200px', overflowY: 'auto' }}>
                                   <div onClick={() => { setTradeForm({...tradeForm, [input.id]: ''}); setDirectionDropdownOpen(false); setOutcomeDropdownOpen(false); setCustomDropdownOpen({}) }} style={{ padding: '10px 12px', cursor: 'pointer', color: '#888', fontSize: '14px', transition: 'background 0.15s' }} onMouseEnter={e => e.currentTarget.style.background = '#1a1a22'} onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>-</div>
                                   {optionsArr.map((o, idx) => {
                                     const optVal = getOptVal(o)
@@ -4982,7 +4982,7 @@ export default function AccountPage() {
             <div style={{ padding: '16px 28px 24px', borderTop: '1px solid #1a1a22', background: '#0d0d12', borderRadius: '0 0 12px 12px', display: 'flex', gap: '12px' }}>
               <button onClick={() => setShowRestoreDefaults(true)} style={{ padding: '12px 16px', background: 'transparent', border: '1px solid #f59e0b', borderRadius: '8px', color: '#f59e0b', fontWeight: 600, fontSize: '13px', cursor: 'pointer' }}>Restore Defaults</button>
               <button onClick={() => setShowEditInputs(false)} style={{ flex: 1, padding: '12px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '8px', color: '#888', fontWeight: 600, fontSize: '13px', cursor: 'pointer' }}>Cancel</button>
-              <button onClick={saveInputs} style={{ flex: 1, padding: '12px', background: '#22c55e', border: 'none', borderRadius: '8px', color: '#fff', fontWeight: 600, fontSize: '13px', cursor: 'pointer' }}>Save</button>
+              <button onClick={saveInputs} style={{ flex: 1, padding: '12px', background: themeColor, border: 'none', borderRadius: '8px', color: '#fff', fontWeight: 600, fontSize: '13px', cursor: 'pointer' }}>Save</button>
             </div>
           </div>
         </div>
@@ -5101,7 +5101,7 @@ export default function AccountPage() {
             <button onClick={addOption} style={{ width: '100%', padding: '12px', marginBottom: '16px', background: 'transparent', border: '1px dashed #2a2a35', borderRadius: '6px', color: '#555', fontSize: '13px', cursor: 'pointer' }}>+ Add Option</button>
 
             <div style={{ display: 'flex', gap: '12px' }}>
-              <button onClick={saveOptions} style={{ flex: 1, padding: '12px', background: '#22c55e', border: 'none', borderRadius: '8px', color: '#fff', fontWeight: 600, fontSize: '13px', cursor: 'pointer' }}>Save</button>
+              <button onClick={saveOptions} style={{ flex: 1, padding: '12px', background: themeColor, border: 'none', borderRadius: '8px', color: '#fff', fontWeight: 600, fontSize: '13px', cursor: 'pointer' }}>Save</button>
               <button onClick={() => { setEditingOptions(null); setOptionsList([]) }} style={{ flex: 1, padding: '12px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '8px', color: '#888', fontWeight: 600, fontSize: '13px', cursor: 'pointer' }}>Cancel</button>
             </div>
           </div>
@@ -5224,7 +5224,7 @@ export default function AccountPage() {
             )}
 
             <div style={{ display: 'flex', gap: '12px' }}>
-              <button onClick={() => setEditingColor(null)} style={{ flex: 1, padding: '12px', background: '#22c55e', border: 'none', borderRadius: '8px', color: '#fff', fontWeight: 600, fontSize: '13px', cursor: 'pointer' }}>Done</button>
+              <button onClick={() => setEditingColor(null)} style={{ flex: 1, padding: '12px', background: themeColor, border: 'none', borderRadius: '8px', color: '#fff', fontWeight: 600, fontSize: '13px', cursor: 'pointer' }}>Done</button>
               {!isValue && !isFile && <button onClick={() => { updateInput(editingColor, 'textColor', null); updateInput(editingColor, 'bgColor', null); updateInput(editingColor, 'borderColor', null); setEditingColor(null) }} style={{ flex: 1, padding: '12px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '8px', color: '#888', fontWeight: 600, fontSize: '13px', cursor: 'pointer' }}>Reset</button>}
             </div>
           </div>
@@ -5423,7 +5423,7 @@ export default function AccountPage() {
                               <div style={{ borderTop: '1px solid #2a2a35', marginTop: '8px', paddingTop: '8px', display: 'flex', gap: '8px' }}>
                                 <button
                                   onClick={() => setSelectedCurveLines(lineNames.reduce((acc, n) => ({ ...acc, [n]: true }), {}))}
-                                  style={{ flex: 1, padding: '4px 8px', background: '#22c55e', border: 'none', borderRadius: '4px', color: '#fff', fontSize: '10px', cursor: 'pointer' }}
+                                  style={{ flex: 1, padding: '4px 8px', background: themeColor, border: 'none', borderRadius: '4px', color: '#fff', fontSize: '10px', cursor: 'pointer' }}
                                 >All</button>
                                 <button
                                   onClick={() => setSelectedCurveLines(lineNames.reduce((acc, n) => ({ ...acc, [n]: false }), {}))}
