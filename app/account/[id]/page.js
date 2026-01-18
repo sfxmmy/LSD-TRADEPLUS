@@ -1563,8 +1563,8 @@ export default function AccountPage() {
                     if (accountsJournal) setActiveAccountId(accountsJournal.id)
                   }
                 }}
-                style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontSize: '32px', fontWeight: 700, letterSpacing: '-0.5px', color: (account?.dashboard_type || 'accounts') === 'accounts' ? '#fff' : '#666', transition: 'color 0.2s' }}>ACCOUNTS {activeTab === 'trades' ? 'JOURNAL' : activeTab === 'statistics' ? 'STATISTICS' : 'NOTES'}</span>
-              <span style={{ color: '#333', fontSize: '32px', fontWeight: 300 }}>|</span>
+                style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontSize: '28px', fontWeight: 700, letterSpacing: '-0.5px', color: (account?.dashboard_type || 'accounts') === 'accounts' ? '#fff' : '#666', transition: 'color 0.2s' }}>ACCOUNTS {activeTab === 'trades' ? 'JOURNAL' : activeTab === 'statistics' ? 'STATISTICS' : 'NOTES'}</span>
+              <span style={{ color: '#333', fontSize: '28px', fontWeight: 300 }}>|</span>
               <span
                 onClick={() => {
                   if ((account?.dashboard_type || 'accounts') !== 'backtesting') {
@@ -1572,7 +1572,7 @@ export default function AccountPage() {
                     if (backtestingJournal) setActiveAccountId(backtestingJournal.id)
                   }
                 }}
-                style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontSize: '32px', fontWeight: 700, letterSpacing: '-0.5px', color: (account?.dashboard_type || 'accounts') === 'backtesting' ? '#fff' : '#666', transition: 'color 0.2s' }}>BACKTESTING {activeTab === 'trades' ? 'JOURNAL' : activeTab === 'statistics' ? 'STATISTICS' : 'NOTES'}</span>
+                style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontSize: '28px', fontWeight: 700, letterSpacing: '-0.5px', color: (account?.dashboard_type || 'accounts') === 'backtesting' ? '#fff' : '#666', transition: 'color 0.2s' }}>BACKTESTING {activeTab === 'trades' ? 'JOURNAL' : activeTab === 'statistics' ? 'STATISTICS' : 'NOTES'}</span>
             </div>
             <div style={{ display: 'flex', gap: '8px' }}>
               <a href={`/dashboard?dashboard=${account?.dashboard_type || 'accounts'}`} style={{ padding: '10px 20px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '6px', color: '#fff', fontSize: '14px', fontWeight: 600, textDecoration: 'none', cursor: 'pointer' }}>← Dashboard</a>
