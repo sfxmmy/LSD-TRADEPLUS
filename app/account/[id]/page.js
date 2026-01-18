@@ -1655,7 +1655,7 @@ export default function AccountPage() {
 
       {/* FIXED SUBHEADER - starts at sidebar edge */}
       {!isMobile && (
-        <div style={{ position: 'fixed', top: '68px', left: '180px', right: 0, zIndex: 46, padding: '12px 12px 12px 12px', background: '#0a0a0f', borderBottom: '1px solid #1a1a22', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div style={{ position: 'fixed', top: '68px', left: '180px', right: 0, zIndex: 46, height: '56px', boxSizing: 'border-box', padding: '0 12px', background: '#0a0a0f', borderBottom: '1px solid #1a1a22', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '16px', flex: 1, minWidth: 0 }}>
             {(() => {
               const getTitle = () => {
@@ -2012,7 +2012,7 @@ export default function AccountPage() {
                 <table style={{ width: 'max-content', minWidth: '100%', borderCollapse: 'collapse' }}>
                   <thead style={{ position: 'sticky', top: 0, zIndex: 10, background: '#0a0a0f' }}>
                     <tr>
-                      {selectMode && <th style={{ padding: '3px 6px 11px 6px', width: '32px', minWidth: '32px', borderBottom: '1px solid #1a1a22', background: '#0a0a0f' }}><input type="checkbox" checked={filteredTrades.length > 0 && filteredTrades.every(t => selectedTrades.has(t.id))} onChange={() => { const allSelected = filteredTrades.every(t => selectedTrades.has(t.id)); if (allSelected) { const newSet = new Set(selectedTrades); filteredTrades.forEach(t => newSet.delete(t.id)); setSelectedTrades(newSet) } else { const newSet = new Set(selectedTrades); filteredTrades.forEach(t => newSet.add(t.id)); setSelectedTrades(newSet) } }} style={{ width: '14px', height: '14px', accentColor: '#22c55e', cursor: 'pointer' }} /></th>}
+                      {selectMode && <th style={{ padding: '7px 6px 7px 6px', width: '32px', minWidth: '32px', borderBottom: '1px solid #1a1a22', background: '#0a0a0f' }}><input type="checkbox" checked={filteredTrades.length > 0 && filteredTrades.every(t => selectedTrades.has(t.id))} onChange={() => { const allSelected = filteredTrades.every(t => selectedTrades.has(t.id)); if (allSelected) { const newSet = new Set(selectedTrades); filteredTrades.forEach(t => newSet.delete(t.id)); setSelectedTrades(newSet) } else { const newSet = new Set(selectedTrades); filteredTrades.forEach(t => newSet.add(t.id)); setSelectedTrades(newSet) } }} style={{ width: '14px', height: '14px', accentColor: '#22c55e', cursor: 'pointer' }} /></th>}
                       {enabledInputs.map((inp, i) => (
                         <th
                           key={inp.id}
@@ -2022,7 +2022,7 @@ export default function AccountPage() {
                           onDrop={() => handleColumnDrop(inp.id)}
                           onDragEnd={() => { setDraggedColumn(null); setDragOverColumn(null) }}
                           style={{
-                            padding: isMobile ? '3px 8px 11px 8px' : '3px 12px 11px 12px',
+                            padding: isMobile ? '7px 8px 7px 8px' : '7px 12px 7px 12px',
                             textAlign: 'center',
                             color: dragOverColumn === inp.id ? '#22c55e' : '#999',
                             fontSize: isMobile ? '11px' : '12px',
@@ -2044,8 +2044,8 @@ export default function AccountPage() {
                           <span title={inp.label}>{inp.label}</span>
                         </th>
                       ))}
-                      <th style={{ padding: '3px 12px 11px 12px', textAlign: 'center', color: '#999', fontSize: '12px', fontWeight: 600, textTransform: 'uppercase', borderBottom: '1px solid #1a1a22', background: '#0a0a0f', minWidth: '70px' }}>Placed</th>
-                      <th style={{ padding: '3px 12px 11px 12px', textAlign: 'center', color: '#999', fontSize: '12px', fontWeight: 600, borderBottom: '1px solid #1a1a22', background: '#0a0a0f', minWidth: '70px' }}></th>
+                      <th style={{ padding: '7px 12px 7px 12px', textAlign: 'center', color: '#999', fontSize: '12px', fontWeight: 600, textTransform: 'uppercase', borderBottom: '1px solid #1a1a22', background: '#0a0a0f', minWidth: '70px' }}>Placed</th>
+                      <th style={{ padding: '7px 12px 7px 12px', textAlign: 'center', color: '#999', fontSize: '12px', fontWeight: 600, borderBottom: '1px solid #1a1a22', background: '#0a0a0f', minWidth: '70px' }}></th>
                     </tr>
                   </thead>
                   <tbody>
