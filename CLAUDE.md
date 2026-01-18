@@ -88,3 +88,57 @@ import { useIsMobile, useTooltip, useClickOutside, useDebounce } from '@/lib/hoo
 - **DO** extract components only when you need to edit that section
 - **DO** leave working code alone - refactoring for its own sake risks breaking things
 - The foundation exists in `lib/` and `components/` - use it incrementally
+
+## CSS & Styling
+Use the design tokens defined in `app/globals.css` instead of hardcoded values.
+
+### For New Code
+Always use CSS variables:
+```jsx
+// ✅ Good
+<div style={{ background: 'var(--color-bg-card)', borderRadius: 'var(--radius-md)', padding: 'var(--space-md)' }}>
+
+// ❌ Bad
+<div style={{ background: '#14141a', borderRadius: '8px', padding: '12px' }}>
+```
+
+### Available Tokens
+| Category | Examples |
+|----------|----------|
+| Backgrounds | `--color-bg-body`, `--color-bg-dark`, `--color-bg-card`, `--color-bg-elevated` |
+| Borders | `--color-border`, `--color-border-light`, `--color-border-lighter` |
+| Text | `--color-text-primary`, `--color-text-secondary`, `--color-text-muted` |
+| Semantic | `--color-primary`, `--color-success`, `--color-warning`, `--color-error` |
+| Radius | `--radius-sm` (6px), `--radius-md` (8px), `--radius-lg` (12px), `--radius-xl` (16px) |
+| Spacing | `--space-xs` (4px), `--space-sm` (8px), `--space-md` (12px), `--space-lg` (16px), `--space-xl` (24px) |
+| Font sizes | `--text-xs`, `--text-sm`, `--text-base`, `--text-md`, `--text-lg`, `--text-xl` |
+| Z-index | `--z-dropdown`, `--z-modal`, `--z-modal-overlay`, `--z-tooltip` |
+
+### Migration Approach
+- **DO NOT** do a bulk migration of existing inline styles
+- **DO** swap hardcoded values for tokens when you're already editing that code
+- **DO** leave working styles alone if you're not touching that section
+
+# Dual Page Sync (Dashboard & Account Page)
+
+## The Two Areas
+The app has two main pages that share similar UI elements:
+1. **Dashboard** (`app/dashboard/page.js`) - Shows all journal cards, quick trade entry
+2. **Account Page** (`app/account/[id]/page.js`) - Individual journal view with sidebar journal select
+
+## Sync Requirement
+When editing shared UI patterns, **the same changes should be applied to both pages** unless explicitly specified otherwise. Key shared elements include:
+- Journal selector dropdowns/buttons
+- Journal card/item styling (borders, colors, transitions)
+- Drag-and-drop effects (cursor, opacity, border color)
+- Trade entry form styling
+- Option styles (direction, outcome, confidence, etc.)
+
+## Current Shared Patterns
+| Pattern | Dashboard | Account Page |
+|---------|-----------|--------------|
+| Journal drag reorder | Journal cards (purple border, grab cursor) | Journal Select sidebar items |
+| Quick trade entry | Log Trade modal | Add Trade modal |
+| Option colors | `optionStyles` object | Same `optionStyles` object |
+
+**Rule:** If you edit a UI pattern in one page, check if the same pattern exists in the other page and apply matching changes.

@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200">
+  <rect width="200" height="200" fill="#0a0a0f" rx="24"/>
+  <!-- TSP text -->
+  <text x="72" y="118" font-family="Inter, -apple-system, Arial, sans-serif" font-size="56" font-weight="800" text-anchor="middle" letter-spacing="0">
+    <tspan fill="#22c55e">T</tspan><tspan fill="#ffffff">S</tspan><tspan fill="#22c55e">P</tspan>
+  </text>
+  <!-- Three rising bars - gap matches letter spacing, top aligns with letter tops -->
+  <rect x="135" y="106" width="10" height="12" fill="#22c55e" rx="2" opacity="0.6"/>
+  <rect x="149" y="94" width="10" height="24" fill="#22c55e" rx="2" opacity="0.8"/>
+  <rect x="163" y="80" width="10" height="38" fill="#22c55e" rx="2"/>
+</svg>

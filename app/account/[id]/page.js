@@ -6,13 +6,13 @@ import { getSupabase } from '@/lib/supabase'
 import { ToastContainer, showToast } from '@/components/Toast'
 
 const defaultInputs = [
+  { id: 'date', label: 'Date', type: 'date', required: false, enabled: true, fixed: true, color: '#8b5cf6' },
   { id: 'symbol', label: 'Symbol', type: 'text', required: false, enabled: true, fixed: true, color: '#22c55e' },
   { id: 'pnl', label: 'PnL ($)', type: 'number', required: false, enabled: true, fixed: true, color: '#22c55e' },
   { id: 'direction', label: 'Direction', type: 'select', options: [{value: 'long', textColor: '#22c55e', bgColor: 'rgba(34,197,94,0.15)'}, {value: 'short', textColor: '#ef4444', bgColor: 'rgba(239,68,68,0.15)'}], required: false, enabled: true, fixed: true, color: '#3b82f6' },
   { id: 'outcome', label: 'W/L', type: 'select', options: [{value: 'win', textColor: '#22c55e', bgColor: 'rgba(34,197,94,0.15)'}, {value: 'loss', textColor: '#ef4444', bgColor: 'rgba(239,68,68,0.15)'}, {value: 'be', textColor: '#f59e0b', bgColor: 'rgba(245,158,11,0.15)'}], required: false, enabled: true, fixed: true, color: '#22c55e' },
   { id: 'rr', label: 'RR', type: 'number', required: false, enabled: true, fixed: true, color: '#f59e0b' },
   { id: 'riskPercent', label: '% Risk', type: 'number', required: false, enabled: true, fixed: true, color: '#ef4444' },
-  { id: 'date', label: 'Date', type: 'date', required: false, enabled: true, fixed: true, color: '#8b5cf6' },
   { id: 'time', label: 'Time', type: 'time', required: false, enabled: true, fixed: true, color: '#a855f7' },
   { id: 'confidence', label: 'Confidence', type: 'select', options: [{value: 'High', textColor: '#22c55e', bgColor: 'rgba(34,197,94,0.15)'}, {value: 'Medium', textColor: '#f59e0b', bgColor: 'rgba(245,158,11,0.15)'}, {value: 'Low', textColor: '#ef4444', bgColor: 'rgba(239,68,68,0.15)'}], required: false, enabled: true, fixed: true, color: '#f59e0b' },
   { id: 'rating', label: 'Rating', type: 'rating', required: false, enabled: true, fixed: true, color: '#fbbf24' },
@@ -137,6 +137,10 @@ export default function AccountPage() {
   const [transferFromJournal, setTransferFromJournal] = useState('')
   const [draggedColumn, setDraggedColumn] = useState(null)
   const [dragOverColumn, setDragOverColumn] = useState(null)
+  // Journal drag and drop reordering (synced with dashboard)
+  const [journalOrder, setJournalOrder] = useState([])
+  const [draggedJournal, setDraggedJournal] = useState(null)
+  const [dragOverJournal, setDragOverJournal] = useState(null)
 
   const tradesScrollRef = useRef(null)
   const fixedScrollRef = useRef(null)
@@ -254,6 +258,20 @@ export default function AccountPage() {
       setAccount(accountData)
       const { data: allAccountsData } = await supabase.from('accounts').select('*').eq('user_id', user.id).order('created_at', { ascending: true })
       setAllAccounts(allAccountsData || [])
+      // Load journal order from localStorage (synced with dashboard)
+      if (allAccountsData?.length) {
+        const savedOrder = localStorage.getItem('journalOrder')
+        const savedIds = savedOrder ? JSON.parse(savedOrder) : []
+        const allIds = allAccountsData.map(a => a.id)
+        // Merge: keep saved order, add any new accounts at the end
+        const validSaved = savedIds.filter(id => allIds.includes(id))
+        const newIds = allIds.filter(id => !validSaved.includes(id))
+        const finalOrder = [...validSaved, ...newIds]
+        setJournalOrder(finalOrder)
+        if (JSON.stringify(finalOrder) !== JSON.stringify(savedIds)) {
+          localStorage.setItem('journalOrder', JSON.stringify(finalOrder))
+        }
+      }
       // Load trades from all accounts for cumulative stats
       if (allAccountsData?.length) {
         const tradesMap = {}
@@ -688,6 +706,47 @@ export default function AccountPage() {
     const { error } = await supabase.from('accounts').update({ custom_inputs: JSON.stringify(newInputs) }).eq('id', accountId)
     // Error handled silently - column order may not have saved
   }
+
+  // Journal drag and drop reordering (same effect as dashboard)
+  function handleJournalDragStart(e, accountId) {
+    setDraggedJournal(accountId)
+    e.dataTransfer.effectAllowed = 'move'
+    e.dataTransfer.setData('text/plain', accountId)
+  }
+  function handleJournalDragOver(e, accountId) {
+    e.preventDefault()
+    if (draggedJournal && draggedJournal !== accountId) {
+      setDragOverJournal(accountId)
+    }
+  }
+  function handleJournalDragLeave() {
+    setDragOverJournal(null)
+  }
+  function handleJournalDrop(e, targetId) {
+    e.preventDefault()
+    if (!draggedJournal || draggedJournal === targetId) {
+      setDraggedJournal(null)
+      setDragOverJournal(null)
+      return
+    }
+    setJournalOrder(prev => {
+      const newOrder = [...prev]
+      const dragIdx = newOrder.indexOf(draggedJournal)
+      const targetIdx = newOrder.indexOf(targetId)
+      if (dragIdx === -1 || targetIdx === -1) return prev
+      newOrder.splice(dragIdx, 1)
+      newOrder.splice(targetIdx, 0, draggedJournal)
+      localStorage.setItem('journalOrder', JSON.stringify(newOrder))
+      return newOrder
+    })
+    setDraggedJournal(null)
+    setDragOverJournal(null)
+  }
+  function handleJournalDragEnd() {
+    setDraggedJournal(null)
+    setDragOverJournal(null)
+  }
+
   function toggleOptionBg(idx) {
     const n = [...optionsList]
     if (n[idx].bgColor) {
@@ -898,9 +957,18 @@ export default function AccountPage() {
     </div>
   )
 
-  // Filter accounts to only show same dashboard type (accounts vs backtesting)
+  // Filter accounts to only show same dashboard type (accounts vs backtesting), sorted by journalOrder
   const currentDashboardType = account?.dashboard_type || 'accounts'
-  const sameTypeAccounts = allAccounts.filter(a => (a.dashboard_type || 'accounts') === currentDashboardType)
+  const sameTypeAccounts = allAccounts
+    .filter(a => (a.dashboard_type || 'accounts') === currentDashboardType)
+    .sort((a, b) => {
+      const aIdx = journalOrder.indexOf(a.id)
+      const bIdx = journalOrder.indexOf(b.id)
+      if (aIdx === -1 && bIdx === -1) return 0
+      if (aIdx === -1) return 1
+      if (bIdx === -1) return -1
+      return aIdx - bIdx
+    })
   const sameTypeAccountIds = new Set(sameTypeAccounts.map(a => a.id))
 
   // Get base trades based on view mode (filtered by dashboard type)
@@ -1488,12 +1556,26 @@ export default function AccountPage() {
         {!isMobile && (
           <>
             <div style={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)', display: 'flex', alignItems: 'center', gap: '12px' }}>
-              <a href="/dashboard?dashboard=accounts" style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontSize: '20px', fontWeight: 700, letterSpacing: '-0.5px', color: (account?.dashboard_type || 'accounts') === 'accounts' ? '#fff' : '#666', textDecoration: 'none', transition: 'color 0.2s' }}>ACCOUNTS {activeTab === 'trades' ? 'JOURNAL' : activeTab === 'statistics' ? 'STATISTICS' : 'NOTES'}</a>
-              <span style={{ color: '#333', fontSize: '20px', fontWeight: 300 }}>|</span>
-              <a href="/dashboard?dashboard=backtesting" style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontSize: '20px', fontWeight: 700, letterSpacing: '-0.5px', color: (account?.dashboard_type || 'accounts') === 'backtesting' ? '#fff' : '#666', textDecoration: 'none', transition: 'color 0.2s' }}>BACKTESTING {activeTab === 'trades' ? 'JOURNAL' : activeTab === 'statistics' ? 'STATISTICS' : 'NOTES'}</a>
+              <span
+                onClick={() => {
+                  if ((account?.dashboard_type || 'accounts') !== 'accounts') {
+                    const accountsJournal = allAccounts.find(a => (a.dashboard_type || 'accounts') === 'accounts')
+                    if (accountsJournal) setActiveAccountId(accountsJournal.id)
+                  }
+                }}
+                style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontSize: '32px', fontWeight: 700, letterSpacing: '-0.5px', color: (account?.dashboard_type || 'accounts') === 'accounts' ? '#fff' : '#666', transition: 'color 0.2s' }}>ACCOUNTS {activeTab === 'trades' ? 'JOURNAL' : activeTab === 'statistics' ? 'STATISTICS' : 'NOTES'}</span>
+              <span style={{ color: '#333', fontSize: '32px', fontWeight: 300 }}>|</span>
+              <span
+                onClick={() => {
+                  if ((account?.dashboard_type || 'accounts') !== 'backtesting') {
+                    const backtestingJournal = allAccounts.find(a => a.dashboard_type === 'backtesting')
+                    if (backtestingJournal) setActiveAccountId(backtestingJournal.id)
+                  }
+                }}
+                style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontSize: '32px', fontWeight: 700, letterSpacing: '-0.5px', color: (account?.dashboard_type || 'accounts') === 'backtesting' ? '#fff' : '#666', transition: 'color 0.2s' }}>BACKTESTING {activeTab === 'trades' ? 'JOURNAL' : activeTab === 'statistics' ? 'STATISTICS' : 'NOTES'}</span>
             </div>
             <div style={{ display: 'flex', gap: '8px' }}>
-              <a href="/dashboard" style={{ padding: '10px 20px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '6px', color: '#fff', fontSize: '14px', fontWeight: 600, textDecoration: 'none', cursor: 'pointer' }}>← Dashboard</a>
+              <a href={`/dashboard?dashboard=${account?.dashboard_type || 'accounts'}`} style={{ padding: '10px 20px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '6px', color: '#fff', fontSize: '14px', fontWeight: 600, textDecoration: 'none', cursor: 'pointer' }}>← Dashboard</a>
               <a href="/settings" style={{ padding: '10px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '6px', color: '#fff', textDecoration: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }} title="Settings">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
               </a>
@@ -1503,7 +1585,7 @@ export default function AccountPage() {
         {isMobile && (
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
             <button onClick={() => setShowMobileMenu(!showMobileMenu)} style={{ padding: '8px 12px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '6px', color: '#fff', fontSize: '16px', cursor: 'pointer' }}>☰</button>
-            <a href="/dashboard" style={{ padding: '8px 12px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '6px', color: '#fff', fontSize: '12px', textDecoration: 'none', cursor: 'pointer' }}>← Dashboard</a>
+            <a href={`/dashboard?dashboard=${account?.dashboard_type || 'accounts'}`} style={{ padding: '8px 12px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '6px', color: '#fff', fontSize: '12px', textDecoration: 'none', cursor: 'pointer' }}>← Dashboard</a>
             <a href="/settings" style={{ padding: '8px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '6px', color: '#fff', textDecoration: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }} title="Settings">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
             </a>
@@ -1806,13 +1888,21 @@ export default function AccountPage() {
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', maxHeight: sameTypeAccounts.length > 2 ? '120px' : 'none', overflowY: sameTypeAccounts.length > 2 ? 'auto' : 'visible' }}>
             {sameTypeAccounts.map((acc) => {
               const isSelected = acc.id === accountId
+              const isDragging = draggedJournal === acc.id
+              const isDragOver = dragOverJournal === acc.id
               const accTrades = allAccountsTrades[acc.id] || []
               const totalPnl = accTrades.reduce((sum, t) => sum + (parseFloat(t.pnl) || 0), 0)
               const currentBalance = (parseFloat(acc.starting_balance) || 0) + totalPnl
               return (
                 <div
                   key={acc.id}
-                  onClick={() => setActiveAccountId(acc.id)}
+                  draggable
+                  onDragStart={(e) => handleJournalDragStart(e, acc.id)}
+                  onDragOver={(e) => handleJournalDragOver(e, acc.id)}
+                  onDragLeave={handleJournalDragLeave}
+                  onDrop={(e) => handleJournalDrop(e, acc.id)}
+                  onDragEnd={handleJournalDragEnd}
+                  onClick={() => { if (!draggedJournal) setActiveAccountId(acc.id) }}
                   style={{
                     display: 'flex',
                     alignItems: 'flex-start',
@@ -1820,14 +1910,16 @@ export default function AccountPage() {
                     gap: '8px',
                     padding: '10px 12px',
                     background: isSelected ? 'rgba(34,197,94,0.1)' : '#0a0a0f',
-                    border: `1px solid ${isSelected ? 'rgba(34,197,94,0.5)' : '#1a1a22'}`,
+                    border: isDragOver ? '2px dashed #9333ea' : isDragging ? '2px solid #9333ea' : `1px solid ${isSelected ? 'rgba(34,197,94,0.5)' : '#1a1a22'}`,
                     borderRadius: '8px',
-                    cursor: 'pointer',
-                    transition: 'all 0.15s ease',
-                    boxShadow: isSelected ? '0 0 12px rgba(34,197,94,0.2), inset 0 0 20px rgba(34,197,94,0.05)' : 'none'
+                    cursor: draggedJournal ? 'grabbing' : 'grab',
+                    transition: 'border 0.2s, opacity 0.2s, transform 0.2s',
+                    boxShadow: isSelected ? '0 0 12px rgba(34,197,94,0.2), inset 0 0 20px rgba(34,197,94,0.05)' : 'none',
+                    opacity: isDragging ? 0.5 : 1,
+                    transform: isDragOver ? 'scale(1.02)' : 'scale(1)'
                   }}
-                  onMouseEnter={e => { if (!isSelected) { e.currentTarget.style.borderColor = 'rgba(34,197,94,0.5)'; e.currentTarget.style.background = 'rgba(34,197,94,0.05)' } }}
-                  onMouseLeave={e => { if (!isSelected) { e.currentTarget.style.borderColor = '#1a1a22'; e.currentTarget.style.background = '#0a0a0f' } }}
+                  onMouseEnter={e => { if (!isSelected && !draggedJournal) { e.currentTarget.style.borderColor = 'rgba(34,197,94,0.5)'; e.currentTarget.style.background = 'rgba(34,197,94,0.05)' } }}
+                  onMouseLeave={e => { if (!isSelected && !draggedJournal && !isDragOver) { e.currentTarget.style.borderColor = '#1a1a22'; e.currentTarget.style.background = '#0a0a0f' } }}
                 >
                   <div style={{ display: 'flex', alignItems: 'flex-start', gap: '8px', flex: 1, minWidth: 0 }}>
                     <div style={{
