@@ -1562,7 +1562,7 @@ export default function AccountPage() {
 
       {/* FIXED HEADER - same structure as dashboard */}
       <header style={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 50, padding: '4px 16px', height: '60px', boxSizing: 'border-box', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#0a0a0f', borderBottom: '1px solid #1a1a22' }}>
-        <a href="/" style={{ display: 'flex', alignItems: 'center', textDecoration: 'none', height: isMobile ? '28px' : '42px' }}><img src="/logo.svg" alt="TradeSave+" style={{ height: '100%', width: 'auto' }} /></a>
+        <a href="/" style={{ display: 'flex', alignItems: 'center', textDecoration: 'none', height: isMobile ? '32px' : '50px' }}><img src="/logo.svg" alt="TradeSave+" style={{ height: '100%', width: 'auto' }} /></a>
         {!isMobile && (
           <>
             <div style={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)', display: 'flex', alignItems: 'center', gap: '12px' }}>
