@@ -77,8 +77,8 @@ export default function PricingPage() {
   return (
     <div style={{ minHeight: '100vh', background: '#0a0a0f' }}>
       <header style={{ padding: '4px 16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #1a1a22' }}>
-        <a href="/" style={{ fontSize: '42px', fontWeight: 700, textDecoration: 'none', letterSpacing: '-0.5px' }}>
-          <span style={{ color: '#22c55e' }}>TRADE</span><span style={{ color: '#fff' }}>SAVE</span><span style={{ color: '#22c55e' }}>+</span>
+        <a href="/" style={{ display: 'flex', alignItems: 'center', textDecoration: 'none' }}>
+          <img src="/logo.svg" alt="TradeSave+" style={{ height: '42px', width: 'auto' }} />
         </a>
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
           {!loading && hasAccess ? (

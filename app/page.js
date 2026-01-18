@@ -40,9 +40,7 @@ export default function HomePage() {
     return (
       <div style={{ minHeight: '100vh', background: '#0a0a0f', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         <div style={{ textAlign: 'center' }}>
-          <div style={{ fontSize: '40px', marginBottom: '16px', fontWeight: 700 }}>
-            <span style={{ color: '#22c55e' }}>TRADE</span><span style={{ color: '#fff' }}>SAVE</span><span style={{ color: '#22c55e' }}>+</span>
-          </div>
+          <img src="/logo.svg" alt="TradeSave+" style={{ height: '50px', width: 'auto', marginBottom: '16px' }} />
           <div style={{ color: '#999' }}>Loading...</div>
         </div>
       </div>
@@ -53,8 +51,8 @@ export default function HomePage() {
     <div style={{ minHeight: '100vh', background: '#0a0a0f' }}>
       {/* Header */}
       <header style={{ padding: '4px 16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #1a1a22' }}>
-        <a href="/" style={{ fontSize: '42px', fontWeight: 700, textDecoration: 'none', letterSpacing: '-0.5px' }}>
-          <span style={{ color: '#22c55e' }}>TRADE</span><span style={{ color: '#fff' }}>SAVE</span><span style={{ color: '#22c55e' }}>+</span>
+        <a href="/" style={{ display: 'flex', alignItems: 'center', textDecoration: 'none' }}>
+          <img src="/logo.svg" alt="TradeSave+" style={{ height: '42px', width: 'auto' }} />
         </a>
         <div style={{ display: 'flex', gap: '12px' }}>
           <a href="/pricing" style={{ padding: '8px 16px', background: '#22c55e', borderRadius: '6px', color: '#fff', fontWeight: 600, fontSize: '13px', textDecoration: 'none' }}>

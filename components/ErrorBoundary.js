@@ -2,6 +2,7 @@
 
 import { Component } from 'react'
 import * as Sentry from '@sentry/nextjs'
+import { getSupabase } from '@/lib/supabase'
 
 /**
  * Error Boundary component that catches JavaScript errors anywhere in the child
@@ -34,8 +35,22 @@ export class ErrorBoundary extends Component {
     }
   }
 
-  handleReset = () => {
-    this.setState({ hasError: false, error: null, errorInfo: null })
+  handleReset = async () => {
+    // Check if user is still authenticated before retrying
+    try {
+      const supabase = getSupabase()
+      const { data: { user }, error } = await supabase.auth.getUser()
+      if (error || !user) {
+        // Session expired, redirect to login
+        window.location.href = '/login'
+        return
+      }
+      // Auth is valid, allow retry
+      this.setState({ hasError: false, error: null, errorInfo: null })
+    } catch (err) {
+      // Auth check failed, redirect to login
+      window.location.href = '/login'
+    }
   }
 
   handleReload = () => {
@@ -188,8 +203,19 @@ export class SectionErrorBoundary extends Component {
     })
   }
 
-  handleRetry = () => {
-    this.setState({ hasError: false })
+  handleRetry = async () => {
+    // Check if user is still authenticated before retrying
+    try {
+      const supabase = getSupabase()
+      const { data: { user }, error } = await supabase.auth.getUser()
+      if (error || !user) {
+        window.location.href = '/login'
+        return
+      }
+      this.setState({ hasError: false })
+    } catch (err) {
+      window.location.href = '/login'
+    }
   }
 
   render() {

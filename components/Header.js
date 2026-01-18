@@ -16,11 +16,12 @@
 
 // Logo component - shared across all headers
 export function Logo({ size = 42 }) {
+  // Scale based on size (default 42px height)
+  const height = size
+  const width = Math.round(size * 3.1) // Aspect ratio of logo is ~3.1:1
   return (
-    <a href="/" style={{ fontSize: `${size}px`, fontWeight: 700, textDecoration: 'none', letterSpacing: '-0.5px' }}>
-      <span style={{ color: '#22c55e' }}>TRADE</span>
-      <span style={{ color: '#fff' }}>SAVE</span>
-      <span style={{ color: '#22c55e' }}>+</span>
+    <a href="/" style={{ display: 'flex', alignItems: 'center', textDecoration: 'none' }}>
+      <img src="/logo.svg" alt="TradeSave+" height={height} width={width} style={{ display: 'block' }} />
     </a>
   )
 }

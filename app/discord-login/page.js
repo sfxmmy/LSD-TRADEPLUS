@@ -36,8 +36,8 @@ export default function DiscordLoginPage() {
   return (
     <div style={{ minHeight: '100vh', background: '#0a0a0f' }}>
       <header style={{ padding: '20px 48px', borderBottom: '1px solid #1a1a22' }}>
-        <a href="/" style={{ fontSize: '42px', fontWeight: 700, textDecoration: 'none' }}>
-          <span style={{ color: '#22c55e' }}>TRADE</span><span style={{ color: '#fff' }}>SAVE</span><span style={{ color: '#22c55e' }}>+</span>
+        <a href="/" style={{ display: 'flex', alignItems: 'center', textDecoration: 'none' }}>
+          <img src="/logo.svg" alt="TradeSave+" style={{ height: '42px', width: 'auto' }} />
         </a>
       </header>
 

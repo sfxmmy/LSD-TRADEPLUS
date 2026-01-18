@@ -95,7 +95,7 @@ export function JournalCard({
       <div style={{ padding: '16px 16px 12px', position: 'relative' }}>
         <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
           <div>
-            <div style={{ fontSize: '13px', color: '#666', marginBottom: '2px' }}>{account.name}</div>
+            <div style={{ fontSize: '13px', color: '#666', marginBottom: '2px', wordBreak: 'break-word', lineHeight: 1.3 }}>{account.name}</div>
             <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px' }}>
               <span style={{ fontSize: '24px', fontWeight: 700, color: isProfitable ? '#22c55e' : '#ef4444' }}>
                 ${formatCurrency(currentBalance)}

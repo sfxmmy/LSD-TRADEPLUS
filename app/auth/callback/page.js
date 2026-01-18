@@ -58,9 +58,7 @@ export default function AuthCallbackPage() {
   return (
     <div style={{ minHeight: '100vh', background: '#0a0a0f', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
       <div style={{ textAlign: 'center' }}>
-        <div style={{ fontSize: '32px', marginBottom: '16px', fontWeight: 700 }}>
-          <span style={{ color: '#22c55e' }}>TRADE</span><span style={{ color: '#fff' }}>SAVE</span><span style={{ color: '#22c55e' }}>+</span>
-        </div>
+        <img src="/logo.svg" alt="TradeSave+" style={{ height: '40px', width: 'auto', marginBottom: '16px' }} />
         <div style={{ color: '#999', fontSize: '16px' }}>Completing sign in...</div>
         <div style={{ marginTop: '20px' }}>
           <div style={{ width: '40px', height: '40px', border: '3px solid #1a1a22', borderTopColor: '#22c55e', borderRadius: '50%', animation: 'spin 1s linear infinite', margin: '0 auto' }} />

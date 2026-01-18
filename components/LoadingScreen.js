@@ -13,15 +13,11 @@ export function LoadingScreen({ message = 'Loading...' }) {
       justifyContent: 'center'
     }}>
       <div style={{ textAlign: 'center' }}>
-        <div style={{
-          fontSize: '40px',
-          fontWeight: 700,
-          marginBottom: '16px'
-        }}>
-          <span style={{ color: '#22c55e' }}>TRADE</span>
-          <span style={{ color: '#fff' }}>SAVE</span>
-          <span style={{ color: '#22c55e' }}>+</span>
-        </div>
+        <img
+          src="/logo.svg"
+          alt="TradeSave+"
+          style={{ height: '50px', width: 'auto', marginBottom: '16px' }}
+        />
         <div style={{ color: '#999' }}>{message}</div>
       </div>
     </div>

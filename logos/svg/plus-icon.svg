@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100">
+  <rect width="100" height="100" fill="#0a0a0f" rx="16"/>
+  <!-- Box with plus sign -->
+  <rect x="15" y="15" width="70" height="70" fill="none" stroke="#22c55e" stroke-width="3" rx="12"/>
+  <text x="50" y="68" font-family="Inter, -apple-system, Arial, sans-serif" font-size="54" font-weight="600" fill="#22c55e" text-anchor="middle">+</text>
+</svg>
