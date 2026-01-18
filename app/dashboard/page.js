@@ -85,13 +85,13 @@ function formatCurrency(num) {
 
 // Default inputs for Edit Inputs modal
 const defaultInputs = [
+  { id: 'date', label: 'Date', type: 'date', required: true, enabled: true, fixed: true, color: '#8b5cf6' },
   { id: 'symbol', label: 'Symbol', type: 'text', required: true, enabled: true, fixed: true, color: '#22c55e' },
   { id: 'pnl', label: 'PnL ($)', type: 'number', required: true, enabled: true, fixed: true, color: '#22c55e' },
   { id: 'direction', label: 'Direction', type: 'select', options: [{value: 'long', textColor: '#22c55e', bgColor: 'rgba(34,197,94,0.15)'}, {value: 'short', textColor: '#ef4444', bgColor: 'rgba(239,68,68,0.15)'}], required: true, enabled: true, fixed: true, color: '#3b82f6' },
   { id: 'outcome', label: 'W/L', type: 'select', options: [{value: 'win', textColor: '#22c55e', bgColor: 'rgba(34,197,94,0.15)'}, {value: 'loss', textColor: '#ef4444', bgColor: 'rgba(239,68,68,0.15)'}, {value: 'be', textColor: '#f59e0b', bgColor: 'rgba(245,158,11,0.15)'}], required: true, enabled: true, fixed: true, color: '#22c55e' },
   { id: 'rr', label: 'RR', type: 'number', required: false, enabled: true, fixed: true, color: '#f59e0b' },
   { id: 'riskPercent', label: '% Risk', type: 'number', required: false, enabled: true, fixed: true, color: '#ef4444' },
-  { id: 'date', label: 'Date', type: 'date', required: true, enabled: true, fixed: true, color: '#8b5cf6' },
   { id: 'time', label: 'Time', type: 'time', required: false, enabled: true, fixed: true, color: '#a855f7' },
   { id: 'confidence', label: 'Confidence', type: 'select', options: [{value: 'High', textColor: '#22c55e', bgColor: 'rgba(34,197,94,0.15)'}, {value: 'Medium', textColor: '#f59e0b', bgColor: 'rgba(245,158,11,0.15)'}, {value: 'Low', textColor: '#ef4444', bgColor: 'rgba(239,68,68,0.15)'}], required: false, enabled: true, fixed: true, color: '#f59e0b' },
   { id: 'rating', label: 'Rating', type: 'rating', required: false, enabled: true, fixed: true, color: '#fbbf24' },
@@ -108,6 +108,11 @@ export default function DashboardPage() {
   const [user, setUser] = useState(null)
   const [accounts, setAccounts] = useState([])
   const [activeDashboard, setActiveDashboard] = useState(searchParams.get('dashboard') || 'accounts') // 'accounts' or 'backtesting'
+
+  // Theme color based on dashboard type - green for accounts, blue for backtesting
+  const themeColor = activeDashboard === 'backtesting' ? '#3b82f6' : '#22c55e'
+  const themeColorRgb = activeDashboard === 'backtesting' ? '59,130,246' : '34,197,94'
+  const themeColorDark = activeDashboard === 'backtesting' ? '#2563eb' : '#16a34a'
   const [switchingDashboard, setSwitchingDashboard] = useState(false)
   const [trades, setTrades] = useState({})
   const [loading, setLoading] = useState(true)
@@ -509,7 +514,8 @@ export default function DashboardPage() {
       max_dd_type: maxDdType,
       max_dd_trailing_stops_at: maxDdTrailingStopsAt,
       max_dd_locks_at_pct: maxDdLocksAtPct ? parseFloat(maxDdLocksAtPct) : null,
-      dashboard_type: activeDashboard
+      dashboard_type: activeDashboard,
+      custom_inputs: JSON.stringify(defaultInputs)
     }).select().single()
     if (error) { showToast('Error: ' + error.message); setCreating(false); return }
     setAccounts(prev => [...prev, data])
@@ -1951,29 +1957,29 @@ export default function DashboardPage() {
   function getDaysAgo(dateStr) { const d = Math.floor((new Date() - new Date(dateStr)) / 86400000); return d === 0 ? 'Today' : d === 1 ? '1d ago' : `${d}d ago` }
 
   if (loading) {
-    return <div style={{ minHeight: '100vh', background: '#0a0a0f', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><div style={{ textAlign: 'center' }}><div style={{ fontSize: '40px', marginBottom: '16px', fontWeight: 700 }}><span style={{ color: '#22c55e' }}>TRADE</span><span style={{ color: '#fff' }}>SAVE</span><span style={{ color: '#22c55e' }}>+</span></div><div style={{ color: '#999' }}>Loading...</div></div></div>
+    return <div style={{ minHeight: '100vh', background: '#0a0a0f', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><div style={{ textAlign: 'center' }}><img src="/logo.svg" alt="TradeSave+" style={{ height: '50px', width: 'auto', marginBottom: '16px' }} /><div style={{ color: '#999' }}>Loading...</div></div></div>
   }
 
   return (
     <div style={{ minHeight: '100vh', background: '#0a0a0f' }}>
       {/* Header */}
       <header style={{ padding: '4px 16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #1a1a22', flexWrap: isMobile ? 'wrap' : 'nowrap', gap: '12px' }}>
-        <a href="/" style={{ fontSize: isMobile ? '28px' : '42px', fontWeight: 700, textDecoration: 'none', letterSpacing: '-0.5px' }}>
-          <span style={{ color: '#22c55e' }}>TRADE</span><span style={{ color: '#fff' }}>SAVE</span><span style={{ color: '#22c55e' }}>+</span>
+        <a href="/" style={{ display: 'flex', alignItems: 'center', textDecoration: 'none' }}>
+          <img src="/logo.svg" alt="TradeSave+" style={{ height: isMobile ? '28px' : '42px', width: 'auto' }} />
         </a>
         {!isMobile && <div style={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)', display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <button onClick={() => handleDashboardSwitch('accounts')} disabled={switchingDashboard} style={{ background: 'none', border: 'none', padding: 0, cursor: switchingDashboard ? 'wait' : 'pointer', fontSize: '20px', fontWeight: 700, letterSpacing: '-0.5px', color: activeDashboard === 'accounts' ? '#fff' : '#666', opacity: switchingDashboard ? 0.6 : 1, transition: 'color 0.2s' }}>ACCOUNTS DASHBOARD</button>
-          <span style={{ color: '#333', fontSize: '20px', fontWeight: 300 }}>|</span>
-          <button onClick={() => handleDashboardSwitch('backtesting')} disabled={switchingDashboard} style={{ background: 'none', border: 'none', padding: 0, cursor: switchingDashboard ? 'wait' : 'pointer', fontSize: '20px', fontWeight: 700, letterSpacing: '-0.5px', color: activeDashboard === 'backtesting' ? '#fff' : '#666', opacity: switchingDashboard ? 0.6 : 1, transition: 'color 0.2s' }}>BACKTESTING DASHBOARD</button>
+          <button onClick={() => handleDashboardSwitch('accounts')} disabled={switchingDashboard} style={{ background: 'none', border: 'none', padding: 0, cursor: switchingDashboard ? 'wait' : 'pointer', fontSize: '28px', fontWeight: 700, letterSpacing: '-0.5px', color: activeDashboard === 'accounts' ? '#fff' : '#666', opacity: switchingDashboard ? 0.6 : 1, transition: 'color 0.2s', display: 'flex', alignItems: 'center', gap: '10px' }}><span style={{ width: '10px', height: '10px', borderRadius: '50%', background: activeDashboard === 'accounts' ? '#22c55e' : '#666', transition: 'background 0.2s' }}></span>ACCOUNTS DASHBOARD</button>
+          <span style={{ color: '#333', fontSize: '28px', fontWeight: 300 }}>|</span>
+          <button onClick={() => handleDashboardSwitch('backtesting')} disabled={switchingDashboard} style={{ background: 'none', border: 'none', padding: 0, cursor: switchingDashboard ? 'wait' : 'pointer', fontSize: '28px', fontWeight: 700, letterSpacing: '-0.5px', color: activeDashboard === 'backtesting' ? '#fff' : '#666', opacity: switchingDashboard ? 0.6 : 1, transition: 'color 0.2s', display: 'flex', alignItems: 'center', gap: '10px' }}>BACKTESTING DASHBOARD<span style={{ width: '10px', height: '10px', borderRadius: '50%', background: activeDashboard === 'backtesting' ? '#3b82f6' : '#666', transition: 'background 0.2s' }}></span></button>
         </div>}
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
           {/* View Toggle - Grid/List */}
           <div style={{ display: 'flex', background: '#0a0a0f', borderRadius: '6px', overflow: 'hidden', border: '1px solid #1a1a22' }}>
-            <button onClick={() => setViewMode('cards')} style={{ padding: '8px 12px', background: viewMode === 'cards' ? '#22c55e' : 'transparent', border: 'none', color: viewMode === 'cards' ? '#fff' : '#666', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', fontWeight: 600, transition: 'all 0.2s' }} onMouseEnter={e => { if (viewMode !== 'cards') e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; const rect = e.currentTarget.getBoundingClientRect(); showTooltipDelayed('Grid view', rect.left + rect.width / 2, rect.top) }} onMouseLeave={e => { if (viewMode !== 'cards') e.currentTarget.style.background = 'transparent'; hideTooltip() }}>
+            <button onClick={() => setViewMode('cards')} style={{ padding: '8px 12px', background: viewMode === 'cards' ? themeColor : 'transparent', border: 'none', color: viewMode === 'cards' ? '#fff' : '#666', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', fontWeight: 600, transition: 'all 0.2s' }} onMouseEnter={e => { if (viewMode !== 'cards') e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; const rect = e.currentTarget.getBoundingClientRect(); showTooltipDelayed('Grid view', rect.left + rect.width / 2, rect.top) }} onMouseLeave={e => { if (viewMode !== 'cards') e.currentTarget.style.background = 'transparent'; hideTooltip() }}>
               <span>Grid</span>
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="7" height="7" /><rect x="14" y="3" width="7" height="7" /><rect x="3" y="14" width="7" height="7" /><rect x="14" y="14" width="7" height="7" /></svg>
             </button>
-            <button onClick={() => setViewMode('list')} style={{ padding: '8px 12px', background: viewMode === 'list' ? '#22c55e' : 'transparent', border: 'none', color: viewMode === 'list' ? '#fff' : '#666', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', fontWeight: 600, transition: 'all 0.2s' }} onMouseEnter={e => { if (viewMode !== 'list') e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; const rect = e.currentTarget.getBoundingClientRect(); showTooltipDelayed('List view', rect.left + rect.width / 2, rect.top) }} onMouseLeave={e => { if (viewMode !== 'list') e.currentTarget.style.background = 'transparent'; hideTooltip() }}>
+            <button onClick={() => setViewMode('list')} style={{ padding: '8px 12px', background: viewMode === 'list' ? themeColor : 'transparent', border: 'none', color: viewMode === 'list' ? '#fff' : '#666', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', fontWeight: 600, transition: 'all 0.2s' }} onMouseEnter={e => { if (viewMode !== 'list') e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; const rect = e.currentTarget.getBoundingClientRect(); showTooltipDelayed('List view', rect.left + rect.width / 2, rect.top) }} onMouseLeave={e => { if (viewMode !== 'list') e.currentTarget.style.background = 'transparent'; hideTooltip() }}>
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="8" y1="6" x2="21" y2="6" /><line x1="8" y1="12" x2="21" y2="12" /><line x1="8" y1="18" x2="21" y2="18" /><line x1="3" y1="6" x2="3.01" y2="6" /><line x1="3" y1="12" x2="3.01" y2="12" /><line x1="3" y1="18" x2="3.01" y2="18" /></svg>
               <span>List</span>
             </button>
@@ -1996,7 +2002,7 @@ export default function DashboardPage() {
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px', paddingBottom: '12px', borderBottom: '1px solid #1a1a22' }}>
                     <span style={{ fontSize: '14px', color: '#fff', fontWeight: 600 }}>Log Trade</span>
                     {getSelectedAccountCustomInputs().length > 2 && (
-                      <button onClick={(e) => { e.stopPropagation(); setSidebarExpanded(true) }} style={{ padding: '6px 8px', background: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.3)', borderRadius: '6px', color: '#22c55e', cursor: 'pointer', display: 'flex', alignItems: 'center', transition: 'all 0.2s' }} title="Expand" onMouseEnter={e => { e.currentTarget.style.background = 'rgba(34,197,94,0.2)'; e.currentTarget.style.borderColor = 'rgba(34,197,94,0.5)' }} onMouseLeave={e => { e.currentTarget.style.background = 'rgba(34,197,94,0.1)'; e.currentTarget.style.borderColor = 'rgba(34,197,94,0.3)' }}>
+                      <button onClick={(e) => { e.stopPropagation(); setSidebarExpanded(true) }} style={{ padding: '6px 8px', background: `rgba(${themeColorRgb},0.1)`, border: `1px solid rgba(${themeColorRgb},0.3)`, borderRadius: '6px', color: themeColor, cursor: 'pointer', display: 'flex', alignItems: 'center', transition: 'all 0.2s' }} title="Expand" onMouseEnter={e => { e.currentTarget.style.background = `rgba(${themeColorRgb},0.2)`; e.currentTarget.style.borderColor = `rgba(${themeColorRgb},0.5)` }} onMouseLeave={e => { e.currentTarget.style.background = `rgba(${themeColorRgb},0.1)`; e.currentTarget.style.borderColor = `rgba(${themeColorRgb},0.3)` }}>
                         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                           <polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/>
                         </svg>
@@ -2006,24 +2012,24 @@ export default function DashboardPage() {
 
                   {/* Journal Select - Dropdown */}
                   <div onClick={e => e.stopPropagation()} style={{ marginBottom: '14px', position: 'relative' }}>
-                    <button onClick={() => setJournalDropdownOpen(!journalDropdownOpen)} style={{ width: '100%', padding: '10px 14px', background: 'rgba(34,197,94,0.08)', border: '1px solid rgba(34,197,94,0.3)', borderRadius: journalDropdownOpen ? '10px 10px 0 0' : '10px', color: '#22c55e', fontSize: '13px', fontWeight: 600, cursor: 'pointer', textAlign: 'left', display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '8px', transition: 'all 0.2s' }} onMouseEnter={e => { e.currentTarget.style.background = 'rgba(34,197,94,0.15)'; e.currentTarget.style.borderColor = 'rgba(34,197,94,0.5)' }} onMouseLeave={e => { e.currentTarget.style.background = 'rgba(34,197,94,0.08)'; e.currentTarget.style.borderColor = 'rgba(34,197,94,0.3)' }}>
+                    <button onClick={() => setJournalDropdownOpen(!journalDropdownOpen)} style={{ width: '100%', padding: '10px 14px', background: `rgba(${themeColorRgb},0.08)`, border: `1px solid rgba(${themeColorRgb},0.3)`, borderRadius: journalDropdownOpen ? '10px 10px 0 0' : '10px', color: themeColor, fontSize: '13px', fontWeight: 600, cursor: 'pointer', textAlign: 'left', display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '8px', transition: 'all 0.2s' }} onMouseEnter={e => { e.currentTarget.style.background = `rgba(${themeColorRgb},0.15)`; e.currentTarget.style.borderColor = `rgba(${themeColorRgb},0.5)` }} onMouseLeave={e => { e.currentTarget.style.background = `rgba(${themeColorRgb},0.08)`; e.currentTarget.style.borderColor = `rgba(${themeColorRgb},0.3)` }}>
                       <div style={{ display: 'flex', alignItems: 'flex-start', gap: '8px', minWidth: 0, flex: 1 }}>
-                        <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#22c55e', boxShadow: '0 0 4px #22c55e', flexShrink: 0, marginTop: '5px' }} />
+                        <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: themeColor, boxShadow: `0 0 4px ${themeColor}`, flexShrink: 0, marginTop: '5px' }} />
                         <span style={{ wordBreak: 'break-word' }}>{accounts.find(a => a.id === quickTradeAccount)?.name || 'Select Journal'}</span>
                       </div>
                       <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ transform: journalDropdownOpen ? 'rotate(180deg)' : 'rotate(0)', transition: 'transform 0.2s', flexShrink: 0, marginTop: '3px' }}><path d="M6 9l6 6 6-6"/></svg>
                     </button>
                     {journalDropdownOpen && (
-                      <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, background: '#0d0d12', border: '1px solid rgba(34,197,94,0.3)', borderTop: 'none', borderRadius: '0 0 10px 10px', padding: '6px', zIndex: 10, display: 'flex', flexDirection: 'column', gap: '4px', boxShadow: '0 8px 24px rgba(0,0,0,0.4)' }}>
+                      <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, background: '#0d0d12', border: `1px solid rgba(${themeColorRgb},0.3)`, borderTop: 'none', borderRadius: '0 0 10px 10px', padding: '6px', zIndex: 10, display: 'flex', flexDirection: 'column', gap: '4px', boxShadow: '0 8px 24px rgba(0,0,0,0.4)' }}>
                         {filteredAccounts.map(acc => {
                           const isSelected = quickTradeAccount === acc.id
                           const accTrades = trades[acc.id] || []
                           const totalPnl = accTrades.reduce((sum, t) => sum + (parseFloat(t.pnl) || 0), 0)
                           return (
-                            <button key={acc.id} onClick={() => { setQuickTradeAccount(acc.id); setJournalDropdownOpen(false) }} style={{ width: '100%', padding: '10px 12px', background: isSelected ? 'rgba(34,197,94,0.12)' : '#0a0a0f', border: `1px solid ${isSelected ? 'rgba(34,197,94,0.4)' : '#1a1a22'}`, borderRadius: '8px', color: isSelected ? '#22c55e' : '#999', fontSize: '12px', fontWeight: 600, cursor: 'pointer', textAlign: 'left', transition: 'all 0.15s' }}>
+                            <button key={acc.id} onClick={() => { setQuickTradeAccount(acc.id); setJournalDropdownOpen(false) }} style={{ width: '100%', padding: '10px 12px', background: isSelected ? `rgba(${themeColorRgb},0.12)` : '#0a0a0f', border: `1px solid ${isSelected ? `rgba(${themeColorRgb},0.4)` : '#1a1a22'}`, borderRadius: '8px', color: isSelected ? themeColor : '#999', fontSize: '12px', fontWeight: 600, cursor: 'pointer', textAlign: 'left', transition: 'all 0.15s' }}>
                               <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '8px', flexWrap: 'wrap' }}>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: 0, flex: '1 1 auto' }}>
-                                  <div style={{ width: '5px', height: '5px', borderRadius: '50%', background: isSelected ? '#22c55e' : '#444', flexShrink: 0 }} />
+                                  <div style={{ width: '5px', height: '5px', borderRadius: '50%', background: isSelected ? themeColor : '#444', flexShrink: 0 }} />
                                   <span style={{ wordBreak: 'break-word' }}>{acc.name}</span>
                                 </div>
                                 <span style={{ fontSize: '11px', color: totalPnl >= 0 ? '#22c55e' : '#ef4444', flexShrink: 0 }}>{totalPnl >= 0 ? '+' : ''}${formatCurrency(totalPnl)}</span>
@@ -2041,11 +2047,11 @@ export default function DashboardPage() {
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '14px' }}>
                     <div>
                       <label style={{ display: 'block', fontSize: '12px', color: '#888', marginBottom: '6px', fontWeight: 600 }}>Symbol</label>
-                      <input type="text" value={quickTradeSymbol} onChange={e => setQuickTradeSymbol(e.target.value)} placeholder="XAUUSD" style={{ width: '100%', padding: '10px 12px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '8px', color: '#fff', fontSize: '14px', boxSizing: 'border-box', transition: 'border-color 0.2s' }} onMouseEnter={e => e.currentTarget.style.borderColor = '#2a2a35'} onMouseLeave={e => e.currentTarget.style.borderColor = '#1a1a22'} onFocus={e => e.currentTarget.style.borderColor = '#22c55e'} onBlur={e => e.currentTarget.style.borderColor = '#1a1a22'} />
+                      <input type="text" value={quickTradeSymbol} onChange={e => setQuickTradeSymbol(e.target.value)} placeholder="XAUUSD" style={{ width: '100%', padding: '10px 12px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '8px', color: '#fff', fontSize: '14px', boxSizing: 'border-box', transition: 'border-color 0.2s' }} onMouseEnter={e => e.currentTarget.style.borderColor = '#2a2a35'} onMouseLeave={e => e.currentTarget.style.borderColor = '#1a1a22'} onFocus={e => e.currentTarget.style.borderColor = themeColor} onBlur={e => e.currentTarget.style.borderColor = '#1a1a22'} />
                     </div>
                     <div>
                       <label style={{ display: 'block', fontSize: '12px', color: '#888', marginBottom: '6px', fontWeight: 600 }}>P&L ($)</label>
-                      <input type="number" value={quickTradePnl} onChange={e => setQuickTradePnl(e.target.value)} placeholder="0" style={{ width: '100%', padding: '10px 12px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '8px', color: '#fff', fontSize: '14px', boxSizing: 'border-box', transition: 'border-color 0.2s' }} onMouseEnter={e => e.currentTarget.style.borderColor = '#2a2a35'} onMouseLeave={e => e.currentTarget.style.borderColor = '#1a1a22'} onFocus={e => e.currentTarget.style.borderColor = '#22c55e'} onBlur={e => e.currentTarget.style.borderColor = '#1a1a22'} />
+                      <input type="number" value={quickTradePnl} onChange={e => setQuickTradePnl(e.target.value)} placeholder="0" style={{ width: '100%', padding: '10px 12px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '8px', color: '#fff', fontSize: '14px', boxSizing: 'border-box', transition: 'border-color 0.2s' }} onMouseEnter={e => e.currentTarget.style.borderColor = '#2a2a35'} onMouseLeave={e => e.currentTarget.style.borderColor = '#1a1a22'} onFocus={e => e.currentTarget.style.borderColor = themeColor} onBlur={e => e.currentTarget.style.borderColor = '#1a1a22'} />
                     </div>
                   </div>
 
@@ -2111,11 +2117,11 @@ export default function DashboardPage() {
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '14px' }}>
                     <div>
                       <label style={{ display: 'block', fontSize: '12px', color: '#888', marginBottom: '6px', fontWeight: 600 }}>RR</label>
-                      <input type="text" value={quickTradeRR} onChange={e => setQuickTradeRR(e.target.value)} placeholder="2.5" style={{ width: '100%', padding: '10px 12px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '8px', color: '#fff', fontSize: '14px', boxSizing: 'border-box', transition: 'border-color 0.2s' }} onMouseEnter={e => e.currentTarget.style.borderColor = '#2a2a35'} onMouseLeave={e => e.currentTarget.style.borderColor = '#1a1a22'} onFocus={e => e.currentTarget.style.borderColor = '#22c55e'} onBlur={e => e.currentTarget.style.borderColor = '#1a1a22'} />
+                      <input type="text" value={quickTradeRR} onChange={e => setQuickTradeRR(e.target.value)} placeholder="2.5" style={{ width: '100%', padding: '10px 12px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '8px', color: '#fff', fontSize: '14px', boxSizing: 'border-box', transition: 'border-color 0.2s' }} onMouseEnter={e => e.currentTarget.style.borderColor = '#2a2a35'} onMouseLeave={e => e.currentTarget.style.borderColor = '#1a1a22'} onFocus={e => e.currentTarget.style.borderColor = themeColor} onBlur={e => e.currentTarget.style.borderColor = '#1a1a22'} />
                     </div>
                     <div>
                       <label style={{ display: 'block', fontSize: '12px', color: '#888', marginBottom: '6px', fontWeight: 600 }}>% Risk</label>
-                      <input type="number" value={quickTradeRiskPercent} onChange={e => setQuickTradeRiskPercent(e.target.value)} placeholder="1" style={{ width: '100%', padding: '10px 12px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '8px', color: '#fff', fontSize: '14px', boxSizing: 'border-box', transition: 'border-color 0.2s' }} onMouseEnter={e => e.currentTarget.style.borderColor = '#2a2a35'} onMouseLeave={e => e.currentTarget.style.borderColor = '#1a1a22'} onFocus={e => e.currentTarget.style.borderColor = '#22c55e'} onBlur={e => e.currentTarget.style.borderColor = '#1a1a22'} />
+                      <input type="number" value={quickTradeRiskPercent} onChange={e => setQuickTradeRiskPercent(e.target.value)} placeholder="1" style={{ width: '100%', padding: '10px 12px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '8px', color: '#fff', fontSize: '14px', boxSizing: 'border-box', transition: 'border-color 0.2s' }} onMouseEnter={e => e.currentTarget.style.borderColor = '#2a2a35'} onMouseLeave={e => e.currentTarget.style.borderColor = '#1a1a22'} onFocus={e => e.currentTarget.style.borderColor = themeColor} onBlur={e => e.currentTarget.style.borderColor = '#1a1a22'} />
                     </div>
                   </div>
 
@@ -2239,7 +2245,7 @@ export default function DashboardPage() {
                   {/* Date */}
                   <div style={{ marginBottom: '14px' }}>
                     <label style={{ display: 'block', fontSize: '12px', color: '#888', marginBottom: '6px', fontWeight: 600 }}>Date</label>
-                    <input type="date" value={quickTradeDate} onChange={e => setQuickTradeDate(e.target.value)} style={{ width: '100%', padding: '10px 12px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '8px', color: '#fff', fontSize: '14px', boxSizing: 'border-box', transition: 'border-color 0.2s' }} onMouseEnter={e => e.currentTarget.style.borderColor = '#2a2a35'} onMouseLeave={e => e.currentTarget.style.borderColor = '#1a1a22'} onFocus={e => e.currentTarget.style.borderColor = '#22c55e'} onBlur={e => e.currentTarget.style.borderColor = '#1a1a22'} />
+                    <input type="date" value={quickTradeDate} onChange={e => setQuickTradeDate(e.target.value)} style={{ width: '100%', padding: '10px 12px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '8px', color: '#fff', fontSize: '14px', boxSizing: 'border-box', transition: 'border-color 0.2s' }} onMouseEnter={e => e.currentTarget.style.borderColor = '#2a2a35'} onMouseLeave={e => e.currentTarget.style.borderColor = '#1a1a22'} onFocus={e => e.currentTarget.style.borderColor = themeColor} onBlur={e => e.currentTarget.style.borderColor = '#1a1a22'} />
                   </div>
 
                   {/* Rating */}
@@ -2271,7 +2277,7 @@ export default function DashboardPage() {
                   {/* Notes */}
                   <div style={{ marginBottom: '14px' }}>
                     <label style={{ display: 'block', fontSize: '12px', color: '#888', marginBottom: '6px', fontWeight: 600 }}>Notes</label>
-                    <input type="text" value={quickTradeNotes} onChange={e => setQuickTradeNotes(e.target.value)} placeholder="Quick notes..." style={{ width: '100%', padding: '10px 12px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '8px', color: '#fff', fontSize: '14px', boxSizing: 'border-box', transition: 'border-color 0.2s' }} onMouseEnter={e => e.currentTarget.style.borderColor = '#2a2a35'} onMouseLeave={e => e.currentTarget.style.borderColor = '#1a1a22'} onFocus={e => e.currentTarget.style.borderColor = '#22c55e'} onBlur={e => e.currentTarget.style.borderColor = '#1a1a22'} />
+                    <input type="text" value={quickTradeNotes} onChange={e => setQuickTradeNotes(e.target.value)} placeholder="Quick notes..." style={{ width: '100%', padding: '10px 12px', background: '#0a0a0f', border: '1px solid #1a1a22', borderRadius: '8px', color: '#fff', fontSize: '14px', boxSizing: 'border-box', transition: 'border-color 0.2s' }} onMouseEnter={e => e.currentTarget.style.borderColor = '#2a2a35'} onMouseLeave={e => e.currentTarget.style.borderColor = '#1a1a22'} onFocus={e => e.currentTarget.style.borderColor = themeColor} onBlur={e => e.currentTarget.style.borderColor = '#1a1a22'} />
                   </div>
 
                   {/* Image Upload */}
@@ -2293,7 +2299,7 @@ export default function DashboardPage() {
 
                   {/* Action Buttons */}
                   <div style={{ display: 'flex', gap: '10px' }}>
-                    <button onClick={submitQuickTrade} disabled={submittingTrade || !quickTradeSymbol.trim() || !quickTradePnl || !quickTradeDate} style={{ flex: 1, padding: '12px', background: (submittingTrade || !quickTradeSymbol.trim() || !quickTradePnl || !quickTradeDate) ? '#1a1a22' : 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)', border: 'none', borderRadius: '10px', color: (submittingTrade || !quickTradeSymbol.trim() || !quickTradePnl || !quickTradeDate) ? '#555' : '#fff', fontWeight: 700, fontSize: '13px', cursor: (submittingTrade || !quickTradeSymbol.trim() || !quickTradePnl || !quickTradeDate) ? 'not-allowed' : 'pointer', transition: 'all 0.2s', boxShadow: (submittingTrade || !quickTradeSymbol.trim() || !quickTradePnl || !quickTradeDate) ? 'none' : '0 4px 20px rgba(34,197,94,0.4)' }}>
+                    <button onClick={submitQuickTrade} disabled={submittingTrade || !quickTradeSymbol.trim() || !quickTradePnl || !quickTradeDate} style={{ flex: 1, padding: '12px', background: (submittingTrade || !quickTradeSymbol.trim() || !quickTradePnl || !quickTradeDate) ? '#1a1a22' : `linear-gradient(135deg, ${themeColor} 0%, ${themeColorDark} 100%)`, border: 'none', borderRadius: '10px', color: (submittingTrade || !quickTradeSymbol.trim() || !quickTradePnl || !quickTradeDate) ? '#555' : '#fff', fontWeight: 700, fontSize: '13px', cursor: (submittingTrade || !quickTradeSymbol.trim() || !quickTradePnl || !quickTradeDate) ? 'not-allowed' : 'pointer', transition: 'all 0.2s', boxShadow: (submittingTrade || !quickTradeSymbol.trim() || !quickTradePnl || !quickTradeDate) ? 'none' : `0 4px 20px rgba(${themeColorRgb},0.4)` }}>
                       {submittingTrade ? 'Adding...' : 'Log Trade'}
                     </button>
                     <button onClick={() => setShowEditInputsModal(true)} style={{ padding: '12px 14px', background: '#0a0a0f', border: '1px solid #2a2a35', borderRadius: '10px', color: '#666', fontWeight: 500, fontSize: '12px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}>
@@ -2727,14 +2733,14 @@ export default function DashboardPage() {
                           opacity: draggedJournal === account.id ? 0.5 : 1,
                           transform: dragOverJournal === account.id ? 'scale(1.02)' : 'scale(1)'
                         }}
-                        onMouseEnter={e => { if (!draggedJournal) e.currentTarget.style.border = '1px solid #22c55e' }}
+                        onMouseEnter={e => { if (!draggedJournal) e.currentTarget.style.border = `1px solid ${themeColor}` }}
                         onMouseLeave={e => { if (!draggedJournal && dragOverJournal !== account.id) e.currentTarget.style.border = '1px solid #1a1a22' }}
                       >
                         {/* Header - Clean layout */}
                         <div style={{ padding: '16px 16px 12px', position: 'relative' }}>
                           <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
                             <div>
-                              <div style={{ fontSize: '13px', color: '#666', marginBottom: '2px' }}>{account.name}</div>
+                              <div style={{ fontSize: '13px', color: '#666', marginBottom: '2px', wordBreak: 'break-word', lineHeight: 1.3 }}>{account.name}</div>
                               <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px' }}>
                                 <span style={{ fontSize: '24px', fontWeight: 700, color: isProfitable ? '#22c55e' : '#ef4444' }}>${formatCurrency(currentBalance)}</span>
                                 <span style={{ fontSize: '11px', color: '#666', whiteSpace: 'nowrap' }}><span style={{ fontWeight: 600, color: '#888' }}>${formatCurrency(startingBalance)}</span> INITIAL BALANCE</span>
@@ -3043,7 +3049,7 @@ export default function DashboardPage() {
                     onClick={() => setShowModal(true)}
                     style={{
                       background: 'linear-gradient(135deg, #0f0f14 0%, #0a0a0f 100%)',
-                      border: '2px dashed #22c55e',
+                      border: `2px dashed ${themeColor}`,
                       borderRadius: '16px',
                       overflow: 'hidden',
                       display: 'flex',
@@ -3055,7 +3061,7 @@ export default function DashboardPage() {
                       transition: 'all 0.2s',
                     }}
                     onMouseEnter={e => { e.currentTarget.style.borderColor = '#4ade80'; e.currentTarget.style.background = 'rgba(34, 197, 94, 0.05)' }}
-                    onMouseLeave={e => { e.currentTarget.style.borderColor = '#22c55e'; e.currentTarget.style.background = 'linear-gradient(135deg, #0f0f14 0%, #0a0a0f 100%)' }}
+                    onMouseLeave={e => { e.currentTarget.style.borderColor = themeColor; e.currentTarget.style.background = 'linear-gradient(135deg, #0f0f14 0%, #0a0a0f 100%)' }}
                   >
                     <div style={{
                       width: '80px',
@@ -3121,13 +3127,13 @@ export default function DashboardPage() {
                           cursor: 'pointer',
                           transition: 'all 0.2s'
                         }}
-                        onMouseEnter={e => { e.currentTarget.style.border = '1px solid #22c55e' }}
+                        onMouseEnter={e => { e.currentTarget.style.border = `1px solid ${themeColor}` }}
                         onMouseLeave={e => { e.currentTarget.style.border = '1px solid #1a1a22' }}
                       >
                         {/* Left: Name & Balance */}
                         <div style={{ display: 'flex', alignItems: 'center', gap: '24px', flex: 1 }}>
                           <div style={{ minWidth: '180px' }}>
-                            <div style={{ fontSize: '11px', color: '#666', marginBottom: '2px' }}>{account.name}</div>
+                            <div style={{ fontSize: '11px', color: '#666', marginBottom: '2px', wordBreak: 'break-word', lineHeight: 1.3 }}>{account.name}</div>
                             <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px' }}>
                               <span style={{ fontSize: '20px', fontWeight: 700, color: isProfitable ? '#22c55e' : '#ef4444' }}>${formatCurrency(currentBalance)}</span>
                               <span style={{ fontSize: '10px', color: '#666', whiteSpace: 'nowrap' }}><span style={{ fontWeight: 600, color: '#888' }}>${formatCurrency(startingBalance)}</span> INITIAL BALANCE</span>
@@ -3276,7 +3282,7 @@ export default function DashboardPage() {
                     onClick={() => setShowModal(true)}
                     style={{
                       background: 'linear-gradient(135deg, #0f0f14 0%, #0a0a0f 100%)',
-                      border: '2px dashed #22c55e',
+                      border: `2px dashed ${themeColor}`,
                       borderRadius: '12px',
                       padding: '20px',
                       display: 'flex',
@@ -3287,7 +3293,7 @@ export default function DashboardPage() {
                       transition: 'all 0.2s',
                     }}
                     onMouseEnter={e => { e.currentTarget.style.borderColor = '#4ade80'; e.currentTarget.style.background = 'rgba(34, 197, 94, 0.05)' }}
-                    onMouseLeave={e => { e.currentTarget.style.borderColor = '#22c55e'; e.currentTarget.style.background = 'linear-gradient(135deg, #0f0f14 0%, #0a0a0f 100%)' }}
+                    onMouseLeave={e => { e.currentTarget.style.borderColor = themeColor; e.currentTarget.style.background = 'linear-gradient(135deg, #0f0f14 0%, #0a0a0f 100%)' }}
                   >
                     <div style={{
                       width: '32px',
@@ -3531,7 +3537,7 @@ export default function DashboardPage() {
               {/* Journal Name */}
               <div style={{ marginBottom: '20px' }}>
                 <label style={{ display: 'block', fontSize: '11px', color: '#888', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Journal Name</label>
-                <input type="text" value={editName} onChange={e => setEditName(e.target.value)} autoFocus style={{ width: '100%', padding: '14px 16px', background: '#141418', border: '1px solid #2a2a35', borderRadius: '8px', color: '#fff', fontSize: '15px', boxSizing: 'border-box', outline: 'none', transition: 'border-color 0.2s' }} onFocus={e => e.target.style.borderColor = '#22c55e'} onBlur={e => e.target.style.borderColor = '#2a2a35'} />
+                <input type="text" value={editName} onChange={e => setEditName(e.target.value)} autoFocus style={{ width: '100%', padding: '14px 16px', background: '#141418', border: '1px solid #2a2a35', borderRadius: '8px', color: '#fff', fontSize: '15px', boxSizing: 'border-box', outline: 'none', transition: 'border-color 0.2s' }} onFocus={e => e.target.style.borderColor = themeColor} onBlur={e => e.target.style.borderColor = '#2a2a35'} />
               </div>
 
               {/* Prop Firm Section */}
@@ -5050,7 +5056,7 @@ export default function DashboardPage() {
                 {/* Header */}
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
                   <div>
-                    <h2 style={{ fontSize: '20px', fontWeight: 700, color: '#fff', margin: 0 }}>{account.name}</h2>
+                    <h2 style={{ fontSize: '20px', fontWeight: 700, color: '#fff', margin: 0, wordBreak: 'break-word', lineHeight: 1.3 }}>{account.name}</h2>
                     <span style={{ fontSize: '13px', color: '#666' }}>Equity Curve</span>
                   </div>
                   <button onClick={() => setZoomedJournal(null)} style={{ background: 'transparent', border: 'none', color: '#666', cursor: 'pointer', padding: '8px' }}>

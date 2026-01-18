@@ -334,6 +334,9 @@ export default function AccountPage() {
           // On parse error, use defaults
           setInputs(defaultInputs)
         }
+      } else {
+        // No custom_inputs saved, use defaults
+        setInputs(defaultInputs)
       }
       // Load notes from profiles (user-level, not account-level)
       const { data: profileData } = await supabase.from('profiles').select('notes_data').eq('id', user.id).single()
@@ -951,7 +954,7 @@ export default function AccountPage() {
   if (loading) return (
     <div style={{ minHeight: '100vh', background: '#0a0a0f', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
       <div style={{ textAlign: 'center' }}>
-        <div style={{ fontSize: '40px', fontWeight: 700, marginBottom: '16px' }}><span style={{ color: '#22c55e' }}>TRADE</span><span style={{ color: '#fff' }}>SAVE</span><span style={{ color: '#22c55e' }}>+</span></div>
+        <img src="/logo.svg" alt="TradeSave+" style={{ height: '50px', width: 'auto', marginBottom: '16px' }} />
         <div style={{ color: '#999' }}>Loading...</div>
       </div>
     </div>
@@ -959,6 +962,12 @@ export default function AccountPage() {
 
   // Filter accounts to only show same dashboard type (accounts vs backtesting), sorted by journalOrder
   const currentDashboardType = account?.dashboard_type || 'accounts'
+
+  // Theme color based on dashboard type - green for accounts, blue for backtesting
+  const themeColor = currentDashboardType === 'backtesting' ? '#3b82f6' : '#22c55e'
+  const themeColorRgb = currentDashboardType === 'backtesting' ? '59,130,246' : '34,197,94'
+  const themeColorDark = currentDashboardType === 'backtesting' ? '#2563eb' : '#16a34a'
+
   const sameTypeAccounts = allAccounts
     .filter(a => (a.dashboard_type || 'accounts') === currentDashboardType)
     .sort((a, b) => {
@@ -1552,7 +1561,7 @@ export default function AccountPage() {
 
       {/* FIXED HEADER - same structure as dashboard */}
       <header style={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 50, padding: '4px 16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#0a0a0f', borderBottom: '1px solid #1a1a22' }}>
-        <a href="/" style={{ fontSize: isMobile ? '28px' : '42px', fontWeight: 700, textDecoration: 'none', letterSpacing: '-0.5px' }}><span style={{ color: '#22c55e' }}>TRADE</span><span style={{ color: '#fff' }}>SAVE</span><span style={{ color: '#22c55e' }}>+</span></a>
+        <a href="/" style={{ display: 'flex', alignItems: 'center', textDecoration: 'none' }}><img src="/logo.svg" alt="TradeSave+" style={{ height: isMobile ? '28px' : '42px', width: 'auto' }} /></a>
         {!isMobile && (
           <>
             <div style={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)', display: 'flex', alignItems: 'center', gap: '12px' }}>
@@ -1563,7 +1572,7 @@ export default function AccountPage() {
                     if (accountsJournal) setActiveAccountId(accountsJournal.id)
                   }
                 }}
-                style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontSize: '28px', fontWeight: 700, letterSpacing: '-0.5px', color: (account?.dashboard_type || 'accounts') === 'accounts' ? '#fff' : '#666', transition: 'color 0.2s' }}>ACCOUNTS {activeTab === 'trades' ? 'JOURNAL' : activeTab === 'statistics' ? 'STATISTICS' : 'NOTES'}</span>
+                style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontSize: '28px', fontWeight: 700, letterSpacing: '-0.5px', color: (account?.dashboard_type || 'accounts') === 'accounts' ? '#fff' : '#666', transition: 'color 0.2s', display: 'flex', alignItems: 'center', gap: '10px' }}><span style={{ width: '10px', height: '10px', borderRadius: '50%', background: (account?.dashboard_type || 'accounts') === 'accounts' ? '#22c55e' : '#666', transition: 'background 0.2s' }}></span>ACCOUNTS {activeTab === 'trades' ? 'JOURNAL' : activeTab === 'statistics' ? 'STATISTICS' : 'NOTES'}</span>
               <span style={{ color: '#333', fontSize: '28px', fontWeight: 300 }}>|</span>
               <span
                 onClick={() => {
@@ -1572,7 +1581,7 @@ export default function AccountPage() {
                     if (backtestingJournal) setActiveAccountId(backtestingJournal.id)
                   }
                 }}
-                style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontSize: '28px', fontWeight: 700, letterSpacing: '-0.5px', color: (account?.dashboard_type || 'accounts') === 'backtesting' ? '#fff' : '#666', transition: 'color 0.2s' }}>BACKTESTING {activeTab === 'trades' ? 'JOURNAL' : activeTab === 'statistics' ? 'STATISTICS' : 'NOTES'}</span>
+                style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontSize: '28px', fontWeight: 700, letterSpacing: '-0.5px', color: (account?.dashboard_type || 'accounts') === 'backtesting' ? '#fff' : '#666', transition: 'color 0.2s', display: 'flex', alignItems: 'center', gap: '10px' }}>BACKTESTING {activeTab === 'trades' ? 'JOURNAL' : activeTab === 'statistics' ? 'STATISTICS' : 'NOTES'}<span style={{ width: '10px', height: '10px', borderRadius: '50%', background: (account?.dashboard_type || 'accounts') === 'backtesting' ? '#3b82f6' : '#666', transition: 'background 0.2s' }}></span></span>
             </div>
             <div style={{ display: 'flex', gap: '8px' }}>
               <a href={`/dashboard?dashboard=${account?.dashboard_type || 'accounts'}`} style={{ padding: '10px 20px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '6px', color: '#fff', fontSize: '14px', fontWeight: 600, textDecoration: 'none', cursor: 'pointer' }}>← Dashboard</a>
@@ -1603,9 +1612,9 @@ export default function AccountPage() {
                 onClick={() => { setActiveTab(tab); setShowMobileMenu(false); if (tab === 'statistics') setHasNewInputs(false) }} 
                 style={{ 
                   width: '100%', padding: '16px 20px',
-                  background: activeTab === tab ? '#22c55e' : 'transparent', 
+                  background: activeTab === tab ? themeColor : 'transparent',
                   border: activeTab === tab ? 'none' : '1px solid #2a2a35',
-                  borderRadius: '8px', color: activeTab === tab ? '#fff' : '#888', 
+                  borderRadius: '8px', color: activeTab === tab ? '#fff' : '#888',
                   fontSize: '16px', fontWeight: 600, textTransform: 'uppercase', cursor: 'pointer', textAlign: 'center'
                 }}
               >
@@ -1613,7 +1622,7 @@ export default function AccountPage() {
               </button>
             ))}
           </div>
-          <button onClick={() => { setTradeForm({ date: new Date().toISOString().split('T')[0] }); setEditingTrade(null); setShowAddTrade(true) }} style={{ width: '100%', marginTop: '12px', padding: '16px', background: '#22c55e', border: 'none', borderRadius: '8px', color: '#fff', fontWeight: 600, fontSize: '16px', cursor: 'pointer' }}>+ LOG NEW TRADE</button>
+          <button onClick={() => { setTradeForm({ date: new Date().toISOString().split('T')[0] }); setEditingTrade(null); setShowAddTrade(true) }} style={{ width: '100%', marginTop: '12px', padding: '16px', background: themeColor, border: 'none', borderRadius: '8px', color: '#fff', fontWeight: 600, fontSize: '16px', cursor: 'pointer' }}>+ LOG NEW TRADE</button>
         </div>
       )}
 
@@ -1673,8 +1682,8 @@ export default function AccountPage() {
               {/* Select mode indicators and actions */}
               {activeTab === 'trades' && selectMode && (
                 <>
-                  <span style={{ fontSize: '12px', color: '#22c55e', fontWeight: 600, lineHeight: 1, margin: 0 }}>{selectedTrades.size} selected</span>
-                  <button onClick={() => { const allSelected = filteredTrades.every(t => selectedTrades.has(t.id)); if (allSelected) { const newSet = new Set(selectedTrades); filteredTrades.forEach(t => newSet.delete(t.id)); setSelectedTrades(newSet) } else { const newSet = new Set(selectedTrades); filteredTrades.forEach(t => newSet.add(t.id)); setSelectedTrades(newSet) } }} style={{ height: '36px', margin: 0, padding: '0 20px', background: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.4)', borderRadius: '6px', color: '#22c55e', fontSize: '13px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', lineHeight: 1, transition: 'all 0.2s' }} onMouseEnter={e => { e.currentTarget.style.background = 'rgba(34,197,94,0.2)'; e.currentTarget.style.borderColor = 'rgba(34,197,94,0.6)'; const rect = e.currentTarget.getBoundingClientRect(); showTooltipDelayed('Select or deselect all visible trades', rect.left + rect.width / 2, rect.top) }} onMouseLeave={e => { e.currentTarget.style.background = 'rgba(34,197,94,0.1)'; e.currentTarget.style.borderColor = 'rgba(34,197,94,0.4)'; hideTooltip() }}>{filteredTrades.every(t => selectedTrades.has(t.id)) && filteredTrades.length > 0 ? 'Deselect All' : 'Select All'}</button>
+                  <span style={{ fontSize: '12px', color: themeColor, fontWeight: 600, lineHeight: 1, margin: 0 }}>{selectedTrades.size} selected</span>
+                  <button onClick={() => { const allSelected = filteredTrades.every(t => selectedTrades.has(t.id)); if (allSelected) { const newSet = new Set(selectedTrades); filteredTrades.forEach(t => newSet.delete(t.id)); setSelectedTrades(newSet) } else { const newSet = new Set(selectedTrades); filteredTrades.forEach(t => newSet.add(t.id)); setSelectedTrades(newSet) } }} style={{ height: '36px', margin: 0, padding: '0 20px', background: `rgba(${themeColorRgb},0.1)`, border: '1px solid rgba(34,197,94,0.4)', borderRadius: '6px', color: '#22c55e', fontSize: '13px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', lineHeight: 1, transition: 'all 0.2s' }} onMouseEnter={e => { e.currentTarget.style.background = 'rgba(34,197,94,0.2)'; e.currentTarget.style.borderColor = 'rgba(34,197,94,0.6)'; const rect = e.currentTarget.getBoundingClientRect(); showTooltipDelayed('Select or deselect all visible trades', rect.left + rect.width / 2, rect.top) }} onMouseLeave={e => { e.currentTarget.style.background = 'rgba(34,197,94,0.1)'; e.currentTarget.style.borderColor = 'rgba(34,197,94,0.4)'; hideTooltip() }}>{filteredTrades.every(t => selectedTrades.has(t.id)) && filteredTrades.length > 0 ? 'Deselect All' : 'Select All'}</button>
                   {selectedTrades.size > 0 && <button onClick={() => { setViewingSelectedStats(true); setActiveTab('statistics') }} style={{ height: '36px', margin: 0, padding: '0 20px', background: 'rgba(34,197,94,0.15)', border: '1px solid #22c55e', borderRadius: '6px', color: '#22c55e', fontSize: '13px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', lineHeight: 1, transition: 'all 0.2s' }} onMouseEnter={e => { e.currentTarget.style.background = 'rgba(34,197,94,0.25)'; e.currentTarget.style.borderColor = '#4ade80'; const rect = e.currentTarget.getBoundingClientRect(); showTooltipDelayed('View statistics for selected trades', rect.left + rect.width / 2, rect.top) }} onMouseLeave={e => { e.currentTarget.style.background = 'rgba(34,197,94,0.15)'; e.currentTarget.style.borderColor = '#22c55e'; hideTooltip() }}>View Stats</button>}
                   {selectedTrades.size > 0 && <button onClick={() => setDeleteSelectedConfirm(true)} style={{ height: '36px', margin: 0, padding: '0 20px', background: 'rgba(239,68,68,0.15)', border: '1px solid #ef4444', borderRadius: '6px', color: '#ef4444', fontSize: '13px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', lineHeight: 1, transition: 'all 0.2s' }} onMouseEnter={e => { e.currentTarget.style.background = 'rgba(239,68,68,0.25)'; e.currentTarget.style.borderColor = '#f87171'; const rect = e.currentTarget.getBoundingClientRect(); showTooltipDelayed('Delete all selected trades', rect.left + rect.width / 2, rect.top) }} onMouseLeave={e => { e.currentTarget.style.background = 'rgba(239,68,68,0.15)'; e.currentTarget.style.borderColor = '#ef4444'; hideTooltip() }}>Delete</button>}
                   <button onClick={exitSelectMode} style={{ height: '36px', margin: 0, padding: '0 20px', background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.4)', borderRadius: '6px', color: '#ef4444', fontSize: '13px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', lineHeight: 1, transition: 'all 0.2s' }} onMouseEnter={e => { e.currentTarget.style.background = 'rgba(239,68,68,0.2)'; e.currentTarget.style.borderColor = 'rgba(239,68,68,0.6)'; const rect = e.currentTarget.getBoundingClientRect(); showTooltipDelayed('Exit selection mode', rect.left + rect.width / 2, rect.top) }} onMouseLeave={e => { e.currentTarget.style.background = 'rgba(239,68,68,0.1)'; e.currentTarget.style.borderColor = 'rgba(239,68,68,0.4)'; hideTooltip() }}>Cancel</button>
@@ -1695,7 +1704,7 @@ export default function AccountPage() {
               )}
               {/* Log Trade - only on trades tab when not in select mode */}
               {activeTab === 'trades' && !selectMode && (
-                <button onClick={() => { setTradeForm({ date: new Date().toISOString().split('T')[0] }); setEditingTrade(null); setShowAddTrade(true) }} style={{ height: '36px', margin: 0, padding: '0 20px', background: 'transparent', border: '2px dashed #22c55e', borderRadius: '6px', color: '#22c55e', fontWeight: 600, fontSize: '13px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.2s', lineHeight: 1 }} onMouseEnter={e => { e.currentTarget.style.borderColor = '#4ade80'; e.currentTarget.style.background = 'rgba(34, 197, 94, 0.05)'; const rect = e.currentTarget.getBoundingClientRect(); showTooltipDelayed('Add a new trade entry', rect.left + rect.width / 2, rect.top) }} onMouseLeave={e => { e.currentTarget.style.borderColor = '#22c55e'; e.currentTarget.style.background = 'transparent'; hideTooltip() }}>+ LOG TRADE</button>
+                <button onClick={() => { setTradeForm({ date: new Date().toISOString().split('T')[0] }); setEditingTrade(null); setShowAddTrade(true) }} style={{ height: '36px', margin: 0, padding: '0 20px', background: 'transparent', border: `2px dashed ${themeColor}`, borderRadius: '6px', color: themeColor, fontWeight: 600, fontSize: '13px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.2s', lineHeight: 1 }} onMouseEnter={e => { e.currentTarget.style.borderColor = themeColorDark; e.currentTarget.style.background = `rgba(${themeColorRgb}, 0.05)`; const rect = e.currentTarget.getBoundingClientRect(); showTooltipDelayed('Add a new trade entry', rect.left + rect.width / 2, rect.top) }} onMouseLeave={e => { e.currentTarget.style.borderColor = themeColor; e.currentTarget.style.background = 'transparent'; hideTooltip() }}>+ LOG TRADE</button>
               )}
           </div>
         </div>
@@ -1720,12 +1729,12 @@ export default function AccountPage() {
               style={{
                 width: '100%', padding: '12px',
                 background: activeTab === tab ? 'transparent' : 'transparent',
-                border: activeTab === tab ? '1px solid #22c55e' : '1px solid #2a2a35',
-                borderRadius: '8px', color: activeTab === tab ? '#22c55e' : '#888',
+                border: activeTab === tab ? `1px solid ${themeColor}` : '1px solid #2a2a35',
+                borderRadius: '8px', color: activeTab === tab ? themeColor : '#888',
                 fontSize: '14px', fontWeight: 600, textTransform: 'uppercase', cursor: 'pointer', textAlign: 'center',
                 transition: 'all 0.2s'
               }}
-              onMouseEnter={e => { if (activeTab !== tab) { e.currentTarget.style.borderColor = '#22c55e'; e.currentTarget.style.color = '#22c55e'; e.currentTarget.style.background = 'rgba(34,197,94,0.05)' } }}
+              onMouseEnter={e => { if (activeTab !== tab) { e.currentTarget.style.borderColor = themeColor; e.currentTarget.style.color = themeColor; e.currentTarget.style.background = `rgba(${themeColorRgb},0.05)` } }}
               onMouseLeave={e => { if (activeTab !== tab) { e.currentTarget.style.borderColor = '#2a2a35'; e.currentTarget.style.color = '#888'; e.currentTarget.style.background = 'transparent' } }}
             >
               {tab}
@@ -1743,18 +1752,18 @@ export default function AccountPage() {
                   padding: '10px 12px',
                   marginBottom: '6px',
                   background: 'rgba(34,197,94,0.15)',
-                  border: '1px solid rgba(34,197,94,0.5)',
+                  border: `1px solid rgba(${themeColorRgb},0.5)`,
                   borderRadius: '6px',
                   boxShadow: '0 0 12px rgba(34,197,94,0.2), inset 0 0 20px rgba(34,197,94,0.05)'
                 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#22c55e', boxShadow: '0 0 6px #22c55e' }} />
+                    <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: themeColor, boxShadow: `0 0 6px ${themeColor}` }} />
                     <span style={{ fontSize: '12px', fontWeight: 600, color: '#22c55e' }}>Selected Trades</span>
                   </div>
                   <div style={{ fontSize: '10px', color: '#888', marginTop: '4px', marginLeft: '16px' }}>{selectedTrades.size} trades selected</div>
                   <button
                     onClick={() => setViewingSelectedStats(false)}
-                    style={{ marginTop: '8px', width: '100%', padding: '6px', background: 'transparent', border: '1px solid rgba(34,197,94,0.3)', borderRadius: '4px', color: '#22c55e', fontSize: '10px', cursor: 'pointer' }}
+                    style={{ marginTop: '8px', width: '100%', padding: '6px', background: 'transparent', border: `1px solid rgba(${themeColorRgb},0.3)`, borderRadius: '4px', color: themeColor, fontSize: '10px', cursor: 'pointer' }}
                   >
                     View All Stats
                   </button>
@@ -1859,7 +1868,7 @@ export default function AccountPage() {
                                   }}
                                   style={{ accentColor: '#ef4444' }}
                                 />
-                                <span style={{ fontSize: '11px', color: acc.id === accountId ? '#22c55e' : '#fff' }}>{acc.name}</span>
+                                <span style={{ fontSize: '11px', color: acc.id === accountId ? '#22c55e' : '#fff', wordBreak: 'break-word', lineHeight: 1.3 }}>{acc.name}</span>
                               </label>
                             ))}
                           </div>
@@ -1956,7 +1965,7 @@ export default function AccountPage() {
             {filteredTrades.length === 0 && trades.length > 0 ? (
               <div style={{ padding: isMobile ? '40px 20px' : '60px', textAlign: 'center' }}>
                 <div style={{ color: '#999', fontSize: '15px', marginBottom: '12px' }}>No trades match your filters.</div>
-                <button onClick={() => setFilters({ dateFrom: '', dateTo: '', outcome: '', direction: '', symbol: '', session: '', timeframe: '', confidence: '', rr: '', rating: '', custom: {} })} style={{ padding: '10px 20px', background: 'transparent', border: '1px solid #22c55e', borderRadius: '8px', color: '#22c55e', fontSize: '13px', cursor: 'pointer' }}>Clear Filters</button>
+                <button onClick={() => setFilters({ dateFrom: '', dateTo: '', outcome: '', direction: '', symbol: '', session: '', timeframe: '', confidence: '', rr: '', rating: '', custom: {} })} style={{ padding: '10px 20px', background: 'transparent', border: `1px solid ${themeColor}`, borderRadius: '8px', color: themeColor, fontSize: '13px', cursor: 'pointer' }}>Clear Filters</button>
               </div>
             ) : (
               <>
@@ -1974,7 +1983,7 @@ export default function AccountPage() {
                   scrollbarColor: '#2a2a35 #0a0a0f'
                 }}>
                 <table style={{ width: 'max-content', minWidth: '100%', borderCollapse: 'collapse' }}>
-                  <thead style={{ position: 'sticky', top: 0, zIndex: 10, background: '#0a0a0f', boxShadow: '0 1px 0 #1a1a22' }}>
+                  <thead style={{ position: 'sticky', top: 0, zIndex: 10, background: '#0a0a0f' }}>
                     <tr>
                       {selectMode && <th style={{ padding: '3px 6px 11px 6px', width: '32px', minWidth: '32px', borderBottom: '1px solid #1a1a22', background: '#0a0a0f' }}><input type="checkbox" checked={filteredTrades.length > 0 && filteredTrades.every(t => selectedTrades.has(t.id))} onChange={() => { const allSelected = filteredTrades.every(t => selectedTrades.has(t.id)); if (allSelected) { const newSet = new Set(selectedTrades); filteredTrades.forEach(t => newSet.delete(t.id)); setSelectedTrades(newSet) } else { const newSet = new Set(selectedTrades); filteredTrades.forEach(t => newSet.add(t.id)); setSelectedTrades(newSet) } }} style={{ width: '14px', height: '14px', accentColor: '#22c55e', cursor: 'pointer' }} /></th>}
                       {enabledInputs.map((inp, i) => (
@@ -2367,9 +2376,9 @@ export default function AccountPage() {
           <div style={{ padding: isMobile ? '0' : '8px 12px 0 12px' }}>
             {/* Stats View Indicator Banner */}
             {viewingSelectedStats && selectedTrades.size > 0 ? (
-              <div style={{ marginBottom: '12px', padding: '12px 16px', background: 'rgba(34,197,94,0.1)', border: '1px solid #22c55e', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', boxShadow: '0 0 12px rgba(34,197,94,0.15)' }}>
+              <div style={{ marginBottom: '12px', padding: '12px 16px', background: `rgba(${themeColorRgb},0.1)`, border: '1px solid #22c55e', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', boxShadow: '0 0 12px rgba(34,197,94,0.15)' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                  <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#22c55e', boxShadow: '0 0 8px #22c55e' }} />
+                  <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: themeColor, boxShadow: `0 0 8px ${themeColor}` }} />
                   <span style={{ fontSize: '13px', fontWeight: 600, color: '#22c55e' }}>VIEWING {selectedTrades.size} SELECTED TRADES</span>
                 </div>
                 <button onClick={() => setViewingSelectedStats(false)} style={{ padding: '6px 12px', background: '#1a1a22', border: 'none', borderRadius: '6px', color: '#fff', fontSize: '12px', cursor: 'pointer' }}>View Journal Stats</button>
@@ -4197,7 +4206,7 @@ export default function AccountPage() {
                         <div key={acc.id} style={{ background: '#141418', border: `1px solid ${statusColor}33`, borderRadius: '6px', padding: '12px' }}>
                           <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px' }}>
                             <span style={{ background: statusColor, padding: '2px 8px', borderRadius: '4px', fontSize: '9px', fontWeight: 600, color: '#fff' }}>{status}</span>
-                            <span style={{ fontSize: '12px', fontWeight: 600, color: '#fff' }}>{acc.name}</span>
+                            <span style={{ fontSize: '12px', fontWeight: 600, color: '#fff', wordBreak: 'break-word', lineHeight: 1.3 }}>{acc.name}</span>
                             <span style={{ fontSize: '11px', color: accCurrentBal >= accStartBal ? '#22c55e' : '#ef4444', marginLeft: 'auto' }}>${Math.round(accCurrentBal).toLocaleString()}</span>
                           </div>
                           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '8px', fontSize: '11px' }}>
@@ -4652,7 +4661,7 @@ export default function AccountPage() {
             {/* Footer with preview and actions */}
             <div style={{ padding: '12px 20px', borderTop: '1px solid #1a1a22', background: '#0a0a0f' }}>
               {hasAnyFilter && (
-                <div style={{ marginBottom: '12px', padding: '10px', background: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.3)', borderRadius: '6px', textAlign: 'center' }}>
+                <div style={{ marginBottom: '12px', padding: '10px', background: `rgba(${themeColorRgb},0.1)`, border: `1px solid rgba(${themeColorRgb},0.3)`, borderRadius: '6px', textAlign: 'center' }}>
                   <div style={{ fontSize: '12px', color: '#22c55e' }}>
                     {previewCount} of {baseTradesToFilter.length} trades match
                   </div>
