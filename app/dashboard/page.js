@@ -1965,7 +1965,7 @@ export default function DashboardPage() {
   return (
     <div style={{ minHeight: '100vh', background: '#0a0a0f' }}>
       {/* Header */}
-      <header style={{ padding: '4px 16px', height: '60px', boxSizing: 'border-box', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #1a1a22', flexWrap: isMobile ? 'wrap' : 'nowrap', gap: '12px' }}>
+      <header style={{ padding: '4px 16px', height: '68px', boxSizing: 'border-box', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #1a1a22', flexWrap: isMobile ? 'wrap' : 'nowrap', gap: '12px' }}>
         <a href="/" style={{ display: 'flex', alignItems: 'center', textDecoration: 'none', height: isMobile ? '32px' : '50px' }}>
           <img src="/logo.svg" alt="TradeSave+" style={{ height: '100%', width: 'auto' }} />
         </a>

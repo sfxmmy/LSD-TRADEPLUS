@@ -1561,7 +1561,7 @@ export default function AccountPage() {
       <Tooltip data={tooltip} />
 
       {/* FIXED HEADER - same structure as dashboard */}
-      <header style={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 50, padding: '4px 16px', height: '60px', boxSizing: 'border-box', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#0a0a0f', borderBottom: '1px solid #1a1a22' }}>
+      <header style={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 50, padding: '4px 16px', height: '68px', boxSizing: 'border-box', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#0a0a0f', borderBottom: '1px solid #1a1a22' }}>
         <a href="/" style={{ display: 'flex', alignItems: 'center', textDecoration: 'none', height: isMobile ? '32px' : '50px' }}><img src="/logo.svg" alt="TradeSave+" style={{ height: '100%', width: 'auto' }} /></a>
         {!isMobile && (
           <>
@@ -1631,7 +1631,7 @@ export default function AccountPage() {
 
       {/* Mobile Menu Overlay */}
       {isMobile && showMobileMenu && (
-        <div style={{ position: 'fixed', top: '53px', left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.9)', zIndex: 100, padding: '12px' }}>
+        <div style={{ position: 'fixed', top: '61px', left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.9)', zIndex: 100, padding: '12px' }}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
             {['trades', 'statistics', 'notes'].map((tab) => (
               <button 
@@ -1655,7 +1655,7 @@ export default function AccountPage() {
 
       {/* FIXED SUBHEADER - starts at sidebar edge */}
       {!isMobile && (
-        <div style={{ position: 'fixed', top: '60px', left: '180px', right: 0, zIndex: 46, padding: '18px 12px 13px 12px', background: '#0a0a0f', borderBottom: '1px solid #1a1a22', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div style={{ position: 'fixed', top: '68px', left: '180px', right: 0, zIndex: 46, padding: '18px 12px 13px 12px', background: '#0a0a0f', borderBottom: '1px solid #1a1a22', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '16px', flex: 1, minWidth: 0 }}>
             {(() => {
               const getTitle = () => {
@@ -1739,7 +1739,7 @@ export default function AccountPage() {
 
       {/* Mobile Subheader */}
       {isMobile && (
-        <div style={{ position: 'fixed', top: '53px', left: 0, right: 0, zIndex: 40, padding: '10px 16px', background: '#0a0a0f', borderBottom: '1px solid #1a1a22', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div style={{ position: 'fixed', top: '61px', left: 0, right: 0, zIndex: 40, padding: '10px 16px', background: '#0a0a0f', borderBottom: '1px solid #1a1a22', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <span style={{ fontSize: '14px', fontWeight: 700, color: '#fff', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '200px' }}>{activeTab === 'notes' ? 'Notes' : activeTab === 'statistics' ? (viewMode === 'all' ? 'Overall Statistics' : viewMode === 'selected' && selectedJournalIds.size > 0 ? sameTypeAccounts.filter(a => selectedJournalIds.has(a.id)).map(a => a.name).join(', ') + ' Statistics' : (account?.name || '') + ' Statistics') : (viewMode === 'all' ? 'Overall Journal' : viewMode === 'selected' && selectedJournalIds.size > 0 ? sameTypeAccounts.filter(a => selectedJournalIds.has(a.id)).map(a => a.name).join(', ') : account?.name)}</span>
           <button onClick={() => { setTradeForm({ date: new Date().toISOString().split('T')[0] }); setEditingTrade(null); setShowAddTrade(true) }} style={{ padding: '8px 16px', background: 'linear-gradient(135deg, #9333ea 0%, #7c3aed 100%)', border: 'none', borderRadius: '6px', color: '#fff', fontWeight: 600, fontSize: '12px', cursor: 'pointer', boxShadow: '0 0 15px rgba(147,51,234,0.5)' }}>+ ADD</button>
         </div>
@@ -1747,7 +1747,7 @@ export default function AccountPage() {
 
       {/* FIXED SIDEBAR - desktop only, starts under header */}
       {!isMobile && (
-        <div style={{ position: 'fixed', top: '60px', left: 0, bottom: 0, width: '180px', padding: '12px', background: '#0a0a0f', zIndex: 45, display: 'flex', flexDirection: 'column', borderRight: '1px solid #1a1a22' }}>
+        <div style={{ position: 'fixed', top: '68px', left: 0, bottom: 0, width: '180px', padding: '12px', background: '#0a0a0f', zIndex: 45, display: 'flex', flexDirection: 'column', borderRight: '1px solid #1a1a22' }}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginTop: '4px' }}>
           {['trades', 'statistics', 'notes'].map((tab) => (
             <button
