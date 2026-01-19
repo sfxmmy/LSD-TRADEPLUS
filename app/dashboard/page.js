@@ -113,6 +113,9 @@ export default function DashboardPage() {
   const themeColor = activeDashboard === 'backtesting' ? '#3b82f6' : '#22c55e'
   const themeColorRgb = activeDashboard === 'backtesting' ? '59,130,246' : '34,197,94'
   const themeColorDark = activeDashboard === 'backtesting' ? '#2563eb' : '#16a34a'
+  // Positive color for PnL/wins/profits - same as theme (blue for backtesting, green for accounts)
+  const positiveColor = activeDashboard === 'backtesting' ? '#3b82f6' : '#22c55e'
+  const positiveColorRgb = activeDashboard === 'backtesting' ? '59,130,246' : '34,197,94'
   const [switchingDashboard, setSwitchingDashboard] = useState(false)
   const [trades, setTrades] = useState({})
   const [loading, setLoading] = useState(true)
@@ -1831,8 +1834,8 @@ export default function DashboardPage() {
             <svg ref={svgRef} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', overflow: 'visible' }} viewBox={`0 0 ${svgW} ${svgH}`} preserveAspectRatio="none" onMouseMove={handleMouseMove} onMouseLeave={() => setHoverPoint(null)}>
               <defs>
                 <linearGradient id="areaGradGreen" x1="0%" y1="0%" x2="0%" y2="100%">
-                  <stop offset="0%" stopColor="#22c55e" stopOpacity="0.3" />
-                  <stop offset="100%" stopColor="#22c55e" stopOpacity="0" />
+                  <stop offset="0%" stopColor={positiveColor} stopOpacity="0.3" />
+                  <stop offset="100%" stopColor={positiveColor} stopOpacity="0" />
                 </linearGradient>
                 <linearGradient id="areaGradRed" x1="0%" y1="0%" x2="0%" y2="100%">
                   <stop offset="0%" stopColor="#ef4444" stopOpacity="0.3" />
@@ -1841,7 +1844,7 @@ export default function DashboardPage() {
               </defs>
               {greenAreaPath && <path d={greenAreaPath} fill="url(#areaGradGreen)" />}
               {redAreaPath && <path d={redAreaPath} fill="url(#areaGradRed)" />}
-              {greenPath && <path d={greenPath} fill="none" stroke="#22c55e" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />}
+              {greenPath && <path d={greenPath} fill="none" stroke={positiveColor} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />}
               {redPath && <path d={redPath} fill="none" stroke="#ef4444" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />}
               {/* Daily DD floor line - orange, follows balance curve (only when showing objectives) */}
               {showObjectiveLines && dailyDdPath && <path d={dailyDdPath} fill="none" stroke="#f97316" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />}
@@ -1907,7 +1910,7 @@ export default function DashboardPage() {
 
             {/* Hover dot on the line */}
             {hoverPoint && (
-              <div style={{ position: 'absolute', left: `${hoverPoint.xPct}%`, top: `${hoverPoint.yPct}%`, transform: 'translate(-50%, -50%)', width: '12px', height: '12px', borderRadius: '50%', background: hoverPoint.balance >= start ? '#22c55e' : '#ef4444', border: '2px solid #fff', pointerEvents: 'none', zIndex: 10 }} />
+              <div style={{ position: 'absolute', left: `${hoverPoint.xPct}%`, top: `${hoverPoint.yPct}%`, transform: 'translate(-50%, -50%)', width: '12px', height: '12px', borderRadius: '50%', background: hoverPoint.balance >= start ? positiveColor : '#ef4444', border: '2px solid #fff', pointerEvents: 'none', zIndex: 10 }} />
             )}
             
             {/* Tooltip next to the dot */}
@@ -1915,7 +1918,7 @@ export default function DashboardPage() {
               <div style={{ position: 'absolute', left: `${hoverPoint.xPct}%`, top: `${hoverPoint.yPct}%`, transform: `translate(${hoverPoint.xPct > 80 ? 'calc(-100% - 15px)' : '15px'}, ${hoverPoint.yPct < 20 ? '0%' : hoverPoint.yPct > 80 ? '-100%' : '-50%'})`, background: '#1a1a22', border: '1px solid #2a2a35', borderRadius: '6px', padding: '8px 12px', fontSize: '11px', whiteSpace: 'nowrap', zIndex: 10, pointerEvents: 'none' }}>
                 <div style={{ color: '#999' }}>{hoverPoint.date ? new Date(hoverPoint.date).toLocaleDateString() : 'Start'}</div>
                 <div style={{ fontWeight: 600, fontSize: '14px', color: '#fff' }}>${hoverPoint.balance.toLocaleString()}</div>
-                {hoverPoint.symbol && <div style={{ color: hoverPoint.pnl >= 0 ? '#22c55e' : '#ef4444' }}>{hoverPoint.symbol}: {hoverPoint.pnl >= 0 ? '+' : ''}${hoverPoint.pnl.toFixed(0)}</div>}
+                {hoverPoint.symbol && <div style={{ color: hoverPoint.pnl >= 0 ? positiveColor : '#ef4444' }}>{hoverPoint.symbol}: {hoverPoint.pnl >= 0 ? '+' : ''}${hoverPoint.pnl.toFixed(0)}</div>}
               </div>
             )}
           </div>
@@ -2066,7 +2069,7 @@ export default function DashboardPage() {
                                   <div style={{ width: '5px', height: '5px', borderRadius: '50%', background: isSelected ? themeColor : '#444', flexShrink: 0, marginTop: '4px' }} />
                                   <span style={{ wordBreak: 'break-word', lineHeight: '1.3' }}>{acc.name}</span>
                                 </div>
-                                <span style={{ fontSize: '11px', color: totalPnl >= 0 ? '#22c55e' : '#ef4444', flexShrink: 0, whiteSpace: 'nowrap' }}>{totalPnl >= 0 ? '+' : ''}${formatCurrency(totalPnl)}</span>
+                                <span style={{ fontSize: '11px', color: totalPnl >= 0 ? positiveColor : '#ef4444', flexShrink: 0, whiteSpace: 'nowrap' }}>{totalPnl >= 0 ? '+' : ''}${formatCurrency(totalPnl)}</span>
                               </div>
                             </button>
                           )
@@ -2433,7 +2436,7 @@ export default function DashboardPage() {
                         <div>
                           <div style={{ fontSize: '13px', color: '#666', marginBottom: '2px' }}>Overall Stats</div>
                           <div style={{ display: 'flex', alignItems: 'baseline', gap: '12px' }}>
-                            <span style={{ fontSize: '24px', fontWeight: 700, color: isProfitable ? '#22c55e' : '#ef4444' }}>${formatCurrency(totalBalance)}</span>
+                            <span style={{ fontSize: '24px', fontWeight: 700, color: isProfitable ? positiveColor : '#ef4444' }}>${formatCurrency(totalBalance)}</span>
                             <span style={{ fontSize: '12px', color: '#666', whiteSpace: 'nowrap' }}><span style={{ fontWeight: 600, color: '#888' }}>${formatCurrency(stats.totalStartingBalance)}</span> INITIAL BALANCE</span>
                           </div>
                         </div>
@@ -2612,20 +2615,20 @@ export default function DashboardPage() {
                                       onMouseMove={e => { const rect = e.currentTarget.getBoundingClientRect(); const mouseX = ((e.clientX - rect.left) / rect.width) * svgW; let closest = chartPts[0], minDist = Math.abs(mouseX - chartPts[0].x); chartPts.forEach(p => { const d = Math.abs(mouseX - p.x); if (d < minDist) { minDist = d; closest = p } }); setDashHover({ ...closest, xPct: (closest.x / svgW) * 100, yPct: (closest.y / svgH) * 100 }) }}
                                       onMouseLeave={() => setDashHover(null)}>
                                       <defs>
-                                        <linearGradient id="dashGr" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stopColor="#22c55e" stopOpacity="0.3" /><stop offset="100%" stopColor="#22c55e" stopOpacity="0" /></linearGradient>
+                                        <linearGradient id="dashGr" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stopColor={positiveColor} stopOpacity="0.3" /><stop offset="100%" stopColor={positiveColor} stopOpacity="0" /></linearGradient>
                                         <linearGradient id="dashRd" x1="0%" y1="100%" x2="0%" y2="0%"><stop offset="0%" stopColor="#ef4444" stopOpacity="0.3" /><stop offset="100%" stopColor="#ef4444" stopOpacity="0" /></linearGradient>
                                       </defs>
                                       <path d={mkArea(greenSegs)} fill="url(#dashGr)" />
                                       <path d={mkArea(redSegs)} fill="url(#dashRd)" />
-                                      <path d={mkPath(greenSegs)} fill="none" stroke="#22c55e" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />
+                                      <path d={mkPath(greenSegs)} fill="none" stroke={positiveColor} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />
                                       <path d={mkPath(redSegs)} fill="none" stroke="#ef4444" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />
                                     </svg>
-                                    {dashHover && <div style={{ position: 'absolute', left: `${dashHover.xPct}%`, top: `${dashHover.yPct}%`, transform: 'translate(-50%, -50%)', width: '10px', height: '10px', borderRadius: '50%', background: dashHover.balance >= startBal ? '#22c55e' : '#ef4444', border: '2px solid #fff', pointerEvents: 'none', zIndex: 10 }} />}
+                                    {dashHover && <div style={{ position: 'absolute', left: `${dashHover.xPct}%`, top: `${dashHover.yPct}%`, transform: 'translate(-50%, -50%)', width: '10px', height: '10px', borderRadius: '50%', background: dashHover.balance >= startBal ? positiveColor : '#ef4444', border: '2px solid #fff', pointerEvents: 'none', zIndex: 10 }} />}
                                     {dashHover && (
                                       <div style={{ position: 'absolute', left: `${dashHover.xPct}%`, top: `${dashHover.yPct}%`, transform: `translate(${dashHover.xPct > 70 ? 'calc(-100% - 12px)' : '12px'}, ${dashHover.yPct < 25 ? '0%' : dashHover.yPct > 75 ? '-100%' : '-50%'})`, background: '#1a1a22', border: '1px solid #2a2a35', borderRadius: '6px', padding: '8px 12px', fontSize: '11px', whiteSpace: 'nowrap', zIndex: 10, pointerEvents: 'none' }}>
                                         <div style={{ color: '#888', fontSize: '10px' }}>{dashHover.date ? new Date(dashHover.date).toLocaleDateString() : 'Start'}</div>
                                         <div style={{ fontWeight: 700, fontSize: '14px', color: '#fff' }}>${dashHover.balance?.toLocaleString()}</div>
-                                        {dashHover.symbol && <div style={{ color: dashHover.pnl >= 0 ? '#22c55e' : '#ef4444', marginTop: '2px' }}>{dashHover.symbol}: {dashHover.pnl >= 0 ? '+' : ''}${dashHover.pnl?.toFixed(0)}</div>}
+                                        {dashHover.symbol && <div style={{ color: dashHover.pnl >= 0 ? positiveColor : '#ef4444', marginTop: '2px' }}>{dashHover.symbol}: {dashHover.pnl >= 0 ? '+' : ''}${dashHover.pnl?.toFixed(0)}</div>}
                                       </div>
                                     )}
                                   </div>
@@ -2659,17 +2662,17 @@ export default function DashboardPage() {
                             <div style={{ flex: 1, display: 'grid', gridTemplateColumns: '1fr 1fr', gridTemplateRows: 'repeat(6, 1fr)', gridAutoFlow: 'column', gap: '0 24px', alignContent: 'stretch' }}>
                             {[
                               { label: 'Trades', value: stats.totalTrades, color: '#fff' },
-                              { label: 'Winrate', value: `${stats.winrate}%`, color: stats.winrate >= 50 ? '#22c55e' : '#ef4444' },
-                              { label: 'Wins', value: stats.wins, color: '#22c55e' },
-                              { label: 'Avg Win', value: `+$${formatCurrency(avgWin)}`, color: '#22c55e' },
-                              { label: 'Win Streak', value: winStreak, color: '#22c55e' },
-                              { label: 'Day WR', value: `${dayWR}%`, color: dayWR >= 50 ? '#22c55e' : '#ef4444' },
-                              { label: 'Profit Factor', value: stats.profitFactor, color: stats.profitFactor === '-' ? '#666' : stats.profitFactor === '∞' ? '#22c55e' : parseFloat(stats.profitFactor) >= 1 ? '#22c55e' : '#ef4444' },
-                              { label: 'Consistency', value: `${consistency}%`, color: consistency >= 50 ? '#22c55e' : '#ef4444' },
+                              { label: 'Winrate', value: `${stats.winrate}%`, color: stats.winrate >= 50 ? positiveColor : '#ef4444' },
+                              { label: 'Wins', value: stats.wins, color: positiveColor },
+                              { label: 'Avg Win', value: `+$${formatCurrency(avgWin)}`, color: positiveColor },
+                              { label: 'Win Streak', value: winStreak, color: positiveColor },
+                              { label: 'Day WR', value: `${dayWR}%`, color: dayWR >= 50 ? positiveColor : '#ef4444' },
+                              { label: 'Profit Factor', value: stats.profitFactor, color: stats.profitFactor === '-' ? '#666' : stats.profitFactor === '∞' ? positiveColor : parseFloat(stats.profitFactor) >= 1 ? positiveColor : '#ef4444' },
+                              { label: 'Consistency', value: `${consistency}%`, color: consistency >= 50 ? positiveColor : '#ef4444' },
                               { label: 'Losses', value: stats.losses, color: '#ef4444' },
-                              { label: 'Avg Loss', value: `$${formatCurrency(avgLoss)}`, color: avgLoss >= 0 ? '#22c55e' : '#ef4444' },
+                              { label: 'Avg Loss', value: `$${formatCurrency(avgLoss)}`, color: avgLoss >= 0 ? positiveColor : '#ef4444' },
                               { label: 'Loss Streak', value: lossStreak, color: '#ef4444' },
-                              { label: 'Expectancy', value: `${expectancy >= 0 ? '+' : ''}$${formatCurrency(expectancy)}`, color: expectancy >= 0 ? '#22c55e' : '#ef4444' },
+                              { label: 'Expectancy', value: `${expectancy >= 0 ? '+' : ''}$${formatCurrency(expectancy)}`, color: expectancy >= 0 ? positiveColor : '#ef4444' },
                             ].map((s, i) => (
                               <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '6px 0', borderBottom: '1px solid #1a1a22' }}>
                                 <span style={{ fontSize: '12px', color: '#888', fontWeight: 600 }}>{s.label}</span>
@@ -2683,7 +2686,7 @@ export default function DashboardPage() {
                           <div onClick={e => e.stopPropagation()} style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
                             {/* Buttons - stacked vertically, each spans 2 stat rows */}
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', flex: 1 }}>
-                              <a href={`/account/${accounts[0]?.id}?cumulative=true`} style={{ flex: 1, background: '#0a0a0f', border: `2px solid rgba(${themeColorRgb},0.3)`, borderRadius: '10px', color: themeColor, fontWeight: 600, fontSize: '14px', textDecoration: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', transition: 'all 0.2s' }} onMouseEnter={e => { e.currentTarget.style.background = `rgba(${themeColorRgb},0.08)`; e.currentTarget.style.border = `2px solid rgba(${themeColorRgb},0.5)` }} onMouseLeave={e => { e.currentTarget.style.background = '#0a0a0f'; e.currentTarget.style.border = `2px solid rgba(${themeColorRgb},0.3)` }}>
+                              <a href={`/account/${accounts[0]?.id}?cumulative=true`} style={{ flex: 1, background: themeColor, border: 'none', borderRadius: '10px', color: '#fff', fontWeight: 600, fontSize: '14px', textDecoration: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', transition: 'all 0.2s', boxShadow: `0 4px 12px rgba(${themeColorRgb},0.3)` }} onMouseEnter={e => { e.currentTarget.style.background = themeColorDark; e.currentTarget.style.boxShadow = `0 4px 16px rgba(${themeColorRgb},0.4)` }} onMouseLeave={e => { e.currentTarget.style.background = themeColor; e.currentTarget.style.boxShadow = `0 4px 12px rgba(${themeColorRgb},0.3)` }}>
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
                                 See Overall Journal
                               </a>
@@ -2773,7 +2776,7 @@ export default function DashboardPage() {
                             <div>
                               <div style={{ fontSize: '13px', color: '#666', marginBottom: '2px', wordBreak: 'break-word', lineHeight: 1.3 }}>{account.name}</div>
                               <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px' }}>
-                                <span style={{ fontSize: '24px', fontWeight: 700, color: isProfitable ? '#22c55e' : '#ef4444' }}>${formatCurrency(currentBalance)}</span>
+                                <span style={{ fontSize: '24px', fontWeight: 700, color: isProfitable ? positiveColor : '#ef4444' }}>${formatCurrency(currentBalance)}</span>
                                 <span style={{ fontSize: '11px', color: '#666', whiteSpace: 'nowrap' }}><span style={{ fontWeight: 600, color: '#888' }}>${formatCurrency(startingBalance)}</span> INITIAL BALANCE</span>
                               </div>
                             </div>
@@ -2951,22 +2954,22 @@ export default function DashboardPage() {
                                       onMouseMove={e => { const rect = e.currentTarget.getBoundingClientRect(); const mouseX = ((e.clientX - rect.left) / rect.width) * svgW; let closest = chartPts[0], minDist = Math.abs(mouseX - chartPts[0].x); chartPts.forEach(p => { const d = Math.abs(mouseX - p.x); if (d < minDist) { minDist = d; closest = p } }); setJournalHover({ ...closest, accountId: account.id, xPct: (closest.x / svgW) * 100, yPct: (closest.y / svgH) * 100 }) }}
                                       onMouseLeave={() => setJournalHover(null)}>
                                       <defs>
-                                        <linearGradient id={`eqGreenMini${account.id}`} x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stopColor="#22c55e" stopOpacity="0.3" /><stop offset="100%" stopColor="#22c55e" stopOpacity="0" /></linearGradient>
+                                        <linearGradient id={`eqGreenMini${account.id}`} x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stopColor={positiveColor} stopOpacity="0.3" /><stop offset="100%" stopColor={positiveColor} stopOpacity="0" /></linearGradient>
                                         <linearGradient id={`eqRedMini${account.id}`} x1="0%" y1="100%" x2="0%" y2="0%"><stop offset="0%" stopColor="#ef4444" stopOpacity="0.3" /><stop offset="100%" stopColor="#ef4444" stopOpacity="0" /></linearGradient>
                                       </defs>
                                       <path d={mkArea(greenSegs)} fill={`url(#eqGreenMini${account.id})`} />
                                       <path d={mkArea(redSegs)} fill={`url(#eqRedMini${account.id})`} />
-                                      <path d={mkPath(greenSegs)} fill="none" stroke="#22c55e" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />
+                                      <path d={mkPath(greenSegs)} fill="none" stroke={positiveColor} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />
                                       <path d={mkPath(redSegs)} fill="none" stroke="#ef4444" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />
                                     </svg>
                                     {/* Hover dot indicator */}
-                                    {isHovered && <div style={{ position: 'absolute', left: `${journalHover.xPct}%`, top: `${journalHover.yPct}%`, transform: 'translate(-50%, -50%)', width: '8px', height: '8px', borderRadius: '50%', background: journalHover.balance >= startingBalance ? '#22c55e' : '#ef4444', border: '2px solid #fff', pointerEvents: 'none', zIndex: 10 }} />}
+                                    {isHovered && <div style={{ position: 'absolute', left: `${journalHover.xPct}%`, top: `${journalHover.yPct}%`, transform: 'translate(-50%, -50%)', width: '8px', height: '8px', borderRadius: '50%', background: journalHover.balance >= startingBalance ? positiveColor : '#ef4444', border: '2px solid #fff', pointerEvents: 'none', zIndex: 10 }} />}
                                     {/* Hover tooltip */}
                                     {isHovered && (
                                       <div style={{ position: 'absolute', left: `${journalHover.xPct}%`, top: `${journalHover.yPct}%`, transform: `translate(${journalHover.xPct > 70 ? 'calc(-100% - 10px)' : '10px'}, ${journalHover.yPct < 25 ? '0%' : journalHover.yPct > 75 ? '-100%' : '-50%'})`, background: '#1a1a22', border: '1px solid #2a2a35', borderRadius: '6px', padding: '6px 10px', fontSize: '10px', whiteSpace: 'nowrap', zIndex: 10, pointerEvents: 'none' }}>
                                         <div style={{ color: '#888', fontSize: '9px' }}>{journalHover.date ? new Date(journalHover.date).toLocaleDateString() : 'Start'}</div>
                                         <div style={{ fontWeight: 700, fontSize: '12px', color: '#fff' }}>${journalHover.balance?.toLocaleString()}</div>
-                                        {journalHover.symbol && <div style={{ color: journalHover.pnl >= 0 ? '#22c55e' : '#ef4444', marginTop: '2px' }}>{journalHover.symbol}: {journalHover.pnl >= 0 ? '+' : ''}${journalHover.pnl?.toFixed(0)}</div>}
+                                        {journalHover.symbol && <div style={{ color: journalHover.pnl >= 0 ? positiveColor : '#ef4444', marginTop: '2px' }}>{journalHover.symbol}: {journalHover.pnl >= 0 ? '+' : ''}${journalHover.pnl?.toFixed(0)}</div>}
                                       </div>
                                     )}
                                   </div>
@@ -3039,11 +3042,11 @@ export default function DashboardPage() {
 
                             // 6 key stats
                             const stats = [
-                              { label: 'PnL', value: `${totalPnl >= 0 ? '+' : ''}$${formatCurrency(totalPnl)}`, color: totalPnl >= 0 ? '#22c55e' : '#ef4444' },
+                              { label: 'PnL', value: `${totalPnl >= 0 ? '+' : ''}$${formatCurrency(totalPnl)}`, color: totalPnl >= 0 ? positiveColor : '#ef4444' },
                               { label: 'Trades', value: accTrades.length, color: '#fff' },
-                              { label: 'Winrate', value: `${winrate}%`, color: winrate >= 50 ? '#22c55e' : '#ef4444' },
+                              { label: 'Winrate', value: `${winrate}%`, color: winrate >= 50 ? positiveColor : '#ef4444' },
                               { label: 'W/L', value: `${wins}/${losses}`, color: '#fff' },
-                              { label: 'Profit Factor', value: profitFactor, color: profitFactor === '-' ? '#666' : profitFactor === '∞' ? '#22c55e' : parseFloat(profitFactor) >= 1 ? '#22c55e' : '#ef4444' },
+                              { label: 'Profit Factor', value: profitFactor, color: profitFactor === '-' ? '#666' : profitFactor === '∞' ? positiveColor : parseFloat(profitFactor) >= 1 ? positiveColor : '#ef4444' },
                               { label: 'Consistency', value: `${consistency}%`, color: consistency >= 50 ? '#3b82f6' : '#666' },
                             ]
 
@@ -3062,7 +3065,7 @@ export default function DashboardPage() {
 
                         {/* Buttons - Compact */}
                         <div onClick={e => e.stopPropagation()} style={{ padding: '12px 16px 16px', display: 'flex', gap: '8px' }}>
-                          <a href={`/account/${account.id}`} style={{ flex: 1, padding: '10px', background: '#0a0a0f', border: `2px solid rgba(${themeColorRgb},0.3)`, borderRadius: '10px', color: themeColor, fontWeight: 600, fontSize: '14px', textAlign: 'center', textDecoration: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', transition: 'all 0.2s' }} onMouseEnter={e => { e.currentTarget.style.background = `rgba(${themeColorRgb},0.08)`; e.currentTarget.style.border = `2px solid rgba(${themeColorRgb},0.5)` }} onMouseLeave={e => { e.currentTarget.style.background = '#0a0a0f'; e.currentTarget.style.border = `2px solid rgba(${themeColorRgb},0.3)` }}>
+                          <a href={`/account/${account.id}`} style={{ flex: 1, padding: '10px', background: themeColor, border: 'none', borderRadius: '10px', color: '#fff', fontWeight: 600, fontSize: '14px', textAlign: 'center', textDecoration: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', transition: 'all 0.2s', boxShadow: `0 4px 12px rgba(${themeColorRgb},0.3)` }} onMouseEnter={e => { e.currentTarget.style.background = themeColorDark; e.currentTarget.style.boxShadow = `0 4px 16px rgba(${themeColorRgb},0.4)` }} onMouseLeave={e => { e.currentTarget.style.background = themeColor; e.currentTarget.style.boxShadow = `0 4px 12px rgba(${themeColorRgb},0.3)` }}>
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg>
                             Enter Journal
                           </a>
@@ -3162,7 +3165,7 @@ export default function DashboardPage() {
                           <div style={{ minWidth: '180px' }}>
                             <div style={{ fontSize: '11px', color: '#666', marginBottom: '2px', wordBreak: 'break-word', lineHeight: 1.3 }}>{account.name}</div>
                             <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px' }}>
-                              <span style={{ fontSize: '20px', fontWeight: 700, color: isProfitable ? '#22c55e' : '#ef4444' }}>${formatCurrency(currentBalance)}</span>
+                              <span style={{ fontSize: '20px', fontWeight: 700, color: isProfitable ? positiveColor : '#ef4444' }}>${formatCurrency(currentBalance)}</span>
                               <span style={{ fontSize: '10px', color: '#666', whiteSpace: 'nowrap' }}><span style={{ fontWeight: 600, color: '#888' }}>${formatCurrency(startingBalance)}</span> INITIAL BALANCE</span>
                             </div>
                           </div>
@@ -3171,7 +3174,7 @@ export default function DashboardPage() {
                           <div style={{ display: 'flex', gap: '20px', flexWrap: 'wrap' }}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                               <span style={{ fontSize: '11px', color: '#666' }}>PnL</span>
-                              <span style={{ fontSize: '13px', fontWeight: 600, color: totalPnl >= 0 ? '#22c55e' : '#ef4444' }}>{totalPnl >= 0 ? '+' : ''}${formatCurrency(totalPnl)}</span>
+                              <span style={{ fontSize: '13px', fontWeight: 600, color: totalPnl >= 0 ? positiveColor : '#ef4444' }}>{totalPnl >= 0 ? '+' : ''}${formatCurrency(totalPnl)}</span>
                             </div>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                               <span style={{ fontSize: '11px', color: '#666' }}>Trades</span>
@@ -3179,7 +3182,7 @@ export default function DashboardPage() {
                             </div>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                               <span style={{ fontSize: '11px', color: '#666' }}>Winrate</span>
-                              <span style={{ fontSize: '13px', fontWeight: 600, color: winrate >= 50 ? '#22c55e' : '#ef4444' }}>{winrate}%</span>
+                              <span style={{ fontSize: '13px', fontWeight: 600, color: winrate >= 50 ? positiveColor : '#ef4444' }}>{winrate}%</span>
                             </div>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                               <span style={{ fontSize: '11px', color: '#666' }}>W/L</span>
@@ -3187,7 +3190,7 @@ export default function DashboardPage() {
                             </div>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                               <span style={{ fontSize: '11px', color: '#666' }}>PF</span>
-                              <span style={{ fontSize: '13px', fontWeight: 600, color: profitFactor === '-' ? '#666' : profitFactor === '∞' ? '#22c55e' : parseFloat(profitFactor) >= 1 ? '#22c55e' : '#ef4444' }}>{profitFactor}</span>
+                              <span style={{ fontSize: '13px', fontWeight: 600, color: profitFactor === '-' ? '#666' : profitFactor === '∞' ? positiveColor : parseFloat(profitFactor) >= 1 ? positiveColor : '#ef4444' }}>{profitFactor}</span>
                             </div>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                               <span style={{ fontSize: '11px', color: '#666' }}>Avg W</span>
@@ -3213,7 +3216,7 @@ export default function DashboardPage() {
                             const paddingBottom = 12
                             const chartHeight = graphHeight - paddingBottom
                             const lastVal = balancePoints[balancePoints.length - 1]
-                            const lineColor = lastVal >= startingBalance ? '#22c55e' : '#ef4444'
+                            const lineColor = lastVal >= startingBalance ? positiveColor : '#ef4444'
                             // Get first and last dates for axis
                             const firstDate = sortedTrades.length > 0 ? new Date(sortedTrades[0].date) : null
                             const lastDate = sortedTrades.length > 0 ? new Date(sortedTrades[sortedTrades.length - 1].date) : null
@@ -3288,7 +3291,7 @@ export default function DashboardPage() {
                           })()}
 
                           {/* Buttons */}
-                          <a href={`/account/${account.id}`} style={{ padding: '8px 14px', background: '#0a0a0f', border: `2px solid rgba(${themeColorRgb},0.3)`, borderRadius: '8px', color: themeColor, fontWeight: 600, fontSize: '12px', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '6px', transition: 'all 0.2s' }} onMouseEnter={e => { e.currentTarget.style.background = `rgba(${themeColorRgb},0.08)`; e.currentTarget.style.border = `2px solid rgba(${themeColorRgb},0.5)` }} onMouseLeave={e => { e.currentTarget.style.background = '#0a0a0f'; e.currentTarget.style.border = `2px solid rgba(${themeColorRgb},0.3)` }}>
+                          <a href={`/account/${account.id}`} style={{ padding: '8px 14px', background: themeColor, border: 'none', borderRadius: '8px', color: '#fff', fontWeight: 600, fontSize: '12px', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '6px', transition: 'all 0.2s', boxShadow: `0 4px 12px rgba(${themeColorRgb},0.3)` }} onMouseEnter={e => { e.currentTarget.style.background = themeColorDark; e.currentTarget.style.boxShadow = `0 4px 16px rgba(${themeColorRgb},0.4)` }} onMouseLeave={e => { e.currentTarget.style.background = themeColor; e.currentTarget.style.boxShadow = `0 4px 12px rgba(${themeColorRgb},0.3)` }}>
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg>
                             Enter
                           </a>
@@ -3355,7 +3358,7 @@ export default function DashboardPage() {
                     <div style={{ fontSize: '10px', color: '#888', marginBottom: '2px' }}>
                       {listGraphHover.date === 'Start' ? 'Starting Balance' : listGraphHover.date}
                     </div>
-                    <div style={{ fontSize: '14px', fontWeight: 600, color: listGraphHover.value >= 0 ? '#22c55e' : '#ef4444' }}>
+                    <div style={{ fontSize: '14px', fontWeight: 600, color: listGraphHover.value >= 0 ? positiveColor : '#ef4444' }}>
                       ${formatCurrency(listGraphHover.value)}
                     </div>
                   </div>
@@ -4066,7 +4069,7 @@ export default function DashboardPage() {
                               }} />
                               <span style={{ wordBreak: 'break-word', lineHeight: '1.3' }}>{acc.name}</span>
                             </div>
-                            <span style={{ fontSize: '13px', color: totalPnl >= 0 ? '#22c55e' : '#ef4444', flexShrink: 0, whiteSpace: 'nowrap' }}>
+                            <span style={{ fontSize: '13px', color: totalPnl >= 0 ? positiveColor : '#ef4444', flexShrink: 0, whiteSpace: 'nowrap' }}>
                               {totalPnl >= 0 ? '+' : ''}${formatCurrency(totalPnl)}
                             </span>
                           </div>
@@ -4420,7 +4423,7 @@ export default function DashboardPage() {
                                   <div style={{ width: '5px', height: '5px', borderRadius: '50%', background: isSelected ? '#22c55e' : '#444', flexShrink: 0, marginTop: '4px' }} />
                                   <span style={{ wordBreak: 'break-word', lineHeight: '1.3' }}>{acc.name}</span>
                                 </div>
-                                <span style={{ fontSize: '11px', color: totalPnl >= 0 ? '#22c55e' : '#ef4444', flexShrink: 0, whiteSpace: 'nowrap' }}>
+                                <span style={{ fontSize: '11px', color: totalPnl >= 0 ? positiveColor : '#ef4444', flexShrink: 0, whiteSpace: 'nowrap' }}>
                                   {totalPnl >= 0 ? '+' : ''}${formatCurrency(totalPnl)}
                                 </span>
                               </div>
@@ -5109,12 +5112,12 @@ export default function DashboardPage() {
                       {/* SVG Graph */}
                       <svg width="100%" height="100%" viewBox={`0 0 ${svgW} ${svgH}`} preserveAspectRatio="none" style={{ position: 'relative', zIndex: 2 }}>
                         <defs>
-                          <linearGradient id="zoomGreenGrad" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stopColor="#22c55e" stopOpacity="0.3" /><stop offset="100%" stopColor="#22c55e" stopOpacity="0" /></linearGradient>
+                          <linearGradient id="zoomGreenGrad" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stopColor={positiveColor} stopOpacity="0.3" /><stop offset="100%" stopColor={positiveColor} stopOpacity="0" /></linearGradient>
                           <linearGradient id="zoomRedGrad" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stopColor="#ef4444" stopOpacity="0.3" /><stop offset="100%" stopColor="#ef4444" stopOpacity="0" /></linearGradient>
                         </defs>
                         {greenAreaPath && <path d={greenAreaPath} fill="url(#zoomGreenGrad)" />}
                         {redAreaPath && <path d={redAreaPath} fill="url(#zoomRedGrad)" />}
-                        {greenPath && <path d={greenPath} fill="none" stroke="#22c55e" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />}
+                        {greenPath && <path d={greenPath} fill="none" stroke={positiveColor} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />}
                         {redPath && <path d={redPath} fill="none" stroke="#ef4444" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />}
                       </svg>
                       {/* Hover tooltip */}
@@ -5122,11 +5125,11 @@ export default function DashboardPage() {
                         <div style={{ position: 'fixed', left: journalHover.mouseX + 12, top: journalHover.mouseY - 60, background: '#0d0d12', border: '1px solid #2a2a35', borderRadius: '8px', padding: '10px 14px', zIndex: 1000, pointerEvents: 'none', boxShadow: '0 4px 20px rgba(0,0,0,0.5)' }}>
                           <div style={{ fontSize: '12px', color: '#888', marginBottom: '4px' }}>{journalHover.date || 'Start'}</div>
                           {journalHover.symbol && <div style={{ fontSize: '11px', color: '#666', marginBottom: '4px' }}>{journalHover.symbol}</div>}
-                          <div style={{ fontSize: '16px', fontWeight: 700, color: journalHover.balance >= startingBalance ? '#22c55e' : '#ef4444' }}>
+                          <div style={{ fontSize: '16px', fontWeight: 700, color: journalHover.balance >= startingBalance ? positiveColor : '#ef4444' }}>
                             ${formatCurrency(journalHover.balance)}
                           </div>
                           {journalHover.pnl !== 0 && (
-                            <div style={{ fontSize: '12px', color: journalHover.pnl >= 0 ? '#22c55e' : '#ef4444', marginTop: '2px' }}>
+                            <div style={{ fontSize: '12px', color: journalHover.pnl >= 0 ? positiveColor : '#ef4444', marginTop: '2px' }}>
                               {journalHover.pnl >= 0 ? '+' : ''}${formatCurrency(journalHover.pnl)}
                             </div>
                           )}
