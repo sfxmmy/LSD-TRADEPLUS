@@ -74,7 +74,6 @@ export function JournalCard({
       onDragLeave={onDragLeave}
       onDrop={(e) => onDrop?.(e, account.id)}
       onDragEnd={onDragEnd}
-      onClick={() => !isDragging && onNavigate?.(account.id)}
       style={{
         background: 'linear-gradient(135deg, #0f0f14 0%, #0a0a0f 100%)',
         border: isDragOver ? '2px dashed #9333ea' : isDragging ? '2px solid #9333ea' : '1px solid #1a1a22',
@@ -88,8 +87,6 @@ export function JournalCard({
         opacity: isDragging ? 0.5 : 1,
         transform: isDragOver ? 'scale(1.02)' : 'scale(1)'
       }}
-      onMouseEnter={e => { if (!isDragging) e.currentTarget.style.border = '1px solid #22c55e' }}
-      onMouseLeave={e => { if (!isDragging && !isDragOver) e.currentTarget.style.border = '1px solid #1a1a22' }}
     >
       {/* Header */}
       <div style={{ padding: '16px 16px 12px', position: 'relative' }}>

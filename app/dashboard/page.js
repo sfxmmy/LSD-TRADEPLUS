@@ -1965,9 +1965,9 @@ export default function DashboardPage() {
   return (
     <div style={{ minHeight: '100vh', background: '#0a0a0f' }}>
       {/* Header */}
-      <header style={{ padding: '4px 16px', height: '68px', boxSizing: 'border-box', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #1a1a22', flexWrap: isMobile ? 'wrap' : 'nowrap', gap: '12px' }}>
+      <header style={{ padding: '4px 40px', height: '68px', boxSizing: 'border-box', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #1a1a22', flexWrap: isMobile ? 'wrap' : 'nowrap', gap: '12px' }}>
         <a href="/" style={{ display: 'flex', alignItems: 'center', textDecoration: 'none', height: isMobile ? '32px' : '60px' }}>
-          <img src="/logo.svg" alt="TradeSave+" style={{ height: '100%', width: 'auto' }} />
+          <img src="/logo.svg" alt="TradeSave+" style={{ height: '130%', width: 'auto' }} />
         </a>
         {!isMobile && <div style={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)', display: 'flex', alignItems: 'center', gap: '12px' }}>
           <button onClick={() => handleDashboardSwitch('accounts')} disabled={switchingDashboard} style={{ background: 'none', border: 'none', padding: 0, cursor: switchingDashboard ? 'wait' : 'pointer', fontSize: '28px', fontWeight: 700, letterSpacing: '-0.5px', color: activeDashboard === 'accounts' ? '#fff' : '#666', opacity: switchingDashboard ? 0.6 : 1, transition: 'color 0.2s' }}>ACCOUNTS DASHBOARD</button>
@@ -2061,12 +2061,12 @@ export default function DashboardPage() {
                           const totalPnl = accTrades.reduce((sum, t) => sum + (parseFloat(t.pnl) || 0), 0)
                           return (
                             <button key={acc.id} onClick={() => { setQuickTradeAccount(acc.id); setJournalDropdownOpen(false) }} style={{ width: '100%', padding: '10px 12px', background: isSelected ? `rgba(${themeColorRgb},0.12)` : '#0a0a0f', border: `1px solid ${isSelected ? `rgba(${themeColorRgb},0.4)` : '#1a1a22'}`, borderRadius: '8px', color: isSelected ? themeColor : '#999', fontSize: '12px', fontWeight: 600, cursor: 'pointer', textAlign: 'left', transition: 'all 0.15s' }}>
-                              <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '8px', flexWrap: 'wrap' }}>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: 0, flex: '1 1 auto' }}>
-                                  <div style={{ width: '5px', height: '5px', borderRadius: '50%', background: isSelected ? themeColor : '#444', flexShrink: 0 }} />
-                                  <span style={{ wordBreak: 'break-word' }}>{acc.name}</span>
+                              <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '8px' }}>
+                                <div style={{ display: 'flex', alignItems: 'flex-start', gap: '8px', minWidth: 0, flex: 1 }}>
+                                  <div style={{ width: '5px', height: '5px', borderRadius: '50%', background: isSelected ? themeColor : '#444', flexShrink: 0, marginTop: '4px' }} />
+                                  <span style={{ wordBreak: 'break-word', lineHeight: '1.3' }}>{acc.name}</span>
                                 </div>
-                                <span style={{ fontSize: '11px', color: totalPnl >= 0 ? '#22c55e' : '#ef4444', flexShrink: 0 }}>{totalPnl >= 0 ? '+' : ''}${formatCurrency(totalPnl)}</span>
+                                <span style={{ fontSize: '11px', color: totalPnl >= 0 ? '#22c55e' : '#ef4444', flexShrink: 0, whiteSpace: 'nowrap' }}>{totalPnl >= 0 ? '+' : ''}${formatCurrency(totalPnl)}</span>
                               </div>
                             </button>
                           )
@@ -2427,7 +2427,7 @@ export default function DashboardPage() {
                   const recentNote = getRecentNote()
 
                   return (
-                    <div onClick={() => window.location.href = `/account/${accounts[0]?.id}?cumulative=true`} style={{ background: 'linear-gradient(135deg, #0f0f14 0%, #0a0a0f 100%)', border: '1px solid #1a1a22', borderRadius: '16px', overflow: 'hidden', display: 'flex', flexDirection: 'column', boxShadow: '0 4px 24px rgba(0,0,0,0.3)', cursor: 'pointer' }}>
+                    <div style={{ background: 'linear-gradient(135deg, #0f0f14 0%, #0a0a0f 100%)', border: '1px solid #1a1a22', borderRadius: '16px', overflow: 'hidden', display: 'flex', flexDirection: 'column', boxShadow: '0 4px 24px rgba(0,0,0,0.3)' }}>
                       {/* Header - Clean layout like journal widgets */}
                       <div style={{ padding: '16px 16px 12px', position: 'relative' }}>
                         <div>
@@ -2439,11 +2439,18 @@ export default function DashboardPage() {
                         </div>
                         {/* Recent Note - positioned at top right */}
                         {/* RECENT NOTE label outside the box */}
-                        <div style={{ position: 'absolute', top: '12px', left: '50%', display: 'flex', alignItems: 'flex-start', gap: '6px', transform: 'translateX(calc(-100% - 8px))', padding: '8px 0' }}>
-                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#666" strokeWidth="2" style={{ flexShrink: 0, marginTop: '2px' }}>
-                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/>
-                          </svg>
-                          <span style={{ fontSize: '11px', color: '#888', textTransform: 'uppercase', fontWeight: 600, flexShrink: 0, marginTop: '1px' }}>RECENT NOTE:</span>
+                        <div style={{ position: 'absolute', top: '12px', left: '50%', display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: '2px', transform: 'translateX(calc(-100% - 8px))', padding: '8px 0' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#666" strokeWidth="2" style={{ flexShrink: 0 }}>
+                              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/>
+                            </svg>
+                            <span style={{ fontSize: '11px', color: '#888', textTransform: 'uppercase', fontWeight: 600, flexShrink: 0 }}>RECENT NOTE:</span>
+                          </div>
+                          {recentNote && (
+                            <span style={{ fontSize: '10px', color: '#555', marginLeft: '18px' }}>
+                              {recentNote.type === 'custom' ? recentNote.title : new Date(recentNote.date).toLocaleDateString()}
+                            </span>
+                          )}
                         </div>
                         {/* Note content box */}
                         <div
@@ -2463,15 +2470,8 @@ export default function DashboardPage() {
                           onMouseEnter={e => { if (recentNote) { e.currentTarget.style.borderColor = '#2a2a35'; e.currentTarget.style.background = 'rgba(255,255,255,0.02)' } }}
                           onMouseLeave={e => { e.currentTarget.style.borderColor = '#1a1a22'; e.currentTarget.style.background = 'transparent' }}
                         >
-                          <div style={{ display: 'flex', alignItems: 'flex-start', gap: '6px' }}>
-                            <div style={{ flex: 1, fontSize: '12px', color: recentNote ? '#888' : '#444', fontWeight: 600, lineHeight: 1.4, overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
-                              {recentNote ? recentNote.text : 'No notes yet'}
-                            </div>
-                            {recentNote && (
-                              <span style={{ fontSize: '10px', color: '#444', flexShrink: 0, whiteSpace: 'nowrap', marginTop: '1px' }}>
-                                {recentNote.type === 'custom' ? recentNote.title : new Date(recentNote.date).toLocaleDateString()}
-                              </span>
-                            )}
+                          <div style={{ fontSize: '12px', color: recentNote ? '#888' : '#444', fontWeight: 600, lineHeight: 1.4, overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
+                            {recentNote ? recentNote.text : 'No notes yet'}
                           </div>
                         </div>
                       </div>
@@ -2753,7 +2753,6 @@ export default function DashboardPage() {
                         onDragLeave={handleJournalDragLeave}
                         onDrop={(e) => handleJournalDrop(e, account.id)}
                         onDragEnd={handleJournalDragEnd}
-                        onClick={() => { if (!draggedJournal) window.location.href = `/account/${account.id}` }}
                         style={{
                           background: 'linear-gradient(135deg, #0f0f14 0%, #0a0a0f 100%)',
                           border: dragOverJournal === account.id ? '2px dashed #9333ea' : draggedJournal === account.id ? '2px solid #9333ea' : '1px solid #1a1a22',
@@ -2767,8 +2766,6 @@ export default function DashboardPage() {
                           opacity: draggedJournal === account.id ? 0.5 : 1,
                           transform: dragOverJournal === account.id ? 'scale(1.02)' : 'scale(1)'
                         }}
-                        onMouseEnter={e => { if (!draggedJournal) e.currentTarget.style.border = `1px solid ${themeColor}` }}
-                        onMouseLeave={e => { if (!draggedJournal && dragOverJournal !== account.id) e.currentTarget.style.border = '1px solid #1a1a22' }}
                       >
                         {/* Header - Clean layout */}
                         <div style={{ padding: '16px 16px 12px', position: 'relative' }}>
@@ -3149,7 +3146,6 @@ export default function DashboardPage() {
                     return (
                       <div
                         key={account.id}
-                        onClick={() => window.location.href = `/account/${account.id}`}
                         style={{
                           background: 'linear-gradient(135deg, #0f0f14 0%, #0a0a0f 100%)',
                           border: '1px solid #1a1a22',
@@ -3158,11 +3154,8 @@ export default function DashboardPage() {
                           display: 'flex',
                           alignItems: 'center',
                           justifyContent: 'space-between',
-                          cursor: 'pointer',
                           transition: 'all 0.2s'
                         }}
-                        onMouseEnter={e => { e.currentTarget.style.border = `1px solid ${themeColor}` }}
-                        onMouseLeave={e => { e.currentTarget.style.border = '1px solid #1a1a22' }}
                       >
                         {/* Left: Name & Balance */}
                         <div style={{ display: 'flex', alignItems: 'center', gap: '24px', flex: 1 }}>
@@ -4060,19 +4053,20 @@ export default function DashboardPage() {
                             boxShadow: isSelected ? '0 0 12px rgba(34,197,94,0.2), inset 0 0 20px rgba(34,197,94,0.05)' : 'none'
                           }}
                         >
-                          <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '8px', flexWrap: 'wrap' }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', minWidth: 0, flex: '1 1 auto' }}>
+                          <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '8px' }}>
+                            <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px', minWidth: 0, flex: 1 }}>
                               <div style={{
                                 width: '8px',
                                 height: '8px',
                                 borderRadius: '50%',
                                 background: isSelected ? '#22c55e' : '#444',
                                 boxShadow: isSelected ? '0 0 6px #22c55e' : 'none',
-                                flexShrink: 0
+                                flexShrink: 0,
+                                marginTop: '4px'
                               }} />
-                              <span style={{ wordBreak: 'break-word' }}>{acc.name}</span>
+                              <span style={{ wordBreak: 'break-word', lineHeight: '1.3' }}>{acc.name}</span>
                             </div>
-                            <span style={{ fontSize: '13px', color: totalPnl >= 0 ? '#22c55e' : '#ef4444', flexShrink: 0 }}>
+                            <span style={{ fontSize: '13px', color: totalPnl >= 0 ? '#22c55e' : '#ef4444', flexShrink: 0, whiteSpace: 'nowrap' }}>
                               {totalPnl >= 0 ? '+' : ''}${formatCurrency(totalPnl)}
                             </span>
                           </div>
@@ -4421,12 +4415,12 @@ export default function DashboardPage() {
                                 textAlign: 'left'
                               }}
                             >
-                              <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '8px', flexWrap: 'wrap' }}>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: 0, flex: '1 1 auto' }}>
-                                  <div style={{ width: '5px', height: '5px', borderRadius: '50%', background: isSelected ? '#22c55e' : '#444', flexShrink: 0 }} />
-                                  <span style={{ wordBreak: 'break-word' }}>{acc.name}</span>
+                              <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '8px' }}>
+                                <div style={{ display: 'flex', alignItems: 'flex-start', gap: '8px', minWidth: 0, flex: 1 }}>
+                                  <div style={{ width: '5px', height: '5px', borderRadius: '50%', background: isSelected ? '#22c55e' : '#444', flexShrink: 0, marginTop: '4px' }} />
+                                  <span style={{ wordBreak: 'break-word', lineHeight: '1.3' }}>{acc.name}</span>
                                 </div>
-                                <span style={{ fontSize: '11px', color: totalPnl >= 0 ? '#22c55e' : '#ef4444', flexShrink: 0 }}>
+                                <span style={{ fontSize: '11px', color: totalPnl >= 0 ? '#22c55e' : '#ef4444', flexShrink: 0, whiteSpace: 'nowrap' }}>
                                   {totalPnl >= 0 ? '+' : ''}${formatCurrency(totalPnl)}
                                 </span>
                               </div>

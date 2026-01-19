@@ -1561,8 +1561,8 @@ export default function AccountPage() {
       <Tooltip data={tooltip} />
 
       {/* FIXED HEADER - same structure as dashboard */}
-      <header style={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 50, padding: '4px 16px', height: '68px', boxSizing: 'border-box', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#0a0a0f', borderBottom: '1px solid #1a1a22' }}>
-        <a href="/" style={{ display: 'flex', alignItems: 'center', textDecoration: 'none', height: isMobile ? '32px' : '60px' }}><img src="/logo.svg" alt="TradeSave+" style={{ height: '100%', width: 'auto' }} /></a>
+      <header style={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 50, padding: '4px 40px', height: '68px', boxSizing: 'border-box', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#0a0a0f', borderBottom: '1px solid #1a1a22' }}>
+        <a href="/" style={{ display: 'flex', alignItems: 'center', textDecoration: 'none', height: isMobile ? '32px' : '60px' }}><img src="/logo.svg" alt="TradeSave+" style={{ height: '130%', width: 'auto' }} /></a>
         {!isMobile && (
           <>
             <div style={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)', display: 'flex', alignItems: 'center', gap: '12px' }}>
@@ -1969,7 +1969,7 @@ export default function AccountPage() {
                     }} />
                     <span style={{ fontSize: '12px', fontWeight: 600, color: isSelected ? '#22c55e' : '#888', wordBreak: 'break-word', lineHeight: '1.3' }}>{acc.name}</span>
                   </div>
-                  <span style={{ fontSize: '11px', color: isSelected ? '#22c55e' : '#666', flexShrink: 0 }}>${Math.round(currentBalance).toLocaleString()}</span>
+                  <span style={{ fontSize: '11px', color: isSelected ? '#22c55e' : '#666', flexShrink: 0, whiteSpace: 'nowrap' }}>${Math.round(currentBalance).toLocaleString()}</span>
                 </div>
               )
             })}
@@ -2012,7 +2012,7 @@ export default function AccountPage() {
                 <table style={{ width: 'max-content', minWidth: '100%', borderCollapse: 'collapse' }}>
                   <thead style={{ position: 'sticky', top: 0, zIndex: 10, background: '#0a0a0f' }}>
                     <tr>
-                      {selectMode && <th style={{ padding: '5px 6px 9px 6px', width: '32px', minWidth: '32px', borderBottom: '1px solid #1a1a22', background: '#0a0a0f' }}><input type="checkbox" checked={filteredTrades.length > 0 && filteredTrades.every(t => selectedTrades.has(t.id))} onChange={() => { const allSelected = filteredTrades.every(t => selectedTrades.has(t.id)); if (allSelected) { const newSet = new Set(selectedTrades); filteredTrades.forEach(t => newSet.delete(t.id)); setSelectedTrades(newSet) } else { const newSet = new Set(selectedTrades); filteredTrades.forEach(t => newSet.add(t.id)); setSelectedTrades(newSet) } }} style={{ width: '14px', height: '14px', accentColor: '#22c55e', cursor: 'pointer' }} /></th>}
+                      {selectMode && <th style={{ padding: '5px 6px 9px 6px', width: '32px', minWidth: '32px', borderBottom: '1px solid #1a1a22', background: '#0a0a0f' }}><input type="checkbox" checked={filteredTrades.length > 0 && filteredTrades.every(t => selectedTrades.has(t.id))} onChange={() => { const allSelected = filteredTrades.every(t => selectedTrades.has(t.id)); if (allSelected) { const newSet = new Set(selectedTrades); filteredTrades.forEach(t => newSet.delete(t.id)); setSelectedTrades(newSet) } else { const newSet = new Set(selectedTrades); filteredTrades.forEach(t => newSet.add(t.id)); setSelectedTrades(newSet) } }} style={{ width: '14px', height: '14px', accentColor: themeColor, cursor: 'pointer' }} /></th>}
                       {enabledInputs.map((inp, i) => (
                         <th
                           key={inp.id}
@@ -2055,7 +2055,7 @@ export default function AccountPage() {
                       const noteContent = trade.notes || extra.notes || ''
                       return (
                         <tr key={trade.id} onClick={() => { if (selectMode) { toggleTradeSelection(trade.id) } else { setTradeImageIndex(0); setViewingTrade(trade) }}} style={{ borderBottom: '1px solid #141418', background: selectMode && selectedTrades.has(trade.id) ? 'rgba(34,197,94,0.06)' : 'transparent', cursor: 'pointer', transition: 'all 0.15s ease' }} onMouseEnter={e => { if (!selectMode || !selectedTrades.has(trade.id)) { e.currentTarget.style.background = 'rgba(255,255,255,0.03)'; e.currentTarget.style.transform = 'translateX(2px)' }}} onMouseLeave={e => { e.currentTarget.style.background = selectMode && selectedTrades.has(trade.id) ? 'rgba(34,197,94,0.06)' : 'transparent'; e.currentTarget.style.transform = 'translateX(0)' }}>
-                          {selectMode && <td style={{ padding: '14px 6px', width: '32px', minWidth: '32px', textAlign: 'center' }} onClick={(e) => e.stopPropagation()}><input type="checkbox" checked={selectedTrades.has(trade.id)} onChange={() => toggleTradeSelection(trade.id)} style={{ width: '14px', height: '14px', accentColor: '#22c55e', cursor: 'pointer' }} /></td>}
+                          {selectMode && <td style={{ padding: '14px 6px', width: '32px', minWidth: '32px', textAlign: 'center' }} onClick={(e) => e.stopPropagation()}><input type="checkbox" checked={selectedTrades.has(trade.id)} onChange={() => toggleTradeSelection(trade.id)} style={{ width: '14px', height: '14px', accentColor: themeColor, cursor: 'pointer' }} /></td>}
                           {enabledInputs.map(inp => (
                             <td key={inp.id} style={{ padding: '14px 12px', textAlign: 'center', fontSize: '14px', fontWeight: 600, color: '#fff', verticalAlign: 'middle', minWidth: '100px' }}>
                               {inp.id === 'symbol' ? (
@@ -2088,8 +2088,8 @@ export default function AccountPage() {
                                     return (
                                       <div key={star} style={{ position: 'relative', width: '14px', height: '14px' }}>
                                         <span style={{ position: 'absolute', color: '#2a2a35', fontSize: '14px', lineHeight: 1 }}>★</span>
-                                        {isHalfStar && <span style={{ position: 'absolute', color: '#22c55e', fontSize: '14px', lineHeight: 1, clipPath: 'inset(0 50% 0 0)' }}>★</span>}
-                                        {isFullStar && <span style={{ position: 'absolute', color: '#22c55e', fontSize: '14px', lineHeight: 1 }}>★</span>}
+                                        {isHalfStar && <span style={{ position: 'absolute', color: themeColor, fontSize: '14px', lineHeight: 1, clipPath: 'inset(0 50% 0 0)' }}>★</span>}
+                                        {isFullStar && <span style={{ position: 'absolute', color: themeColor, fontSize: '14px', lineHeight: 1 }}>★</span>}
                                       </div>
                                     )
                                   })}
@@ -2233,8 +2233,8 @@ export default function AccountPage() {
                 return (
                   <div key={star} style={{ position: 'relative', width: '16px', height: '16px' }}>
                     <span style={{ position: 'absolute', color: '#2a2a35', fontSize: '16px', lineHeight: 1 }}>★</span>
-                    {isHalfStar && <span style={{ position: 'absolute', color: '#22c55e', fontSize: '16px', lineHeight: 1, clipPath: 'inset(0 50% 0 0)' }}>★</span>}
-                    {isFullStar && <span style={{ position: 'absolute', color: '#22c55e', fontSize: '16px', lineHeight: 1 }}>★</span>}
+                    {isHalfStar && <span style={{ position: 'absolute', color: themeColor, fontSize: '16px', lineHeight: 1, clipPath: 'inset(0 50% 0 0)' }}>★</span>}
+                    {isFullStar && <span style={{ position: 'absolute', color: themeColor, fontSize: '16px', lineHeight: 1 }}>★</span>}
                   </div>
                 )
               })}
@@ -4909,7 +4909,7 @@ export default function AccountPage() {
                     }}
                   >
                     <span style={{ color: '#555', fontSize: '12px', cursor: 'grab', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>⋮⋮</span>
-                    <input type="checkbox" checked={input.enabled} onChange={e => updateInput(originalIdx, 'enabled', e.target.checked)} style={{ width: '16px', height: '16px', accentColor: '#22c55e', cursor: 'pointer' }} />
+                    <input type="checkbox" checked={input.enabled} onChange={e => updateInput(originalIdx, 'enabled', e.target.checked)} style={{ width: '16px', height: '16px', accentColor: themeColor, cursor: 'pointer' }} />
                     <input type="text" value={input.label} onChange={e => updateInput(originalIdx, 'label', e.target.value)} style={{ padding: '6px 8px', background: '#0a0a0e', border: '1px solid #2a2a35', borderRadius: '6px', color: '#fff', fontSize: '12px', width: '100%' }} placeholder="Field name" />
                     <select value={input.type} onChange={e => updateInput(originalIdx, 'type', e.target.value)} style={{ padding: '6px 8px', background: '#0a0a0e', border: '1px solid #2a2a35', borderRadius: '6px', color: '#fff', fontSize: '11px', cursor: 'pointer' }}>
                       <option value="text">Text</option>
