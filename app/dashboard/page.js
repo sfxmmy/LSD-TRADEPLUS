@@ -3930,26 +3930,85 @@ export default function DashboardPage() {
         )}
 
         {/* Color Editor Modal */}
-        {editingColor !== null && (
+        {editingColor !== null && (() => {
+          const inp = editInputs[editingColor] || {}
+          return (
           <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.9)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 202 }} onClick={() => setEditingColor(null)}>
-            <div style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '12px', padding: '24px', width: '320px' }} onClick={e => e.stopPropagation()}>
-              <h2 style={{ fontSize: '18px', fontWeight: 700, marginBottom: '16px', color: '#fff' }}>Field Options</h2>
-              <div style={{ marginBottom: '16px' }}>
-                <label style={{ display: 'block', fontSize: '12px', color: '#888', marginBottom: '8px' }}>Text Color</label>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                  <div style={{ position: 'relative', width: '48px', height: '48px' }}>
-                    <div style={{ width: '48px', height: '48px', borderRadius: '8px', background: editInputs[editingColor]?.textColor || '#fff', border: '2px solid #2a2a35', cursor: 'pointer' }} />
-                    <input type="color" value={editInputs[editingColor]?.textColor || '#ffffff'} onChange={e => updateEditInput(editingColor, 'textColor', e.target.value)} style={{ position: 'absolute', inset: 0, opacity: 0, width: '100%', height: '100%', cursor: 'pointer' }} />
+            <div style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '12px', padding: '24px', width: '720px', maxWidth: '95vw', maxHeight: '80vh', overflowY: 'auto' }} onClick={e => e.stopPropagation()}>
+              <h2 style={{ fontSize: '18px', fontWeight: 700, marginBottom: '4px', color: '#fff' }}>Edit Options</h2>
+              <p style={{ fontSize: '12px', color: '#555', marginBottom: '16px' }}>Customize colors and styling for this field</p>
+              <div style={{ padding: '16px', background: '#0a0a0e', borderRadius: '10px', border: '1px solid #1a1a22', marginBottom: '16px' }}>
+                {/* Colors row - horizontal like Edit Options */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '20px', marginBottom: '14px', flexWrap: 'wrap' }}>
+                  {/* Text color */}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <div style={{ position: 'relative', width: '36px', height: '36px' }}>
+                      <div style={{ width: '36px', height: '36px', borderRadius: '8px', background: inp.textColor || '#fff', border: '2px solid #2a2a35', cursor: 'pointer' }} />
+                      <input type="color" value={inp.textColor || '#ffffff'} onChange={e => updateEditInput(editingColor, 'textColor', e.target.value)} style={{ position: 'absolute', inset: 0, opacity: 0, width: '100%', height: '100%', cursor: 'pointer' }} />
+                    </div>
+                    <span style={{ fontSize: '12px', color: '#888' }}>Text</span>
                   </div>
-                  <span style={{ color: editInputs[editingColor]?.textColor || '#fff', fontSize: '14px', fontWeight: 600 }}>Sample Text</span>
+                  {/* Background */}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <select value={inp.bgColor ? 'custom' : 'none'} onChange={e => {
+                      if (e.target.value === 'none') updateEditInput(editingColor, 'bgColor', null)
+                      else {
+                        const hex = (inp.textColor || '#fff').replace('#', '')
+                        const r = parseInt(hex.substr(0, 2), 16) || 255
+                        const g = parseInt(hex.substr(2, 2), 16) || 255
+                        const b = parseInt(hex.substr(4, 2), 16) || 255
+                        updateEditInput(editingColor, 'bgColor', `rgba(${r},${g},${b},0.15)`)
+                      }
+                    }} style={{ padding: '8px 12px', background: '#141418', border: '1px solid #2a2a35', borderRadius: '6px', color: '#fff', fontSize: '12px', cursor: 'pointer' }}>
+                      <option value="none">No Fill</option>
+                      <option value="custom">Fill</option>
+                    </select>
+                    {inp.bgColor && (
+                      <div style={{ position: 'relative', width: '36px', height: '36px' }}>
+                        <div style={{ width: '36px', height: '36px', borderRadius: '8px', background: inp.bgColor, border: '2px solid #2a2a35', cursor: 'pointer' }} />
+                        <input type="color" value={inp.textColor || '#ffffff'} onChange={e => {
+                          const hex = e.target.value.replace('#', '')
+                          const r = parseInt(hex.substr(0, 2), 16)
+                          const g = parseInt(hex.substr(2, 2), 16)
+                          const b = parseInt(hex.substr(4, 2), 16)
+                          updateEditInput(editingColor, 'bgColor', `rgba(${r},${g},${b},0.15)`)
+                        }} style={{ position: 'absolute', inset: 0, opacity: 0, width: '100%', height: '100%', cursor: 'pointer' }} />
+                      </div>
+                    )}
+                    <span style={{ fontSize: '12px', color: '#888' }}>Background</span>
+                  </div>
+                  {/* Border */}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <select value={inp.borderColor ? 'custom' : 'none'} onChange={e => {
+                      if (e.target.value === 'none') updateEditInput(editingColor, 'borderColor', null)
+                      else updateEditInput(editingColor, 'borderColor', inp.textColor || '#fff')
+                    }} style={{ padding: '8px 12px', background: '#141418', border: '1px solid #2a2a35', borderRadius: '6px', color: '#fff', fontSize: '12px', cursor: 'pointer' }}>
+                      <option value="none">No Border</option>
+                      <option value="custom">Border</option>
+                    </select>
+                    {inp.borderColor && (
+                      <div style={{ position: 'relative', width: '36px', height: '36px' }}>
+                        <div style={{ width: '36px', height: '36px', borderRadius: '8px', background: 'transparent', border: `3px solid ${inp.borderColor}`, cursor: 'pointer' }} />
+                        <input type="color" value={inp.borderColor || '#ffffff'} onChange={e => updateEditInput(editingColor, 'borderColor', e.target.value)} style={{ position: 'absolute', inset: 0, opacity: 0, width: '100%', height: '100%', cursor: 'pointer' }} />
+                      </div>
+                    )}
+                    <span style={{ fontSize: '12px', color: '#888' }}>Border</span>
+                  </div>
+                </div>
+                {/* Preview row */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+                  <div style={{ flex: 1, padding: '10px 14px', background: '#141418', border: '1px solid #2a2a35', borderRadius: '6px', color: '#666', fontSize: '14px' }}>{inp.label || 'Field Name'}</div>
+                  <span style={{ padding: '6px 14px', borderRadius: '6px', fontSize: '14px', fontWeight: 600, background: inp.bgColor || 'transparent', color: inp.textColor || '#fff', border: inp.borderColor ? `1px solid ${inp.borderColor}` : 'none', whiteSpace: 'nowrap' }}>Preview</span>
                 </div>
               </div>
               <div style={{ display: 'flex', gap: '12px' }}>
-                <button onClick={() => setEditingColor(null)} style={{ flex: 1, padding: '12px', background: themeColor, border: 'none', borderRadius: '8px', color: '#fff', fontWeight: 600, fontSize: '13px', cursor: 'pointer' }}>Done</button>
+                <button onClick={() => setEditingColor(null)} style={{ flex: 1, padding: '12px', background: themeColor, border: 'none', borderRadius: '8px', color: '#fff', fontWeight: 600, fontSize: '13px', cursor: 'pointer' }}>Save</button>
+                <button onClick={() => setEditingColor(null)} style={{ flex: 1, padding: '12px', background: 'transparent', border: '1px solid #2a2a35', borderRadius: '8px', color: '#888', fontWeight: 600, fontSize: '13px', cursor: 'pointer' }}>Cancel</button>
               </div>
             </div>
           </div>
-        )}
+          )
+        })()}
 
         {/* Delete Input Confirmation Modal */}
         {deleteInputConfirm && (

@@ -1565,7 +1565,7 @@ export default function AccountPage() {
 
       {/* FIXED HEADER - same structure as dashboard */}
       <header style={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 50, padding: '4px 40px', height: '68px', boxSizing: 'border-box', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#0a0a0f', borderBottom: '1px solid #1a1a22' }}>
-        <a href="/" style={{ display: 'flex', alignItems: 'center', textDecoration: 'none', height: isMobile ? '32px' : '60px' }}><img src="/logo.svg" alt="TradeSave+" style={{ height: '130%', width: 'auto' }} /></a>
+        <a href="/" style={{ display: 'flex', alignItems: 'center', textDecoration: 'none', height: isMobile ? '32px' : '60px', marginLeft: '-28px' }}><img src="/logo.svg" alt="TradeSave+" style={{ height: '150%', width: 'auto' }} /></a>
         {!isMobile && (
           <>
             <div style={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)', display: 'flex', alignItems: 'center', gap: '12px' }}>
@@ -5120,47 +5120,59 @@ export default function AccountPage() {
         const isFile = inp.type === 'file'
         return (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.9)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 102 }} onClick={() => setEditingColor(null)}>
-          <div style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '12px', padding: '24px', width: '420px', maxWidth: '95vw' }} onClick={e => e.stopPropagation()}>
-            <h2 style={{ fontSize: '18px', fontWeight: 700, marginBottom: '4px', color: '#fff' }}>Style Settings</h2>
-            <p style={{ fontSize: '12px', color: '#555', marginBottom: '16px' }}>{isValue ? 'Configure currency and display' : isRating ? 'Customize star appearance' : isFile ? 'Image fields have no style options' : 'Customize colors for this field'}</p>
+          <div style={{ background: '#0d0d12', border: '1px solid #1a1a22', borderRadius: '12px', padding: '24px', width: '720px', maxWidth: '95vw', maxHeight: '80vh', overflowY: 'auto' }} onClick={e => e.stopPropagation()}>
+            <h2 style={{ fontSize: '18px', fontWeight: 700, marginBottom: '4px', color: '#fff' }}>Edit Options</h2>
+            <p style={{ fontSize: '12px', color: '#555', marginBottom: '16px' }}>{isValue ? 'Configure currency and display' : isRating ? 'Customize star appearance' : isFile ? 'Image fields have no style options' : 'Customize colors and styling for this field'}</p>
 
             {isValue ? (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '16px' }}>
-                {/* Currency Selector */}
-                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px', background: '#0a0a0e', borderRadius: '8px' }}>
-                  <select value={inp.currency || '$'} onChange={e => updateInput(editingColor, 'currency', e.target.value)} style={{ padding: '8px 12px', background: '#141418', border: '1px solid #2a2a35', borderRadius: '6px', color: '#fff', fontSize: '14px', cursor: 'pointer' }}>
-                    <option value="$">$ Dollar</option>
-                    <option value="£">£ Pound</option>
-                    <option value="€">€ Euro</option>
-                    <option value="¥">¥ Yen</option>
-                    <option value="₹">₹ Rupee</option>
-                    <option value="₿">₿ Bitcoin</option>
-                    <option value="">No symbol</option>
-                  </select>
-                  <span style={{ fontSize: '13px', color: '#888', flex: 1 }}>Currency Symbol</span>
+              <div style={{ padding: '16px', background: '#0a0a0e', borderRadius: '10px', border: '1px solid #1a1a22', marginBottom: '16px' }}>
+                {/* Currency row - horizontal like Edit Options */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '20px', marginBottom: '14px', flexWrap: 'wrap' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <select value={inp.currency || '$'} onChange={e => updateInput(editingColor, 'currency', e.target.value)} style={{ padding: '8px 12px', background: '#141418', border: '1px solid #2a2a35', borderRadius: '6px', color: '#fff', fontSize: '12px', cursor: 'pointer' }}>
+                      <option value="$">$ Dollar</option>
+                      <option value="£">£ Pound</option>
+                      <option value="€">€ Euro</option>
+                      <option value="¥">¥ Yen</option>
+                      <option value="₹">₹ Rupee</option>
+                      <option value="₿">₿ Bitcoin</option>
+                      <option value="">No symbol</option>
+                    </select>
+                    <span style={{ fontSize: '12px', color: '#888' }}>Currency</span>
+                  </div>
                 </div>
-                {/* Info */}
-                <div style={{ padding: '12px', background: '#0a0a0e', borderRadius: '8px' }}>
-                  <div style={{ fontSize: '12px', color: '#666', textAlign: 'center' }}>Values show as <span style={{ color: '#22c55e' }}>green</span> (positive) / <span style={{ color: '#ef4444' }}>red</span> (negative)</div>
+                {/* Preview row */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+                  <div style={{ flex: 1, padding: '10px 14px', background: '#141418', border: '1px solid #2a2a35', borderRadius: '6px', color: '#666', fontSize: '14px' }}>{inp.label || 'Value'}</div>
+                  <span style={{ padding: '6px 14px', borderRadius: '6px', fontSize: '14px', fontWeight: 600, color: '#22c55e', whiteSpace: 'nowrap' }}>{inp.currency || '$'}123.45</span>
                 </div>
               </div>
             ) : isFile ? (
-              <div style={{ padding: '16px', background: '#0a0a0e', borderRadius: '8px', marginBottom: '16px' }}>
-                <div style={{ fontSize: '13px', color: '#888', textAlign: 'center' }}>Image uploads display as thumbnails with no custom styling</div>
+              <div style={{ padding: '16px', background: '#0a0a0e', borderRadius: '10px', border: '1px solid #1a1a22', marginBottom: '16px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+                  <div style={{ flex: 1, padding: '10px 14px', background: '#141418', border: '1px solid #2a2a35', borderRadius: '6px', color: '#666', fontSize: '14px' }}>{inp.label || 'Image'}</div>
+                  <span style={{ padding: '6px 14px', borderRadius: '6px', fontSize: '12px', color: '#888', background: '#141418', border: '1px solid #2a2a35' }}>No styling options</span>
+                </div>
               </div>
             ) : isRating ? (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '16px' }}>
-                {/* Star Color */}
-                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px', background: '#0a0a0e', borderRadius: '8px' }}>
-                  <div style={{ position: 'relative', width: '36px', height: '36px' }}>
-                    <div style={{ width: '36px', height: '36px', borderRadius: '6px', background: inp.textColor || '#22c55e', border: '2px solid #2a2a35', cursor: 'pointer' }} />
-                    <input type="color" value={inp.textColor || '#22c55e'} onChange={e => updateInput(editingColor, 'textColor', e.target.value)} style={{ position: 'absolute', inset: 0, opacity: 0, width: '100%', height: '100%', cursor: 'pointer' }} />
+              <div style={{ padding: '16px', background: '#0a0a0e', borderRadius: '10px', border: '1px solid #1a1a22', marginBottom: '16px' }}>
+                {/* Colors row - horizontal like Edit Options */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '20px', marginBottom: '14px', flexWrap: 'wrap' }}>
+                  {/* Star color */}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <div style={{ position: 'relative', width: '36px', height: '36px' }}>
+                      <div style={{ width: '36px', height: '36px', borderRadius: '8px', background: inp.textColor || '#22c55e', border: '2px solid #2a2a35', cursor: 'pointer' }} />
+                      <input type="color" value={inp.textColor || '#22c55e'} onChange={e => updateInput(editingColor, 'textColor', e.target.value)} style={{ position: 'absolute', inset: 0, opacity: 0, width: '100%', height: '100%', cursor: 'pointer' }} />
+                    </div>
+                    <span style={{ fontSize: '12px', color: '#888' }}>Star Color</span>
                   </div>
-                  <span style={{ fontSize: '13px', color: '#888', flex: 1 }}>Star Color</span>
                 </div>
-                {/* Preview */}
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '12px', background: '#0a0a0e', borderRadius: '8px', gap: '4px' }}>
-                  {[1,2,3,4,5].map(s => <span key={s} style={{ fontSize: '24px', color: s <= 3 ? (inp.textColor || '#22c55e') : '#2a2a35' }}>★</span>)}
+                {/* Preview row */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+                  <div style={{ flex: 1, padding: '10px 14px', background: '#141418', border: '1px solid #2a2a35', borderRadius: '6px', color: '#666', fontSize: '14px' }}>{inp.label || 'Rating'}</div>
+                  <div style={{ display: 'flex', gap: '2px' }}>
+                    {[1,2,3,4,5].map(s => <span key={s} style={{ fontSize: '20px', color: s <= 3 ? (inp.textColor || '#22c55e') : '#2a2a35' }}>★</span>)}
+                  </div>
                 </div>
               </div>
             ) : (
